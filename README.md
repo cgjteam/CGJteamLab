@@ -1,4 +1,4 @@
-# CGJteamLab
+# CGJteam Lab
 
 CGJteamLab is an open research project dedicated to the formal verification of synthetic Euclidean geometry in Lean 4.
 
