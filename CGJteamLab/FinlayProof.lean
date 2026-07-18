@@ -5,6 +5,7 @@ namespace Geometry
 universe u
 
 variable (Geo : Geo)
+variable [HilbertIncidence Geo]
 
 theorem ParallelogramOfParallel
     (Geo : Geometry.Geo)
@@ -28,8 +29,8 @@ theorem FinlayStep1
   (hE : IsMidpoint Geo E A C)
   (hF : IsMidpoint Geo F A B)
   (hG : IsMidpoint Geo G A P)
-  (hCFG : Geo.Collinear C F G)
-  (hBEG : Geo.Collinear B E G) :
+  (hCFG : Collinear Geo C F G)
+  (hBEG : Collinear Geo B E G) :
   Geo.Parallel C G B P ∧
   Geo.Parallel B G C P := by
   constructor
@@ -79,7 +80,7 @@ theorem FinlayStep2
 
 theorem FinlayStep3
   (A B C G P D : Geo.Point)
-  (hAGP : Geo.Collinear A G P)
+  (hAGP : Collinear Geo A G P)
   (hInt : IsIntersection Geo A P B C D) :
   IsIntersection Geo P G B C D := by
   exact
@@ -94,8 +95,8 @@ theorem FinlayStep4
   (hInt : IsIntersection Geo P G B C D) :
   IsMidpoint Geo D B C := by
 
-  have hPG : Geo.Collinear P D G := hInt.left
-  have hBC : Geo.Collinear B D C := hInt.right
+  have hPG : Collinear Geo P D G := hInt.left
+  have hBC : Collinear Geo B D C := hInt.right
 
   exact
     ParallelogramDiagonals
@@ -121,17 +122,17 @@ theorem Finlay
   (hE : IsMidpoint Geo E A C)
   (hF : IsMidpoint Geo F A B)
   (hG : IsMidpoint Geo G A P)
-  (hBE : Geo.Collinear B G E)
-  (hCF : Geo.Collinear C G F)
-  (hAP : Geo.Collinear A D P)
-  (hBC : Geo.Collinear B D C) :
+  (hBE : Collinear Geo B G E)
+  (hCF : Collinear Geo C G F)
+  (hAP : Collinear Geo A D P)
+  (hBC : Collinear Geo B D C) :
   IsMedian Geo A D B C ∧
-  Geo.Collinear A G D := by
+  Collinear Geo A G D := by
 
-  have hCFG : Geo.Collinear C F G := by
+  have hCFG : Collinear Geo C F G := by
     exact CollinearRotate Geo C G F hCF
 
-  have hBEG : Geo.Collinear B E G := by
+  have hBEG : Collinear Geo B E G := by
     exact CollinearRotate Geo B G E hBE
 
   -- Step 1.
@@ -159,7 +160,7 @@ theorem Finlay
         hStep1.right
 
   -- G is the midpoint of AP, hence A, G and P are collinear.
-  have hAGP : Geo.Collinear A G P := by
+  have hAGP : Collinear Geo A G P := by
     exact midpoint_collinear Geo A P G hG
 
   -- D is assumed to lie on AP and BC,
@@ -201,12 +202,12 @@ theorem Finlay
 
   -- Extract the collinearity of P, D and G
   -- from the intersection property.
-  have hPG : Geo.Collinear P D G := by
+  have hPG : Collinear Geo P D G := by
     exact hIntPG.left
 
   -- Since A, G, P and P, D, G are collinear,
   -- points A, G and D are collinear.
-  have hAGD : Geo.Collinear A G D := by
+  have hAGD : Collinear Geo A G D := by
     exact
       CollinearTrans
         Geo

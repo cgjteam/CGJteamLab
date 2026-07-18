@@ -1,10 +1,13 @@
 import CGJteamLab.GeometryBase
+--import CGJteamLab.GeometryReduction
 
 namespace Geometry
 
 universe u
 
 variable (Geo : Geo)
+
+variable [HilbertIncidence Geo]
 
 theorem MidsegmentParallel
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
