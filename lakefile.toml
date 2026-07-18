@@ -1,0 +1,10 @@
+name = "CGJteamLab"
+version = "0.1.0"
+defaultTargets = ["cgjteamlab"]
+
+[[lean_lib]]
+name = "CGJteamLab"
+
+[[lean_exe]]
+name = "cgjteamlab"
+root = "Main"
