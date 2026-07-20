@@ -120,32 +120,60 @@ end Geometry
 
 /-!
 ----------------------------------------------------------------------------
-Proof Dependency Graph
+Dependency graph of the Midsegment Theorem
+----------------------------------------------------------------------------
 
-The proof follows a fixed sequence of reusable construction steps.
+Step 1. Auxiliary construction
 
-    Auxiliary Construction
-             │
-             ▼
-      Triangle Congruence (SAS)
-             │
-             ▼
-      Deriving Parallelism
-             │
-             ▼
-   Parallelogram Recognition
-             │
-             ▼
- Applying a Parallelogram Property
-             │
-             ▼
- Transfer Along a Collinear Line
+    ExtendSegment
 
-Each step transforms the available geometric information into a new
-configuration. The intermediate transitions are implemented through
-reusable lemmas from GeometryBase.
+                    |
+                    v
 
-This dependency graph describes the mathematical structure of the proof
-rather than its Lean implementation.
+Step 2. Triangle congruence
+
+    VerticalAngles
+            |
+    TriangleCongruentFromSAS
+
+                    |
+                    v
+
+Step 3. Deriving parallelism
+
+    parallel_from_equal_angles
+
+                    |
+                    v
+
+Step 4. Parallelogram recognition
+
+    OnePairParallelCongruentCriterion
+
+                    |
+                    v
+
+Step 5. Parallelogram property
+
+    ParallelogramAdjacentParallel
+
+                    |
+                    v
+
+Step 6. Transfer along a collinear line
+
+    collinear_parallel_trans
+
+                    |
+                    v
+
+    MidsegmentParallel
+
+----------------------------------------------------------------------------
+This proof is organized as a dependency path through GeometryBase.
+
+Each step corresponds to a reusable geometric result rather than to a
+proof-specific argument. The resulting sequence exposes the mathematical
+dependency graph underlying the Midsegment Theorem.
 ----------------------------------------------------------------------------
 -/
