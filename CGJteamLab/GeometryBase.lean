@@ -1,5 +1,6 @@
 import CGJteamLab.GeometryCore
 import CGJteamLab.HilbertAxioms
+
 namespace Geometry
 
 universe u
@@ -7,12 +8,22 @@ universe u
 variable (Geo : Geometry.Geo)
 
 variable [HilbertIncidence Geo]
---variable [IncidenceAxioms Geo]
 
+/-!
+# GeometryBase
+
+This file contains the fundamental geometric language used throughout
+the CGJteam Lab project.
+
+The library is organized according to the role played by each component
+inside formal geometric proofs rather than according to historical
+axiomatic systems.
+-/
 
 ------------------------------------------------------------------------
--- Basic definitions
+-- Basic Definitions
 ------------------------------------------------------------------------
+
 abbrev Collinear
     (A B C : Geo.Point) : Prop :=
   PrimCollinear Geo A B C
@@ -23,31 +34,37 @@ def IsMidpoint
   Collinear Geo A M B ∧
   Geo.Congruent A M M B
 
+
 def IsIntersection
     (A B C D P : Geo.Point) : Prop :=
   Collinear Geo A P B ∧
   Collinear Geo C P D
 
+
 def IsMedian
     (_ M B C : Geo.Point) : Prop :=
   IsMidpoint Geo M B C
+
 
 def OppositeSidesParallel
     (A B C D : Geo.Point) : Prop :=
   Geo.Parallel A B C D ∧
   Geo.Parallel B C D A
 
+
 def OppositeSidesCongruent
     (A B C D : Geo.Point) : Prop :=
   Geo.Congruent A B C D ∧
   Geo.Congruent B C D A
 
+
 def IsParallelogram
     (A B C D : Geo.Point) : Prop :=
   OppositeSidesParallel Geo A B C D
 
+
 ------------------------------------------------------------------------
--- Basic theorems
+-- Elementary Derived Results
 ------------------------------------------------------------------------
 
 theorem midpoint_collinear
@@ -56,6 +73,7 @@ theorem midpoint_collinear
     Collinear Geo A M B := by
   intro h
   exact h.left
+
 
 theorem MidpointMedian
     (A B C M : Geo.Point) :
@@ -74,19 +92,11 @@ axiom CollinearSymmetry
     Collinear Geo A B C →
     Collinear Geo C B A
 
-/-
-axiom CollinearRotate
-    (A B C : Geo.Point) :
-    Collinear Geo A B C →
-    Collinear Geo A C B
--/
-
 
 theorem CollinearRotate
     (A B C : Geo.Point) :
     Collinear Geo A B C →
-    Collinear Geo A C B :=
-by
+    Collinear Geo A C B := by
   exact PrimCollinearRotate Geo A B C
 
 
@@ -95,6 +105,7 @@ axiom CollinearTrans
     Collinear Geo A G P →
     Collinear Geo P D G →
     Collinear Geo A G D
+
 
 ------------------------------------------------------------------------
 -- Congruence
@@ -105,23 +116,27 @@ axiom CongruentSymmetry
     Geo.Congruent A B C D →
     Geo.Congruent C D A B
 
+
 axiom CongruentReverseFirst
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A C D
+
 
 axiom CongruentReverseBoth
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A D C
 
+
 axiom CongruentSwapSecond
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent A B D C
 
+
 ------------------------------------------------------------------------
--- Angle congruence
+-- Angle Congruence
 ------------------------------------------------------------------------
 
 axiom AngleCongruentReverse
@@ -129,14 +144,16 @@ axiom AngleCongruentReverse
     Geo.AngleCongruent A B C D E F →
     Geo.AngleCongruent C B A F E D
 
+
 axiom VerticalAngles
     (C E D B F : Geo.Point) :
     Collinear Geo C E B →
     Collinear Geo D E F →
     Geo.AngleCongruent C E D B E F
 
+
 ------------------------------------------------------------------------
--- Parallelism
+-- Parallel Relations
 ------------------------------------------------------------------------
 
 axiom ParallelSymmetry
@@ -144,15 +161,18 @@ axiom ParallelSymmetry
     Geo.Parallel A B C D →
     Geo.Parallel C D A B
 
+
 axiom ParallelSwapFirstLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
     Geo.Parallel B A C D
 
+
 axiom ParallelSwapSecondLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
     Geo.Parallel A B D C
+
 
 axiom ParallelCollinearLeft
     (A B C D E : Geo.Point) :
@@ -160,11 +180,13 @@ axiom ParallelCollinearLeft
     Collinear Geo C A B →
     Geo.Parallel C B D E
 
+
 axiom collinear_parallel_trans
     (A B C D E : Geo.Point) :
     Collinear Geo A B C →
     Geo.Parallel A C D E →
     Geo.Parallel A B D E
+
 
 axiom parallel_from_equal_angles
     (A C D B E F : Geo.Point) :
@@ -172,8 +194,65 @@ axiom parallel_from_equal_angles
     Geo.AngleCongruent E C D E B F →
     Geo.Parallel A D B F
 
+/-!
+# Local Parallelogram Component
+
+This part of the library groups together the recognition criteria
+and the fundamental properties of parallelograms.
+
+Typical proof pattern:
+
+Construction
+    ↓
+Recognition
+    ↓
+Property application
+    ↓
+Geometric consequence
+-/
+
 ------------------------------------------------------------------------
--- Triangle congruence (SAS)
+-- Parallelogram Recognition
+------------------------------------------------------------------------
+
+structure OnePairParallelCongruent
+    (A B C D : Geo.Point) where
+  parallel : Geo.Parallel A D B C
+  congruent : Geo.Congruent A D B C
+
+
+axiom OnePairParallelCongruentCriterion
+    (A B C D : Geo.Point) :
+    OnePairParallelCongruent Geo A B C D →
+    IsParallelogram Geo A B C D
+
+
+------------------------------------------------------------------------
+-- Fundamental Parallelogram Properties
+------------------------------------------------------------------------
+
+axiom ParallelogramOppositeSidesParallel
+    (A B C D : Geo.Point) :
+    IsParallelogram Geo A B C D →
+    OppositeSidesParallel Geo A B C D
+
+
+axiom ParallelogramOppositeSidesCongruent
+    (A B C D : Geo.Point) :
+    IsParallelogram Geo A B C D →
+    OppositeSidesCongruent Geo A B C D
+
+
+axiom ParallelogramDiagonals
+    (A B C D M : Geo.Point) :
+    IsParallelogram Geo A B C D →
+    Collinear Geo A M C →
+    Collinear Geo B M D →
+    IsMidpoint Geo M A C
+
+
+------------------------------------------------------------------------
+-- Triangle Congruence (SAS)
 ------------------------------------------------------------------------
 
 structure TriangleCongruenceResult
@@ -185,12 +264,14 @@ structure TriangleCongruenceResult
   angleB : Geo.AngleCongruent A B C D E F
   angleC : Geo.AngleCongruent A C B D F E
 
+
 axiom SAS
     (A B C D E F : Geo.Point) :
     Geo.Congruent A B D E →
     Geo.AngleCongruent B A C E D F →
     Geo.Congruent A C D F →
     TriangleCongruenceResult Geo A B C D E F
+
 
 axiom TriangleCongruentFromSAS
     (A B C D E F : Geo.Point) :
@@ -200,42 +281,7 @@ axiom TriangleCongruentFromSAS
     TriangleCongruenceResult Geo A B C D E F
 
 ------------------------------------------------------------------------
--- One parallel side + congruent side
-------------------------------------------------------------------------
-
-structure OnePairParallelCongruent
-    (A B C D : Geo.Point) where
-  parallel : Geo.Parallel A D B C
-  congruent : Geo.Congruent A D B C
-
-axiom OnePairParallelCongruentCriterion
-    (A B C D : Geo.Point) :
-    OnePairParallelCongruent Geo A B C D →
-    IsParallelogram Geo A B C D
-
-------------------------------------------------------------------------
--- Parallelograms
-------------------------------------------------------------------------
-
-axiom ParallelogramOppositeSidesParallel
-    (A B C D : Geo.Point) :
-    IsParallelogram Geo A B C D →
-    OppositeSidesParallel Geo A B C D
-
-axiom ParallelogramOppositeSidesCongruent
-    (A B C D : Geo.Point) :
-    IsParallelogram Geo A B C D →
-    OppositeSidesCongruent Geo A B C D
-
-axiom ParallelogramDiagonals
-    (A B C D M : Geo.Point) :
-    IsParallelogram Geo A B C D →
-    Collinear Geo A M C →
-    Collinear Geo B M D →
-    IsMidpoint Geo M A C
-
-------------------------------------------------------------------------
--- Auxiliary axioms
+-- Auxiliary Construction Principles
 ------------------------------------------------------------------------
 
 /-
@@ -252,16 +298,78 @@ axiom ExtendSegment
       Collinear Geo A B T ∧
       Geo.Congruent A B B T
 
+
 axiom IntersectionOnSameLine
     (A G P B C D : Geo.Point) :
     Collinear Geo A G P →
     IsIntersection Geo A P B C D →
     IsIntersection Geo P G B C D
 
+
 axiom congruent_transitivity
     (A D C B F : Geo.Point) :
     Geo.Congruent A D D C →
     Geo.Congruent C D B F →
     Geo.Congruent A D B F
+
+
+-- add
+omit [HilbertIncidence Geo] in
+theorem ParallelogramAdjacentParallel
+    (A B C D : Geo.Point) :
+    IsParallelogram Geo A B C D →
+    Geo.Parallel D C A B := by
+  intro h
+
+  have hOpp :=
+    ParallelogramOppositeSidesParallel Geo A B C D h
+
+  rcases hOpp with ⟨h1, h2⟩
+
+  exact
+    ParallelSwapFirstLine
+      Geo
+      C D A B
+      (ParallelSymmetry Geo A B C D h1)
+
+omit [HilbertIncidence Geo] in
+theorem ParallelSymmetrySwapSecond
+    (A B C D : Geo.Point)
+    (h : Geo.Parallel A D B C) :
+    Geo.Parallel B C D A := by
+  exact
+    ParallelSwapSecondLine
+      Geo
+      B C A D
+      (ParallelSymmetry Geo A D B C h)
+
+omit [HilbertIncidence Geo] in
+theorem CongruentReverseFirstSwapSecond
+    (A B C D : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent B A D C := by
+  intro h
+  exact
+    CongruentSwapSecond
+      Geo
+      B A C D
+      (CongruentReverseFirst Geo A B C D h)
+
+theorem ParallelogramOfParallel
+    (Geo : Geometry.Geo)
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D →
+    Geo.Parallel A D B C →
+    IsParallelogram Geo A B C D := by
+  intro h1 h2
+
+  have h2' : Geo.Parallel B C D A := by
+    exact
+      ParallelSwapSecondLine
+        Geo
+        B C A D
+        (ParallelSymmetry Geo A D B C h2)
+
+  exact And.intro h1 h2'
 
 end Geometry
