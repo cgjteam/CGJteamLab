@@ -2,6 +2,10 @@ name = "CGJteamLab"
 version = "0.1.0"
 defaultTargets = ["cgjteamlab"]
 
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+
 [[lean_lib]]
 name = "CGJteamLab"
 

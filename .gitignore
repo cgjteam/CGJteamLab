@@ -1,1 +1,13 @@
+# Lake
 /.lake
+/.build
+
+# Editors
+.vscode/
+.idea/
+
+# Windows
+Thumbs.db
+
+# macOS
+.DS_Store
