@@ -145,10 +145,149 @@ theorem MidpointParallelogram
       _ = Mid (Mid B C) A := by
               exact midpoint_commutative _ _
 
-axiom parallelogram_rotate3
-    (A B C D : Point) :
+/-! Collinearity is invariant under permutations of points on a nontrivial line. -/
+private theorem collinear_swap_last_aux
+    {A B P : Point}
+    (hAB : A ≠ B)
+    (h : Col A B P) :
+    Col A P B := by
+  have hA : Col A B A := by
+    apply L2
+    exact Or.inr (Or.inl rfl)
+  have hB : Col A B B := by
+    apply L2
+    exact Or.inr (Or.inr rfl)
+  exact L3 A B A P B hAB hA h hB
+
+private theorem collinear_swap_first_aux
+    {A B P : Point}
+    (hAB : A ≠ B)
+    (h : Col A B P) :
+    Col B A P := by
+  have hA : Col A B A := by
+    apply L2
+    exact Or.inr (Or.inl rfl)
+  have hB : Col A B B := by
+    apply L2
+    exact Or.inr (Or.inr rfl)
+  exact L3 A B B A P hAB hB hA h
+
+/-- The triangle part of the third cyclic permutation of a parallelogram. -/
+theorem rotate_triangle
+    {A B C D : Point} :
+    PrimTriangle A B C →
+    Mid A C = Mid B D →
+    PrimTriangle D A B := by
+  intro hTri hMid hDAB
+
+  have hAB : A ≠ B := by
+    intro hAB
+    apply hTri
+    apply L2
+    exact Or.inl hAB
+
+  have hAC : A ≠ C := by
+    intro hAC
+    apply hTri
+    apply L2
+    exact Or.inr (Or.inl hAC)
+
+  have hDA : D ≠ A := by
+    intro hDA
+    have hMid' : Mid A C = Mid A B := by
+      calc
+        Mid A C = Mid B D := hMid
+        _ = Mid B A := by rw [hDA]
+        _ = Mid A B := midpoint_commutative B A
+    have hCB : C = B := midpoint_cancellation A C B hMid'
+    apply hTri
+    apply L2
+    exact Or.inr (Or.inr hCB.symm)
+
+  have hDB : D ≠ B := by
+    intro hDB
+    have hMid' : Mid A C = B := by
+      calc
+        Mid A C = Mid B D := hMid
+        _ = Mid B B := by rw [hDB]
+        _ = B := midpoint_idempotent B
+    have hACB : Col A C B := by
+      rw [← hMid']
+      exact midpoint_collinear A C
+    apply hTri
+    exact collinear_swap_last_aux hAC hACB
+
+  have hDBA : Col D B A :=
+    collinear_swap_last_aux hDA hDAB
+  have hBDM : Col B D (Mid A C) := by
+    rw [hMid]
+    exact midpoint_collinear B D
+  have hDBM : Col D B (Mid A C) :=
+    collinear_swap_first_aux hDB.symm hBDM
+  have hDBD : Col D B D := by
+    apply L2
+    exact Or.inr (Or.inl rfl)
+  have hDAM : Col D A (Mid A C) :=
+    L3 D B D A (Mid A C) hDB hDBD hDBA hDBM
+
+  have hAD : A ≠ D := Ne.symm hDA
+  have hADA : Col A D A := by
+    apply L2
+    exact Or.inr (Or.inl rfl)
+  have hADB : Col A D B :=
+    collinear_swap_first_aux hDA hDAB
+  have hADM : Col A D (Mid A C) :=
+    collinear_swap_first_aux hDA hDAM
+  have hABM : Col A B (Mid A C) :=
+    L3 A D A B (Mid A C) hAD hADA hADB hADM
+
+  have hAMC : Col A (Mid A C) C :=
+    collinear_swap_last_aux hAC (midpoint_collinear A C)
+  have hAM : A ≠ Mid A C := by
+    intro hAM
+    have hAC' : A = C := midpoint_fixed A C hAM.symm
+    apply hTri
+    apply L2
+    exact Or.inr (Or.inl hAC')
+  have hAMA : Col A (Mid A C) A := by
+    apply L2
+    exact Or.inr (Or.inl rfl)
+  have hAMB : Col A (Mid A C) B :=
+    collinear_swap_last_aux hAB hABM
+  exact hTri (L3 A (Mid A C) A B C hAM hAMA hAMB hAMC)
+
+theorem parallelogram_rotate3
+    {A B C D : Point} :
     PrimParallelogram A B C D →
-    PrimParallelogram D A B C
+    PrimParallelogram D A B C := by
+  intro h
+  rcases h with ⟨hTri, hMid⟩
+
+  constructor
+  ·
+    exact rotate_triangle hTri hMid
+  ·
+    simpa [midpoint_commutative] using hMid.symm
+
+/-!
+## Reverse engineering of Suppes' Theorem 9
+-/
+/--
+In a primitive parallelogram the fourth vertex cannot coincide
+with the first one.
+
+This is the first contradiction used in Suppes' proof of
+Theorem 9.
+-/
+
+/-
+Triangle formed by one vertex and the adjacent midpoints.
+
+This is the analogue of Suppes' Theorem 8.
+-/
+
+
+
 
 theorem theorem11
     (A B C : Point)
@@ -166,12 +305,7 @@ theorem theorem11
         A :=
     MidpointParallelogram A B C h
 
-  exact parallelogram_rotate3
-    (Mid A B)
-    (Mid B C)
-    (Mid A C)
-    A
-    hPar
+  exact parallelogram_rotate3 hPar
 
 end Suppes
 
