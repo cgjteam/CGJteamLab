@@ -9,6 +9,8 @@ Quantifier-Free Axioms for Constructive Affine Plane Geometry.
 
 namespace Geometry
 
+namespace Suppes
+
 section Suppes
 
 variable
@@ -35,6 +37,8 @@ P(A,B,C,D) iff
 def PrimParallelogram (A B C D : Point) : Prop :=
   PrimTriangle A B C ∧
   Mid A C = Mid B D
+
+end Suppes
 
 end Suppes
 

@@ -2,6 +2,8 @@ import CGJteamLab.SuppesCore
 
 namespace Geometry
 
+namespace Suppes
+
 section Suppes
 
 variable
@@ -306,6 +308,8 @@ theorem theorem11
     MidpointParallelogram A B C h
 
   exact parallelogram_rotate3 hPar
+
+end Suppes
 
 end Suppes
 

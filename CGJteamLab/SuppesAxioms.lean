@@ -2,6 +2,8 @@ import Mathlib.LinearAlgebra.AffineSpace.Midpoint
 
 namespace Geometry
 
+namespace Suppes
+
 section Suppes
 
 variable
@@ -120,6 +122,8 @@ axiom LL
 
 attribute [simp] midpoint_idempotent
 attribute [simp] midpoint_commutative
+
+end Suppes
 
 end Suppes
 
