@@ -37,12 +37,28 @@ omit [TarskiGeometryBaseBridge Geo] in
 private theorem midsegmentParallelFromGeometryMidpoints
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
     (hM₁ : IsMidpoint Geo M₁ V₁ V₃)
-    (hM₂ : IsMidpoint Geo M₂ V₂ V₃) :
+    (hM₂ : IsMidpoint Geo M₂ V₂ V₃)
+    (hM₂V₂ : M₂ ≠ V₂)
+    (hTri : ¬ Collinear Geo M₂ M₁ V₃) :
     Geo.Parallel M₁ M₂ V₁ V₂ := by
-  rcases ExtendSegment Geo M₁ M₂ with ⟨T, hM₁M₂T, hSeg⟩
+  have hM₂M₁ : M₂ ≠ M₁ :=
+    hilbert_noncollinear_ne_first Geo M₂ M₁ V₃ hTri
+  rcases ExtendSegmentDistinct Geo M₁ M₂ hM₂M₁.symm with
+    ⟨T, hM₁M₂T, hSeg, hM₂T⟩
 
   have hV₁M₁V₃ := hM₁.left
   have hV₃M₂V₂ := CollinearSymmetry Geo V₂ M₂ V₃ hM₂.left
+  have hTri₂ : ¬ Collinear Geo M₂ T V₂ := by
+    intro hM₂TV₂
+    have hM₁M₂V₂ : Collinear Geo M₁ M₂ V₂ :=
+      hilbert_primCollinear_trans
+        Geo M₁ M₂ T V₂ hM₂T hM₁M₂T hM₂TV₂
+    have hM₂V₂V₃ : Collinear Geo M₂ V₂ V₃ :=
+      PrimCollinearCycle Geo V₃ M₂ V₂ hV₃M₂V₂
+    have hM₁M₂V₃ : Collinear Geo M₁ M₂ V₃ :=
+      hilbert_primCollinear_trans
+        Geo M₁ M₂ V₂ V₃ hM₂V₂ hM₁M₂V₂ hM₂V₂V₃
+    exact hTri (PrimCollinearSwap Geo M₁ M₂ V₃ hM₁M₂V₃)
 
   have hVert := VerticalAngles Geo V₃ M₂ M₁ V₂ T hV₃M₂V₂ hM₁M₂T
   have hVert' := AngleCongruentReverse Geo V₃ M₂ M₁ V₂ M₂ T hVert
@@ -54,6 +70,8 @@ private theorem midsegmentParallelFromGeometryMidpoints
       (CongruentSymmetry Geo M₂ V₂ V₃ M₂ hSideV₂M₂M₂V₃)
   have hCong :=
     TriangleCongruentFromSAS Geo M₂ M₁ V₃ M₂ T V₂
+      hTri
+      hTri₂
       hSideM₁M₂M₂T
       hVert'
       hSideV₃M₂M₂V₂
@@ -95,7 +113,8 @@ betweenness and congruence language.
 theorem MidsegmentTheoremTarski
     (A B C M N : Geo.Point)
     (hM : TarskiIsMidpoint Geo M A B)
-    (hN : TarskiIsMidpoint Geo N A C) :
+    (hN : TarskiIsMidpoint Geo N A C)
+    (hTri : ¬ Collinear Geo N M A) :
     Geo.Parallel M N B C := by
   have hMGeometry : IsMidpoint Geo M A B :=
     midpoint_of_tarski Geo M A B hM
@@ -105,9 +124,11 @@ theorem MidsegmentTheoremTarski
     midpointSymmetry Geo M A B hMGeometry
   have hNCA : IsMidpoint Geo N C A :=
     midpointSymmetry Geo N A C hNGeometry
+  have hNC : N ≠ C :=
+    (HilbertOrder.between_incidence A N C hN.left).2.1
   exact
     midsegmentParallelFromGeometryMidpoints
-      Geo B C A M N hMBA hNCA
+      Geo B C A M N hMBA hNCA hNC hTri
 
 end Tarski
 

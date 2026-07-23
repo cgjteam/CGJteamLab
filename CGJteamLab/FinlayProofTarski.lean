@@ -26,6 +26,8 @@ theorem FinlayTarski
     (hE : TarskiIsMidpoint Geo E A C)
     (hF : TarskiIsMidpoint Geo F A B)
     (hG : TarskiIsMidpoint Geo G A P)
+    (hGFA : ¬ TarskiCollinear Geo G F A)
+    (hGEA : ¬ TarskiCollinear Geo G E A)
     (hGP : G ≠ P)
     (hAPne : A ≠ P)
     (hBE : TarskiCollinear Geo B G E)
@@ -42,6 +44,10 @@ theorem FinlayTarski
     collinear_of_tarski Geo A D P hAP
   have hBCGeometry : Collinear Geo B D C :=
     collinear_of_tarski Geo B D C hBC
+  have hGFAGeometry : ¬ Collinear Geo G F A :=
+    fun h => hGFA (tarski_collinear_of_geometry Geo G F A h)
+  have hGEAGeometry : ¬ Collinear Geo G E A :=
+    fun h => hGEA (tarski_collinear_of_geometry Geo G E A h)
 
   have hCFG : Collinear Geo C F G :=
     CollinearRotate Geo C G F hCFGeometry
@@ -49,11 +55,11 @@ theorem FinlayTarski
     CollinearRotate Geo B G E hBEGeometry
 
   have hFG : Geo.Parallel F G B P :=
-    MidsegmentTheoremTarski Geo A B P F G hF hG
+    MidsegmentTheoremTarski Geo A B P F G hF hG hGFAGeometry
   have hCG : Geo.Parallel C G B P :=
     ParallelCollinearLeft Geo F G C B P hFG hCFG
   have hEG : Geo.Parallel E G C P :=
-    MidsegmentTheoremTarski Geo A C P E G hE hG
+    MidsegmentTheoremTarski Geo A C P E G hE hG hGEAGeometry
   have hBG : Geo.Parallel B G C P :=
     ParallelCollinearLeft Geo E G B C P hEG hBEG
 

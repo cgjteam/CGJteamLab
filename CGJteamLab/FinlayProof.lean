@@ -14,6 +14,8 @@ theorem Finlay
   (hE : HilbertIsMidpoint Geo E A C)
   (hF : HilbertIsMidpoint Geo F A B)
   (hG : HilbertIsMidpoint Geo G A P)
+  (hGFA : ¬ Collinear Geo G F A)
+  (hGEA : ¬ Collinear Geo G E A)
   (hGP : G ≠ P)
   (hBE : Collinear Geo B G E)
   (hCF : Collinear Geo C G F)
@@ -39,6 +41,7 @@ theorem Finlay
         A B P F G
         hF
         hG
+        hGFA
 
   have hCG : Geo.Parallel C G B P := by
     exact
@@ -56,6 +59,7 @@ theorem Finlay
         A C P E G
         hE
         hG
+        hGEA
 
   have hBG : Geo.Parallel B G C P := by
     exact

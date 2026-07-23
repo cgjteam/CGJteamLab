@@ -12,14 +12,18 @@ variable [HilbertCongruence Geo]
 theorem MidsegmentParallel
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
     (hM₁ : HilbertIsMidpoint Geo M₁ V₁ V₃)
-    (hM₂ : HilbertIsMidpoint Geo M₂ V₂ V₃) :
+    (hM₂ : HilbertIsMidpoint Geo M₂ V₂ V₃)
+    (hTri : ¬ Collinear Geo M₂ M₁ V₃) :
     Geo.Parallel M₁ M₂ V₁ V₂ := by
 
   ------------------------------------------------------------------------
   -- Step 1. Auxiliary Construction
   ------------------------------------------------------------------------
 
-  rcases ExtendSegment Geo M₁ M₂ with ⟨T, hM₁M₂T, hSeg⟩
+  have hM₂M₁ : M₂ ≠ M₁ :=
+    hilbert_noncollinear_ne_first Geo M₂ M₁ V₃ hTri
+  rcases ExtendSegmentDistinct Geo M₁ M₂ hM₂M₁.symm with
+    ⟨T, hM₁M₂T, hSeg, hM₂T⟩
 
   have hM₁Geometry : IsMidpoint Geo M₁ V₁ V₃ :=
     midpoint_of_hilbert Geo M₁ V₁ V₃ hM₁
@@ -28,6 +32,20 @@ theorem MidsegmentParallel
   have hV₁M₁V₃ := hM₁Geometry.left
   have hV₃M₂V₂ :=
     CollinearSymmetry Geo V₂ M₂ V₃ hM₂Geometry.left
+  have hM₂V₂ : M₂ ≠ V₂ :=
+    (HilbertOrder.between_incidence
+      V₂ M₂ V₃ hM₂.left).1.symm
+  have hTri₂ : ¬ Collinear Geo M₂ T V₂ := by
+    intro hM₂TV₂
+    have hM₁M₂V₂ : Collinear Geo M₁ M₂ V₂ :=
+      hilbert_primCollinear_trans
+        Geo M₁ M₂ T V₂ hM₂T hM₁M₂T hM₂TV₂
+    have hM₂V₂V₃ : Collinear Geo M₂ V₂ V₃ :=
+      PrimCollinearCycle Geo V₃ M₂ V₂ hV₃M₂V₂
+    have hM₁M₂V₃ : Collinear Geo M₁ M₂ V₃ :=
+      hilbert_primCollinear_trans
+        Geo M₁ M₂ V₂ V₃ hM₂V₂ hM₁M₂V₂ hM₂V₂V₃
+    exact hTri (PrimCollinearSwap Geo M₁ M₂ V₃ hM₁M₂V₃)
 
   ------------------------------------------------------------------------
   -- Step 2. Triangle Congruence (SAS)
@@ -43,6 +61,8 @@ theorem MidsegmentParallel
       (CongruentSymmetry Geo M₂ V₂ V₃ M₂ hSideV₂M₂M₂V₃)
   have hCong :=
     TriangleCongruentFromSAS Geo M₂ M₁ V₃ M₂ T V₂
+      hTri
+      hTri₂
       hSideM₁M₂M₂T
       hVert'
       hSideV₃M₂M₂V₂
@@ -111,7 +131,8 @@ theorem MidpointSymmetry
 theorem MidsegmentTheorem
     (A B C M N : Geo.Point)
     (hM : HilbertIsMidpoint Geo M A B)
-    (hN : HilbertIsMidpoint Geo N A C) :
+    (hN : HilbertIsMidpoint Geo N A C)
+    (hTri : ¬ Collinear Geo N M A) :
     Geo.Parallel M N B C := by
 
   have hMBA : HilbertIsMidpoint Geo M B A :=
@@ -120,7 +141,7 @@ theorem MidsegmentTheorem
   have hNCA : HilbertIsMidpoint Geo N C A :=
     MidpointSymmetry Geo N A C hN
 
-  exact MidsegmentParallel Geo B C A M N hMBA hNCA
+  exact MidsegmentParallel Geo B C A M N hMBA hNCA hTri
 
 end Geometry
 
