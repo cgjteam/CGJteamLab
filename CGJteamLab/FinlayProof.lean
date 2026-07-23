@@ -11,9 +11,9 @@ variable [HilbertCongruence Geo]
 
 theorem Finlay
   (A B C E F G P D : Geo.Point)
-  (hE : IsMidpoint Geo E A C)
-  (hF : IsMidpoint Geo F A B)
-  (hG : IsMidpoint Geo G A P)
+  (hE : HilbertIsMidpoint Geo E A C)
+  (hF : HilbertIsMidpoint Geo F A B)
+  (hG : HilbertIsMidpoint Geo G A P)
   (hGP : G ≠ P)
   (hBE : Collinear Geo B G E)
   (hCF : Collinear Geo C G F)
@@ -99,7 +99,9 @@ theorem Finlay
 -- can be regarded as lying on the diagonal PG.
 
   have hAGP : Collinear Geo A G P := by
-    exact midpoint_collinear Geo A P G hG
+    exact
+      midpoint_collinear Geo A P G
+        (midpoint_of_hilbert Geo G A P hG)
 
   -- D is assumed to lie on AP and BC,
   -- so it is the intersection of these two lines.

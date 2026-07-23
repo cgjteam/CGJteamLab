@@ -11,8 +11,8 @@ variable [HilbertCongruence Geo]
 
 theorem MidsegmentParallel
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
-    (hM₁ : IsMidpoint Geo M₁ V₁ V₃)
-    (hM₂ : IsMidpoint Geo M₂ V₂ V₃) :
+    (hM₁ : HilbertIsMidpoint Geo M₁ V₁ V₃)
+    (hM₂ : HilbertIsMidpoint Geo M₂ V₂ V₃) :
     Geo.Parallel M₁ M₂ V₁ V₂ := by
 
   ------------------------------------------------------------------------
@@ -21,8 +21,13 @@ theorem MidsegmentParallel
 
   rcases ExtendSegment Geo M₁ M₂ with ⟨T, hM₁M₂T, hSeg⟩
 
-  have hV₁M₁V₃ := hM₁.left
-  have hV₃M₂V₂ := CollinearSymmetry Geo V₂ M₂ V₃ hM₂.left
+  have hM₁Geometry : IsMidpoint Geo M₁ V₁ V₃ :=
+    midpoint_of_hilbert Geo M₁ V₁ V₃ hM₁
+  have hM₂Geometry : IsMidpoint Geo M₂ V₂ V₃ :=
+    midpoint_of_hilbert Geo M₂ V₂ V₃ hM₂
+  have hV₁M₁V₃ := hM₁Geometry.left
+  have hV₃M₂V₂ :=
+    CollinearSymmetry Geo V₂ M₂ V₃ hM₂Geometry.left
 
   ------------------------------------------------------------------------
   -- Step 2. Triangle Congruence (SAS)
@@ -32,7 +37,7 @@ theorem MidsegmentParallel
   have hVert' := AngleCongruentReverse Geo V₃ M₂ M₁ V₂ M₂ T hVert
   have hSideM₁M₂M₂T := CongruentReverseFirst Geo M₁ M₂ M₂ T hSeg
   have hSideV₂M₂M₂V₃ :=
-    CongruentReverseBoth Geo V₂ M₂ M₂ V₃ hM₂.right
+    CongruentReverseBoth Geo V₂ M₂ M₂ V₃ hM₂Geometry.right
   have hSideV₃M₂M₂V₂ :=
     CongruentReverseFirst Geo V₃ M₂ M₂ V₂
       (CongruentSymmetry Geo M₂ V₂ V₃ M₂ hSideV₂M₂M₂V₃)
@@ -63,7 +68,7 @@ theorem MidsegmentParallel
     hCong.sideBC
   have hSideV₁M₁V₂T :=
     congruent_transitivity Geo V₁ M₁ V₃ V₂ T
-      hM₁.right
+      hM₁Geometry.right
       hSideV₃M₁V₂T
   have hOnePair : OnePairParallelCongruent Geo V₁ V₂ T M₁ := by
     constructor
@@ -93,11 +98,11 @@ theorem MidsegmentParallel
 
 theorem MidpointSymmetry
     (M A B : Geo.Point)
-    (h : IsMidpoint Geo M A B) :
-    IsMidpoint Geo M B A := by
+    (h : HilbertIsMidpoint Geo M A B) :
+    HilbertIsMidpoint Geo M B A := by
   rcases h with ⟨hCol, hCong⟩
   constructor
-  · exact CollinearSymmetry Geo A M B hCol
+  · exact (HilbertOrder.between_incidence A M B hCol).2.2.2.2
   ·
     have h1 : Geo.Congruent M A B M :=
       CongruentReverseBoth Geo A M M B hCong
@@ -105,14 +110,14 @@ theorem MidpointSymmetry
 
 theorem MidsegmentTheorem
     (A B C M N : Geo.Point)
-    (hM : IsMidpoint Geo M A B)
-    (hN : IsMidpoint Geo N A C) :
+    (hM : HilbertIsMidpoint Geo M A B)
+    (hN : HilbertIsMidpoint Geo N A C) :
     Geo.Parallel M N B C := by
 
-  have hMBA : IsMidpoint Geo M B A :=
+  have hMBA : HilbertIsMidpoint Geo M B A :=
     MidpointSymmetry Geo M A B hM
 
-  have hNCA : IsMidpoint Geo N C A :=
+  have hNCA : HilbertIsMidpoint Geo N C A :=
     MidpointSymmetry Geo N A C hN
 
   exact MidsegmentParallel Geo B C A M N hMBA hNCA

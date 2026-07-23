@@ -35,6 +35,16 @@ def IsMidpoint
   Geo.Congruent A M M B
 
 
+/--
+A midpoint in Hilbert's strict order language: `M` lies between the
+distinct endpoints and the two component segments are congruent.
+-/
+def HilbertIsMidpoint
+    (M A B : Geo.Point) : Prop :=
+  Geo.Between A M B ∧
+  Geo.Congruent A M M B
+
+
 def IsIntersection
     (A B C D P : Geo.Point) : Prop :=
   Collinear Geo A P B ∧
@@ -71,6 +81,28 @@ theorem midpoint_collinear
     (A B M : Geo.Point) :
     IsMidpoint Geo M A B →
     Collinear Geo A M B := by
+  intro h
+  exact h.left
+
+
+theorem midpoint_of_hilbert
+    [HilbertOrder Geo]
+    (M A B : Geo.Point) :
+    HilbertIsMidpoint Geo M A B →
+    IsMidpoint Geo M A B := by
+  intro h
+  constructor
+  · exact
+      (HilbertOrder.between_incidence
+        A M B h.left).2.2.2.1
+  · exact h.right
+
+
+omit [HilbertIncidence Geo] in
+theorem hilbert_midpoint_between
+    (M A B : Geo.Point) :
+    HilbertIsMidpoint Geo M A B →
+    Geo.Between A M B := by
   intro h
   exact h.left
 
