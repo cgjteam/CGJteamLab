@@ -120,22 +120,58 @@ axiom CollinearTrans
 -- Part IV. Congruence
 ------------------------------------------------------------------------
 
+/-
+Previous provisional declaration:
+
 axiom CongruentSymmetry
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent C D A B
+-/
 
+theorem CongruentSymmetry
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent C D A B := by
+  exact hilbert_congruent_symmetry Geo A B C D
+
+
+/-
+Previous provisional declaration:
 
 axiom CongruentReverseFirst
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A C D
+-/
 
+theorem CongruentReverseFirst
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent B A C D := by
+  exact HilbertCongruence.segment_reverse_first A B C D
+
+
+/-
+Previous provisional declaration:
 
 axiom CongruentReverseBoth
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A D C
+-/
+
+theorem CongruentReverseBoth
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent B A D C := by
+  intro h
+  exact
+    HilbertCongruence.segment_reverse_second B A C D
+      (HilbertCongruence.segment_reverse_first A B C D h)
 
 
 /-
@@ -147,8 +183,8 @@ axiom CongruentSwapSecond
     Geo.Congruent A B D C
 -/
 
-omit [HilbertIncidence Geo] in
 theorem CongruentSwapSecond
+    [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent A B D C := by
@@ -250,11 +286,27 @@ axiom IntersectionOnSameLine
     IsIntersection Geo P G B C D
 
 
+/-
+Previous provisional declaration:
+
 axiom congruent_transitivity
     (A D C B F : Geo.Point) :
     Geo.Congruent A D D C →
     Geo.Congruent C D B F →
     Geo.Congruent A D B F
+-/
+
+theorem congruent_transitivity
+    [HilbertCongruence Geo]
+    (A D C B F : Geo.Point) :
+    Geo.Congruent A D D C →
+    Geo.Congruent C D B F →
+    Geo.Congruent A D B F := by
+  intro h₁ h₂
+  exact
+    hilbert_congruent_transitivity Geo A D C D B F
+      (CongruentSwapSecond Geo A D D C h₁)
+      h₂
 
 
 ------------------------------------------------------------------------
@@ -417,8 +469,8 @@ theorem ParallelSymmetrySwapSecond
       (ParallelSymmetry Geo A D B C h)
 
 
-omit [HilbertIncidence Geo] in
 theorem CongruentReverseFirstSwapSecond
+    [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A D C := by

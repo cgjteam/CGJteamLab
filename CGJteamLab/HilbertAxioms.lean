@@ -140,6 +140,10 @@ letters denoting two or more points or lines denote distinct objects.
 -/
 class HilbertPlaneIncidence (Geo : Geometry.Geo)
     [HilbertIncidence Geo] : Prop where
+  /-- The plane language contains at least one line. -/
+  line_exists :
+    Nonempty Geo.Line
+
   /-- I, 1: two distinct points lie on a line. -/
   line_through :
     ∀ A B : Geo.Point,
@@ -232,7 +236,7 @@ class HilbertCongruence (Geo : Geometry.Geo)
       O ≠ R →
       ∃ X : Geo.Point,
         HilbertSameRay Geo O R X ∧
-        Geo.Congruent A B O X
+        Geo.Congruent O X A B
 
   /--
   III, 2: two segments congruent to the same segment are congruent to
@@ -240,9 +244,27 @@ class HilbertCongruence (Geo : Geometry.Geo)
   -/
   segment_congruence_common :
     ∀ A B A' B' A'' B'' : Geo.Point,
-      Geo.Congruent A' B' A B →
-      Geo.Congruent A'' B'' A B →
+      Geo.Congruent A B A' B' →
+      Geo.Congruent A B A'' B'' →
       Geo.Congruent A' B' A'' B''
+
+  /--
+  Reversing the first pair of endpoints does not change a segment.
+  Hilbert treats `AB` and `BA` as the same segment by definition.
+  -/
+  segment_reverse_first :
+    ∀ A B C D : Geo.Point,
+      Geo.Congruent A B C D →
+      Geo.Congruent B A C D
+
+  /--
+  Reversing the second pair of endpoints does not change a segment.
+  Hilbert treats `CD` and `DC` as the same segment by definition.
+  -/
+  segment_reverse_second :
+    ∀ A B C D : Geo.Point,
+      Geo.Congruent A B C D →
+      Geo.Congruent A B D C
 
   /-- III, 3: additivity of adjacent congruent segments. -/
   segment_additivity :
@@ -291,6 +313,47 @@ class HilbertCongruence (Geo : Geometry.Geo)
       Geo.Congruent A C A' C' →
       Geo.AngleCongruent B A C B' A' C' →
       Geo.AngleCongruent A B C A' B' C'
+
+theorem hilbert_congruent_reflexive
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B : Geo.Point) :
+    Geo.Congruent A B A B := by
+  let ⟨l⟩ := HilbertPlaneIncidence.line_exists (Geo := Geo)
+  rcases HilbertPlaneIncidence.two_points_on_line (Geo := Geo) l with
+    ⟨O, R, hOR, _, _⟩
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) A B O R hOR with
+    ⟨X, _, hX⟩
+  exact
+    HilbertCongruence.segment_congruence_common
+      (Geo := Geo) O X A B A B hX hX
+
+theorem hilbert_congruent_symmetry
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent C D A B := by
+  intro h
+  exact
+    HilbertCongruence.segment_congruence_common
+      (Geo := Geo) A B C D A B h
+      (hilbert_congruent_reflexive Geo A B)
+
+theorem hilbert_congruent_transitivity
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D E F : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent C D E F →
+    Geo.Congruent A B E F := by
+  intro h₁ h₂
+  exact
+    HilbertCongruence.segment_congruence_common
+      (Geo := Geo) C D A B E F
+      (hilbert_congruent_symmetry Geo A B C D h₁)
+      h₂
 
 /-- Group IV, Hilbert's Euclidean axiom of parallels. -/
 class HilbertEuclideanPlane (Geo : Geometry.Geo)

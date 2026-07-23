@@ -6,6 +6,7 @@ universe u
 
 variable (Geo : Geo)
 variable [HilbertIncidence Geo]
+variable [HilbertCongruence Geo]
 
 
 theorem Finlay
