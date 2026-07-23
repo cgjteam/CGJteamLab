@@ -18,6 +18,11 @@ historical axiom systems or individual proofs.
 
 Each section introduces reusable notions that serve as building
 blocks for higher-level geometric theories.
+
+Declarations headed `Previous provisional declaration` are retained
+inside block comments as historical API records; they are not active
+axioms.  See `docs/HilbertDerivations.md` for the mathematical source,
+proof dependency, and downstream role of every replacement.
 -/
 
 ------------------------------------------------------------------------
@@ -127,6 +132,11 @@ axiom CollinearSymmetry
     Collinear Geo C B A
 -/
 
+/--
+The former symmetry axiom is only a permutation of the three incidence
+witnesses in `PrimCollinear`; it needs no geometric axiom beyond the
+incidence relation used by `Collinear`.
+-/
 theorem CollinearSymmetry
     (A B C : Geo.Point) :
     Collinear Geo A B C →
@@ -151,6 +161,10 @@ axiom CollinearTrans
     Collinear Geo A G D
 -/
 
+/--
+Incidence consequence of Hilbert I.2.  The shared distinct points `G`
+and `P` force the two witnessing lines to coincide.
+-/
 theorem CollinearTrans
     [HilbertPlaneIncidence Geo]
     (A G P D : Geo.Point)
@@ -180,6 +194,10 @@ axiom CongruentSymmetry
     Geo.Congruent C D A B
 -/
 
+/--
+Symmetry of segment congruence, derived from Hilbert III.1--III.2 as
+described immediately after III.2 in the second English edition.
+-/
 theorem CongruentSymmetry
     [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
@@ -198,6 +216,10 @@ axiom CongruentReverseFirst
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Reversing the endpoints of the first segment changes no mathematical
+object because `Geo.Segment` is represented by `Sym2`.
+-/
 theorem CongruentReverseFirst
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
@@ -215,6 +237,10 @@ axiom CongruentReverseBoth
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Endpoint reversal on both segments, obtained definitionally from their
+unordered `Sym2` representation.
+-/
 theorem CongruentReverseBoth
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
@@ -235,6 +261,10 @@ axiom CongruentSwapSecond
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Endpoint reversal on the second segment.  This is representational,
+not an additional congruence axiom.
+-/
 theorem CongruentSwapSecond
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
@@ -259,6 +289,10 @@ axiom AngleCongruentReverse
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Reversing both sides of each angle changes no angle because
+`Geo.Angle` is an unordered pair of rays with a common vertex.
+-/
 theorem AngleCongruentReverse
     (A B C D E F : Geo.Point) :
     Geo.AngleCongruent A B C D E F →
@@ -281,6 +315,11 @@ axiom VerticalAngles
     Geo.AngleCongruent C E D B E F
 -/
 
+/--
+The vertical-angle corollary of Hilbert's Theorem 14.  Strict
+betweenness exposes the two pairs of opposite rays, while
+noncollinearity excludes degenerate angles.
+-/
 theorem VerticalAngles
     [HilbertCongruence Geo]
     (C E D B F : Geo.Point) :
@@ -304,6 +343,10 @@ axiom ParallelSymmetry
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Symmetry of disjoint extensional point-lines.  This follows directly
+from the definition of `Geo.Parallel`.
+-/
 theorem ParallelSymmetry
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
@@ -321,6 +364,10 @@ axiom ParallelSwapFirstLine
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Reversing the two determining points of the first line preserves its
+extensional carrier and hence preserves parallelism.
+-/
 theorem ParallelSwapFirstLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
@@ -338,6 +385,10 @@ axiom ParallelSwapSecondLine
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+Reversing the two determining points of the second line preserves its
+extensional carrier and hence preserves parallelism.
+-/
 theorem ParallelSwapSecondLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
@@ -355,6 +406,11 @@ axiom ParallelCollinearLeft
     Geo.Parallel C B D E
 -/
 
+/--
+Transport parallelism to another nondegenerate pair on the same
+Hilbert line.  Incidence uniqueness and Hilbert's Theorem 4 identify
+the two extensional `PointLine` carriers.
+-/
 theorem ParallelCollinearLeft
     [HilbertOrder Geo]
     (A B C D E : Geo.Point)
@@ -383,6 +439,11 @@ axiom collinear_parallel_trans
     Geo.Parallel A B D E
 -/
 
+/--
+The companion transport theorem for replacing the second determining
+point on the left line.  The proof again reduces to equality of the
+two extensional point-line carriers.
+-/
 theorem collinear_parallel_trans
     [HilbertOrder Geo]
     (A B C D E : Geo.Point)
@@ -411,6 +472,11 @@ axiom parallel_from_equal_angles
     Geo.Parallel A D B F
 -/
 
+/--
+The equal-alternate-angles direction of Hilbert's Theorem 30.
+This direction is neutral: it follows from the non-equality part of
+the exterior-angle theorem (Theorem 22) and does not use axiom IV.
+-/
 theorem parallel_from_equal_angles
     [HilbertCongruence Geo]
     (A C D B E F : Geo.Point)
@@ -440,6 +506,11 @@ axiom ExtendSegment
       Geo.Congruent A B B T
 -/
 
+/--
+Lay off a copy of `AB` beyond `B`.  For distinct endpoints the proof
+combines order extension II.2 with segment construction III.1; the
+degenerate case follows from reflexivity of segment congruence.
+-/
 theorem ExtendSegment
     [HilbertCongruence Geo]
     (A B : Geo.Point) :
@@ -479,6 +550,11 @@ axiom IntersectionOnSameLine
     IsIntersection Geo P G B C D
 -/
 
+/--
+Changing the named pair that determines an intersection line.
+Hilbert I.2 identifies the two lines through the distinct points
+`A` and `P`.
+-/
 theorem IntersectionOnSameLine
     [HilbertPlaneIncidence Geo]
     (A G P B C D : Geo.Point)
@@ -510,6 +586,11 @@ axiom congruent_transitivity
     Geo.Congruent A D B F
 -/
 
+/--
+The project-specific orientation of transitivity of segment
+congruence, derived from Hilbert III.1--III.2 plus the unordered
+segment representation.
+-/
 theorem congruent_transitivity
     [HilbertCongruence Geo]
     (A D C B F : Geo.Point) :
@@ -536,6 +617,17 @@ structure TriangleCongruenceResult
   angleB : Geo.AngleCongruent A B C D E F
   angleC : Geo.AngleCongruent A C B D F E
 
+
+/-
+Previous provisional declaration:
+
+axiom SAS
+    (A B C D E F : Geo.Point) :
+    Geo.Congruent A B D E →
+    Geo.AngleCongruent B A C E D F →
+    Geo.Congruent A C D F →
+    TriangleCongruenceResult Geo A B C D E F
+-/
 
 /--
 Hilbert's Theorem 12 in the form used by the project.
@@ -580,6 +672,11 @@ axiom TriangleCongruentFromSAS
     TriangleCongruenceResult Geo A B C D E F
 -/
 
+/--
+Compatibility name for `SAS`, the formalized form of Hilbert's
+Theorem 12.  The explicit noncollinearity hypotheses record Hilbert's
+standing convention that triangle vertices are noncollinear.
+-/
 theorem TriangleCongruentFromSAS
     [HilbertCongruence Geo]
     (A B C D E F : Geo.Point) :
@@ -630,6 +727,10 @@ axiom ParallelogramOppositeSidesParallel
 -/
 
 omit [HilbertIncidence Geo] in
+/--
+This former axiom unfolds immediately: `IsParallelogram` is currently
+defined to mean `OppositeSidesParallel`.
+-/
 theorem ParallelogramOppositeSidesParallel
     (A B C D : Geo.Point) :
     IsParallelogram Geo A B C D →

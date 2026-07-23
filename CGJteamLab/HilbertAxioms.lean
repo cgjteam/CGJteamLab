@@ -311,6 +311,14 @@ class HilbertCongruence (Geo : Geometry.Geo)
       Geo.AngleCongruent B A C B' A' C' →
       Geo.AngleCongruent A B C A' B' C'
 
+/--
+Incidence transitivity through two distinct shared points.
+
+This is a direct consequence of Hilbert I.2: the witnesses for
+`ABC` and `BCD` must be the same line because both contain `B` and
+`C`.  The explicit hypothesis `B ≠ C` replaces Hilbert's convention
+that differently named points are distinct.
+-/
 theorem hilbert_primCollinear_trans
     [HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
@@ -2385,6 +2393,11 @@ theorem hilbert_angle_eq_of_sameRay_second
   unfold Geometry.Geo.Angle
   rw [hilbert_sameRay_ray_eq Geo O B B' hBB']
 
+/--
+Reflexivity of segment congruence derived exactly as Hilbert explains
+after III.2: construct one copy of `AB`, then apply III.2 to that same
+construction twice.
+-/
 theorem hilbert_congruent_reflexive
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -2399,6 +2412,10 @@ theorem hilbert_congruent_reflexive
     HilbertCongruence.segment_congruence_common
       (Geo := Geo) O X A B A B hX hX
 
+/--
+Symmetry of segment congruence, derived from III.2 using the reflexive
+copy of the original segment.
+-/
 theorem hilbert_congruent_symmetry
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -2411,6 +2428,10 @@ theorem hilbert_congruent_symmetry
       (Geo := Geo) A B C D A B h
       (hilbert_congruent_reflexive Geo A B)
 
+/--
+Transitivity of segment congruence, derived from III.2 after reversing
+the first hypothesis with `hilbert_congruent_symmetry`.
+-/
 theorem hilbert_congruent_transitivity
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -2896,7 +2917,13 @@ theorem hilbert_adjacent_angles_congruent
   exact hFinal
 
 /--
-Vertical angles formed by two intersecting lines are congruent.
+Vertical angles formed by two intersecting lines are congruent, the
+immediate corollary stated after Hilbert's Theorem 14.
+
+The proof applies Theorem 14 twice: first to transport congruence to
+one adjacent linear pair, then to the opposite pair.  Betweenness
+provides the two linear pairs and the noncollinearity hypothesis keeps
+all angles nondegenerate.
 -/
 theorem hilbert_vertical_angles
     [HilbertIncidence Geo]
@@ -2949,6 +2976,13 @@ needed for the alternate-angle criterion.
 
 If `A` lies between `B` and `D`, the exterior angle `CAD` of triangle
 `ABC` is not congruent to the remote interior angle `ACB`.
+
+This is intentionally weaker than Hilbert's full comparison statement
+"the exterior angle is greater".  The proof follows the equality
+contradiction used in Theorem 22: lay off a copy of `CB` on the exterior
+ray, use Theorem 12, transfer supplementary angles with Theorem 14,
+and use uniqueness in III.4 together with Pasch side separation to
+force the original triangle to be collinear.
 -/
 theorem hilbert_exterior_angle_not_congruent
     [HilbertIncidence Geo]
@@ -3092,6 +3126,14 @@ transversal `CB` with the lines `AD` and `BF`.
 
 Only the exterior-angle theorem is used; Euclid's parallel axiom IV
 is not needed in this direction.
+
+For contradiction, a common point `P` of the two candidate lines is
+assumed.  Pasch applied to triangle `CBP` places one of the transversal
+intersection points between a vertex and `P`.  Theorem 4 and the
+three-side exclusion lemma remove the impossible orderings.  In either
+remaining case the given angle congruence becomes an exterior angle
+congruent to a remote interior angle, contradicting the preceding
+Theorem 22 consequence.
 -/
 theorem hilbert_parallel_of_alternate_angles
     [HilbertIncidence Geo]
@@ -3432,6 +3474,10 @@ theorem hilbert_parallel_of_alternate_angles
 
 /--
 Extension beyond `B`, with the order information retained.
+
+II.2 first supplies a reference point beyond `B`; III.1 then lays off
+a copy of `AB` on that ray.  Theorem 5 transports the strict order from
+the reference point to the constructed endpoint.
 -/
 theorem hilbert_extend_segment_beyond
     [HilbertIncidence Geo]
@@ -3457,6 +3503,11 @@ theorem hilbert_extend_segment_beyond
     ⟨T, hABT,
       hilbert_congruent_symmetry Geo B T A B hCong⟩
 
+/--
+The public non-strict extension statement.  The distinct case uses
+`hilbert_extend_segment_beyond`; when `A = B`, choosing `T = B` is
+valid by derived reflexivity of segment congruence.
+-/
 theorem hilbert_extend_segment
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -3504,6 +3555,10 @@ theorem hilbert_extend_segment
       ⟨T, hABT,
         hilbert_congruent_symmetry Geo B T A B hCong⟩
 
+/--
+The nondegenerate extension statement when only collinearity, rather
+than the stronger betweenness conclusion, is required.
+-/
 theorem hilbert_extend_segment_distinct
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
