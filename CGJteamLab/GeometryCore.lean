@@ -20,8 +20,8 @@ structure Geo where
     Prop
 
   UnorientedAngleCongruent :
-    (Point × Sym2 Point) →
-    (Point × Sym2 Point) →
+    (Point × Sym2 (Set Point)) →
+    (Point × Sym2 (Set Point)) →
     Prop
 
   ParallelConfiguration :
@@ -29,6 +29,29 @@ structure Geo where
     Prop
 
 namespace Geo
+
+/-- A ray is represented extensionally by its set of points. -/
+abbrev Ray
+    (Geo : Geometry.Geo) :=
+  Set Geo.Point
+
+/--
+The ray with origin `O` passing through `A`.
+
+It contains the origin, the determining point, the points between them,
+and the points beyond `A` in the same direction. The definition uses
+only the shared primitive `Geo.Between`; its geometric properties are
+proved in the appropriate axiomatic layer.
+-/
+def ray
+    (Geo : Geometry.Geo)
+    (O A : Geo.Point) :
+    Geo.Ray :=
+  {X |
+    X = O ∨
+    X = A ∨
+    Geo.Between O X A ∨
+    Geo.Between O A X}
 
 /-- The unoriented segment with endpoints `A` and `B`. -/
 def Segment
@@ -50,13 +73,35 @@ def Congruent
 
 /--
 The unoriented angle `ABC`, represented by its vertex `B` and the
-unordered pair of points determining its two sides.
+unordered pair of rays `BA` and `BC`.
 -/
 def Angle
     (Geo : Geometry.Geo)
     (A B C : Geo.Point) :
-    Geo.Point × Sym2 Geo.Point :=
-  (B, s(A, C))
+    Geo.Point × Sym2 Geo.Ray :=
+  (B, s(Geo.ray B A, Geo.ray B C))
+
+/--
+The rays `OA` and `OC` are opposite when their determining points are
+distinct from the common origin and the origin lies between them.
+-/
+def OppositeRays
+    (Geo : Geometry.Geo)
+    (O A C : Geo.Point) : Prop :=
+  A ≠ O ∧
+  C ≠ O ∧
+  Geo.Between A O C
+
+/--
+The angles `AOB` and `BOC` form an adjacent linear pair: they share
+the nondegenerate ray `OB`, while their remaining sides `OA` and `OC`
+are opposite rays.
+-/
+def AdjacentAngles
+    (Geo : Geometry.Geo)
+    (A O B C : Geo.Point) : Prop :=
+  B ≠ O ∧
+  Geo.OppositeRays O A C
 
 /--
 Congruence of the unoriented angles `ABC` and `DEF`.
