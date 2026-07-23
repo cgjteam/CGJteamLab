@@ -36,12 +36,25 @@ abbrev Ray
   Set Geo.Point
 
 /--
+One elementary step between two non-origin points lying in the same
+direction from `O`.
+-/
+def SameDirectionStep
+    (Geo : Geometry.Geo)
+    (O P Q : Geo.Point) : Prop :=
+  P ≠ O ∧
+  Q ≠ O ∧
+  (P = Q ∨
+    Geo.Between O P Q ∨
+    Geo.Between O Q P)
+
+/--
 The ray with origin `O` passing through `A`.
 
-It contains the origin, the determining point, the points between them,
-and the points beyond `A` in the same direction. The definition uses
-only the shared primitive `Geo.Between`; its geometric properties are
-proved in the appropriate axiomatic layer.
+Apart from the origin, it is the connected component of `A` generated
+by elementary same-direction steps. This makes the ray independent of
+which of its non-origin points is used to determine it, without adding
+any order axiom to the shared core.
 -/
 def ray
     (Geo : Geometry.Geo)
@@ -49,9 +62,37 @@ def ray
     Geo.Ray :=
   {X |
     X = O ∨
-    X = A ∨
-    Geo.Between O X A ∨
-    Geo.Between O A X}
+    Relation.ReflTransGen (Geo.SameDirectionStep O) A X}
+
+theorem sameDirectionStep_symm
+    (Geo : Geometry.Geo)
+    (O P Q : Geo.Point) :
+    Geo.SameDirectionStep O P Q →
+    Geo.SameDirectionStep O Q P := by
+  rintro ⟨hPO, hQO, hPQ | hOPQ | hOQP⟩
+  · exact ⟨hQO, hPO, Or.inl hPQ.symm⟩
+  · exact ⟨hQO, hPO, Or.inr (Or.inr hOPQ)⟩
+  · exact ⟨hQO, hPO, Or.inr (Or.inl hOQP)⟩
+
+theorem ray_eq_of_sameDirectionStep
+    (Geo : Geometry.Geo)
+    (O A B : Geo.Point)
+    (hAB : Geo.SameDirectionStep O A B) :
+    Geo.ray O A = Geo.ray O B := by
+  apply Set.ext
+  intro X
+  constructor
+  · rintro (hXO | hAX)
+    · exact Or.inl hXO
+    · exact
+        Or.inr
+          ((Relation.ReflTransGen.single
+            (Geo.sameDirectionStep_symm O A B hAB)).trans hAX)
+  · rintro (hXO | hBX)
+    · exact Or.inl hXO
+    · exact
+        Or.inr
+          ((Relation.ReflTransGen.single hAB).trans hBX)
 
 /-- The unoriented segment with endpoints `A` and `B`. -/
 def Segment

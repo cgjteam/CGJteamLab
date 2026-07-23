@@ -375,6 +375,16 @@ theorem ExtendSegment
       Geo.Congruent A B B T := by
   exact hilbert_extend_segment Geo A B
 
+theorem ExtendSegmentDistinct
+    [HilbertCongruence Geo]
+    (A B : Geo.Point)
+    (hAB : A ≠ B) :
+    ∃ T : Geo.Point,
+      Collinear Geo A B T ∧
+      Geo.Congruent A B B T ∧
+      B ≠ T := by
+  exact hilbert_extend_segment_distinct Geo A B hAB
+
 
 /-
 Previous provisional declaration:
@@ -444,12 +454,36 @@ structure TriangleCongruenceResult
   angleC : Geo.AngleCongruent A C B D F E
 
 
-axiom SAS
+/--
+Hilbert's Theorem 12 in the form used by the project.
+
+Only the third side and the angle at `C` require the derived
+construction argument; the remaining fields are hypotheses or direct
+consequences of III.5.
+-/
+theorem SAS
+    [HilbertCongruence Geo]
     (A B C D E F : Geo.Point) :
+    ¬ Collinear Geo A B C →
+    ¬ Collinear Geo D E F →
     Geo.Congruent A B D E →
     Geo.AngleCongruent B A C E D F →
     Geo.Congruent A C D F →
-    TriangleCongruenceResult Geo A B C D E F
+    TriangleCongruenceResult Geo A B C D E F := by
+  intro hABC hDEF hAB hAngleA hAC
+  have hAngles :=
+    hilbert_sas_remaining_angles
+      Geo A B C D E F hABC hDEF hAB hAC hAngleA
+  have hNeeded :=
+    hilbert_sas_third_side_and_angle
+      Geo A B C D E F hABC hDEF hAB hAC hAngleA
+  exact
+    { sideAB := hAB
+      sideBC := hNeeded.1
+      sideAC := hAC
+      angleA := hAngleA
+      angleB := hAngles.1
+      angleC := hNeeded.2 }
 
 
 /-
@@ -463,9 +497,11 @@ axiom TriangleCongruentFromSAS
     TriangleCongruenceResult Geo A B C D E F
 -/
 
-omit [HilbertIncidence Geo] in
 theorem TriangleCongruentFromSAS
+    [HilbertCongruence Geo]
     (A B C D E F : Geo.Point) :
+    ¬ Collinear Geo A B C →
+    ¬ Collinear Geo D E F →
     Geo.Congruent A B D E →
     Geo.AngleCongruent B A C E D F →
     Geo.Congruent A C D F →
