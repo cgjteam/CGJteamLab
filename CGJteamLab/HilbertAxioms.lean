@@ -303,6 +303,55 @@ theorem hilbert_primCollinear_trans
   subst m
   exact ⟨l, hAl, hBl, hDm⟩
 
+theorem hilbert_point_off_line
+    [HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    (l : Geo.Line) :
+    ∃ P : Geo.Point, ¬ HilbertIncidence.OnLine P l := by
+  rcases HilbertPlaneIncidence.three_noncollinear (Geo := Geo) with
+    ⟨A, B, C, hABC⟩
+  by_cases hA : HilbertIncidence.OnLine A l
+  · by_cases hB : HilbertIncidence.OnLine B l
+    · by_cases hC : HilbertIncidence.OnLine C l
+      · exact False.elim (hABC ⟨l, hA, hB, hC⟩)
+      · exact ⟨C, hC⟩
+    · exact ⟨B, hB⟩
+  · exact ⟨A, hA⟩
+
+theorem hilbert_not_collinear_of_off_line
+    [HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    (A B P : Geo.Point)
+    (l : Geo.Line)
+    (hAB : A ≠ B)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hBl : HilbertIncidence.OnLine B l)
+    (hPl : ¬ HilbertIncidence.OnLine P l) :
+    ¬ PrimCollinear Geo A B P := by
+  rintro ⟨m, hAm, hBm, hPm⟩
+  have hlm : l = m :=
+    HilbertPlaneIncidence.line_unique
+      A B hAB l m hAl hBl hAm hBm
+  subst m
+  exact hPl hPm
+
+theorem hilbert_between_on_line
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C : Geo.Point)
+    (l : Geo.Line)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hCl : HilbertIncidence.OnLine C l)
+    (hABC : Geo.Between A B C) :
+    HilbertIncidence.OnLine B l := by
+  have hData := HilbertOrder.between_incidence A B C hABC
+  rcases hData.2.2.2.1 with ⟨m, hAm, hBm, hCm⟩
+  have hlm : l = m :=
+    HilbertPlaneIncidence.line_unique
+      A C hData.2.2.1 l m hAl hCl hAm hCm
+  subst m
+  exact hBm
+
 theorem hilbert_sameRay_collinear
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
