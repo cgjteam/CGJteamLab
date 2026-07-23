@@ -1,6 +1,8 @@
 # Lake
-/.lake
-/.build
+/.lake/
+/.build/
+/lake-packages/
+
 
 # Editors
 .vscode/
