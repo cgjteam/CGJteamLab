@@ -271,11 +271,24 @@ theorem AngleCongruentReverse
         Geo A B C D E F).mp h)
 
 
+/-
+Previous provisional declaration:
+
 axiom VerticalAngles
     (C E D B F : Geo.Point) :
     Collinear Geo C E B →
     Collinear Geo D E F →
     Geo.AngleCongruent C E D B E F
+-/
+
+theorem VerticalAngles
+    [HilbertCongruence Geo]
+    (C E D B F : Geo.Point) :
+    Geo.Between C E B →
+    Geo.Between D E F →
+    ¬ Collinear Geo C E D →
+    Geo.AngleCongruent C E D B E F := by
+  exact hilbert_vertical_angles Geo C E D B F
 
 ------------------------------------------------------------------------
 -- Part VI. Parallelism
@@ -384,6 +397,16 @@ theorem ExtendSegmentDistinct
       Geo.Congruent A B B T ∧
       B ≠ T := by
   exact hilbert_extend_segment_distinct Geo A B hAB
+
+
+theorem ExtendSegmentBeyond
+    [HilbertCongruence Geo]
+    (A B : Geo.Point)
+    (hAB : A ≠ B) :
+    ∃ T : Geo.Point,
+      Geo.Between A B T ∧
+      Geo.Congruent A B B T := by
+  exact hilbert_extend_segment_beyond Geo A B hAB
 
 
 /-

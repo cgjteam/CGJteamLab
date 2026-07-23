@@ -22,14 +22,22 @@ theorem MidsegmentParallel
 
   have hM₂M₁ : M₂ ≠ M₁ :=
     hilbert_noncollinear_ne_first Geo M₂ M₁ V₃ hTri
-  rcases ExtendSegmentDistinct Geo M₁ M₂ hM₂M₁.symm with
-    ⟨T, hM₁M₂T, hSeg, hM₂T⟩
+  rcases ExtendSegmentBeyond Geo M₁ M₂ hM₂M₁.symm with
+    ⟨T, hM₁M₂TBetween, hSeg⟩
+  have hM₁M₂TData :=
+    HilbertOrder.between_incidence M₁ M₂ T hM₁M₂TBetween
+  have hM₁M₂T : Collinear Geo M₁ M₂ T :=
+    hM₁M₂TData.2.2.2.1
+  have hM₂T : M₂ ≠ T := hM₁M₂TData.2.1
 
   have hM₁Geometry : IsMidpoint Geo M₁ V₁ V₃ :=
     midpoint_of_hilbert Geo M₁ V₁ V₃ hM₁
   have hM₂Geometry : IsMidpoint Geo M₂ V₂ V₃ :=
     midpoint_of_hilbert Geo M₂ V₂ V₃ hM₂
   have hV₁M₁V₃ := hM₁Geometry.left
+  have hV₃M₂V₂Between : Geo.Between V₃ M₂ V₂ :=
+    (HilbertOrder.between_incidence
+      V₂ M₂ V₃ hM₂.left).2.2.2.2
   have hV₃M₂V₂ :=
     CollinearSymmetry Geo V₂ M₂ V₃ hM₂Geometry.left
   have hM₂V₂ : M₂ ≠ V₂ :=
@@ -51,7 +59,12 @@ theorem MidsegmentParallel
   -- Step 2. Triangle Congruence (SAS)
   ------------------------------------------------------------------------
 
-  have hVert := VerticalAngles Geo V₃ M₂ M₁ V₂ T hV₃M₂V₂ hM₁M₂T
+  have hVert :=
+    VerticalAngles
+      Geo V₃ M₂ M₁ V₂ T
+      hV₃M₂V₂Between hM₁M₂TBetween
+      (fun h =>
+        hTri (PrimCollinearCycle Geo V₃ M₂ M₁ h))
   have hVert' := AngleCongruentReverse Geo V₃ M₂ M₁ V₂ M₂ T hVert
   have hSideM₁M₂M₂T := CongruentReverseFirst Geo M₁ M₂ M₂ T hSeg
   have hSideV₂M₂M₂V₃ :=

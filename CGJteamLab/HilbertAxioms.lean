@@ -903,6 +903,785 @@ theorem hilbert_between_trichotomy
   subst Y
   exact hB hAYC
 
+/--
+The strengthened inner form of Pasch used in Hilbert's proof of
+Theorem 5.  It is a theorem of I.1--I.2 and II.1--II.4, not an
+additional order axiom.
+
+If `C` is between `B` and `D`, and `E` is between `A` and `B`,
+then the transversal through `D` and `E` cuts `AC` at a point `F`;
+moreover `F` is between `D` and `E`.
+-/
+theorem hilbert_inner_pasch_strong
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D E : Geo.Point)
+    (hABC : ¬ PrimCollinear Geo A B C)
+    (hBCD : Geo.Between B C D)
+    (hAEB : Geo.Between A E B) :
+    ∃ F : Geo.Point,
+      Geo.Between D F E ∧
+      Geo.Between A F C := by
+  have hBCDData := HilbertOrder.between_incidence B C D hBCD
+  have hAEBData := HilbertOrder.between_incidence A E B hAEB
+  have hBC : B ≠ C := hBCDData.1
+  have hCD : C ≠ D := hBCDData.2.1
+  have hBD : B ≠ D := hBCDData.2.2.1
+  have hAE : A ≠ E := hAEBData.1
+  have hEB : E ≠ B := hAEBData.2.1
+  have hAB : A ≠ B := hAEBData.2.2.1
+  have hAC : A ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo A C B
+      (fun h => hABC (PrimCollinearRotate Geo A C B h))
+  rcases HilbertPlaneIncidence.line_through B C hBC with
+    ⟨g, hBg, hCg⟩
+  have hDg : HilbertIncidence.OnLine D g :=
+    hilbert_collinear_on_line
+      Geo B C D g hBC hBg hCg hBCDData.2.2.2.1
+  rcases HilbertPlaneIncidence.line_through A B hAB with
+    ⟨m, hAm, hBm⟩
+  have hEm : HilbertIncidence.OnLine E m :=
+    hilbert_between_on_line Geo A E B m hAm hBm hAEB
+  have hgm : g ≠ m := by
+    intro h
+    subst m
+    exact hABC ⟨g, hAm, hBg, hCg⟩
+  have hDE : D ≠ E := by
+    intro h
+    subst E
+    have hEq : g = m :=
+      HilbertPlaneIncidence.line_unique
+        B D hBD g m hBg hDg hBm hEm
+    exact hgm hEq
+  rcases HilbertPlaneIncidence.line_through D E hDE with
+    ⟨l, hDl, hEl⟩
+  have hgl : g ≠ l := by
+    intro h
+    subst l
+    have hEq : m = g :=
+      HilbertPlaneIncidence.line_unique
+        B E hEB.symm m g hBm hEm hBg hEl
+    exact hgm hEq.symm
+  have hlm : l ≠ m := by
+    intro h
+    subst m
+    have hEq : g = l :=
+      HilbertPlaneIncidence.line_unique
+        B D hBD g l hBg hDg hBm hDl
+    exact hgl hEq
+  have hAl : ¬ HilbertIncidence.OnLine A l := by
+    intro hAl
+    have hEq : l = m :=
+      HilbertPlaneIncidence.line_unique
+        A E hAE l m hAl hEl hAm hEm
+    exact hlm hEq
+  have hBl : ¬ HilbertIncidence.OnLine B l := by
+    intro hBl
+    have hEq : m = l :=
+      HilbertPlaneIncidence.line_unique
+        B E hEB.symm m l hBm hEm hBl hEl
+    exact hlm hEq.symm
+  have hCl : ¬ HilbertIncidence.OnLine C l := by
+    intro hCl
+    have hEq : g = l :=
+      HilbertPlaneIncidence.line_unique
+        C D hCD g l hCg hDg hCl hDl
+    exact hgl hEq
+  have hNotBDC : ¬ Geo.Between B D C :=
+    (HilbertOrder.between_unique
+      (Geo := Geo) B C D hBCDData.2.2.2.1 hBCD).2
+  have hNotMeetsBC : ¬ HilbertSegmentMeetsLine Geo B C l :=
+    hilbert_segment_not_meets_crossing_line
+      Geo B C D g l hgl hBg hCg hDg hDl hNotBDC
+  have hMeetsAB : HilbertSegmentMeetsLine Geo A B l :=
+    ⟨E, hAEB, hEl⟩
+  rcases
+      hilbert_pasch_forced
+        Geo A B C l hABC hAl hBl hCl
+        hMeetsAB hNotMeetsBC with
+    ⟨F, hAFC, hFl⟩
+  have hAFCData := HilbertOrder.between_incidence A F C hAFC
+  rcases HilbertPlaneIncidence.line_through A C hAC with
+    ⟨k, hAk, hCk⟩
+  have hFk : HilbertIncidence.OnLine F k :=
+    hilbert_between_on_line Geo A F C k hAk hCk hAFC
+  have hkg : k ≠ g := by
+    intro h
+    subst g
+    exact hABC ⟨k, hAk, hBg, hCk⟩
+  have hkm : k ≠ m := by
+    intro h
+    subst m
+    exact hABC ⟨k, hAk, hBm, hCk⟩
+  have hDF : D ≠ F := by
+    intro h
+    subst F
+    have hEq : k = g :=
+      HilbertPlaneIncidence.line_unique
+        C D hCD k g hCk hFk hCg hDg
+    exact hkg hEq
+  have hEF : E ≠ F := by
+    intro h
+    subst F
+    have hEq : k = m :=
+      HilbertPlaneIncidence.line_unique
+        A E hAE k m hAk hFk hAm hEm
+    exact hkm hEq
+  have hDEFCol : PrimCollinear Geo D E F :=
+    ⟨l, hDl, hEl, hFl⟩
+  rcases
+      hilbert_between_trichotomy
+        Geo D E F hDE hEF hDF hDEFCol with
+    hDEF | hEDF | hDFE
+  · have hDk : ¬ HilbertIncidence.OnLine D k := by
+      intro hDk
+      have hEq : k = g :=
+        HilbertPlaneIncidence.line_unique
+          C D hCD k g hCk hDk hCg hDg
+      exact hkg hEq
+    have hDFC : ¬ PrimCollinear Geo D F C := by
+      intro h
+      exact
+        (hilbert_not_collinear_of_off_line
+          Geo F C D k hAFCData.2.1 hFk hCk hDk)
+          (PrimCollinearCycle Geo D F C h)
+    have hDm : ¬ HilbertIncidence.OnLine D m := by
+      intro hDm
+      have hEq : g = m :=
+        HilbertPlaneIncidence.line_unique
+          B D hBD g m hBg hDg hBm hDm
+      exact hgm hEq
+    have hFm : ¬ HilbertIncidence.OnLine F m := by
+      intro hFm
+      have hEq : k = m :=
+        HilbertPlaneIncidence.line_unique
+          A F hAFCData.1 k m hAk hFk hAm hFm
+      exact hkm hEq
+    have hCm : ¬ HilbertIncidence.OnLine C m := by
+      intro hCm
+      exact hABC ⟨m, hAm, hBm, hCm⟩
+    have hDCB :=
+      (HilbertOrder.between_incidence B C D hBCD).2.2.2.2
+    have hNotDBC : ¬ Geo.Between D B C :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) D C B
+        (HilbertOrder.between_incidence D C B hDCB).2.2.2.1
+        hDCB).2
+    have hNotMeetsDC : ¬ HilbertSegmentMeetsLine Geo D C m :=
+      hilbert_segment_not_meets_crossing_line
+        Geo D C B g m hgm hDg hCg hBg hBm hNotDBC
+    have hNotFAC : ¬ Geo.Between F A C :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) A F C hAFCData.2.2.2.1 hAFC).1
+    have hNotMeetsFC : ¬ HilbertSegmentMeetsLine Geo F C m :=
+      hilbert_segment_not_meets_crossing_line
+        Geo F C A k m hkm hFk hCk hAk hAm hNotFAC
+    have hMeetsDF : HilbertSegmentMeetsLine Geo D F m :=
+      ⟨E, hDEF, hEm⟩
+    rcases HilbertOrder.pasch
+        (Geo := Geo) D F C hDFC m hDm hFm hCm hMeetsDF with
+      hMeetsDC | hMeetsFC
+    · exact False.elim (hNotMeetsDC hMeetsDC)
+    · exact False.elim (hNotMeetsFC hMeetsFC)
+  · have hEg : ¬ HilbertIncidence.OnLine E g := by
+      intro hEg
+      have hEq : m = g :=
+        HilbertPlaneIncidence.line_unique
+          B E hEB.symm m g hBm hEm hBg hEg
+      exact hgm hEq.symm
+    have hFg : ¬ HilbertIncidence.OnLine F g := by
+      intro hFg
+      have hEq : k = g :=
+        HilbertPlaneIncidence.line_unique
+          C F hAFCData.2.1.symm k g hCk hFk hCg hFg
+      exact hkg hEq
+    have hAg : ¬ HilbertIncidence.OnLine A g := by
+      intro hAg
+      exact hABC ⟨g, hAg, hBg, hCg⟩
+    have hEFA : ¬ PrimCollinear Geo E F A := by
+      intro h
+      have hAFEm : PrimCollinear Geo A F E :=
+        PrimCollinearRotate Geo A E F
+          (PrimCollinearCycle Geo
+            F A E (PrimCollinearCycle Geo E F A h))
+      rcases hAFEm with ⟨q, hAq, hFq, hEq⟩
+      have hkq : k = q :=
+        HilbertPlaneIncidence.line_unique
+          A F hAFCData.1 k q hAk hFk hAq hFq
+      rw [← hkq] at hEq
+      have hmk : m = k :=
+        HilbertPlaneIncidence.line_unique
+          A E hAE m k hAm hEm hAk hEq
+      exact hkm hmk.symm
+    have hBEA :=
+      (HilbertOrder.between_incidence A E B hAEB).2.2.2.2
+    have hNotEBA : ¬ Geo.Between E B A :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) B E A
+        (HilbertOrder.between_incidence B E A hBEA).2.2.2.1
+        hBEA).1
+    have hNotMeetsEA : ¬ HilbertSegmentMeetsLine Geo E A g :=
+      hilbert_segment_not_meets_crossing_line
+        Geo E A B m g hgm.symm hEm hAm hBm hBg hNotEBA
+    have hCFA :=
+      (HilbertOrder.between_incidence A F C hAFC).2.2.2.2
+    have hNotFCA : ¬ Geo.Between F C A :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) C F A
+        (HilbertOrder.between_incidence C F A hCFA).2.2.2.1
+        hCFA).1
+    have hNotMeetsFA : ¬ HilbertSegmentMeetsLine Geo F A g :=
+      hilbert_segment_not_meets_crossing_line
+        Geo F A C k g hkg hFk hAk hCk hCg hNotFCA
+    have hMeetsEF : HilbertSegmentMeetsLine Geo E F g :=
+      ⟨D, hEDF, hDg⟩
+    rcases HilbertOrder.pasch
+        (Geo := Geo) E F A hEFA g hEg hFg hAg hMeetsEF with
+      hMeetsEA | hMeetsFA
+    · exact False.elim (hNotMeetsEA hMeetsEA)
+    · exact False.elim (hNotMeetsFA hMeetsFA)
+  · exact ⟨F, hDFE, hAFC⟩
+
+/--
+The strengthened outer form of Pasch used in Hilbert's proof of
+Theorem 5.  As with `hilbert_inner_pasch_strong`, the extra
+betweenness conclusion is derived from II.3, II.4 and Theorem 4.
+-/
+theorem hilbert_outer_pasch_strong
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D E : Geo.Point)
+    (hABC : ¬ PrimCollinear Geo A B C)
+    (hBCD : Geo.Between B C D)
+    (hAEC : Geo.Between A E C) :
+    ∃ F : Geo.Point,
+      Geo.Between D E F ∧
+      Geo.Between A F B := by
+  have hBCDData := HilbertOrder.between_incidence B C D hBCD
+  have hAECData := HilbertOrder.between_incidence A E C hAEC
+  have hBC : B ≠ C := hBCDData.1
+  have hCD : C ≠ D := hBCDData.2.1
+  have hBD : B ≠ D := hBCDData.2.2.1
+  have hAE : A ≠ E := hAECData.1
+  have hEC : E ≠ C := hAECData.2.1
+  have hAC : A ≠ C := hAECData.2.2.1
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first Geo A B C hABC
+  rcases HilbertPlaneIncidence.line_through B C hBC with
+    ⟨g, hBg, hCg⟩
+  have hDg : HilbertIncidence.OnLine D g :=
+    hilbert_collinear_on_line
+      Geo B C D g hBC hBg hCg hBCDData.2.2.2.1
+  rcases HilbertPlaneIncidence.line_through A C hAC with
+    ⟨k, hAk, hCk⟩
+  have hEk : HilbertIncidence.OnLine E k :=
+    hilbert_between_on_line Geo A E C k hAk hCk hAEC
+  rcases HilbertPlaneIncidence.line_through A B hAB with
+    ⟨m, hAm, hBm⟩
+  have hkg : k ≠ g := by
+    intro h
+    subst g
+    exact hABC ⟨k, hAk, hBg, hCk⟩
+  have hkm : k ≠ m := by
+    intro h
+    subst m
+    exact hABC ⟨k, hAk, hBm, hCk⟩
+  have hgm : g ≠ m := by
+    intro h
+    subst m
+    exact hABC ⟨g, hAm, hBg, hCg⟩
+  have hDE : D ≠ E := by
+    intro h
+    subst E
+    have hEq : k = g :=
+      HilbertPlaneIncidence.line_unique
+        C D hCD k g hCk hEk hCg hDg
+    exact hkg hEq
+  rcases HilbertPlaneIncidence.line_through D E hDE with
+    ⟨l, hDl, hEl⟩
+  have hgl : g ≠ l := by
+    intro h
+    subst l
+    have hEq : k = g :=
+      HilbertPlaneIncidence.line_unique
+        C E hEC.symm k g hCk hEk hCg hEl
+    exact hkg hEq
+  have hkl : k ≠ l := by
+    intro h
+    subst l
+    have hEq : g = k :=
+      HilbertPlaneIncidence.line_unique
+        C D hCD g k hCg hDg hCk hDl
+    exact hkg hEq.symm
+  have hAl : ¬ HilbertIncidence.OnLine A l := by
+    intro hAl
+    have hEq : k = l :=
+      HilbertPlaneIncidence.line_unique
+        A E hAE k l hAk hEk hAl hEl
+    exact hkl hEq
+  have hCl : ¬ HilbertIncidence.OnLine C l := by
+    intro hCl
+    have hEq : g = l :=
+      HilbertPlaneIncidence.line_unique
+        C D hCD g l hCg hDg hCl hDl
+    exact hgl hEq
+  have hBl : ¬ HilbertIncidence.OnLine B l := by
+    intro hBl
+    have hEq : g = l :=
+      HilbertPlaneIncidence.line_unique
+        B D hBD g l hBg hDg hBl hDl
+    exact hgl hEq
+  have hNotBDC : ¬ Geo.Between B D C :=
+    (HilbertOrder.between_unique
+      (Geo := Geo) B C D hBCDData.2.2.2.1 hBCD).2
+  have hNotCDB : ¬ Geo.Between C D B := by
+    intro hCDB
+    exact
+      hNotBDC
+        (HilbertOrder.between_incidence C D B hCDB).2.2.2.2
+  have hNotMeetsCB : ¬ HilbertSegmentMeetsLine Geo C B l :=
+    hilbert_segment_not_meets_crossing_line
+      Geo C B D g l hgl hCg hBg hDg hDl hNotCDB
+  have hMeetsAC : HilbertSegmentMeetsLine Geo A C l :=
+    ⟨E, hAEC, hEl⟩
+  have hACB : ¬ PrimCollinear Geo A C B :=
+    fun h => hABC (PrimCollinearRotate Geo A C B h)
+  rcases
+      hilbert_pasch_forced
+        Geo A C B l hACB hAl hCl hBl
+        hMeetsAC hNotMeetsCB with
+    ⟨F, hAFB, hFl⟩
+  have hAFBData := HilbertOrder.between_incidence A F B hAFB
+  have hFm : HilbertIncidence.OnLine F m :=
+    hilbert_between_on_line Geo A F B m hAm hBm hAFB
+  have hDF : D ≠ F := by
+    intro h
+    subst F
+    have hEq : g = m :=
+      HilbertPlaneIncidence.line_unique
+        B D hBD g m hBg hDg hBm hFm
+    exact hgm hEq
+  have hEF : E ≠ F := by
+    intro h
+    subst F
+    have hEq : k = m :=
+      HilbertPlaneIncidence.line_unique
+        A E hAE k m hAk hEk hAm hFm
+    exact hkm hEq
+  have hDEFCol : PrimCollinear Geo D E F :=
+    ⟨l, hDl, hEl, hFl⟩
+  rcases
+      hilbert_between_trichotomy
+        Geo D E F hDE hEF hDF hDEFCol with
+    hDEF | hEDF | hDFE
+  · exact ⟨F, hDEF, hAFB⟩
+  · have hEg : ¬ HilbertIncidence.OnLine E g := by
+      intro hEg
+      have hEq : k = g :=
+        HilbertPlaneIncidence.line_unique
+          C E hEC.symm k g hCk hEk hCg hEg
+      exact hkg hEq
+    have hFg : ¬ HilbertIncidence.OnLine F g := by
+      intro hFg
+      have hEq : m = g :=
+        HilbertPlaneIncidence.line_unique
+          B F hAFBData.2.1.symm m g hBm hFm hBg hFg
+      exact hgm hEq.symm
+    have hAg : ¬ HilbertIncidence.OnLine A g := by
+      intro hAg
+      exact hABC ⟨g, hAg, hBg, hCg⟩
+    have hEFA : ¬ PrimCollinear Geo E F A := by
+      intro h
+      have hAFE : PrimCollinear Geo A F E :=
+        PrimCollinearRotate Geo A E F
+          (PrimCollinearCycle Geo
+            F A E (PrimCollinearCycle Geo E F A h))
+      rcases hAFE with ⟨q, hAq, hFq, hEq⟩
+      have hmq : m = q :=
+        HilbertPlaneIncidence.line_unique
+          A F hAFBData.1 m q hAm hFm hAq hFq
+      rw [← hmq] at hEq
+      have hkm' : k = m :=
+        HilbertPlaneIncidence.line_unique
+          A E hAE k m hAk hEk hAm hEq
+      exact hkm hkm'
+    have hNotACE : ¬ Geo.Between A C E :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) A E C hAECData.2.2.2.1 hAEC).2
+    have hNotECA : ¬ Geo.Between E C A := by
+      intro hECA
+      exact
+        hNotACE
+          (HilbertOrder.between_incidence E C A hECA).2.2.2.2
+    have hNotMeetsEA : ¬ HilbertSegmentMeetsLine Geo E A g :=
+      hilbert_segment_not_meets_crossing_line
+        Geo E A C k g hkg hEk hAk hCk hCg hNotECA
+    have hNotABF : ¬ Geo.Between A B F :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) A F B hAFBData.2.2.2.1 hAFB).2
+    have hNotFBA : ¬ Geo.Between F B A := by
+      intro hFBA
+      exact
+        hNotABF
+          (HilbertOrder.between_incidence F B A hFBA).2.2.2.2
+    have hNotMeetsFA : ¬ HilbertSegmentMeetsLine Geo F A g :=
+      hilbert_segment_not_meets_crossing_line
+        Geo F A B m g hgm.symm hFm hAm hBm hBg hNotFBA
+    have hMeetsEF : HilbertSegmentMeetsLine Geo E F g :=
+      ⟨D, hEDF, hDg⟩
+    rcases HilbertOrder.pasch
+        (Geo := Geo) E F A hEFA g hEg hFg hAg hMeetsEF with
+      hMeetsEA | hMeetsFA
+    · exact False.elim (hNotMeetsEA hMeetsEA)
+    · exact False.elim (hNotMeetsFA hMeetsFA)
+  · have hDm : ¬ HilbertIncidence.OnLine D m := by
+      intro hDm
+      have hEq : g = m :=
+        HilbertPlaneIncidence.line_unique
+          B D hBD g m hBg hDg hBm hDm
+      exact hgm hEq
+    have hEm : ¬ HilbertIncidence.OnLine E m := by
+      intro hEm
+      have hEq : k = m :=
+        HilbertPlaneIncidence.line_unique
+          A E hAE k m hAk hEk hAm hEm
+      exact hkm hEq
+    have hCm : ¬ HilbertIncidence.OnLine C m := by
+      intro hCm
+      exact hABC ⟨m, hAm, hBm, hCm⟩
+    have hDEC : ¬ PrimCollinear Geo D E C := by
+      intro h
+      rcases h with ⟨q, hDq, hEq, hCq⟩
+      have hgq : g = q :=
+        HilbertPlaneIncidence.line_unique
+          C D hCD g q hCg hDg hCq hDq
+      rw [← hgq] at hEq
+      have hkg' : k = g :=
+        HilbertPlaneIncidence.line_unique
+          C E hEC.symm k g hCk hEk hCg hEq
+      exact hkg hkg'
+    have hDCB :=
+      (HilbertOrder.between_incidence B C D hBCD).2.2.2.2
+    have hNotDBC : ¬ Geo.Between D B C :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) D C B
+        (HilbertOrder.between_incidence D C B hDCB).2.2.2.1
+        hDCB).2
+    have hNotMeetsDC : ¬ HilbertSegmentMeetsLine Geo D C m :=
+      hilbert_segment_not_meets_crossing_line
+        Geo D C B g m hgm hDg hCg hBg hBm hNotDBC
+    have hNotEAC : ¬ Geo.Between E A C :=
+      (HilbertOrder.between_unique
+        (Geo := Geo) A E C hAECData.2.2.2.1 hAEC).1
+    have hNotMeetsEC : ¬ HilbertSegmentMeetsLine Geo E C m :=
+      hilbert_segment_not_meets_crossing_line
+        Geo E C A k m hkm hEk hCk hAk hAm hNotEAC
+    have hMeetsDE : HilbertSegmentMeetsLine Geo D E m :=
+      ⟨F, hDFE, hFm⟩
+    rcases HilbertOrder.pasch
+        (Geo := Geo) D E C hDEC m hDm hEm hCm hMeetsDE with
+      hMeetsDC | hMeetsEC
+    · exact False.elim (hNotMeetsDC hMeetsDC)
+    · exact False.elim (hNotMeetsEC hMeetsEC)
+
+/--
+The first assertion in Hilbert's Theorem 5, in the one orientation
+needed below: from `A-B-C` and `B-C-D` infer `A-C-D`.
+
+The construction is Hilbert's: two applications of strengthened inner
+Pasch followed by one application of strengthened outer Pasch.
+-/
+theorem hilbert_between_outer_trans_right
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hBCD : Geo.Between B C D) :
+    Geo.Between A C D := by
+  have hABCData := HilbertOrder.between_incidence A B C hABC
+  have hBCDData := HilbertOrder.between_incidence B C D hBCD
+  have hAC : A ≠ C := hABCData.2.2.1
+  have hBC : B ≠ C := hABCData.2.1
+  rcases HilbertPlaneIncidence.line_through A C hAC with
+    ⟨g, hAg, hCg⟩
+  have hBg : HilbertIncidence.OnLine B g :=
+    hilbert_between_on_line Geo A B C g hAg hCg hABC
+  have hDg : HilbertIncidence.OnLine D g :=
+    hilbert_collinear_on_line
+      Geo B C D g hBC hBg hCg hBCDData.2.2.2.1
+  rcases hilbert_point_off_line Geo g with ⟨E, hEg⟩
+  have hCE : C ≠ E := by
+    intro h
+    subst E
+    exact hEg hCg
+  rcases HilbertOrder.between_extension C E hCE with
+    ⟨F, hCEF⟩
+  have hCEFData := HilbertOrder.between_incidence C E F hCEF
+  rcases HilbertPlaneIncidence.line_through C E hCE with
+    ⟨n, hCn, hEn⟩
+  have hFn : HilbertIncidence.OnLine F n :=
+    hilbert_collinear_on_line
+      Geo C E F n hCE hCn hEn hCEFData.2.2.2.1
+  have hACE : ¬ PrimCollinear Geo A C E :=
+    hilbert_not_collinear_of_off_line
+      Geo A C E g hAC hAg hCg hEg
+  rcases
+      hilbert_inner_pasch_strong
+        Geo A C E F B hACE hCEF hABC with
+    ⟨G, hFGB, hAGE⟩
+  have hBGF : Geo.Between B G F :=
+    (HilbertOrder.between_incidence F G B hFGB).2.2.2.2
+  have hAGEData := HilbertOrder.between_incidence A G E hAGE
+  have hGg : ¬ HilbertIncidence.OnLine G g := by
+    intro hGg
+    have hEOnG :=
+      hilbert_collinear_on_line
+        Geo A G E g hAGEData.1 hAg hGg hAGEData.2.2.2.1
+    exact hEg hEOnG
+  have hBD : B ≠ D := hBCDData.2.2.1
+  have hDBG : ¬ PrimCollinear Geo D B G :=
+    hilbert_not_collinear_of_off_line
+      Geo D B G g hBD.symm hDg hBg hGg
+  have hDCB : Geo.Between D C B :=
+    hBCDData.2.2.2.2
+  rcases
+      hilbert_inner_pasch_strong
+        Geo D B G F C hDBG hBGF hDCB with
+    ⟨H, hFHC, hDHG⟩
+  have hCHF : Geo.Between C H F :=
+    (HilbertOrder.between_incidence F H C hFHC).2.2.2.2
+  have hHn : HilbertIncidence.OnLine H n :=
+    hilbert_between_on_line Geo C H F n hCn hFn hCHF
+  have hAD : A ≠ D := by
+    intro h
+    subst D
+    have hACB : Geo.Between A C B :=
+      (HilbertOrder.between_incidence B C A hBCD).2.2.2.2
+    exact
+      (HilbertOrder.between_unique
+        (Geo := Geo) A B C hABCData.2.2.2.1 hABC).2 hACB
+  have hDAG : ¬ PrimCollinear Geo D A G :=
+    hilbert_not_collinear_of_off_line
+      Geo D A G g hAD.symm hDg hAg hGg
+  rcases
+      hilbert_outer_pasch_strong
+        Geo D A G E H hDAG hAGE hDHG with
+    ⟨C', hEHC', hDC'A⟩
+  have hAC'D : Geo.Between A C' D :=
+    (HilbertOrder.between_incidence D C' A hDC'A).2.2.2.2
+  have hC'g : HilbertIncidence.OnLine C' g :=
+    hilbert_between_on_line Geo A C' D g hAg hDg hAC'D
+  have hEHC'Data := HilbertOrder.between_incidence E H C' hEHC'
+  have hC'n : HilbertIncidence.OnLine C' n :=
+    hilbert_collinear_on_line
+      Geo E H C' n hEHC'Data.1 hEn hHn hEHC'Data.2.2.2.1
+  have hgn : g ≠ n := by
+    intro h
+    subst n
+    exact hEg hEn
+  have hC'C :=
+    hilbert_common_point_unique
+      Geo g n hgn C C' hCg hCn hC'g hC'n
+  subst C'
+  exact hAC'D
+
+/--
+Both conclusions of the first assertion in Hilbert's Theorem 5.
+-/
+theorem hilbert_between_outer_trans
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hBCD : Geo.Between B C D) :
+    Geo.Between A C D ∧
+    Geo.Between A B D := by
+  have hACD :=
+    hilbert_between_outer_trans_right Geo A B C D hABC hBCD
+  have hDCB :=
+    (HilbertOrder.between_incidence B C D hBCD).2.2.2.2
+  have hCBA :=
+    (HilbertOrder.between_incidence A B C hABC).2.2.2.2
+  have hDBA :=
+    hilbert_between_outer_trans_right Geo D C B A hDCB hCBA
+  exact
+    ⟨hACD,
+      (HilbertOrder.between_incidence D B A hDBA).2.2.2.2⟩
+
+/--
+The second assertion in Hilbert's Theorem 5: from `A-B-C` and
+`A-C-D` infer `B-C-D` and `A-B-D`.
+
+Only the first conclusion needs a new Pasch construction.  The second
+then follows from `hilbert_between_outer_trans`.
+-/
+theorem hilbert_between_inner_trans
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hACD : Geo.Between A C D) :
+    Geo.Between B C D ∧
+    Geo.Between A B D := by
+  have hABCData := HilbertOrder.between_incidence A B C hABC
+  have hACDData := HilbertOrder.between_incidence A C D hACD
+  have hAB : A ≠ B := hABCData.1
+  have hBC : B ≠ C := hABCData.2.1
+  have hAC : A ≠ C := hACDData.1
+  have hCD : C ≠ D := hACDData.2.1
+  have hAD : A ≠ D := hACDData.2.2.1
+  rcases HilbertPlaneIncidence.line_through A D hAD with
+    ⟨g, hAg, hDg⟩
+  have hCg : HilbertIncidence.OnLine C g :=
+    hilbert_between_on_line Geo A C D g hAg hDg hACD
+  have hBg : HilbertIncidence.OnLine B g :=
+    hilbert_collinear_on_line
+      Geo A C B g hAC hAg hCg
+      (PrimCollinearRotate Geo A B C hABCData.2.2.2.1)
+  rcases hilbert_point_off_line Geo g with ⟨G, hGg⟩
+  have hBG : B ≠ G := by
+    intro h
+    subst G
+    exact hGg hBg
+  rcases HilbertOrder.between_extension B G hBG with
+    ⟨F, hBGF⟩
+  have hBGFData := HilbertOrder.between_incidence B G F hBGF
+  rcases HilbertPlaneIncidence.line_through B G hBG with
+    ⟨r, hBr, hGr⟩
+  have hFr : HilbertIncidence.OnLine F r :=
+    hilbert_collinear_on_line
+      Geo B G F r hBG hBr hGr hBGFData.2.2.2.1
+  have hFg : ¬ HilbertIncidence.OnLine F g := by
+    intro hFg
+    have hEq : g = r :=
+      HilbertPlaneIncidence.line_unique
+        B F hBGFData.2.2.1 g r hBg hFg hBr hFr
+    rw [← hEq] at hGr
+    exact hGg hGr
+  have hCF : C ≠ F := by
+    intro h
+    subst F
+    exact hFg hCg
+  rcases HilbertPlaneIncidence.line_through C F hCF with
+    ⟨n, hCn, hFn⟩
+  have hgn : g ≠ n := by
+    intro h
+    subst n
+    exact hFg hFn
+  have hrn : r ≠ n := by
+    intro h
+    subst n
+    have hEq : g = r :=
+      HilbertPlaneIncidence.line_unique
+        B C hBC g r hBg hCg hBr hCn
+    rw [← hEq] at hGr
+    exact hGg hGr
+  have hAn : ¬ HilbertIncidence.OnLine A n := by
+    intro hAn
+    have hEq : g = n :=
+      HilbertPlaneIncidence.line_unique
+        A C hAC g n hAg hCg hAn hCn
+    exact hgn hEq
+  have hBn : ¬ HilbertIncidence.OnLine B n := by
+    intro hBn
+    have hEq : g = n :=
+      HilbertPlaneIncidence.line_unique
+        B C hBC g n hBg hCg hBn hCn
+    exact hgn hEq
+  have hDn : ¬ HilbertIncidence.OnLine D n := by
+    intro hDn
+    have hEq : g = n :=
+      HilbertPlaneIncidence.line_unique
+        C D hCD g n hCg hDg hCn hDn
+    exact hgn hEq
+  have hGn : ¬ HilbertIncidence.OnLine G n := by
+    intro hGn
+    have hEq : r = n :=
+      HilbertPlaneIncidence.line_unique
+        G F hBGFData.2.1 r n hGr hFr hGn hFn
+    exact hrn hEq
+  have hNotACB : ¬ Geo.Between A C B :=
+    (HilbertOrder.between_unique
+      (Geo := Geo) A B C hABCData.2.2.2.1 hABC).2
+  have hNotMeetsAB : ¬ HilbertSegmentMeetsLine Geo A B n :=
+    hilbert_segment_not_meets_crossing_line
+      Geo A B C g n hgn hAg hBg hCg hCn hNotACB
+  have hNotBFG : ¬ Geo.Between B F G :=
+    (HilbertOrder.between_unique
+      (Geo := Geo) B G F hBGFData.2.2.2.1 hBGF).2
+  have hNotMeetsBG : ¬ HilbertSegmentMeetsLine Geo B G n :=
+    hilbert_segment_not_meets_crossing_line
+      Geo B G F r n hrn hBr hGr hFr hFn hNotBFG
+  have hABG : ¬ PrimCollinear Geo A B G :=
+    hilbert_not_collinear_of_off_line
+      Geo A B G g hAB hAg hBg hGg
+  have hAGB : ¬ PrimCollinear Geo A G B :=
+    fun h => hABG (PrimCollinearRotate Geo A G B h)
+  have hNotMeetsAG : ¬ HilbertSegmentMeetsLine Geo A G n := by
+    intro hMeetsAG
+    rcases HilbertOrder.pasch
+        (Geo := Geo) A G B hAGB n hAn hGn hBn hMeetsAG with
+      hMeetsAB | hMeetsGB
+    · exact hNotMeetsAB hMeetsAB
+    · rcases hMeetsGB with ⟨X, hGXB, hXn⟩
+      exact
+        hNotMeetsBG
+          ⟨X,
+            (HilbertOrder.between_incidence G X B hGXB).2.2.2.2,
+            hXn⟩
+  have hADG : ¬ PrimCollinear Geo A D G :=
+    hilbert_not_collinear_of_off_line
+      Geo A D G g hAD hAg hDg hGg
+  have hMeetsAD : HilbertSegmentMeetsLine Geo A D n :=
+    ⟨C, hACD, hCn⟩
+  have hMeetsDG : HilbertSegmentMeetsLine Geo D G n := by
+    rcases HilbertOrder.pasch
+        (Geo := Geo) A D G hADG n hAn hDn hGn hMeetsAD with
+      hMeetsAG | hMeetsDG
+    · exact False.elim (hNotMeetsAG hMeetsAG)
+    · exact hMeetsDG
+  rcases hMeetsDG with ⟨H, hDHG, hHn⟩
+  have hBD : B ≠ D := by
+    intro h
+    subst D
+    have hACB : Geo.Between A C B := hACD
+    exact hNotACB hACB
+  have hDBG : ¬ PrimCollinear Geo D B G :=
+    hilbert_not_collinear_of_off_line
+      Geo D B G g hBD.symm hDg hBg hGg
+  have hGDB : ¬ PrimCollinear Geo G D B := by
+    intro h
+    exact hDBG (PrimCollinearCycle Geo G D B h)
+  have hGHD : Geo.Between G H D :=
+    (HilbertOrder.between_incidence D H G hDHG).2.2.2.2
+  have hMeetsGD : HilbertSegmentMeetsLine Geo G D n :=
+    ⟨H, hGHD, hHn⟩
+  have hMeetsDB : HilbertSegmentMeetsLine Geo D B n := by
+    rcases HilbertOrder.pasch
+        (Geo := Geo) G D B hGDB n hGn hDn hBn hMeetsGD with
+      hMeetsGB | hMeetsDB
+    · rcases hMeetsGB with ⟨X, hGXB, hXn⟩
+      exact
+        False.elim
+          (hNotMeetsBG
+            ⟨X,
+              (HilbertOrder.between_incidence G X B hGXB).2.2.2.2,
+              hXn⟩)
+    · exact hMeetsDB
+  rcases hMeetsDB with ⟨C', hDC'B, hC'n⟩
+  have hBC'D : Geo.Between B C' D :=
+    (HilbertOrder.between_incidence D C' B hDC'B).2.2.2.2
+  have hC'g : HilbertIncidence.OnLine C' g :=
+    hilbert_between_on_line Geo B C' D g hBg hDg hBC'D
+  have hC'C :=
+    hilbert_common_point_unique
+      Geo g n hgn C C' hCg hCn hC'g hC'n
+  subst C'
+  have hOuter :=
+    hilbert_between_outer_trans Geo A B C D hABC hBC'D
+  exact ⟨hBC'D, hOuter.2⟩
+
 theorem hilbert_sameRay_collinear
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
@@ -910,6 +1689,139 @@ theorem hilbert_sameRay_collinear
     HilbertSameRay Geo O R X →
     PrimCollinear Geo O R X := by
   exact fun h => h.2.2.1
+
+theorem hilbert_oppositeRays_of_between
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A O C : Geo.Point)
+    (hAOC : Geo.Between A O C) :
+    Geo.OppositeRays O A C := by
+  have hData := HilbertOrder.between_incidence A O C hAOC
+  exact ⟨hData.1, hData.2.1.symm, hAOC⟩
+
+theorem hilbert_adjacentAngles_of_between
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A O B C : Geo.Point)
+    (hAOC : Geo.Between A O C)
+    (hBO : B ≠ O) :
+    Geo.AdjacentAngles A O B C :=
+  ⟨hBO, hilbert_oppositeRays_of_between Geo A O C hAOC⟩
+
+theorem hilbert_sameRay_of_between
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (O P Q : Geo.Point)
+    (hOPQ : Geo.Between O P Q) :
+    HilbertSameRay Geo O P Q := by
+  have hData := HilbertOrder.between_incidence O P Q hOPQ
+  exact
+    ⟨hData.1.symm,
+      hData.2.2.1.symm,
+      hData.2.2.2.1,
+      (HilbertOrder.between_unique
+        (Geo := Geo) O P Q hData.2.2.2.1 hOPQ).1⟩
+
+theorem hilbert_not_sameRay_of_between_origin
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A O C : Geo.Point)
+    (hAOC : Geo.Between A O C) :
+    ¬ HilbertSameRay Geo O A C := by
+  intro hRay
+  exact hRay.2.2.2 hAOC
+
+theorem hilbert_sameRay_cases
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (O P Q : Geo.Point)
+    (hRay : HilbertSameRay Geo O P Q) :
+    P = Q ∨
+    Geo.Between O P Q ∨
+    Geo.Between O Q P := by
+  by_cases hPQ : P = Q
+  · exact Or.inl hPQ
+  · rcases hilbert_between_trichotomy
+        Geo O P Q hRay.1.symm hPQ hRay.2.1.symm hRay.2.2.1 with
+      hOPQ | hPOQ | hOQP
+    · exact Or.inr (Or.inl hOPQ)
+    · exact False.elim (hRay.2.2.2 hPOQ)
+    · exact Or.inr (Or.inr hOQP)
+
+/--
+Transport of strict betweenness along the two rays determined by a
+point lying between their original representatives.
+
+This is the precise local consequence of Hilbert's Theorem 5 needed
+in the proof of Theorem 14: if `O` is between `A` and `C`, replacing
+`A` and `C` by arbitrary points on the same respective rays preserves
+that betweenness.
+-/
+theorem hilbert_between_transport_sameRays
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A O C A' C' : Geo.Point)
+    (hAOC : Geo.Between A O C)
+    (hAA' : HilbertSameRay Geo O A A')
+    (hCC' : HilbertSameRay Geo O C C') :
+    Geo.Between A' O C' := by
+  have hSymm :
+      ∀ X Y Z : Geo.Point,
+        Geo.Between X Y Z → Geo.Between Z Y X :=
+    fun X Y Z h =>
+      (HilbertOrder.between_incidence X Y Z h).2.2.2.2
+  rcases hilbert_sameRay_cases Geo O A A' hAA' with
+    hAeq | hOAA' | hOA'A
+  · subst A'
+    rcases hilbert_sameRay_cases Geo O C C' hCC' with
+      hCeq | hOCC' | hOC'C
+    · subst C'
+      exact hAOC
+    · exact
+        (hilbert_between_outer_trans
+          Geo A O C C' hAOC hOCC').2
+    · have hCC'O : Geo.Between C C' O := hSymm O C' C hOC'C
+      have hCOA : Geo.Between C O A := hSymm A O C hAOC
+      have hC'OA :=
+        (hilbert_between_inner_trans
+          Geo C C' O A hCC'O hCOA).1
+      exact hSymm C' O A hC'OA
+  · have hCOA : Geo.Between C O A := hSymm A O C hAOC
+    have hA'OC : Geo.Between A' O C := by
+      have hCOA' :=
+        (hilbert_between_outer_trans
+          Geo C O A A' hCOA hOAA').2
+      exact hSymm C O A' hCOA'
+    rcases hilbert_sameRay_cases Geo O C C' hCC' with
+      hCeq | hOCC' | hOC'C
+    · subst C'
+      exact hA'OC
+    · exact
+        (hilbert_between_outer_trans
+          Geo A' O C C' hA'OC hOCC').2
+    · have hCC'O : Geo.Between C C' O := hSymm O C' C hOC'C
+      have hCOA' : Geo.Between C O A' := hSymm A' O C hA'OC
+      have hC'OA' :=
+        (hilbert_between_inner_trans
+          Geo C C' O A' hCC'O hCOA').1
+      exact hSymm C' O A' hC'OA'
+  · have hAA'O : Geo.Between A A' O := hSymm O A' A hOA'A
+    have hA'OC :=
+      (hilbert_between_inner_trans
+        Geo A A' O C hAA'O hAOC).1
+    rcases hilbert_sameRay_cases Geo O C C' hCC' with
+      hCeq | hOCC' | hOC'C
+    · subst C'
+      exact hA'OC
+    · exact
+        (hilbert_between_outer_trans
+          Geo A' O C C' hA'OC hOCC').2
+    · have hCC'O : Geo.Between C C' O := hSymm O C' C hOC'C
+      have hCOA' : Geo.Between C O A' := hSymm A' O C hA'OC
+      have hC'OA' :=
+        (hilbert_between_inner_trans
+          Geo C C' O A' hCC'O hCOA').1
+      exact hSymm C' O A' hC'OA'
 
 theorem hilbert_sameRay_refl
     [HilbertIncidence Geo]
@@ -1367,6 +2279,312 @@ theorem hilbert_sas_third_side_and_angle
   exact
     ⟨hilbert_congruent_symmetry Geo B' C' B C hBCX,
       hAngles.2⟩
+
+/--
+Noncollinearity is preserved when both sides of an angle are replaced
+by representatives of the same Hilbert rays.
+-/
+theorem hilbert_noncollinear_of_sameRays
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A O B X Y : Geo.Point)
+    (hAOB : ¬ PrimCollinear Geo A O B)
+    (hAX : HilbertSameRay Geo O A X)
+    (hBY : HilbertSameRay Geo O B Y) :
+    ¬ PrimCollinear Geo X O Y := by
+  intro hXOY
+  have hAOX : PrimCollinear Geo A O X :=
+    PrimCollinearRotate Geo A X O
+      (PrimCollinearCycle Geo O A X hAX.2.2.1)
+  have hOXY : PrimCollinear Geo O X Y :=
+    PrimCollinearSwap Geo X O Y hXOY
+  have hAOY : PrimCollinear Geo A O Y :=
+    hilbert_primCollinear_trans
+      Geo A O X Y hAX.2.1.symm hAOX hOXY
+  have hOYB : PrimCollinear Geo O Y B :=
+    PrimCollinearRotate Geo O B Y hBY.2.2.1
+  exact
+    hAOB
+      (hilbert_primCollinear_trans
+        Geo A O Y B hBY.2.1.symm hAOY hOYB)
+
+/--
+Hilbert's Theorem 14: angles adjacent to congruent angles are
+congruent.  The hypotheses explicitly exhibit the two linear pairs.
+
+The proof constructs three points on the rays of the first angle,
+uses Theorem 12 twice, additivity III.3 once, and finally SAS III.5.
+-/
+theorem hilbert_adjacent_angles_congruent
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A O B C A' O' B' C' : Geo.Point)
+    (hAOC : Geo.Between A O C)
+    (hA'O'C' : Geo.Between A' O' C')
+    (hAOB : ¬ PrimCollinear Geo A O B)
+    (hA'O'B' : ¬ PrimCollinear Geo A' O' B')
+    (hAngle : Geo.AngleCongruent A O B A' O' B') :
+    Geo.AngleCongruent B O C B' O' C' := by
+  have hAOCData := HilbertOrder.between_incidence A O C hAOC
+  have hA'O'C'Data :=
+    HilbertOrder.between_incidence A' O' C' hA'O'C'
+  have hOA : O ≠ A := hAOCData.1.symm
+  have hOC : O ≠ C := hAOCData.2.1
+  have hOB : O ≠ B := by
+    have hBOA : ¬ PrimCollinear Geo B O A := by
+      intro h
+      exact
+        hAOB
+          (PrimCollinearRotate Geo A B O
+            (PrimCollinearCycle Geo
+              O A B (PrimCollinearCycle Geo B O A h)))
+    exact
+      (hilbert_noncollinear_ne_first Geo B O A hBOA).symm
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) O' A' O A hOA with
+    ⟨X, hAX, hOX⟩
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) O' B' O B hOB with
+    ⟨Y, hBY, hOY⟩
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) O' C' O C hOC with
+    ⟨Z, hCZ, hOZ⟩
+  have hXOY : ¬ PrimCollinear Geo X O Y :=
+    hilbert_noncollinear_of_sameRays
+      Geo A O B X Y hAOB hAX hBY
+  have hAngleLeft :
+      Geo.Angle A O B = Geo.Angle X O Y := by
+    calc
+      Geo.Angle A O B = Geo.Angle X O B :=
+        hilbert_angle_eq_of_sameRay_first Geo O A X B hAX
+      _ = Geo.Angle X O Y :=
+        hilbert_angle_eq_of_sameRay_second Geo O X B Y hBY
+  have hAngleXOY :
+      Geo.AngleCongruent X O Y A' O' B' := by
+    unfold Geometry.Geo.AngleCongruent at hAngle ⊢
+    rw [← hAngleLeft]
+    exact hAngle
+  have hFirstAngles :=
+    hilbert_sas_remaining_angles
+      Geo O X Y O' A' B'
+      (fun h => hXOY (PrimCollinearSwap Geo O X Y h))
+      (fun h => hA'O'B' (PrimCollinearSwap Geo O' A' B' h))
+      hOX hOY hAngleXOY
+  have hFirstSide :=
+    (hilbert_sas_third_side_and_angle
+      Geo O X Y O' A' B'
+      (fun h => hXOY (PrimCollinearSwap Geo O X Y h))
+      (fun h => hA'O'B' (PrimCollinearSwap Geo O' A' B' h))
+      hOX hOY hAngleXOY).1
+  have hXOZ : Geo.Between X O Z :=
+    hilbert_between_transport_sameRays
+      Geo A O C X Z hAOC hAX hCZ
+  have hXO : Geo.Congruent X O A' O' :=
+    (Geo.congruent_reverse_second
+      X O O' A').mp
+      ((Geo.congruent_reverse_first
+        O X O' A').mp hOX)
+  have hXZ : Geo.Congruent X Z A' C' :=
+    HilbertCongruence.segment_additivity
+      (Geo := Geo) X O Z A' O' C'
+      hXOZ hA'O'C' hXO hOZ
+  have hRayXOZ : HilbertSameRay Geo X O Z :=
+    hilbert_sameRay_of_between Geo X O Z hXOZ
+  have hRayA'O'C' : HilbertSameRay Geo A' O' C' :=
+    hilbert_sameRay_of_between Geo A' O' C' hA'O'C'
+  have hAtXLeft :
+      Geo.Angle O X Y = Geo.Angle Y X Z := by
+    calc
+      Geo.Angle O X Y = Geo.Angle Y X O :=
+        Geo.angle_swap O X Y
+      _ = Geo.Angle Y X Z :=
+        hilbert_angle_eq_of_sameRay_second
+          Geo X Y O Z hRayXOZ
+  have hAtXRight :
+      Geo.Angle O' A' B' = Geo.Angle B' A' C' := by
+    calc
+      Geo.Angle O' A' B' = Geo.Angle B' A' O' :=
+        Geo.angle_swap O' A' B'
+      _ = Geo.Angle B' A' C' :=
+        hilbert_angle_eq_of_sameRay_second
+          Geo A' B' O' C' hRayA'O'C'
+  have hAngleXYZ :
+      Geo.AngleCongruent Y X Z B' A' C' := by
+    unfold Geometry.Geo.AngleCongruent at hFirstAngles ⊢
+    rw [← hAtXLeft, ← hAtXRight]
+    exact hFirstAngles.1
+  have hXYZ : ¬ PrimCollinear Geo X Y Z := by
+    intro h
+    have hOXZ :=
+      (HilbertOrder.between_incidence X O Z hXOZ).2.2.2.1
+    have hXZY := PrimCollinearRotate Geo X Y Z h
+    have hOXY :=
+      hilbert_primCollinear_trans
+        Geo O X Z Y
+        (HilbertOrder.between_incidence X O Z hXOZ).2.2.1
+        (PrimCollinearSwap Geo X O Z hOXZ)
+        hXZY
+    exact hXOY (PrimCollinearSwap Geo O X Y hOXY)
+  have hA'B'C' : ¬ PrimCollinear Geo A' B' C' := by
+    intro h
+    have hO'A'C' :=
+      PrimCollinearSwap Geo A' O' C'
+        hA'O'C'Data.2.2.2.1
+    have hA'C'B' := PrimCollinearRotate Geo A' B' C' h
+    have hO'A'B' :=
+      hilbert_primCollinear_trans
+        Geo O' A' C' B'
+        hA'O'C'Data.2.2.1
+        hO'A'C' hA'C'B'
+    exact hA'O'B' (PrimCollinearSwap Geo O' A' B' hO'A'B')
+  have hSecond :=
+    hilbert_sas_third_side_and_angle
+      Geo X Y Z A' B' C'
+      hXYZ hA'B'C' hFirstSide hXZ hAngleXYZ
+  have hZOX : Geo.Between Z O X :=
+    (HilbertOrder.between_incidence X O Z hXOZ).2.2.2.2
+  have hRayZOX : HilbertSameRay Geo Z O X :=
+    hilbert_sameRay_of_between Geo Z O X hZOX
+  have hC'O'A' : Geo.Between C' O' A' :=
+    hA'O'C'Data.2.2.2.2
+  have hRayC'O'A' : HilbertSameRay Geo C' O' A' :=
+    hilbert_sameRay_of_between Geo C' O' A' hC'O'A'
+  have hAngleZOY :
+      Geo.AngleCongruent O Z Y O' C' B' := by
+    have hLeft :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo Z O X Y hRayZOX
+    have hRight :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo C' O' A' B' hRayC'O'A'
+    unfold Geometry.Geo.AngleCongruent at hSecond ⊢
+    rw [hLeft, hRight]
+    exact hSecond.2
+  have hZO : Geo.Congruent Z O C' O' :=
+    (Geo.congruent_reverse_second
+      Z O O' C').mp
+      ((Geo.congruent_reverse_first
+        O Z O' C').mp hOZ)
+  have hZY : Geo.Congruent Z Y C' B' :=
+    (Geo.congruent_reverse_second
+      Z Y B' C').mp
+      ((Geo.congruent_reverse_first
+        Y Z B' C').mp hSecond.1)
+  have hZOY : ¬ PrimCollinear Geo Z O Y := by
+    intro h
+    have hXOZCol :=
+      (HilbertOrder.between_incidence X O Z hXOZ).2.2.2.1
+    exact
+      hXOY
+        (hilbert_primCollinear_trans
+          Geo X O Z Y
+          (HilbertOrder.between_incidence X O Z hXOZ).2.1
+          hXOZCol
+          (PrimCollinearSwap Geo Z O Y h))
+  have hC'O'B' : ¬ PrimCollinear Geo C' O' B' := by
+    intro h
+    have hO'C'B' := PrimCollinearSwap Geo C' O' B' h
+    exact
+      hA'O'B'
+        (hilbert_primCollinear_trans
+          Geo A' O' C' B'
+          hA'O'C'Data.2.1
+          hA'O'C'Data.2.2.2.1 hO'C'B')
+  have hFinal :
+      Geo.AngleCongruent Z O Y C' O' B' :=
+    HilbertCongruence.sas
+      (Geo := Geo) Z O Y C' O' B'
+      hZOY hC'O'B' hZO hZY hAngleZOY
+  have hTargetLeft :
+      Geo.Angle B O C = Geo.Angle Z O Y := by
+    calc
+      Geo.Angle B O C = Geo.Angle C O B :=
+        Geo.angle_swap B O C
+      _ = Geo.Angle Z O B :=
+        hilbert_angle_eq_of_sameRay_first Geo O C Z B hCZ
+      _ = Geo.Angle Z O Y :=
+        hilbert_angle_eq_of_sameRay_second Geo O Z B Y hBY
+  have hTargetRight :
+      Geo.Angle B' O' C' = Geo.Angle C' O' B' :=
+    Geo.angle_swap B' O' C'
+  unfold Geometry.Geo.AngleCongruent at hFinal ⊢
+  rw [hTargetLeft, hTargetRight]
+  exact hFinal
+
+/--
+Vertical angles formed by two intersecting lines are congruent.
+-/
+theorem hilbert_vertical_angles
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (C E D B F : Geo.Point)
+    (hCEB : Geo.Between C E B)
+    (hDEF : Geo.Between D E F)
+    (hCED : ¬ PrimCollinear Geo C E D) :
+    Geo.AngleCongruent C E D B E F := by
+  have hBEC : Geo.Between B E C :=
+    (HilbertOrder.between_incidence C E B hCEB).2.2.2.2
+  have hEB : E ≠ B :=
+    (HilbertOrder.between_incidence C E B hCEB).2.1
+  have hBED : ¬ PrimCollinear Geo B E D := by
+    intro h
+    have hEBD := PrimCollinearSwap Geo B E D h
+    exact
+      hCED
+        (hilbert_primCollinear_trans
+          Geo C E B D hEB
+          (HilbertOrder.between_incidence
+            C E B hCEB).2.2.2.1
+          hEBD)
+  have hDEB : ¬ PrimCollinear Geo D E B := by
+    intro h
+    exact
+      hBED
+        (PrimCollinearRotate Geo B D E
+          (PrimCollinearCycle Geo
+            E B D (PrimCollinearCycle Geo D E B h)))
+  have hRefl :
+      Geo.AngleCongruent B E D B E D :=
+    HilbertCongruence.angle_congruence_reflexive
+      (Geo := Geo) B E D hBED
+  have hStart :
+      Geo.AngleCongruent B E D D E B :=
+    (Geo.angle_congruent_reverse_second
+      B E D B E D).mp hRefl
+  have hSupp :=
+    hilbert_adjacent_angles_congruent
+      Geo B E D C D E B F
+      hBEC hDEF hBED hDEB hStart
+  exact
+    (Geo.angle_congruent_reverse_first
+      D E C B E F).mp hSupp
+
+/--
+Extension beyond `B`, with the order information retained.
+-/
+theorem hilbert_extend_segment_beyond
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B : Geo.Point)
+    (hAB : A ≠ B) :
+    ∃ T : Geo.Point,
+      Geo.Between A B T ∧
+      Geo.Congruent A B B T := by
+  rcases HilbertOrder.between_extension A B hAB with
+    ⟨R, hABR⟩
+  have hBR :=
+    (HilbertOrder.between_incidence A B R hABR).2.1
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) A B B R hBR with
+    ⟨T, hRay, hCong⟩
+  have hAA : HilbertSameRay Geo B A A :=
+    hilbert_sameRay_refl Geo B A hAB
+  have hABT :=
+    hilbert_between_transport_sameRays
+      Geo A B R A T hABR hAA hRay
+  exact
+    ⟨T, hABT,
+      hilbert_congruent_symmetry Geo B T A B hCong⟩
 
 theorem hilbert_extend_segment
     [HilbertIncidence Geo]
