@@ -140,10 +140,6 @@ letters denoting two or more points or lines denote distinct objects.
 -/
 class HilbertPlaneIncidence (Geo : Geometry.Geo)
     [HilbertIncidence Geo] : Prop where
-  /-- The plane language contains at least one line. -/
-  line_exists :
-    Nonempty Geo.Line
-
   /-- I, 1: two distinct points lie on a line. -/
   line_through :
     ∀ A B : Geo.Point,
@@ -163,9 +159,9 @@ class HilbertPlaneIncidence (Geo : Geometry.Geo)
         HilbertIncidence.OnLine B m →
         l = m
 
-  /-- First clause of I, 3: every line contains two distinct points. -/
+  /-- First clause of I, 3: two distinct points exist on a line. -/
   two_points_on_line :
-    ∀ l : Geo.Line,
+    ∃ l : Geo.Line,
       ∃ A B : Geo.Point,
         A ≠ B ∧
         HilbertIncidence.OnLine A l ∧
@@ -248,24 +244,6 @@ class HilbertCongruence (Geo : Geometry.Geo)
       Geo.Congruent A B A'' B'' →
       Geo.Congruent A' B' A'' B''
 
-  /--
-  Reversing the first pair of endpoints does not change a segment.
-  Hilbert treats `AB` and `BA` as the same segment by definition.
-  -/
-  segment_reverse_first :
-    ∀ A B C D : Geo.Point,
-      Geo.Congruent A B C D →
-      Geo.Congruent B A C D
-
-  /--
-  Reversing the second pair of endpoints does not change a segment.
-  Hilbert treats `CD` and `DC` as the same segment by definition.
-  -/
-  segment_reverse_second :
-    ∀ A B C D : Geo.Point,
-      Geo.Congruent A B C D →
-      Geo.Congruent A B D C
-
   /-- III, 3: additivity of adjacent congruent segments. -/
   segment_additivity :
     ∀ A B C A' B' C' : Geo.Point,
@@ -295,12 +273,6 @@ class HilbertCongruence (Geo : Geometry.Geo)
             Geo.AngleCongruent A B C A' B' D' →
             HilbertSameRay Geo B' C' D'
 
-  /-- The reflexivity clause stated together with III, 4. -/
-  angle_congruence_reflexive :
-    ∀ A B C : Geo.Point,
-      ¬ PrimCollinear Geo A B C →
-      Geo.AngleCongruent A B C A B C
-
   /--
   III, 5: Hilbert's SAS axiom, stated in its original angle-conclusion
   form.
@@ -319,9 +291,8 @@ theorem hilbert_congruent_reflexive
     [HilbertCongruence Geo]
     (A B : Geo.Point) :
     Geo.Congruent A B A B := by
-  let ⟨l⟩ := HilbertPlaneIncidence.line_exists (Geo := Geo)
-  rcases HilbertPlaneIncidence.two_points_on_line (Geo := Geo) l with
-    ⟨O, R, hOR, _, _⟩
+  rcases HilbertPlaneIncidence.two_points_on_line (Geo := Geo) with
+    ⟨_, O, R, hOR, _, _⟩
   rcases HilbertCongruence.segment_construction
       (Geo := Geo) A B O R hOR with
     ⟨X, _, hX⟩

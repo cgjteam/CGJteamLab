@@ -146,12 +146,12 @@ axiom CongruentReverseFirst
     Geo.Congruent B A C D
 -/
 
+omit [HilbertIncidence Geo] in
 theorem CongruentReverseFirst
-    [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A C D := by
-  exact HilbertCongruence.segment_reverse_first A B C D
+  exact (Geometry.Geo.congruent_reverse_first Geo A B C D).mp
 
 
 /-
@@ -163,15 +163,15 @@ axiom CongruentReverseBoth
     Geo.Congruent B A D C
 -/
 
+omit [HilbertIncidence Geo] in
 theorem CongruentReverseBoth
-    [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A D C := by
   intro h
   exact
-    HilbertCongruence.segment_reverse_second B A C D
-      (HilbertCongruence.segment_reverse_first A B C D h)
+    (Geometry.Geo.congruent_reverse_second Geo B A C D).mp
+      ((Geometry.Geo.congruent_reverse_first Geo A B C D).mp h)
 
 
 /-
@@ -183,8 +183,8 @@ axiom CongruentSwapSecond
     Geo.Congruent A B D C
 -/
 
+omit [HilbertIncidence Geo] in
 theorem CongruentSwapSecond
-    [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent A B D C := by
@@ -469,8 +469,8 @@ theorem ParallelSymmetrySwapSecond
       (ParallelSymmetry Geo A D B C h)
 
 
+omit [HilbertIncidence Geo] in
 theorem CongruentReverseFirstSwapSecond
-    [HilbertCongruence Geo]
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent B A D C := by
