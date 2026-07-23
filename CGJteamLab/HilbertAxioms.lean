@@ -359,6 +359,43 @@ theorem hilbert_congruent_transitivity
       (hilbert_congruent_symmetry Geo A B C D h₁)
       h₂
 
+/--
+The angle part of Hilbert's Theorem 12.
+
+Under the two-side-and-included-angle hypotheses, Axiom III, 5 gives
+the congruence of each of the two remaining angles. The congruence of
+the third side requires the separate uniqueness-of-segment-construction
+argument used in the full theorem.
+-/
+theorem hilbert_sas_remaining_angles
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C A' B' C' : Geo.Point)
+    (hABC : ¬ PrimCollinear Geo A B C)
+    (hA'B'C' : ¬ PrimCollinear Geo A' B' C')
+    (hAB : Geo.Congruent A B A' B')
+    (hAC : Geo.Congruent A C A' C')
+    (hAngleA : Geo.AngleCongruent B A C B' A' C') :
+    Geo.AngleCongruent A B C A' B' C' ∧
+    Geo.AngleCongruent A C B A' C' B' := by
+  constructor
+  · exact
+      HilbertCongruence.sas
+        (Geo := Geo)
+        A B C A' B' C'
+        hABC hA'B'C' hAB hAC hAngleA
+  · exact
+      HilbertCongruence.sas
+        (Geo := Geo)
+        A C B A' C' B'
+        (fun h => hABC (PrimCollinearRotate Geo A C B h))
+        (fun h => hA'B'C' (PrimCollinearRotate Geo A' C' B' h))
+        hAC hAB
+        ((Geo.angle_congruent_reverse_second
+          C A B B' A' C').mp
+          ((Geo.angle_congruent_reverse_first
+            B A C B' A' C').mp hAngleA))
+
 theorem hilbert_extend_segment
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
