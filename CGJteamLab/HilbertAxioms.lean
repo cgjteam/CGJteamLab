@@ -2902,6 +2902,152 @@ theorem hilbert_sas_third_side_and_angle
       hAngles.2⟩
 
 /--
+The side conclusion of Hilbert's angle-side-angle triangle theorem
+(the required part of Theorem 26).
+
+Construct `X` on the ray `B'C'` with `B'X ≅ BC`.  SAS makes the angle
+at `A'` in `A'B'X` congruent to the corresponding angle of the given
+triangle.  The prescribed angle at `A'`, together with the uniqueness
+clause of III.4 on the selected side of `A'B'`, forces `A'X` and
+`A'C'` to be the same ray.  Since `X` and `C'` also lie on the same
+line through `B'`, incidence uniqueness gives `X = C'`.  The two
+remaining side congruences then follow from the construction and SAS.
+-/
+theorem hilbert_asa_sides
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C A' B' C' : Geo.Point)
+    (hABC : ¬ PrimCollinear Geo A B C)
+    (hA'B'C' : ¬ PrimCollinear Geo A' B' C')
+    (hAB : Geo.Congruent A B A' B')
+    (hAngleA : Geo.AngleCongruent B A C B' A' C')
+    (hAngleB : Geo.AngleCongruent A B C A' B' C') :
+    Geo.Congruent A C A' C' ∧
+    Geo.Congruent B C B' C' := by
+  have hB'C'A' : ¬ PrimCollinear Geo B' C' A' := by
+    intro h
+    exact
+      hA'B'C'
+        (PrimCollinearCycle Geo C' A' B'
+          (PrimCollinearCycle Geo B' C' A' h))
+  have hB'C' : B' ≠ C' :=
+    hilbert_noncollinear_ne_first
+      Geo B' C' A' hB'C'A'
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) B C B' C' hB'C' with
+    ⟨X, hRay, hB'X_BC⟩
+  have hB'X : B' ≠ X := hRay.2.1.symm
+  rcases HilbertPlaneIncidence.line_through
+      B' C' hB'C' with
+    ⟨base, hB'base, hC'base⟩
+  have hXbase : HilbertIncidence.OnLine X base :=
+    hilbert_collinear_on_line
+      Geo B' C' X base hB'C'
+      hB'base hC'base hRay.2.2.1
+  have hA'base : ¬ HilbertIncidence.OnLine A' base := by
+    intro h
+    exact hA'B'C' ⟨base, h, hB'base, hC'base⟩
+  have hA'B' : A' ≠ B' :=
+    hilbert_noncollinear_ne_first
+      Geo A' B' C' hA'B'C'
+  rcases HilbertPlaneIncidence.line_through
+      A' B' hA'B' with
+    ⟨cross, hA'cross, hB'cross⟩
+  have hSideXC' :
+      HilbertSameSide Geo X C' cross :=
+    hilbert_sameRay_points_sameSide
+      Geo B' C' X C' A' base cross
+      hB'base hC'base hB'cross hA'cross hA'base
+      hRay (hilbert_sameRay_refl Geo B' C' hB'C'.symm)
+  have hA'B'X : ¬ PrimCollinear Geo A' B' X := by
+    intro h
+    exact
+      (hilbert_not_collinear_of_off_line
+        Geo B' X A' base hB'X
+        hB'base hXbase hA'base)
+        (PrimCollinearCycle Geo A' B' X h)
+  have hTargetAngleB :
+      Geo.Angle A' B' C' = Geo.Angle A' B' X :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo B' A' C' X hRay
+  have hAngleB_X :
+      Geo.AngleCongruent A B C A' B' X := by
+    unfold Geometry.Geo.AngleCongruent at hAngleB ⊢
+    rw [← hTargetAngleB]
+    exact hAngleB
+  have hBA_B'A' :
+      Geo.Congruent B A B' A' :=
+    (Geo.congruent_reverse_second
+      B A A' B').mp
+      ((Geo.congruent_reverse_first
+        A B A' B').mp hAB)
+  have hBC_B'X :
+      Geo.Congruent B C B' X :=
+    hilbert_congruent_symmetry
+      Geo B' X B C hB'X_BC
+  have hAngles :=
+    hilbert_sas_remaining_angles
+      Geo B A C B' A' X
+      (fun h => hABC (PrimCollinearSwap Geo B A C h))
+      (fun h => hA'B'X (PrimCollinearSwap Geo B' A' X h))
+      hBA_B'A' hBC_B'X hAngleB_X
+  have hAngleA_X :
+      Geo.AngleCongruent B A C B' A' X :=
+    hAngles.1
+  have hAngleX_C' :
+      Geo.AngleCongruent B' A' X B' A' C' :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo B' A' X B A C B' A' C'
+      (Geometry.Geo.angle_congruent_symmetry
+        Geo B A C B' A' X hAngleA_X)
+      hAngleA
+  rcases HilbertCongruence.angle_construction
+      (Geo := Geo) B' A' X B' A' C'
+      (fun h => hA'B'X (PrimCollinearSwap Geo B' A' X h))
+      hA'B'.symm cross hB'cross hA'cross hSideXC'.2.1 with
+    ⟨Z, _, _, hUnique⟩
+  have hC'C' :
+      HilbertSameSide Geo C' C' cross :=
+    hilbert_sameSide_refl
+      Geo C' cross hSideXC'.2.1
+  have hZC'Ray : HilbertSameRay Geo A' Z C' :=
+    hUnique C' hC'C' hAngleX_C'
+  have hZXRay : HilbertSameRay Geo A' Z X :=
+    hUnique X hSideXC'
+      (Geometry.Geo.angle_congruent_reflexive
+        Geo B' A' X)
+  have hXC' : X = C' := by
+    by_contra hNe
+    rcases hZXRay.2.2.1 with
+      ⟨line₁, hA'₁, hZ₁, hX₁⟩
+    rcases hZC'Ray.2.2.1 with
+      ⟨line₂, hA'₂, hZ₂, hC'₂⟩
+    have hLine₁Line₂ : line₁ = line₂ :=
+      HilbertPlaneIncidence.line_unique
+        A' Z hZXRay.1.symm
+        line₁ line₂
+        hA'₁ hZ₁ hA'₂ hZ₂
+    subst line₂
+    have hBaseLine₁ : base = line₁ :=
+      HilbertPlaneIncidence.line_unique
+        X C' hNe
+        base line₁
+        hXbase hC'base hX₁ hC'₂
+    rw [← hBaseLine₁] at hA'₁
+    exact hA'base hA'₁
+  have hThirdSide :=
+    hilbert_sas_third_side_and_angle
+      Geo B A C B' A' X
+      (fun h => hABC (PrimCollinearSwap Geo B A C h))
+      (fun h => hA'B'X (PrimCollinearSwap Geo B' A' X h))
+      hBA_B'A' hBC_B'X hAngleB_X
+  subst X
+  exact
+    ⟨hThirdSide.1,
+      hilbert_congruent_symmetry
+        Geo B' C' B C hB'X_BC⟩
+
+/--
 Noncollinearity is preserved when both sides of an angle are replaced
 by representatives of the same Hilbert rays.
 -/

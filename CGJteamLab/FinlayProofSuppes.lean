@@ -15,11 +15,18 @@ universe u
 
 variable (Geo : Geo)
 variable [HilbertIncidence Geo]
-variable [HilbertOrder Geo]
+variable [HilbertEuclideanPlane Geo]
 variable [Suppes.SuppesGeometry Geo.Point]
 variable [SuppesMidsegmentBridge Geo]
 
-/-- Finlay's proof using the Suppes-based Midsegment Theorem. -/
+/--
+Finlay's proof using the Suppes-based Midsegment Theorem.
+
+The Suppes layer supplies the two midsegment parallelisms.  The shared
+upper proof is currently an integration route through the Euclidean
+parallelogram theorems of `GeometryBase`, so its Hilbert IV dependency
+is stated explicitly rather than hidden in a provisional axiom.
+-/
 theorem FinlaySuppes
     (A B C E F G P D : Geo.Point)
     (hE : IsMidpoint Geo E A C)

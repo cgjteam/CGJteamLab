@@ -19,16 +19,19 @@ universe u
 
 variable (Geo : Geo)
 variable [HilbertIncidence Geo]
-variable [HilbertOrder Geo]
+variable [HilbertEuclideanPlane Geo]
 
 /--
-The foundation-independent upper part of Finlay's five-step argument.
+The shared upper part of Finlay's five-step argument.
 
 The hypotheses `hFG` and `hEG` are precisely the two facts supplied by
 the foundation-specific Midsegment Theorem.  Everything after them is
 shared: transport parallelism along the median lines, recognize the
 parallelogram `BPCG`, transfer the diagonal intersection, use diagonal
 bisection, and conclude that the third median passes through `G`.
+The explicit `HilbertEuclideanPlane` dependency is needed only for the
+now-derived Euclidean parallelogram theorems; it replaces the former
+hidden dependency carried by the provisional diagonal axiom.
 -/
 theorem FinlayFromMidsegmentParallels
     (A B C E F G P D : Geo.Point)
@@ -93,4 +96,3 @@ theorem FinlayFromMidsegmentParallels
   exact ⟨hMedian, hAGD⟩
 
 end Geometry
-

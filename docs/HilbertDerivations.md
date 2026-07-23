@@ -145,6 +145,8 @@ silently used by the neutral `parallel_from_equal_angles`.
 | `ExtendSegment` | theorem of the same name | `hilbert_extend_segment`; for `A != B`, II.2 supplies a ray beyond `B` and III.1 lays off a congruent copy of `AB` on it.  The degenerate case uses derived reflexivity. |
 | `OnePairParallelCongruentCriterion` | theorem of the same name | The corrected same-side orientation excludes the bow-tie case. `onePair_diagonal_oppositeSide` derives the required diagonal orientation using plane separation, the Euclidean direction of Theorem 30, and SAS; a second SAS application and the neutral direction of Theorem 30 yield the missing parallel pair. |
 | `ParallelogramOppositeSidesParallel` | theorem of the same name | Direct unfolding: `IsParallelogram` is currently defined as `OppositeSidesParallel`. |
+| `ParallelogramOppositeSidesCongruent` | theorem of the same name | Lay off a copy of one side on the ray containing its opposite side.  Same-side transport supplies the orientation for `OnePairParallelCongruentCriterion`; Hilbert IV then identifies the constructed parallel with the original side, and incidence uniqueness identifies the constructed endpoint.  Cyclic relabelling gives the other pair. |
+| `ParallelogramDiagonals` | theorem of the same name | The one-pair orientation lemma first proves that the named common point lies strictly inside both diagonals.  Theorem 30 gives two alternate-angle congruences, opposite sides are congruent by the preceding theorem, and the required ASA part of Hilbert's Theorem 26 gives equality of the two diagonal halves. |
 
 ## The nontrivial proof chain
 
@@ -230,8 +232,8 @@ The reductions are not merely library cleanup:
   `FinlayFromMidsegmentParallels`.
 - The Tarski adapter additionally converts primitive Tarski
   collinearity and midpoint data through the explicit bridge.  The
-  Suppes adapter likewise reuses only the interfaces made available by
-  its declared bridge.  Neither adapter repeats Finlay's five-step
+  Suppes adapter obtains its midsegment parallelisms through its
+  declared bridge.  Neither adapter repeats Finlay's five-step
   mathematical argument.
 
 The current Tarski adapter is an integration route through
@@ -239,6 +241,11 @@ The current Tarski adapter is an integration route through
 from `TarskiEuclideanPlane`.  It therefore states
 `HilbertEuclideanPlane` explicitly where the shared one-pair theorem is
 used.  No Hilbert parallel axiom is inserted into `TarskiAxioms`.
+The current Suppes adapter has the same integration character in the
+shared upper step: `SuppesGeometry` and `SuppesMidsegmentBridge`
+provide the midsegment theorem, while `HilbertEuclideanPlane` is
+stated explicitly for the derived Euclidean parallelogram results.
+No Hilbert axiom is inserted into `SuppesAxioms` or `SuppesBase`.
 
 Thus a theorem in `HilbertAxioms` should record the mathematical
 dependency, while its wrapper in `GeometryBase` should explain which
@@ -246,14 +253,11 @@ stable project operation it replaces.
 
 ## Remaining active axioms
 
-Exactly two active `axiom` declarations remain in
-`GeometryBase.lean`:
+There are no active `axiom` declarations left in
+`GeometryBase.lean`.
 
-1. `ParallelogramOppositeSidesCongruent`;
-2. `ParallelogramDiagonals`.
-
-They are both in the parallelogram section and should be treated as one
-design problem rather than unrelated proofs.
+The former declarations remain only inside labelled block comments as
+historical API records.
 
 The original `OnePairParallelCongruentCriterion` said only that one
 pair of named opposite sides was parallel and congruent.  That statement
@@ -268,10 +272,12 @@ correspondence, derives the diagonal-side orientation, and then uses
 Theorem 30 and SAS to obtain the second pair of parallel sides.
 
 `ParallelogramOppositeSidesCongruent` is the standard Euclidean
-parallelogram theorem.  `ParallelogramDiagonals` should then be derived
-from it together with the hypotheses identifying the diagonal
-intersection.  Neither statement belongs as a new field of
-`HilbertAxioms`; any genuinely Euclidean step must instead use
+parallelogram theorem derived from segment construction, plane-side
+transport, the one-pair recognition theorem, and uniqueness of the
+parallel.  `ParallelogramDiagonals` is derived from it, strict
+diagonal-side separation, Theorem 30, and the necessary ASA
+consequence of Theorem 26.  Neither statement is a new field of
+`HilbertAxioms`; every genuinely Euclidean step instead uses
 `HilbertEuclideanPlane`, whose only new field is Hilbert's axiom IV.
 
 ## History of the reduction work
