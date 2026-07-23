@@ -27,6 +27,7 @@ theorem FinlayTarski
     (hF : TarskiIsMidpoint Geo F A B)
     (hG : TarskiIsMidpoint Geo G A P)
     (hGP : G ≠ P)
+    (hAPne : A ≠ P)
     (hBE : TarskiCollinear Geo B G E)
     (hCF : TarskiCollinear Geo C G F)
     (hAP : TarskiCollinear Geo A D P)
@@ -69,7 +70,7 @@ theorem FinlayTarski
   have hIntAP : IsIntersection Geo A P B C D :=
     And.intro hAPGeometry hBCGeometry
   have hIntPG : IsIntersection Geo P G B C D :=
-    IntersectionOnSameLine Geo A G P B C D hAGP hIntAP
+    IntersectionOnSameLine Geo A G P B C D hAPne hAGP hIntAP
 
   have hMid : IsMidpoint Geo D B C :=
     ParallelogramDiagonals

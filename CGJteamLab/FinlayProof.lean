@@ -108,12 +108,15 @@ theorem Finlay
   have hIntAP : IsIntersection Geo A P B C D := by
     exact And.intro hAP hBC
 
+  have hAPne : A ≠ P :=
+    (HilbertOrder.between_incidence A G P hG.left).2.2.1
 
   have hIntPG : IsIntersection Geo P G B C D := by
     exact
     IntersectionOnSameLine
       Geo
       A G P B C D
+      hAPne
       hAGP
       hIntAP
 

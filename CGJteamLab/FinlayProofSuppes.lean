@@ -17,6 +17,7 @@ theorem FinlaySuppes
   (hF : IsMidpoint Geo F A B)
   (hG : IsMidpoint Geo G A P)
   (hGP : G ≠ P)
+  (hAPne : A ≠ P)
   (hBE : Collinear Geo B G E)
   (hCF : Collinear Geo C G F)
   (hAP : Collinear Geo A D P)
@@ -45,7 +46,7 @@ theorem FinlaySuppes
     midpoint_collinear Geo A P G hG
   have hIntAP : IsIntersection Geo A P B C D := And.intro hAP hBC
   have hIntPG : IsIntersection Geo P G B C D :=
-    IntersectionOnSameLine Geo A G P B C D hAGP hIntAP
+    IntersectionOnSameLine Geo A G P B C D hAPne hAGP hIntAP
 
   have hMid : IsMidpoint Geo D B C :=
     ParallelogramDiagonals Geo B P C G D hPar hIntPG.right hIntPG.left

@@ -376,11 +376,35 @@ theorem ExtendSegment
   exact hilbert_extend_segment Geo A B
 
 
+/-
+Previous provisional declaration:
+
 axiom IntersectionOnSameLine
     (A G P B C D : Geo.Point) :
     Collinear Geo A G P →
     IsIntersection Geo A P B C D →
     IsIntersection Geo P G B C D
+-/
+
+theorem IntersectionOnSameLine
+    [HilbertPlaneIncidence Geo]
+    (A G P B C D : Geo.Point)
+    (hAP : A ≠ P) :
+    Collinear Geo A G P →
+    IsIntersection Geo A P B C D →
+    IsIntersection Geo P G B C D := by
+  intro hAGP hInt
+  rcases hAGP with ⟨l, hAl, hGl, hPl⟩
+  rcases hInt.left with ⟨m, hAm, hDm, hPm⟩
+  have hlm : l = m :=
+    HilbertPlaneIncidence.line_unique
+      A P hAP l m hAl hPl hAm hPm
+  have hDl : HilbertIncidence.OnLine D l := by
+    rw [hlm]
+    exact hDm
+  constructor
+  · exact ⟨l, hPl, hDl, hGl⟩
+  · exact hInt.right
 
 
 /-
