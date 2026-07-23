@@ -104,6 +104,7 @@ theorem midpoint_of_tarski
   · exact collinear_of_tarski Geo A M B (Or.inl h.left)
   · exact h.right
 
+omit [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_of_geometry_between
     (M A B : Geo.Point)
     (hBetween : Geo.Between A M B) :
