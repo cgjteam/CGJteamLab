@@ -107,10 +107,15 @@ theorem MidsegmentParallel
     congruent_transitivity Geo V₁ M₁ V₃ V₂ T
       hM₁Geometry.right
       hSideV₃M₁V₂T
-  have hOnePair : OnePairParallelCongruent Geo V₁ V₂ T M₁ := by
-    constructor
-    · exact hParV₁M₁V₂T
-    · exact hSideV₁M₁V₂T
+  have hOnePair : OnePairParallelCongruent Geo V₁ V₂ T M₁ :=
+    onePairParallelCongruent_of_crossing
+      Geo V₁ V₂ T M₁ V₃ M₂
+      hM₁.left
+      hV₃M₂V₂Between
+      hM₁M₂TBetween
+      hTri
+      hParV₁M₁V₂T
+      hSideV₁M₁V₂T
   have hParallelogram :=
     OnePairParallelCongruentCriterion
       Geo V₁ V₂ T M₁ hOnePair

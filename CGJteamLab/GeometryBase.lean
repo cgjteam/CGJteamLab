@@ -705,8 +705,84 @@ structure OnePairParallelCongruent
     (A B C D : Geo.Point) where
   parallel : Geo.Parallel A D B C
   congruent : Geo.Congruent A D B C
+  /--
+  The endpoint correspondence is not crossed: `A` and `B` lie on the
+  same side of the line through `D` and `C`.
+
+  Without this orientation condition the recognition statement is
+  false even in the Euclidean plane (a bow-tie quadrilateral is a
+  counterexample).
+  -/
+  oriented :
+    ∃ l : Geo.Line,
+      HilbertIncidence.OnLine D l ∧
+      HilbertIncidence.OnLine C l ∧
+      HilbertSameSide Geo A B l
+
+/--
+Build the correctly oriented recognition data from the crossing
+configuration used in the Midsegment Theorem.
+
+The points satisfy `A-D-P`, `P-Y-B`, and `D-Y-C`.  Thus the line `DC`
+meets the interiors of two sides of triangle `PAB`; Pasch separation
+puts `A` and `B` on the same side of that line.  The noncollinearity of
+`Y,D,P` implies that `P,A,B` is a genuine triangle.
+-/
+theorem onePairParallelCongruent_of_crossing
+    [HilbertOrder Geo]
+    (A B C D P Y : Geo.Point)
+    (hADP : Geo.Between A D P)
+    (hPYB : Geo.Between P Y B)
+    (hDYC : Geo.Between D Y C)
+    (hYDP : ¬ Collinear Geo Y D P)
+    (hParallel : Geo.Parallel A D B C)
+    (hCongruent : Geo.Congruent A D B C) :
+    OnePairParallelCongruent Geo A B C D := by
+  have hPAB : ¬ Collinear Geo P A B := by
+    rintro ⟨side, hPside, hAside, hBside⟩
+    have hDside : HilbertIncidence.OnLine D side :=
+      hilbert_between_on_line
+        Geo A D P side hAside hPside hADP
+    have hYside : HilbertIncidence.OnLine Y side :=
+      hilbert_between_on_line
+        Geo P Y B side hPside hBside hPYB
+    exact hYDP ⟨side, hYside, hDside, hPside⟩
+  have hDYCData := HilbertOrder.between_incidence D Y C hDYC
+  rcases hDYCData.2.2.2.1 with ⟨cross, hDcross, hYcross, hCcross⟩
+  have hPDA : Geo.Between P D A :=
+    (HilbertOrder.between_incidence A D P hADP).2.2.2.2
+  have hSameSide : HilbertSameSide Geo A B cross :=
+    hilbert_third_side_endpoints_sameSide
+      Geo P A B D Y cross
+      hPAB hPDA hPYB hDcross hYcross
+  exact
+    { parallel := hParallel
+      congruent := hCongruent
+      oriented := ⟨cross, hDcross, hCcross, hSameSide⟩ }
 
 
+/-
+Rejected under-specified version:
+
+structure OnePairParallelCongruent
+    (A B C D : Geo.Point) where
+  parallel : Geo.Parallel A D B C
+  congruent : Geo.Congruent A D B C
+
+axiom OnePairParallelCongruentCriterion
+    (A B C D : Geo.Point) :
+    OnePairParallelCongruent Geo A B C D →
+    IsParallelogram Geo A B C D
+-/
+
+/--
+Provisional recognition principle for a correctly oriented
+quadrilateral with one pair of opposite sides parallel and congruent.
+
+The orientation field excludes the crossed configuration admitted by
+the former statement.  The declaration remains provisional until its
+proof from Hilbert's Euclidean parallel theory is completed.
+-/
 axiom OnePairParallelCongruentCriterion
     (A B C D : Geo.Point) :
     OnePairParallelCongruent Geo A B C D →

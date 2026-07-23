@@ -228,13 +228,15 @@ Exactly three active `axiom` declarations remain in
 They are all in the parallelogram section and should be treated as one
 design problem rather than three unrelated proofs.
 
-`OnePairParallelCongruentCriterion` currently says only that one pair
-of named opposite sides is parallel and congruent.  In an informal
-textbook the word "quadrilateral" supplies distinctness, cyclic order,
-and simplicity conditions.  The current Lean structure does not yet
-encode those conditions, so a proof attempt must first decide which
-orientation or same-side hypotheses make the recognition statement
-correct.
+The original `OnePairParallelCongruentCriterion` said only that one
+pair of named opposite sides was parallel and congruent.  That statement
+was false for a crossed bow-tie configuration.  The structure now also
+records that the corresponding outer endpoints lie on the same side
+of the other side-line.  In the Midsegment proof this orientation is
+derived from the three strict betweenness hypotheses by
+`hilbert_third_side_endpoints_sameSide`, a Pasch separation theorem.
+The criterion remains provisional until the corrected recognition
+statement is derived from Hilbert's parallel theory.
 
 After the quadrilateral notion is made precise,
 `ParallelogramOppositeSidesCongruent` is the standard Euclidean

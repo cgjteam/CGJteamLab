@@ -1104,6 +1104,58 @@ theorem hilbert_line_avoids_third_triangle_side
     · exact hNotMeetsYP hMeetsYP
 
 /--
+The endpoints of the third side of a triangle lie on the same side of
+a line which meets the interiors of the other two sides.
+
+This packages `hilbert_line_avoids_third_triangle_side` together with
+the two endpoint-off-line consequences needed by callers.
+-/
+theorem hilbert_third_side_endpoints_sameSide
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q R X Y : Geo.Point)
+    (l : Geo.Line)
+    (hPQR : ¬ PrimCollinear Geo P Q R)
+    (hPXQ : Geo.Between P X Q)
+    (hPYR : Geo.Between P Y R)
+    (hXl : HilbertIncidence.OnLine X l)
+    (hYl : HilbertIncidence.OnLine Y l) :
+    HilbertSameSide Geo Q R l := by
+  have hPXQData := HilbertOrder.between_incidence P X Q hPXQ
+  have hPYRData := HilbertOrder.between_incidence P Y R hPYR
+  have hQl : ¬ HilbertIncidence.OnLine Q l := by
+    intro hQl
+    have hPl : HilbertIncidence.OnLine P l :=
+      hilbert_collinear_on_line
+        Geo X Q P l
+        hPXQData.2.1 hXl hQl
+        (PrimCollinearCycle Geo P X Q hPXQData.2.2.2.1)
+    have hRl : HilbertIncidence.OnLine R l :=
+      hilbert_collinear_on_line
+        Geo P Y R l
+        hPYRData.1 hPl hYl hPYRData.2.2.2.1
+    exact hPQR ⟨l, hPl, hQl, hRl⟩
+  have hRl : ¬ HilbertIncidence.OnLine R l := by
+    intro hRl
+    have hPl : HilbertIncidence.OnLine P l :=
+      hilbert_collinear_on_line
+        Geo Y R P l
+        hPYRData.2.1 hYl hRl
+        (PrimCollinearCycle Geo P Y R hPYRData.2.2.2.1)
+    have hQl : HilbertIncidence.OnLine Q l :=
+      hilbert_collinear_on_line
+        Geo P X Q l
+        hPXQData.1 hPl hXl hPXQData.2.2.2.1
+    exact hPQR ⟨l, hPl, hQl, hRl⟩
+  have hNoMeet : ¬ HilbertSegmentMeetsLine Geo Q R l :=
+    hilbert_line_avoids_third_triangle_side
+      Geo P Q R X Y l hPQR hPXQ hPYR hXl hYl
+  exact
+    ⟨hQl, hRl,
+      Relation.ReflTransGen.single
+        ⟨hQl, hRl, hNoMeet⟩⟩
+
+/--
 If `A` and `C` lie on the two sides of triangle `BDQ` issuing from
 `B`, then the two outer endpoints `D` and `Q` lie on the same side of
 the line `AC`.
