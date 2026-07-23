@@ -16,6 +16,7 @@ open Suppes
 
 variable (Geo : Geometry.Geo)
 variable [HilbertIncidence Geo]
+variable [HilbertOrder Geo]
 variable [SuppesGeometry Geo.Point]
 
 local notation "SMid" => SuppesGeometry.operation_midpoint
@@ -49,8 +50,14 @@ theorem MidsegmentTheoremSuppes
     have hBCMid : Collinear Geo B C (SMid B C) :=
       (bridge.collinear_iff B C (SMid B C)).mpr
         (Suppes.midpoint_collinear B C)
+    have hBC : B ≠ C := by
+      intro h
+      apply hTriBCA
+      exact Suppes.L2 B C A (Or.inl h)
     have hPar' : Geo.Parallel B C (SMid A C) (SMid A B) :=
-      collinear_parallel_trans Geo B C (SMid B C) (SMid A C) (SMid A B) hBCMid hPar
+      collinear_parallel_trans
+        Geo B C (SMid B C) (SMid A C) (SMid A B)
+        hBC hBCMid hPar
     have hPar'' : Geo.Parallel (SMid A C) (SMid A B) B C :=
       ParallelSymmetry Geo B C (SMid A C) (SMid A B) hPar'
     have hMidPar : Geo.Parallel (SMid A B) (SMid A C) B C :=

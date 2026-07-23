@@ -904,6 +904,130 @@ theorem hilbert_between_trichotomy
   exact hB hAYC
 
 /--
+For two distinct points on a Hilbert line, the extensional point-line
+from `GeometryCore` is exactly the carrier of that incidence line.
+
+The reverse direction uses Hilbert's Theorem 4: a third distinct point
+on the same line occurs in one of the three possible betweenness
+orders.
+-/
+theorem hilbert_mem_pointLine_iff_onLine
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B X : Geo.Point)
+    (l : Geo.Line)
+    (hAB : A ≠ B)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hBl : HilbertIncidence.OnLine B l) :
+    X ∈ Geo.PointLine A B ↔
+    HilbertIncidence.OnLine X l := by
+  constructor
+  · intro hX
+    change Geo.LineCollinear A B X at hX
+    have hOnLineOfCollinear :
+        PrimCollinear Geo A B X →
+        HilbertIncidence.OnLine X l :=
+      hilbert_collinear_on_line
+        Geo A B X l hAB hAl hBl
+    rcases hX with
+      hEq | hEq | hEq |
+      hBetween | hBetween | hBetween |
+      hBetween | hBetween | hBetween
+    · exact False.elim (hAB hEq)
+    · rw [← hEq]
+      exact hAl
+    · rw [← hEq]
+      exact hBl
+    · exact
+        hOnLineOfCollinear
+          (HilbertOrder.between_incidence
+            A B X hBetween).2.2.2.1
+    · exact
+        hOnLineOfCollinear
+          (PrimCollinearRotate Geo A X B
+            (HilbertOrder.between_incidence
+              A X B hBetween).2.2.2.1)
+    · exact
+        hOnLineOfCollinear
+          (PrimCollinearSwap Geo B A X
+            (HilbertOrder.between_incidence
+              B A X hBetween).2.2.2.1)
+    · exact
+        hOnLineOfCollinear
+          (PrimCollinearRotate Geo A X B
+            (PrimCollinearSymm Geo B X A
+              (HilbertOrder.between_incidence
+                B X A hBetween).2.2.2.1))
+    · exact
+        hOnLineOfCollinear
+          (PrimCollinearCycle Geo X A B
+            (HilbertOrder.between_incidence
+              X A B hBetween).2.2.2.1)
+    · exact
+        hOnLineOfCollinear
+          (PrimCollinearSymm Geo X B A
+            (HilbertOrder.between_incidence
+              X B A hBetween).2.2.2.1)
+  · intro hXl
+    change Geo.LineCollinear A B X
+    by_cases hXA : X = A
+    · subst X
+      exact Or.inr (Or.inl rfl)
+    by_cases hXB : X = B
+    · subst X
+      exact Or.inr (Or.inr (Or.inl rfl))
+    have hBX : B ≠ X := fun h => hXB h.symm
+    have hAX : A ≠ X := fun h => hXA h.symm
+    have hCollinear : PrimCollinear Geo A B X :=
+      ⟨l, hAl, hBl, hXl⟩
+    rcases
+        hilbert_between_trichotomy
+          Geo A B X hAB hBX hAX hCollinear with
+      hBetween | hBetween | hBetween
+    · exact
+        Or.inr
+          (Or.inr
+            (Or.inr
+              (Or.inl hBetween)))
+    · exact
+        Or.inr
+          (Or.inr
+            (Or.inr
+              (Or.inr
+                (Or.inr
+                  (Or.inl hBetween)))))
+    · exact
+        Or.inr
+          (Or.inr
+            (Or.inr
+              (Or.inr
+                (Or.inl hBetween))))
+
+/--
+Two nondegenerate pairs of points lying on the same Hilbert line
+determine the same extensional point-line.
+-/
+theorem hilbert_pointLine_eq_of_points_on_line
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D : Geo.Point)
+    (l : Geo.Line)
+    (hAB : A ≠ B)
+    (hCD : C ≠ D)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hBl : HilbertIncidence.OnLine B l)
+    (hCl : HilbertIncidence.OnLine C l)
+    (hDl : HilbertIncidence.OnLine D l) :
+    Geo.PointLine A B = Geo.PointLine C D := by
+  apply Set.ext
+  intro X
+  exact
+    (hilbert_mem_pointLine_iff_onLine
+      Geo A B X l hAB hAl hBl).trans
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C D X l hCD hCl hDl).symm
+
+/--
 The strengthened inner form of Pasch used in Hilbert's proof of
 Theorem 5.  It is a theorem of I.1--I.2 and II.1--II.4, not an
 additional order axiom.

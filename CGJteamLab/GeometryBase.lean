@@ -345,18 +345,68 @@ theorem ParallelSwapSecondLine
   exact (Geometry.Geo.parallel_swap_second Geo A B C D).mp
 
 
+/-
+Previous provisional declaration:
+
 axiom ParallelCollinearLeft
     (A B C D E : Geo.Point) :
     Geo.Parallel A B D E →
     Collinear Geo C A B →
     Geo.Parallel C B D E
+-/
 
+theorem ParallelCollinearLeft
+    [HilbertOrder Geo]
+    (A B C D E : Geo.Point)
+    (hCB : C ≠ B) :
+    Geo.Parallel A B D E →
+    Collinear Geo C A B →
+    Geo.Parallel C B D E := by
+  intro hParallel hCollinear
+  rcases hParallel with ⟨hAB, hDE, hConfiguration⟩
+  rcases hCollinear with ⟨l, hCl, hAl, hBl⟩
+  have hPointLine :
+      Geo.PointLine A B = Geo.PointLine C B :=
+    hilbert_pointLine_eq_of_points_on_line
+      Geo A B C B l hAB hCB hAl hBl hCl hBl
+  refine ⟨hCB, hDE, ?_⟩
+  exact congrArg
+    (fun line =>
+      Geo.ParallelConfiguration
+        s(line, Geo.PointLine D E))
+    hPointLine ▸ hConfiguration
+
+
+/-
+Previous provisional declaration:
 
 axiom collinear_parallel_trans
     (A B C D E : Geo.Point) :
     Collinear Geo A B C →
     Geo.Parallel A C D E →
     Geo.Parallel A B D E
+-/
+
+theorem collinear_parallel_trans
+    [HilbertOrder Geo]
+    (A B C D E : Geo.Point)
+    (hAB : A ≠ B) :
+    Collinear Geo A B C →
+    Geo.Parallel A C D E →
+    Geo.Parallel A B D E := by
+  intro hCollinear hParallel
+  rcases hCollinear with ⟨l, hAl, hBl, hCl⟩
+  rcases hParallel with ⟨hAC, hDE, hConfiguration⟩
+  have hPointLine :
+      Geo.PointLine A C = Geo.PointLine A B :=
+    hilbert_pointLine_eq_of_points_on_line
+      Geo A C A B l hAC hAB hAl hCl hAl hBl
+  refine ⟨hAB, hDE, ?_⟩
+  exact congrArg
+    (fun line =>
+      Geo.ParallelConfiguration
+        s(line, Geo.PointLine D E))
+    hPointLine ▸ hConfiguration
 
 
 axiom parallel_from_equal_angles

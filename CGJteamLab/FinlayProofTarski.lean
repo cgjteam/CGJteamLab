@@ -54,14 +54,31 @@ theorem FinlayTarski
   have hBEG : Collinear Geo B E G :=
     CollinearRotate Geo B G E hBEGeometry
 
+  have hCGne : C ≠ G := by
+    intro hCG
+    subst C
+    exact
+      hGEAGeometry
+        (PrimCollinearSymm Geo A E G
+          (HilbertOrder.between_incidence
+            A E G hE.left).2.2.2.1)
+  have hBGne : B ≠ G := by
+    intro hBG
+    subst B
+    exact
+      hGFAGeometry
+        (PrimCollinearSymm Geo A F G
+          (HilbertOrder.between_incidence
+            A F G hF.left).2.2.2.1)
+
   have hFG : Geo.Parallel F G B P :=
     MidsegmentTheoremTarski Geo A B P F G hF hG hGFAGeometry
   have hCG : Geo.Parallel C G B P :=
-    ParallelCollinearLeft Geo F G C B P hFG hCFG
+    ParallelCollinearLeft Geo F G C B P hCGne hFG hCFG
   have hEG : Geo.Parallel E G C P :=
     MidsegmentTheoremTarski Geo A C P E G hE hG hGEAGeometry
   have hBG : Geo.Parallel B G C P :=
-    ParallelCollinearLeft Geo E G B C P hEG hBEG
+    ParallelCollinearLeft Geo E G B C P hBGne hEG hBEG
 
   have h₁ : Geo.Parallel B P C G :=
     ParallelSymmetry Geo C G B P hCG

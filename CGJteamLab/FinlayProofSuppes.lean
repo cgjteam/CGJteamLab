@@ -6,7 +6,7 @@ universe u
 
 variable (Geo : Geo)
 variable [HilbertIncidence Geo]
-variable [HilbertPlaneIncidence Geo]
+variable [HilbertOrder Geo]
 variable [Suppes.SuppesGeometry Geo.Point]
 variable [SuppesMidsegmentBridge Geo]
 
@@ -18,6 +18,8 @@ theorem FinlaySuppes
   (hG : IsMidpoint Geo G A P)
   (hGP : G ≠ P)
   (hAPne : A ≠ P)
+  (hCGne : C ≠ G)
+  (hBGne : B ≠ G)
   (hBE : Collinear Geo B G E)
   (hCF : Collinear Geo C G F)
   (hAP : Collinear Geo A D P)
@@ -29,11 +31,11 @@ theorem FinlaySuppes
   have hFG : Geo.Parallel F G B P :=
     MidsegmentTheoremSuppes Geo A B P F G hF hG
   have hCG : Geo.Parallel C G B P :=
-    ParallelCollinearLeft Geo F G C B P hFG hCFG
+    ParallelCollinearLeft Geo F G C B P hCGne hFG hCFG
   have hEG : Geo.Parallel E G C P :=
     MidsegmentTheoremSuppes Geo A C P E G hE hG
   have hBG : Geo.Parallel B G C P :=
-    ParallelCollinearLeft Geo E G B C P hEG hBEG
+    ParallelCollinearLeft Geo E G B C P hBGne hEG hBEG
 
   have h1 : Geo.Parallel B P C G :=
     ParallelSymmetry Geo C G B P hCG

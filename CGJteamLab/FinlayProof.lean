@@ -30,6 +30,24 @@ theorem Finlay
   have hBEG : Collinear Geo B E G := by
     exact CollinearRotate Geo B G E hBE
 
+  have hCGne : C ≠ G := by
+    intro hCG
+    subst C
+    exact
+      hGEA
+        (PrimCollinearSymm Geo A E G
+          (HilbertOrder.between_incidence
+            A E G hE.left).2.2.2.1)
+
+  have hBGne : B ≠ G := by
+    intro hBG
+    subst B
+    exact
+      hGFA
+        (PrimCollinearSymm Geo A F G
+          (HilbertOrder.between_incidence
+            A F G hF.left).2.2.2.1)
+
   -- Step 1.
   -- Apply the Midsegment Theorem twice to obtain
   -- CG ∥ BP and BG ∥ CP.
@@ -49,6 +67,7 @@ theorem Finlay
         Geo
         F G C
         B P
+        hCGne
         hFG
         hCFG
 
@@ -67,6 +86,7 @@ theorem Finlay
         Geo
         E G B
         C P
+        hBGne
         hEG
         hBEG
 

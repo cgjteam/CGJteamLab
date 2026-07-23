@@ -25,7 +25,7 @@ structure Geo where
     Prop
 
   ParallelConfiguration :
-    Sym2 (Sym2 Point) →
+    Sym2 (Set Point) →
     Prop
 
 namespace Geo
@@ -158,16 +158,38 @@ def AngleCongruent
     (Geo.Angle D E F)
 
 /--
-The unoriented point-line determined by `A` and `B`.
+Three points are weakly collinear in the language shared by all
+geometries when two coincide or one of the six oriented betweenness
+relations holds.
 
-Nondegeneracy and incidence properties belong to higher layers; the
-core records only the endpoint symmetry.
+All orientations are included because `GeometryCore` deliberately
+assumes no order axioms.
+-/
+def LineCollinear
+    (Geo : Geometry.Geo)
+    (A B C : Geo.Point) : Prop :=
+  A = B ∨
+  A = C ∨
+  B = C ∨
+  Geo.Between A B C ∨
+  Geo.Between A C B ∨
+  Geo.Between B A C ∨
+  Geo.Between B C A ∨
+  Geo.Between C A B ∨
+  Geo.Between C B A
+
+/--
+The extensional point-line determined by `A` and `B`.
+
+For distinct endpoints, Hilbert's order theorems identify this set
+with the unique incidence line through `A` and `B`. Degenerate pairs
+are excluded by `Parallel`.
 -/
 def PointLine
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
-    Sym2 Geo.Point :=
-  s(A, B)
+    Set Geo.Point :=
+  {X | Geo.LineCollinear A B X}
 
 /--
 Parallelism of two unoriented point-lines, represented as an unordered
@@ -179,6 +201,8 @@ the geometry library.
 def Parallel
     (Geo : Geometry.Geo)
     (A B C D : Geo.Point) : Prop :=
+  A ≠ B ∧
+  C ≠ D ∧
   Geo.ParallelConfiguration
     s(Geo.PointLine A B, Geo.PointLine C D)
 
@@ -247,7 +271,10 @@ theorem pointLine_swap
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
     Geo.PointLine A B = Geo.PointLine B A := by
-  exact Sym2.eq_swap
+  apply Set.ext
+  intro X
+  simp only [PointLine, Set.mem_ofPred_eq, LineCollinear]
+  aesop
 
 theorem parallel_symmetry
     (Geo : Geometry.Geo)
@@ -256,11 +283,13 @@ theorem parallel_symmetry
     Geo.Parallel C D A B := by
   unfold Parallel
   constructor
-  · intro h
+  · rintro ⟨hAB, hCD, h⟩
+    refine ⟨hCD, hAB, ?_⟩
     exact (Sym2.eq_swap
       (a := Geo.PointLine A B)
       (b := Geo.PointLine C D)) ▸ h
-  · intro h
+  · rintro ⟨hCD, hAB, h⟩
+    refine ⟨hAB, hCD, ?_⟩
     exact (Sym2.eq_swap
       (a := Geo.PointLine C D)
       (b := Geo.PointLine A B)) ▸ h
@@ -272,13 +301,15 @@ theorem parallel_swap_first
     Geo.Parallel B A C D := by
   unfold Parallel
   constructor
-  · intro h
+  · rintro ⟨hAB, hCD, h⟩
+    refine ⟨hAB.symm, hCD, ?_⟩
     exact congrArg
       (fun l =>
         Geo.ParallelConfiguration
           s(l, Geo.PointLine C D))
       (Geo.pointLine_swap A B) ▸ h
-  · intro h
+  · rintro ⟨hBA, hCD, h⟩
+    refine ⟨hBA.symm, hCD, ?_⟩
     exact congrArg
       (fun l =>
         Geo.ParallelConfiguration
@@ -292,13 +323,15 @@ theorem parallel_swap_second
     Geo.Parallel A B D C := by
   unfold Parallel
   constructor
-  · intro h
+  · rintro ⟨hAB, hCD, h⟩
+    refine ⟨hAB, hCD.symm, ?_⟩
     exact congrArg
       (fun l =>
         Geo.ParallelConfiguration
           s(Geo.PointLine A B, l))
       (Geo.pointLine_swap C D) ▸ h
-  · intro h
+  · rintro ⟨hAB, hDC, h⟩
+    refine ⟨hAB, hDC.symm, ?_⟩
     exact congrArg
       (fun l =>
         Geo.ParallelConfiguration

@@ -126,6 +126,7 @@ theorem MidsegmentParallel
   exact
     collinear_parallel_trans
       Geo M₁ M₂ T V₁ V₂
+      hM₂M₁.symm
       hM₁M₂T
       hParM₁TV₁V₂
 
