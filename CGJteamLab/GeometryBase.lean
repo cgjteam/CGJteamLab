@@ -230,16 +230,38 @@ axiom VerticalAngles
 -- Part VI. Parallelism
 ------------------------------------------------------------------------
 
+/-
+Previous provisional declaration:
+
 axiom ParallelSymmetry
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
     Geo.Parallel C D A B
+-/
 
+omit [HilbertIncidence Geo] in
+theorem ParallelSymmetry
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D →
+    Geo.Parallel C D A B := by
+  exact (Geometry.Geo.parallel_symmetry Geo A B C D).mp
+
+
+/-
+Previous provisional declaration:
 
 axiom ParallelSwapFirstLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
     Geo.Parallel B A C D
+-/
+
+omit [HilbertIncidence Geo] in
+theorem ParallelSwapFirstLine
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D →
+    Geo.Parallel B A C D := by
+  exact (Geometry.Geo.parallel_swap_first Geo A B C D).mp
 
 
 /-
@@ -256,11 +278,7 @@ theorem ParallelSwapSecondLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
     Geo.Parallel A B D C := by
-  intro h
-  exact
-    ParallelSymmetry Geo D C A B
-      (ParallelSwapFirstLine Geo C D A B
-        (ParallelSymmetry Geo A B C D h))
+  exact (Geometry.Geo.parallel_swap_second Geo A B C D).mp
 
 
 axiom ParallelCollinearLeft

@@ -24,9 +24,8 @@ structure Geo where
     (Point × Sym2 Point) →
     Prop
 
-  Parallel :
-    Point → Point →
-    Point → Point →
+  ParallelConfiguration :
+    Sym2 (Sym2 Point) →
     Prop
 
 namespace Geo
@@ -71,6 +70,31 @@ def AngleCongruent
   Geo.UnorientedAngleCongruent
     (Geo.Angle A B C)
     (Geo.Angle D E F)
+
+/--
+The unoriented point-line determined by `A` and `B`.
+
+Nondegeneracy and incidence properties belong to higher layers; the
+core records only the endpoint symmetry.
+-/
+def PointLine
+    (Geo : Geometry.Geo)
+    (A B : Geo.Point) :
+    Sym2 Geo.Point :=
+  s(A, B)
+
+/--
+Parallelism of two unoriented point-lines, represented as an unordered
+pair so that exchanging the two lines is definitional.
+
+The four-point interface is retained for compatibility with the rest of
+the geometry library.
+-/
+def Parallel
+    (Geo : Geometry.Geo)
+    (A B C D : Geo.Point) : Prop :=
+  Geo.ParallelConfiguration
+    s(Geo.PointLine A B, Geo.PointLine C D)
 
 theorem segment_swap
     (Geo : Geometry.Geo)
@@ -132,6 +156,68 @@ theorem angle_congruent_reverse_second
     exact (Geo.angle_swap D E F) ▸ h
   · intro h
     exact (Geo.angle_swap F E D) ▸ h
+
+theorem pointLine_swap
+    (Geo : Geometry.Geo)
+    (A B : Geo.Point) :
+    Geo.PointLine A B = Geo.PointLine B A := by
+  exact Sym2.eq_swap
+
+theorem parallel_symmetry
+    (Geo : Geometry.Geo)
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D ↔
+    Geo.Parallel C D A B := by
+  unfold Parallel
+  constructor
+  · intro h
+    exact (Sym2.eq_swap
+      (a := Geo.PointLine A B)
+      (b := Geo.PointLine C D)) ▸ h
+  · intro h
+    exact (Sym2.eq_swap
+      (a := Geo.PointLine C D)
+      (b := Geo.PointLine A B)) ▸ h
+
+theorem parallel_swap_first
+    (Geo : Geometry.Geo)
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D ↔
+    Geo.Parallel B A C D := by
+  unfold Parallel
+  constructor
+  · intro h
+    exact congrArg
+      (fun l =>
+        Geo.ParallelConfiguration
+          s(l, Geo.PointLine C D))
+      (Geo.pointLine_swap A B) ▸ h
+  · intro h
+    exact congrArg
+      (fun l =>
+        Geo.ParallelConfiguration
+          s(l, Geo.PointLine C D))
+      (Geo.pointLine_swap B A) ▸ h
+
+theorem parallel_swap_second
+    (Geo : Geometry.Geo)
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D ↔
+    Geo.Parallel A B D C := by
+  unfold Parallel
+  constructor
+  · intro h
+    exact congrArg
+      (fun l =>
+        Geo.ParallelConfiguration
+          s(Geo.PointLine A B, l))
+      (Geo.pointLine_swap C D) ▸ h
+  · intro h
+    exact congrArg
+      (fun l =>
+        Geo.ParallelConfiguration
+          s(Geo.PointLine A B, l))
+      (Geo.pointLine_swap D C) ▸ h
 
 end Geo
 
