@@ -86,10 +86,20 @@ theorem MidpointMedian
 -- Part III. Collinearity
 ------------------------------------------------------------------------
 
+/-
+Previous provisional declaration:
+
 axiom CollinearSymmetry
     (A B C : Geo.Point) :
     Collinear Geo A B C →
     Collinear Geo C B A
+-/
+
+theorem CollinearSymmetry
+    (A B C : Geo.Point) :
+    Collinear Geo A B C →
+    Collinear Geo C B A := by
+  exact PrimCollinearSymm Geo A B C
 
 
 theorem CollinearRotate
@@ -128,10 +138,24 @@ axiom CongruentReverseBoth
     Geo.Congruent B A D C
 
 
+/-
+Previous provisional declaration:
+
 axiom CongruentSwapSecond
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent A B D C
+-/
+
+omit [HilbertIncidence Geo] in
+theorem CongruentSwapSecond
+    (A B C D : Geo.Point) :
+    Geo.Congruent A B C D →
+    Geo.Congruent A B D C := by
+  intro h
+  exact
+    CongruentReverseFirst Geo B A D C
+      (CongruentReverseBoth Geo A B C D h)
 
 
 ------------------------------------------------------------------------
@@ -166,10 +190,25 @@ axiom ParallelSwapFirstLine
     Geo.Parallel B A C D
 
 
+/-
+Previous provisional declaration:
+
 axiom ParallelSwapSecondLine
     (A B C D : Geo.Point) :
     Geo.Parallel A B C D →
     Geo.Parallel A B D C
+-/
+
+omit [HilbertIncidence Geo] in
+theorem ParallelSwapSecondLine
+    (A B C D : Geo.Point) :
+    Geo.Parallel A B C D →
+    Geo.Parallel A B D C := by
+  intro h
+  exact
+    ParallelSymmetry Geo D C A B
+      (ParallelSwapFirstLine Geo C D A B
+        (ParallelSymmetry Geo A B C D h))
 
 
 axiom ParallelCollinearLeft
@@ -240,12 +279,25 @@ axiom SAS
     TriangleCongruenceResult Geo A B C D E F
 
 
+/-
+Previous provisional declaration:
+
 axiom TriangleCongruentFromSAS
     (A B C D E F : Geo.Point) :
     Geo.Congruent A B D E →
     Geo.AngleCongruent B A C E D F →
     Geo.Congruent A C D F →
     TriangleCongruenceResult Geo A B C D E F
+-/
+
+omit [HilbertIncidence Geo] in
+theorem TriangleCongruentFromSAS
+    (A B C D E F : Geo.Point) :
+    Geo.Congruent A B D E →
+    Geo.AngleCongruent B A C E D F →
+    Geo.Congruent A C D F →
+    TriangleCongruenceResult Geo A B C D E F := by
+  exact SAS Geo A B C D E F
 ------------------------------------------------------------------------
 -- Part IX. Parallelogram Theory
 ------------------------------------------------------------------------
@@ -276,10 +328,22 @@ axiom OnePairParallelCongruentCriterion
 -- Fundamental Properties
 ------------------------------------------------------------------------
 
+/-
+Previous provisional declaration:
+
 axiom ParallelogramOppositeSidesParallel
     (A B C D : Geo.Point) :
     IsParallelogram Geo A B C D →
     OppositeSidesParallel Geo A B C D
+-/
+
+omit [HilbertIncidence Geo] in
+theorem ParallelogramOppositeSidesParallel
+    (A B C D : Geo.Point) :
+    IsParallelogram Geo A B C D →
+    OppositeSidesParallel Geo A B C D := by
+  intro h
+  exact h
 
 
 axiom ParallelogramOppositeSidesCongruent

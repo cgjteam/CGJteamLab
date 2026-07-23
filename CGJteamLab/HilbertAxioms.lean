@@ -83,6 +83,7 @@ The following classes formalize the plane part of the five axiom groups
 from the second English edition of Hilbert's *Foundations of Geometry*.
 They preserve the small `HilbertIncidence` interface used by the existing
 library and add stronger layers without changing `GeometryCore`.
+The field documentation retains Hilbert's original group numbering.
 
 The present `Geometry.Geo` has points and lines but no type of planes.
 Consequently, the space incidence axioms I, 4-8 are intentionally not
