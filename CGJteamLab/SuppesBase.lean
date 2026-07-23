@@ -1,4 +1,5 @@
-import CGJteamLab.SuppesCore
+import CGJteamLab.GeometryBase
+import CGJteamLab.SuppesAxioms
 
 namespace Geometry
 
@@ -24,6 +25,19 @@ local notation "Mid" =>
 
 local notation "Col" =>
   SuppesGeometry.Collinear
+
+/-- Primitive notion of triangle. -/
+def PrimTriangle (A B C : Point) : Prop :=
+  ¬ Col A B C
+
+/--
+Primitive notion of parallelogram (Suppes).
+
+P(A,B,C,D) iff T(A,B,C) and Midpoint(A,C) = Midpoint(B,D).
+-/
+def PrimParallelogram (A B C D : Point) : Prop :=
+  PrimTriangle A B C ∧
+  Mid A C = Mid B D
 
 /-!
 # Suppes Theorems
@@ -312,5 +326,73 @@ theorem theorem11
 end Suppes
 
 end Suppes
+
+end Geometry
+
+namespace Geometry
+
+universe u
+
+open Suppes
+
+variable (Geo : Geometry.Geo)
+variable [HilbertIncidence Geo]
+variable [SuppesGeometry Geo.Point]
+
+local notation "SMid" => SuppesGeometry.operation_midpoint
+local notation "SDbl" => SuppesGeometry.operation_double
+local notation "SCol" => SuppesGeometry.Collinear
+
+/-- Suppes' Definition 3 of parallel segments. -/
+def SuppesParallel (A B C D : Geo.Point) : Prop :=
+  PrimTriangle A B C ∧ C ≠ D ∧
+  PrimParallelogram A B (SDbl A (SMid B D)) D ∧
+  SCol C (SDbl A (SMid B D)) D
+
+/- Suppes' Theorem 16(vi), for one pair of opposite sides. -/
+omit [HilbertIncidence Geo] in
+theorem suppes_parallel_of_parallelogram
+    (A B C D : Geo.Point)
+    (h : PrimParallelogram A B C D) :
+    SuppesParallel Geo A B C D := by
+  rcases h with ⟨hTri, hMid⟩
+  have hCD : C ≠ D := by
+    intro hCD
+    have hMid' : SMid A C = SMid B C := by
+      calc
+        SMid A C = SMid B D := hMid
+        _ = SMid B C := by rw [hCD]
+    have hAB : A = B := by
+      apply midpoint_cancellation C A B
+      calc
+        SMid C A = SMid A C := midpoint_commutative C A
+        _ = SMid B C := hMid'
+        _ = SMid C B := midpoint_commutative B C
+    apply hTri
+    apply L2
+    exact Or.inl hAB
+  have hDouble : SDbl A (SMid B D) = C := by
+    apply midpoint_cancellation A (SDbl A (SMid B D)) C
+    calc
+      SMid A (SDbl A (SMid B D)) = SMid B D :=
+        midpoint_double_reduction A (SMid B D)
+      _ = SMid A C := hMid.symm
+  refine ⟨hTri, hCD, ?_, ?_⟩
+  · rw [hDouble]
+    exact ⟨hTri, hMid⟩
+  · rw [hDouble]
+    apply L2
+    exact Or.inl rfl
+
+/-- Interpretation data exposing Suppes' affine results through `GeometryBase`. -/
+class SuppesMidsegmentBridge (Geo : Geometry.Geo)
+    [HilbertIncidence Geo] [SuppesGeometry Geo.Point] : Prop where
+  midpoint_eq : ∀ (A B M : Geo.Point), IsMidpoint Geo M A B → M = SMid A B
+  collinear_iff : ∀ (A B C : Geo.Point), Collinear Geo A B C ↔ SCol A B C
+  parallel_of_suppes :
+    ∀ (A B C D : Geo.Point), SuppesParallel Geo A B C D → Geo.Parallel A B C D
+  degenerate_midsegment_parallel :
+    ∀ (A B C M N : Geo.Point), Collinear Geo A B C →
+      IsMidpoint Geo M A B → IsMidpoint Geo N A C → Geo.Parallel M N B C
 
 end Geometry

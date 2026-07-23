@@ -1,4 +1,3 @@
-import CGJteamLab.GeometryCore
 import CGJteamLab.HilbertAxioms
 
 namespace Geometry

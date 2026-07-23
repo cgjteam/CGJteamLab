@@ -1,12 +1,11 @@
-import CGJteamLab.GeometryBase
-import CGJteamLab.SuppesTheorems
+import CGJteamLab.SuppesBase
 
 /-!
 # Midsegment parallelism via Suppes
 
 This is the alternative, Suppes-based route to the midsegment theorem.
-`GeometryBase.lean` is left unchanged. The bridge below records how the
-primitive operations of Suppes' affine theory are interpreted for a `Geo`.
+`SuppesBase.lean` provides the interpretation of Suppes' affine theory
+through the common language of `GeometryBase.lean`.
 -/
 
 namespace Geometry
@@ -22,57 +21,6 @@ variable [SuppesGeometry Geo.Point]
 local notation "SMid" => SuppesGeometry.operation_midpoint
 local notation "SDbl" => SuppesGeometry.operation_double
 local notation "SCol" => SuppesGeometry.Collinear
-
-/-- Suppes' Definition 3 of parallel segments. -/
-def SuppesParallel (A B C D : Geo.Point) : Prop :=
-  PrimTriangle A B C ∧ C ≠ D ∧
-  PrimParallelogram A B (SDbl A (SMid B D)) D ∧
-  SCol C (SDbl A (SMid B D)) D
-
-/-- Suppes' Theorem 16(vi), for one pair of opposite sides. -/
-theorem suppes_parallel_of_parallelogram
-    (A B C D : Geo.Point)
-    (h : PrimParallelogram A B C D) :
-    SuppesParallel Geo A B C D := by
-  rcases h with ⟨hTri, hMid⟩
-  have hCD : C ≠ D := by
-    intro hCD
-    have hMid' : SMid A C = SMid B C := by
-      calc
-        SMid A C = SMid B D := hMid
-        _ = SMid B C := by rw [hCD]
-    have hAB : A = B := by
-      apply midpoint_cancellation C A B
-      calc
-        SMid C A = SMid A C := midpoint_commutative C A
-        _ = SMid B C := hMid'
-        _ = SMid C B := midpoint_commutative B C
-    apply hTri
-    apply L2
-    exact Or.inl hAB
-  have hDouble : SDbl A (SMid B D) = C := by
-    apply midpoint_cancellation A (SDbl A (SMid B D)) C
-    calc
-      SMid A (SDbl A (SMid B D)) = SMid B D :=
-        midpoint_double_reduction A (SMid B D)
-      _ = SMid A C := hMid.symm
-  refine ⟨hTri, hCD, ?_, ?_⟩
-  · rw [hDouble]
-    exact ⟨hTri, hMid⟩
-  · rw [hDouble]
-    apply L2
-    exact Or.inl rfl
-
-/-- Interpretation data exposing Suppes' affine result through `GeometryBase`. -/
-class SuppesMidsegmentBridge (Geo : Geometry.Geo)
-    [HilbertIncidence Geo] [SuppesGeometry Geo.Point] : Prop where
-  midpoint_eq : ∀ (A B M : Geo.Point), IsMidpoint Geo M A B → M = SMid A B
-  collinear_iff : ∀ (A B C : Geo.Point), Collinear Geo A B C ↔ SCol A B C
-  parallel_of_suppes :
-    ∀ (A B C D : Geo.Point), SuppesParallel Geo A B C D → Geo.Parallel A B C D
-  degenerate_midsegment_parallel :
-    ∀ (A B C M N : Geo.Point), Collinear Geo A B C →
-      IsMidpoint Geo M A B → IsMidpoint Geo N A C → Geo.Parallel M N B C
 
 variable [SuppesMidsegmentBridge Geo]
 
