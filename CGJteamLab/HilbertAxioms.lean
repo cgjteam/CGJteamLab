@@ -149,6 +149,22 @@ def HilbertSameSide
     (fun X Y => HilbertSameSideStep Geo X Y l) P Q
 
 /--
+Two points lie on opposite sides of a line when neither lies on the
+line and their open connecting segment meets it.
+
+Unlike `HilbertSameSide`, this is a one-segment condition.  Pasch's
+axiom proves below that it is preserved when either endpoint is moved
+within its same-side component.
+-/
+def HilbertOppositeSide
+    [H : HilbertIncidence Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line) : Prop :=
+  ¬ H.OnLine P l ∧
+  ¬ H.OnLine Q l ∧
+  HilbertSegmentMeetsLine Geo P Q l
+
+/--
 Group I, axioms I, 1-3 for plane incidence.
 
 The distinctness assumptions make explicit Hilbert's convention that
@@ -2408,6 +2424,154 @@ theorem hilbert_sameSide_symm
               hMeet.choose_spec.2⟩⟩)) Q P hSwap
   exact ⟨hQl, hPl, hPath'⟩
 
+theorem hilbert_sameSide_trans
+    [HilbertIncidence Geo]
+    (P Q R : Geo.Point)
+    (l : Geo.Line) :
+    HilbertSameSide Geo P Q l →
+    HilbertSameSide Geo Q R l →
+    HilbertSameSide Geo P R l := by
+  rintro ⟨hPl, _, hPQ⟩ ⟨_, hRl, hQR⟩
+  exact ⟨hPl, hRl, hPQ.trans hQR⟩
+
+theorem hilbert_oppositeSide_symm
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line) :
+    HilbertOppositeSide Geo P Q l →
+    HilbertOppositeSide Geo Q P l := by
+  rintro ⟨hPl, hQl, X, hPXQ, hXl⟩
+  exact
+    ⟨hQl, hPl, X,
+      (HilbertOrder.between_incidence P X Q hPXQ).2.2.2.2,
+      hXl⟩
+
+/--
+Crossing a line is unchanged when one endpoint is moved across a
+single segment which avoids that line.
+
+For a genuine triangle this is the forced branch of Pasch.  The
+collinear case is the corresponding calculation with Theorems 4 and
+5.  This is the local plane-separation lemma behind the usual
+same-side/opposite-side calculus.
+-/
+theorem hilbert_oppositeSide_transport_step
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (D X Y : Geo.Point)
+    (l : Geo.Line)
+    (hDX : HilbertOppositeSide Geo D X l)
+    (hXY : HilbertSameSideStep Geo X Y l) :
+    HilbertOppositeSide Geo D Y l := by
+  refine ⟨hDX.1, hXY.2.1, ?_⟩
+  rcases hDX.2.2 with ⟨Z, hDZX, hZl⟩
+  by_cases hXYeq : X = Y
+  · subst Y
+    exact ⟨Z, hDZX, hZl⟩
+  have hDZXData := HilbertOrder.between_incidence D Z X hDZX
+  have hDXne : D ≠ X := hDZXData.2.2.1
+  have hDYne : D ≠ Y := by
+    intro hDY
+    subst Y
+    apply hXY.2.2
+    exact ⟨Z, hDZXData.2.2.2.2, hZl⟩
+  by_cases hDXY : PrimCollinear Geo D X Y
+  · rcases
+        hilbert_between_trichotomy
+          Geo D X Y hDXne hXYeq hDYne hDXY with
+      hDXYOrder | hXDY | hDYX
+    · exact
+        ⟨Z,
+          (hilbert_between_inner_trans
+            Geo D Z X Y hDZX hDXYOrder).2,
+          hZl⟩
+    · have hXZD : Geo.Between X Z D := hDZXData.2.2.2.2
+      have hXZY : Geo.Between X Z Y :=
+        (hilbert_between_inner_trans
+          Geo X Z D Y hXZD hXDY).2
+      exact False.elim (hXY.2.2 ⟨Z, hXZY, hZl⟩)
+    · have hZYne : Z ≠ Y := by
+        intro hZY
+        subst Y
+        exact hXY.2.1 hZl
+      have hZDX : PrimCollinear Geo Z D X :=
+        PrimCollinearSwap Geo D Z X hDZXData.2.2.2.1
+      have hZDY : PrimCollinear Geo Z D Y :=
+        hilbert_primCollinear_trans
+          Geo Z D X Y hDXne hZDX hDXY
+      have hDZY : PrimCollinear Geo D Z Y :=
+        PrimCollinearSwap Geo Z D Y hZDY
+      rcases
+          hilbert_between_trichotomy
+            Geo D Z Y hDZXData.1 hZYne hDYne hDZY with
+        hDZYOrder | hZDYOrder | hDYZ
+      · exact ⟨Z, hDZYOrder, hZl⟩
+      · have hZDXOrder : Geo.Between Z D X :=
+          (hilbert_between_outer_trans
+            Geo Z D Y X hZDYOrder hDYX).2
+        exact False.elim
+          ((HilbertOrder.between_unique
+            (Geo := Geo) D Z X
+            hDZXData.2.2.2.1 hDZX).1 hZDXOrder)
+      · have hYZX : Geo.Between Y Z X :=
+          (hilbert_between_inner_trans
+            Geo D Y Z X hDYZ hDZX).1
+        have hXZY : Geo.Between X Z Y :=
+          (HilbertOrder.between_incidence Y Z X hYZX).2.2.2.2
+        exact False.elim (hXY.2.2 ⟨Z, hXZY, hZl⟩)
+  · rcases HilbertOrder.pasch
+        (Geo := Geo) D X Y hDXY l
+        hDX.1 hDX.2.1 hXY.2.1
+        ⟨Z, hDZX, hZl⟩ with
+      hMeetsDY | hMeetsXY
+    · exact hMeetsDY
+    · exact False.elim (hXY.2.2 hMeetsXY)
+
+/--
+Moving an endpoint anywhere inside its same-side component preserves
+the fact that the connecting segment crosses the line.
+-/
+theorem hilbert_oppositeSide_transport_right
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (D X Y : Geo.Point)
+    (l : Geo.Line)
+    (hDX : HilbertOppositeSide Geo D X l)
+    (hXY : HilbertSameSide Geo X Y l) :
+    HilbertOppositeSide Geo D Y l := by
+  have hPath :
+      Relation.ReflTransGen
+        (fun U V => HilbertSameSideStep Geo U V l) X Y :=
+    hXY.2.2
+  clear hXY
+  induction hPath with
+  | refl =>
+      exact hDX
+  | @tail B C hPath hStep ih =>
+      exact
+        hilbert_oppositeSide_transport_step
+          Geo D B C l ih hStep
+
+theorem hilbert_oppositeSide_not_sameSide
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line) :
+    HilbertOppositeSide Geo P Q l →
+    ¬ HilbertSameSide Geo P Q l := by
+  intro hOpp hSame
+  have hQP :
+      HilbertSameSide Geo Q P l :=
+    hilbert_sameSide_symm Geo P Q l hSame
+  have hPP :
+      HilbertOppositeSide Geo P P l :=
+    hilbert_oppositeSide_transport_right
+      Geo P Q P l hOpp hQP
+  rcases hPP.2.2 with ⟨X, hPXP, _⟩
+  exact
+    (HilbertOrder.between_incidence P X P hPXP).2.2.1 rfl
+
 theorem hilbert_sameRay_ray_eq
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
@@ -3525,6 +3689,309 @@ theorem hilbert_parallel_of_alternate_angles
         hPCD hExteriorInterior)
 
 /--
+The neutral, plane-separation form of the alternate-angle criterion.
+
+The transversal through `C` and `B` separates the selected points
+`D` and `F` on the two candidate lines.  If the candidate lines met
+at `P`, exactly one of `D` and `F` would lie on the ray from its
+transversal intersection toward `P`.  The asserted angle congruence
+would therefore identify an exterior angle of triangle `CBP` with a
+remote interior angle, contrary to Theorem 22.
+
+This is the general form needed for Hilbert's construction of a
+parallel through a prescribed point.  It still uses only Groups
+I--III; the Euclidean axiom enters only in the converse theorem below.
+-/
+theorem hilbert_parallel_of_alternate_angles_oppositeSide
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A C D B E F : Geo.Point)
+    (trans : Geo.Line)
+    (hADC : Geo.Between A D C)
+    (hCEB : Geo.Between C E B)
+    (hCtrans : HilbertIncidence.OnLine C trans)
+    (hBtrans : HilbertIncidence.OnLine B trans)
+    (hOpposite : HilbertOppositeSide Geo D F trans)
+    (hAngles : Geo.AngleCongruent E C D E B F) :
+    Geo.Parallel A D B F := by
+  have hADCData := HilbertOrder.between_incidence A D C hADC
+  have hCEBData := HilbertOrder.between_incidence C E B hCEB
+  rcases hADCData.2.2.2.1 with ⟨line₁, hA₁, hD₁, hC₁⟩
+  have hAD : A ≠ D := hADCData.1
+  have hDC : D ≠ C := hADCData.2.1
+  have hCB : C ≠ B := hCEBData.2.2.1
+  have hBF : B ≠ F := by
+    intro h
+    subst F
+    exact hOpposite.2.1 hBtrans
+  rcases HilbertPlaneIncidence.line_through B F hBF with
+    ⟨line₂, hB₂, hF₂⟩
+  have hBline₁ : ¬ HilbertIncidence.OnLine B line₁ := by
+    intro hBline₁
+    have hEq : line₁ = trans :=
+      HilbertPlaneIncidence.line_unique
+        C B hCB line₁ trans
+        hC₁ hBline₁ hCtrans hBtrans
+    exact hOpposite.1 (hEq ▸ hD₁)
+  have hCline₂ : ¬ HilbertIncidence.OnLine C line₂ := by
+    intro hCline₂
+    have hEq : line₂ = trans :=
+      HilbertPlaneIncidence.line_unique
+        B C hCB.symm line₂ trans
+        hB₂ hCline₂ hBtrans hCtrans
+    exact hOpposite.2.1 (hEq ▸ hF₂)
+  refine ⟨hAD, hBF, Set.disjoint_left.2 ?_⟩
+  intro P hPline₁Set hPline₂Set
+  have hP₁ : HilbertIncidence.OnLine P line₁ :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo A D P line₁ hAD hA₁ hD₁).mp hPline₁Set
+  have hP₂ : HilbertIncidence.OnLine P line₂ :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo B F P line₂ hBF hB₂ hF₂).mp hPline₂Set
+  have hPC : P ≠ C := by
+    intro h
+    subst P
+    exact hCline₂ hP₂
+  have hPB : P ≠ B := by
+    intro h
+    subst P
+    exact hBline₁ hP₁
+  have hPtrans : ¬ HilbertIncidence.OnLine P trans := by
+    intro hPtrans
+    have hEq : line₁ = trans :=
+      HilbertPlaneIncidence.line_unique
+        P C hPC line₁ trans
+        hP₁ hC₁ hPtrans hCtrans
+    exact hOpposite.1 (hEq ▸ hD₁)
+  have hDPosition :
+      HilbertSameRay Geo C D P ∨
+      Geo.Between D C P := by
+    by_cases hDP : D = P
+    · subst P
+      exact
+        Or.inl
+          (hilbert_sameRay_refl Geo C D hDC)
+    · have hDCP : PrimCollinear Geo D C P :=
+        ⟨line₁, hD₁, hC₁, hP₁⟩
+      rcases
+          hilbert_between_trichotomy
+            Geo D C P hDC hPC.symm hDP hDCP with
+        hDCPOrder | hCDP | hDPC
+      · exact Or.inr hDCPOrder
+      · exact
+          Or.inl
+            (hilbert_sameRay_of_between Geo C D P hCDP)
+      · have hCPD : Geo.Between C P D :=
+          (HilbertOrder.between_incidence D P C hDPC).2.2.2.2
+        exact
+          Or.inl
+            (hilbert_sameRay_symm
+              Geo C P D
+              (hilbert_sameRay_of_between Geo C P D hCPD))
+  have hFPosition :
+      HilbertSameRay Geo B F P ∨
+      Geo.Between F B P := by
+    by_cases hFP : F = P
+    · subst P
+      exact
+        Or.inl
+          (hilbert_sameRay_refl Geo B F hBF.symm)
+    · have hFBP : PrimCollinear Geo F B P :=
+        ⟨line₂, hF₂, hB₂, hP₂⟩
+      rcases
+          hilbert_between_trichotomy
+            Geo F B P hBF.symm hPB.symm hFP hFBP with
+        hFBPOrder | hBFP | hFPB
+      · exact Or.inr hFBPOrder
+      · exact
+          Or.inl
+            (hilbert_sameRay_of_between Geo B F P hBFP)
+      · have hBPF : Geo.Between B P F :=
+          (HilbertOrder.between_incidence F P B hFPB).2.2.2.2
+        exact
+          Or.inl
+            (hilbert_sameRay_symm
+              Geo B P F
+              (hilbert_sameRay_of_between Geo B P F hBPF))
+  have hDsame :
+      HilbertSameRay Geo C D P →
+      HilbertSameSide Geo D P trans := by
+    intro hRay
+    exact
+      hilbert_sameRay_points_sameSide
+        Geo C D D P B line₁ trans
+        hC₁ hD₁ hCtrans hBtrans hBline₁
+        (hilbert_sameRay_refl Geo C D hDC) hRay
+  have hFsame :
+      HilbertSameRay Geo B F P →
+      HilbertSameSide Geo F P trans := by
+    intro hRay
+    exact
+      hilbert_sameRay_points_sameSide
+        Geo B F F P C line₂ trans
+        hB₂ hF₂ hBtrans hCtrans hCline₂
+        (hilbert_sameRay_refl Geo B F hBF.symm) hRay
+  have hBPC : ¬ PrimCollinear Geo B P C := by
+    intro h
+    have hBCP : PrimCollinear Geo B C P :=
+      PrimCollinearRotate Geo B P C h
+    have hPtrans' : HilbertIncidence.OnLine P trans :=
+      hilbert_collinear_on_line
+        Geo B C P trans hCB.symm
+        hBtrans hCtrans hBCP
+    exact hPtrans hPtrans'
+  have hCESame : HilbertSameRay Geo C E B :=
+    hilbert_sameRay_of_between Geo C E B hCEB
+  have hBEC : Geo.Between B E C := hCEBData.2.2.2.2
+  have hBESame : HilbertSameRay Geo B E C :=
+    hilbert_sameRay_of_between Geo B E C hBEC
+  rcases hDPosition with hDPRay | hDCP <;>
+    rcases hFPosition with hFPRay | hFBP
+  · have hDPsame := hDsame hDPRay
+    have hPFsame :
+        HilbertSameSide Geo P F trans :=
+      hilbert_sameSide_symm Geo F P trans (hFsame hFPRay)
+    have hDFsame :
+        HilbertSameSide Geo D F trans :=
+      hilbert_sameSide_trans
+        Geo D P F trans hDPsame hPFsame
+    exact False.elim
+      (hilbert_oppositeSide_not_sameSide
+        Geo D F trans hOpposite hDFsame)
+  · have hPBF : Geo.Between P B F :=
+      (HilbertOrder.between_incidence F B P hFBP).2.2.2.2
+    have hFirst :
+        Geo.Angle E C D = Geo.Angle B C P := by
+      calc
+        Geo.Angle E C D = Geo.Angle B C D :=
+          hilbert_angle_eq_of_sameRay_first
+            Geo C E B D hCESame
+        _ = Geo.Angle B C P :=
+          hilbert_angle_eq_of_sameRay_second
+            Geo C B D P hDPRay
+    have hSecond :
+        Geo.Angle E B F = Geo.Angle C B F :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B E C F hBESame
+    have hInteriorExterior :
+        Geo.AngleCongruent B C P C B F := by
+      unfold Geometry.Geo.AngleCongruent at hAngles ⊢
+      rw [← hFirst, ← hSecond]
+      exact hAngles
+    have hExteriorInterior :
+        Geo.AngleCongruent C B F B C P :=
+      Geometry.Geo.angle_congruent_symmetry
+        Geo B C P C B F hInteriorExterior
+    exact False.elim
+      (hilbert_exterior_angle_not_congruent
+        Geo B P C F hBPC hPBF hExteriorInterior)
+  · have hPCD : Geo.Between P C D :=
+      (HilbertOrder.between_incidence D C P hDCP).2.2.2.2
+    have hFirst :
+        Geo.Angle E C D = Geo.Angle B C D :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo C E B D hCESame
+    have hSecond :
+        Geo.Angle E B F = Geo.Angle C B P := by
+      calc
+        Geo.Angle E B F = Geo.Angle C B F :=
+          hilbert_angle_eq_of_sameRay_first
+            Geo B E C F hBESame
+        _ = Geo.Angle C B P :=
+          hilbert_angle_eq_of_sameRay_second
+            Geo B C F P hFPRay
+    have hExteriorInterior :
+        Geo.AngleCongruent B C D C B P := by
+      unfold Geometry.Geo.AngleCongruent at hAngles ⊢
+      rw [← hFirst, ← hSecond]
+      exact hAngles
+    exact False.elim
+      (hilbert_exterior_angle_not_congruent
+        Geo C P B D
+        (fun h => hBPC
+          (PrimCollinearSymm Geo C P B h))
+        hPCD hExteriorInterior)
+  · have hPCD : Geo.Between P C D :=
+      (HilbertOrder.between_incidence D C P hDCP).2.2.2.2
+    have hPBF : Geo.Between P B F :=
+      (HilbertOrder.between_incidence F B P hFBP).2.2.2.2
+    have hPDF : ¬ PrimCollinear Geo P D F := by
+      have hPD : P ≠ D :=
+        (HilbertOrder.between_incidence P C D hPCD).2.2.1
+      have hPF : P ≠ F :=
+        (HilbertOrder.between_incidence P B F hPBF).2.2.1
+      have hFline₁ : ¬ HilbertIncidence.OnLine F line₁ := by
+        intro hFline₁
+        have hEq : line₁ = line₂ :=
+          HilbertPlaneIncidence.line_unique
+            P F hPF line₁ line₂
+            hP₁ hFline₁ hP₂ hF₂
+        exact hBline₁ (hEq ▸ hB₂)
+      exact
+        hilbert_not_collinear_of_off_line
+          Geo P D F line₁ hPD
+          hP₁ hD₁ hFline₁
+    have hDFsame :
+        HilbertSameSide Geo D F trans :=
+      hilbert_third_side_endpoints_sameSide
+        Geo P D F C B trans
+        hPDF hPCD hPBF hCtrans hBtrans
+    exact False.elim
+      (hilbert_oppositeSide_not_sameSide
+        Geo D F trans hOpposite hDFsame)
+
+/--
+Line-level form of the neutral alternate-angle criterion.
+
+The selected points `D` and `F` lie on opposite sides of the
+transversal `CB`.  An auxiliary point beyond `D` supplies the ordered
+representative expected by
+`hilbert_parallel_of_alternate_angles_oppositeSide`; incidence
+uniqueness then transports the resulting extensional point-line back
+to `CD`.
+-/
+theorem hilbert_parallel_of_alternate_angles_oppositeSide_lines
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (C D B E F : Geo.Point)
+    (trans : Geo.Line)
+    (hCEB : Geo.Between C E B)
+    (hCtrans : HilbertIncidence.OnLine C trans)
+    (hBtrans : HilbertIncidence.OnLine B trans)
+    (hOpposite : HilbertOppositeSide Geo D F trans)
+    (hAngles : Geo.AngleCongruent E C D E B F) :
+    Geo.Parallel C D B F := by
+  have hCD : C ≠ D := by
+    intro h
+    subst D
+    exact hOpposite.1 hCtrans
+  have hBF : B ≠ F := by
+    intro h
+    subst F
+    exact hOpposite.2.1 hBtrans
+  rcases HilbertOrder.between_extension C D hCD with
+    ⟨A, hCDA⟩
+  have hADC : Geo.Between A D C :=
+    (HilbertOrder.between_incidence C D A hCDA).2.2.2.2
+  have hAux :
+      Geo.Parallel A D B F :=
+    hilbert_parallel_of_alternate_angles_oppositeSide
+      Geo A C D B E F trans
+      hADC hCEB hCtrans hBtrans
+      hOpposite hAngles
+  have hCDAData := HilbertOrder.between_incidence C D A hCDA
+  rcases hCDAData.2.2.2.1 with
+    ⟨line, hCline, hDline, hAline⟩
+  have hAD : A ≠ D := hCDAData.2.1.symm
+  have hPointLine :
+      Geo.PointLine A D = Geo.PointLine C D :=
+    hilbert_pointLine_eq_of_points_on_line
+      Geo A D C D line
+      hAD hCD hAline hDline hCline hDline
+  exact
+    ⟨hCD, hBF, hPointLine ▸ hAux.2.2⟩
+
+/--
 Extension beyond `B`, with the order information retained.
 
 II.2 first supplies a reference point beyond `B`; III.1 then lays off
@@ -3657,6 +4124,236 @@ class HilbertEuclideanPlane (Geo : Geometry.Geo)
           HilbertIncidence.OnLine A c →
           HilbertLinesDisjoint Geo c l →
           b = c
+
+/--
+The Euclidean direction of Hilbert's Theorem 30: parallel lines cut
+by a transversal make congruent alternate interior angles.
+
+Construct at `B`, on the side containing `F`, a ray `BG` for which
+`∠EBG ≅ ∠ECD` (III.4).  The neutral alternate-angle criterion shows
+that `BG` is parallel to `AD`.  Since the given line `BF` is parallel
+to `AD` as well, axiom IV makes the two incidence lines through `B`
+equal.  Their representatives `G` and `F` lie on the same side of the
+transversal, hence on the same ray from `B`, so the constructed angle
+is exactly `∠EBF`.
+-/
+theorem hilbert_alternate_angles_of_parallel
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A C D B E F : Geo.Point)
+    (hADC : Geo.Between A D C)
+    (hCEB : Geo.Between C E B)
+    (hDEF : Geo.Between D E F)
+    (hCED : ¬ PrimCollinear Geo C E D)
+    (hParallel : Geo.Parallel A D B F) :
+    Geo.AngleCongruent E C D E B F := by
+  have hADCData := HilbertOrder.between_incidence A D C hADC
+  have hCEBData := HilbertOrder.between_incidence C E B hCEB
+  have hDEFData := HilbertOrder.between_incidence D E F hDEF
+  rcases hADCData.2.2.2.1 with ⟨line₁, hA₁, hD₁, hC₁⟩
+  rcases hCEBData.2.2.2.1 with
+    ⟨trans, hCtrans, hEtrans, hBtrans⟩
+  have hDtrans : ¬ HilbertIncidence.OnLine D trans := by
+    intro hDtrans
+    exact hCED ⟨trans, hCtrans, hEtrans, hDtrans⟩
+  have hFtrans : ¬ HilbertIncidence.OnLine F trans := by
+    intro hFtrans
+    have hEFD : PrimCollinear Geo E F D :=
+      PrimCollinearCycle Geo D E F hDEFData.2.2.2.1
+    have hDtrans' : HilbertIncidence.OnLine D trans :=
+      hilbert_collinear_on_line
+        Geo E F D trans hDEFData.2.1
+        hEtrans hFtrans hEFD
+    exact hDtrans hDtrans'
+  have hOppositeDF :
+      HilbertOppositeSide Geo D F trans :=
+    ⟨hDtrans, hFtrans, ⟨E, hDEF, hEtrans⟩⟩
+  rcases HilbertCongruence.angle_construction
+      (Geo := Geo) E C D E B F
+      (fun h => hCED (PrimCollinearSwap Geo E C D h))
+      hCEBData.2.1 trans
+      hEtrans hBtrans hFtrans with
+    ⟨G, hGFSame, hConstructed, _⟩
+  have hFGSame :
+      HilbertSameSide Geo F G trans :=
+    hilbert_sameSide_symm Geo G F trans hGFSame
+  have hOppositeDG :
+      HilbertOppositeSide Geo D G trans :=
+    hilbert_oppositeSide_transport_right
+      Geo D F G trans hOppositeDF hFGSame
+  have hCandidate :
+      Geo.Parallel A D B G :=
+    hilbert_parallel_of_alternate_angles_oppositeSide
+      Geo A C D B E G trans
+      hADC hCEB hCtrans hBtrans
+      hOppositeDG hConstructed
+  have hBF : B ≠ F := hParallel.2.1
+  have hBG : B ≠ G := hCandidate.2.1
+  rcases HilbertPlaneIncidence.line_through B F hBF with
+    ⟨line₂, hB₂, hF₂⟩
+  rcases HilbertPlaneIncidence.line_through B G hBG with
+    ⟨line₃, hB₃, hG₃⟩
+  have hLine₂Disjoint :
+      HilbertLinesDisjoint Geo line₂ line₁ := by
+    rintro ⟨P, hP₂, hP₁⟩
+    have hPAD : P ∈ Geo.PointLine A D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A D P line₁ hParallel.1 hA₁ hD₁).mpr hP₁
+    have hPBF : P ∈ Geo.PointLine B F :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo B F P line₂ hBF hB₂ hF₂).mpr hP₂
+    exact Set.disjoint_left.mp hParallel.2.2 hPAD hPBF
+  have hLine₃Disjoint :
+      HilbertLinesDisjoint Geo line₃ line₁ := by
+    rintro ⟨P, hP₃, hP₁⟩
+    have hPAD : P ∈ Geo.PointLine A D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A D P line₁ hCandidate.1 hA₁ hD₁).mpr hP₁
+    have hPBG : P ∈ Geo.PointLine B G :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo B G P line₃ hBG hB₃ hG₃).mpr hP₃
+    exact Set.disjoint_left.mp hCandidate.2.2 hPAD hPBG
+  have hBline₁ : ¬ HilbertIncidence.OnLine B line₁ := by
+    intro hBline₁
+    exact hLine₂Disjoint ⟨B, hB₂, hBline₁⟩
+  have hLine₂Line₃ : line₂ = line₃ :=
+    HilbertEuclideanPlane.parallel_unique
+      (Geo := Geo) line₁ B hBline₁
+      line₂ line₃
+      hB₂ hLine₂Disjoint
+      hB₃ hLine₃Disjoint
+  have hG₂ : HilbertIncidence.OnLine G line₂ := by
+    rw [hLine₂Line₃]
+    exact hG₃
+  have hBGF : PrimCollinear Geo B G F :=
+    ⟨line₂, hB₂, hG₂, hF₂⟩
+  have hNotGBF : ¬ Geo.Between G B F := by
+    intro hGBF
+    have hOppositeGF :
+        HilbertOppositeSide Geo G F trans :=
+      ⟨hGFSame.1, hGFSame.2.1,
+        ⟨B, hGBF, hBtrans⟩⟩
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo G F trans hOppositeGF) hGFSame
+  have hGFRay : HilbertSameRay Geo B G F :=
+    ⟨hBG.symm, hBF.symm, hBGF, hNotGBF⟩
+  have hAngleObject :
+      Geo.Angle E B G = Geo.Angle E B F :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo B E G F hGFRay
+  unfold Geometry.Geo.AngleCongruent at hConstructed ⊢
+  rw [← hAngleObject]
+  exact hConstructed
+
+/--
+Line-level Euclidean direction of Hilbert's Theorem 30.
+
+This is the reusable form for an arbitrary transversal: `C` and `B`
+are its intersections with the two parallel lines, while the selected
+points `D` and `F` are required to lie on opposite sides of it.  The
+proof constructs the equal-angle line through `B`, applies the neutral
+line-level criterion, and then uses axiom IV to identify that line with
+the given parallel.
+-/
+theorem hilbert_alternate_angles_of_parallel_oppositeSide_lines
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (C D B E F : Geo.Point)
+    (trans : Geo.Line)
+    (hCEB : Geo.Between C E B)
+    (hCtrans : HilbertIncidence.OnLine C trans)
+    (hBtrans : HilbertIncidence.OnLine B trans)
+    (hOpposite : HilbertOppositeSide Geo D F trans)
+    (hParallel : Geo.Parallel C D B F) :
+    Geo.AngleCongruent E C D E B F := by
+  have hCEBData := HilbertOrder.between_incidence C E B hCEB
+  have hEtrans : HilbertIncidence.OnLine E trans :=
+    hilbert_between_on_line
+      Geo C E B trans hCtrans hBtrans hCEB
+  have hECD : ¬ PrimCollinear Geo E C D :=
+    hilbert_not_collinear_of_off_line
+      Geo E C D trans hCEBData.1.symm
+      hEtrans hCtrans hOpposite.1
+  rcases HilbertCongruence.angle_construction
+      (Geo := Geo) E C D E B F
+      hECD hCEBData.2.1 trans
+      hEtrans hBtrans hOpposite.2.1 with
+    ⟨G, hGFSame, hConstructed, _⟩
+  have hFGSame :
+      HilbertSameSide Geo F G trans :=
+    hilbert_sameSide_symm Geo G F trans hGFSame
+  have hOppositeDG :
+      HilbertOppositeSide Geo D G trans :=
+    hilbert_oppositeSide_transport_right
+      Geo D F G trans hOpposite hFGSame
+  have hCandidate :
+      Geo.Parallel C D B G :=
+    hilbert_parallel_of_alternate_angles_oppositeSide_lines
+      Geo C D B E G trans
+      hCEB hCtrans hBtrans
+      hOppositeDG hConstructed
+  have hCD : C ≠ D := hParallel.1
+  have hBF : B ≠ F := hParallel.2.1
+  have hBG : B ≠ G := hCandidate.2.1
+  rcases HilbertPlaneIncidence.line_through C D hCD with
+    ⟨line₁, hC₁, hD₁⟩
+  rcases HilbertPlaneIncidence.line_through B F hBF with
+    ⟨line₂, hB₂, hF₂⟩
+  rcases HilbertPlaneIncidence.line_through B G hBG with
+    ⟨line₃, hB₃, hG₃⟩
+  have hLine₂Disjoint :
+      HilbertLinesDisjoint Geo line₂ line₁ := by
+    rintro ⟨P, hP₂, hP₁⟩
+    have hPCD : P ∈ Geo.PointLine C D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C D P line₁ hCD hC₁ hD₁).mpr hP₁
+    have hPBF : P ∈ Geo.PointLine B F :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo B F P line₂ hBF hB₂ hF₂).mpr hP₂
+    exact Set.disjoint_left.mp hParallel.2.2 hPCD hPBF
+  have hLine₃Disjoint :
+      HilbertLinesDisjoint Geo line₃ line₁ := by
+    rintro ⟨P, hP₃, hP₁⟩
+    have hPCD : P ∈ Geo.PointLine C D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C D P line₁ hCD hC₁ hD₁).mpr hP₁
+    have hPBG : P ∈ Geo.PointLine B G :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo B G P line₃ hBG hB₃ hG₃).mpr hP₃
+    exact Set.disjoint_left.mp hCandidate.2.2 hPCD hPBG
+  have hBline₁ : ¬ HilbertIncidence.OnLine B line₁ := by
+    intro hBline₁
+    exact hLine₂Disjoint ⟨B, hB₂, hBline₁⟩
+  have hLine₂Line₃ : line₂ = line₃ :=
+    HilbertEuclideanPlane.parallel_unique
+      (Geo := Geo) line₁ B hBline₁
+      line₂ line₃
+      hB₂ hLine₂Disjoint
+      hB₃ hLine₃Disjoint
+  have hG₂ : HilbertIncidence.OnLine G line₂ := by
+    rw [hLine₂Line₃]
+    exact hG₃
+  have hBGF : PrimCollinear Geo B G F :=
+    ⟨line₂, hB₂, hG₂, hF₂⟩
+  have hNotGBF : ¬ Geo.Between G B F := by
+    intro hGBF
+    have hOppositeGF :
+        HilbertOppositeSide Geo G F trans :=
+      ⟨hGFSame.1, hGFSame.2.1,
+        ⟨B, hGBF, hBtrans⟩⟩
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo G F trans hOppositeGF) hGFSame
+  have hGFRay : HilbertSameRay Geo B G F :=
+    ⟨hBG.symm, hBF.symm, hBGF, hNotGBF⟩
+  have hAngleObject :
+      Geo.Angle E B G = Geo.Angle E B F :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo B E G F hGFRay
+  unfold Geometry.Geo.AngleCongruent at hConstructed ⊢
+  rw [← hAngleObject]
+  exact hConstructed
 
 /--
 A finite chain of copies of segment `CD`, beginning at `A`, along the

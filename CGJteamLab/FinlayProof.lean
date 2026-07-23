@@ -15,7 +15,7 @@ universe u
 
 variable (Geo : Geo)
 variable [HilbertIncidence Geo]
-variable [HilbertCongruence Geo]
+variable [HilbertEuclideanPlane Geo]
 
 /-- Finlay's proof using the Hilbert-based Midsegment Theorem. -/
 theorem Finlay

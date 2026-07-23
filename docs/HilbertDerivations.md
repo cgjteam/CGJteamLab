@@ -125,6 +125,7 @@ builds the expected equality-like behavior into the public relation.
 | `ParallelCollinearLeft` | theorem of the same name | `hilbert_pointLine_eq_of_points_on_line` identifies two nondegenerate point pairs on one incidence line, using I.2 and Theorem 4. |
 | `collinear_parallel_trans` | theorem of the same name | The companion point-line transport in the other argument position. |
 | `parallel_from_equal_angles` | theorem of the same name | `hilbert_parallel_of_alternate_angles`, the equal-alternate-angles implication in Theorem 30.  It is proved from the non-equality part of Theorem 22 and does not use Euclid's axiom IV. |
+| Parallel lines imply equal alternate angles | `equal_angles_from_parallel` | `hilbert_alternate_angles_of_parallel`, the Euclidean implication in Theorem 30.  Angle construction III.4 and the neutral implication produce a second parallel through the same point; axiom IV identifies it with the given parallel. |
 
 Hilbert defines two plane lines to be parallel when they do not
 intersect (printed page 25).  Since the project is planar,
@@ -132,15 +133,17 @@ intersect (printed page 25).  Since the project is planar,
 together with disjointness of their extensional `PointLine` carriers.
 
 The converse direction of Theorem 30 - parallel lines cut by a
-transversal produce congruent alternate angles - does require the
-Euclidean parallel axiom.  It is not being silently used by
-`parallel_from_equal_angles`.
+transversal produce congruent alternate angles - is now formalized as
+`equal_angles_from_parallel`.  It explicitly requires
+`HilbertEuclideanPlane`; the Euclidean parallel axiom is therefore not
+silently used by the neutral `parallel_from_equal_angles`.
 
 ### Construction and parallelogram API
 
 | Former provisional declaration | Active result | Reason and proof root |
 | --- | --- | --- |
 | `ExtendSegment` | theorem of the same name | `hilbert_extend_segment`; for `A != B`, II.2 supplies a ray beyond `B` and III.1 lays off a congruent copy of `AB` on it.  The degenerate case uses derived reflexivity. |
+| `OnePairParallelCongruentCriterion` | theorem of the same name | The corrected same-side orientation excludes the bow-tie case. `onePair_diagonal_oppositeSide` derives the required diagonal orientation using plane separation, the Euclidean direction of Theorem 30, and SAS; a second SAS application and the neutral direction of Theorem 30 yield the missing parallel pair. |
 | `ParallelogramOppositeSidesParallel` | theorem of the same name | Direct unfolding: `IsParallelogram` is currently defined as `OppositeSidesParallel`. |
 
 ## The nontrivial proof chain
@@ -168,6 +171,13 @@ Pasch side separation + Theorem 12 + Theorem 14
   -> equal alternate angles imply disjoint lines
   -> neutral direction of Theorem 30
   -> GeometryBase.parallel_from_equal_angles
+
+Pasch side/opposite-side transport + III.4
+  -> construct the equal-angle parallel through a prescribed point
+Hilbert IV (uniqueness of the parallel)
+  -> identify the constructed line with the given parallel
+  -> Euclidean direction of Theorem 30
+  -> GeometryBase.equal_angles_from_parallel
 ```
 
 The principal Lean names in this chain are:
@@ -189,15 +199,27 @@ The principal Lean names in this chain are:
 - `hilbert_exterior_angle_not_congruent` - only the non-equality
   consequence of Theorem 22 needed here;
 - `hilbert_parallel_of_alternate_angles` - the neutral implication used
-  from Theorem 30.
+  from Theorem 30;
+- `hilbert_oppositeSide_transport_right` - Pasch plane-separation
+  transport needed to preserve the selected side of the transversal;
+- `hilbert_parallel_of_alternate_angles_oppositeSide` - the general
+  neutral alternate-angle criterion used by the Euclidean construction;
+- `hilbert_alternate_angles_of_parallel` - the direction of Theorem 30
+  that uses axiom IV;
+- `hilbert_parallel_of_alternate_angles_oppositeSide_lines` and
+  `hilbert_alternate_angles_of_parallel_oppositeSide_lines` - the
+  line-level forms used by parallelogram recognition;
+- `onePair_diagonal_oppositeSide` - the order-and-orientation lemma
+  which eliminates the crossed endpoint correspondence.
 
 ## Downstream purpose
 
 The reductions are not merely library cleanup:
 
 - `MidsegmentParallel` uses segment extension, vertical angles, SAS,
-  congruence transitivity, and the alternate-angle parallel criterion
-  to prove the midsegment result.
+  congruence transitivity, the alternate-angle parallel criterion, and
+  the Euclidean one-pair parallelogram recognition theorem to prove the
+  midsegment result.
 - `FinlayCommon` contains the upper part of Finlay's argument exactly
   once: the two parallel transports, parallelogram recognition,
   incidence transport, diagonal bisection, and final collinearity
@@ -212,21 +234,26 @@ The reductions are not merely library cleanup:
   its declared bridge.  Neither adapter repeats Finlay's five-step
   mathematical argument.
 
+The current Tarski adapter is an integration route through
+`GeometryBase`, not yet a derivation of Hilbert's parallel interface
+from `TarskiEuclideanPlane`.  It therefore states
+`HilbertEuclideanPlane` explicitly where the shared one-pair theorem is
+used.  No Hilbert parallel axiom is inserted into `TarskiAxioms`.
+
 Thus a theorem in `HilbertAxioms` should record the mathematical
 dependency, while its wrapper in `GeometryBase` should explain which
 stable project operation it replaces.
 
 ## Remaining active axioms
 
-Exactly three active `axiom` declarations remain in
+Exactly two active `axiom` declarations remain in
 `GeometryBase.lean`:
 
-1. `OnePairParallelCongruentCriterion`;
-2. `ParallelogramOppositeSidesCongruent`;
-3. `ParallelogramDiagonals`.
+1. `ParallelogramOppositeSidesCongruent`;
+2. `ParallelogramDiagonals`.
 
-They are all in the parallelogram section and should be treated as one
-design problem rather than three unrelated proofs.
+They are both in the parallelogram section and should be treated as one
+design problem rather than unrelated proofs.
 
 The original `OnePairParallelCongruentCriterion` said only that one
 pair of named opposite sides was parallel and congruent.  That statement
@@ -235,10 +262,11 @@ records that the corresponding outer endpoints lie on the same side
 of the other side-line.  In the Midsegment proof this orientation is
 derived from the three strict betweenness hypotheses by
 `hilbert_third_side_endpoints_sameSide`, a Pasch separation theorem.
-The criterion remains provisional until the corrected recognition
-statement is derived from Hilbert's parallel theory.
+The corrected criterion is now a theorem.  Its proof constructs the
+alternative endpoint on the opposite ray to rule out the crossed
+correspondence, derives the diagonal-side orientation, and then uses
+Theorem 30 and SAS to obtain the second pair of parallel sides.
 
-After the quadrilateral notion is made precise,
 `ParallelogramOppositeSidesCongruent` is the standard Euclidean
 parallelogram theorem.  `ParallelogramDiagonals` should then be derived
 from it together with the hypotheses identifying the diagonal

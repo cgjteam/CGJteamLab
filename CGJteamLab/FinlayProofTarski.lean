@@ -18,7 +18,7 @@ universe u
 
 variable (Geo : Geometry.Geo)
 variable [HilbertIncidence Geo]
-variable [HilbertCongruence Geo]
+variable [HilbertEuclideanPlane Geo]
 variable [TarskiGeometryBaseBridge Geo]
 
 /-- Finlay's proof using the Tarski-based Midsegment Theorem. -/

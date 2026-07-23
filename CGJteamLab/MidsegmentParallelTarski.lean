@@ -17,7 +17,7 @@ universe u
 
 variable (Geo : Geometry.Geo)
 variable [HilbertIncidence Geo]
-variable [HilbertCongruence Geo]
+variable [HilbertEuclideanPlane Geo]
 variable [TarskiGeometryBaseBridge Geo]
 
 omit [TarskiGeometryBaseBridge Geo] in

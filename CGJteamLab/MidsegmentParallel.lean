@@ -7,7 +7,7 @@ universe u
 variable (Geo : Geo)
 
 variable [HilbertIncidence Geo]
-variable [HilbertCongruence Geo]
+variable [HilbertEuclideanPlane Geo]
 
 theorem MidsegmentParallel
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
