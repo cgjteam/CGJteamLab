@@ -26,6 +26,7 @@ theorem FinlayTarski
     (hE : TarskiIsMidpoint Geo E A C)
     (hF : TarskiIsMidpoint Geo F A B)
     (hG : TarskiIsMidpoint Geo G A P)
+    (hGP : G ≠ P)
     (hBE : TarskiCollinear Geo B G E)
     (hCF : TarskiCollinear Geo C G F)
     (hAP : TarskiCollinear Geo A D P)
@@ -77,7 +78,7 @@ theorem FinlayTarski
     MidpointMedian Geo A B C D hMid
   have hPG : Collinear Geo P D G := hIntPG.left
   have hAGD : Collinear Geo A G D :=
-    CollinearTrans Geo A G P D hAGP hPG
+    CollinearTrans Geo A G P D hGP hAGP hPG
   have hAGDTarski : TarskiCollinear Geo A G D :=
     tarski_collinear_of_geometry Geo A G D hAGD
 

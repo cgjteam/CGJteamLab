@@ -109,11 +109,30 @@ theorem CollinearRotate
   exact PrimCollinearRotate Geo A B C
 
 
+/-
+Previous provisional declaration:
+
 axiom CollinearTrans
     (A G P D : Geo.Point) :
     Collinear Geo A G P →
     Collinear Geo P D G →
     Collinear Geo A G D
+-/
+
+theorem CollinearTrans
+    [HilbertPlaneIncidence Geo]
+    (A G P D : Geo.Point)
+    (hGP : G ≠ P) :
+    Collinear Geo A G P →
+    Collinear Geo P D G →
+    Collinear Geo A G D := by
+  intro hAGP hPDG
+  have hGPD : Collinear Geo G P D :=
+    PrimCollinearRotate Geo G D P
+      (PrimCollinearSymm Geo P D G hPDG)
+  exact
+    hilbert_primCollinear_trans
+      Geo A G P D hGP hAGP hGPD
 
 
 ------------------------------------------------------------------------

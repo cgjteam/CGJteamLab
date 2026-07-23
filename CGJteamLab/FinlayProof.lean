@@ -14,6 +14,7 @@ theorem Finlay
   (hE : IsMidpoint Geo E A C)
   (hF : IsMidpoint Geo F A B)
   (hG : IsMidpoint Geo G A P)
+  (hGP : G ≠ P)
   (hBE : Collinear Geo B G E)
   (hCF : Collinear Geo C G F)
   (hAP : Collinear Geo A D P)
@@ -150,6 +151,7 @@ theorem Finlay
       CollinearTrans
         Geo
         A G P D
+        hGP
         hAGP
         hPG
 
