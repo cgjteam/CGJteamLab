@@ -198,10 +198,26 @@ theorem CongruentSwapSecond
 -- Part V. Angle Congruence
 ------------------------------------------------------------------------
 
+/-
+Previous provisional declaration:
+
 axiom AngleCongruentReverse
     (A B C D E F : Geo.Point) :
     Geo.AngleCongruent A B C D E F →
     Geo.AngleCongruent C B A F E D
+-/
+
+omit [HilbertIncidence Geo] in
+theorem AngleCongruentReverse
+    (A B C D E F : Geo.Point) :
+    Geo.AngleCongruent A B C D E F →
+    Geo.AngleCongruent C B A F E D := by
+  intro h
+  exact
+    (Geometry.Geo.angle_congruent_reverse_second
+      Geo C B A D E F).mp
+      ((Geometry.Geo.angle_congruent_reverse_first
+        Geo A B C D E F).mp h)
 
 
 axiom VerticalAngles
