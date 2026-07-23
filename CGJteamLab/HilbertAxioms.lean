@@ -286,6 +286,39 @@ class HilbertCongruence (Geo : Geometry.Geo)
       Geo.AngleCongruent B A C B' A' C' →
       Geo.AngleCongruent A B C A' B' C'
 
+theorem hilbert_primCollinear_trans
+    [HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    (A B C D : Geo.Point)
+    (hBC : B ≠ C) :
+    PrimCollinear Geo A B C →
+    PrimCollinear Geo B C D →
+    PrimCollinear Geo A B D := by
+  intro hABC hBCD
+  rcases hABC with ⟨l, hAl, hBl, hCl⟩
+  rcases hBCD with ⟨m, hBm, hCm, hDm⟩
+  have hlm : l = m :=
+    HilbertPlaneIncidence.line_unique
+      B C hBC l m hBl hCl hBm hCm
+  subst m
+  exact ⟨l, hAl, hBl, hDm⟩
+
+theorem hilbert_sameRay_collinear
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (O R X : Geo.Point) :
+    HilbertSameRay Geo O R X →
+    PrimCollinear Geo O R X := by
+  rintro ⟨hRO, _, hRX | hORX | hOXR⟩
+  · subst X
+    rcases HilbertPlaneIncidence.line_through O R hRO.symm with
+      ⟨l, hOl, hRl⟩
+    exact ⟨l, hOl, hRl, hRl⟩
+  · exact (HilbertOrder.between_incidence O R X hORX).2.2.2.1
+  · exact
+      PrimCollinearRotate Geo O X R
+        (HilbertOrder.between_incidence O X R hOXR).2.2.2.1
+
 theorem hilbert_congruent_reflexive
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -325,6 +358,53 @@ theorem hilbert_congruent_transitivity
       (Geo := Geo) C D A B E F
       (hilbert_congruent_symmetry Geo A B C D h₁)
       h₂
+
+theorem hilbert_extend_segment
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B : Geo.Point) :
+    ∃ T : Geo.Point,
+      PrimCollinear Geo A B T ∧
+      Geo.Congruent A B B T := by
+  by_cases hAB : A = B
+  · subst A
+    rcases HilbertPlaneIncidence.two_points_on_line (Geo := Geo) with
+      ⟨_, O, R, hOR, _, _⟩
+    by_cases hBO : B = O
+    · subst O
+      rcases HilbertCongruence.segment_construction
+          (Geo := Geo) B B B R hOR with
+        ⟨T, hRay, hCong⟩
+      have hBT : B ≠ T := hRay.2.1.symm
+      rcases HilbertPlaneIncidence.line_through B T hBT with
+        ⟨l, hBl, hTl⟩
+      refine ⟨T, ⟨l, hBl, hBl, hTl⟩, ?_⟩
+      exact hilbert_congruent_symmetry Geo B T B B hCong
+    · rcases HilbertCongruence.segment_construction
+          (Geo := Geo) B B B O hBO with
+        ⟨T, hRay, hCong⟩
+      have hBT : B ≠ T := hRay.2.1.symm
+      rcases HilbertPlaneIncidence.line_through B T hBT with
+        ⟨l, hBl, hTl⟩
+      refine ⟨T, ⟨l, hBl, hBl, hTl⟩, ?_⟩
+      exact hilbert_congruent_symmetry Geo B T B B hCong
+  · rcases HilbertOrder.between_extension A B hAB with
+      ⟨R, hABR⟩
+    have hBetweenData :=
+      HilbertOrder.between_incidence A B R hABR
+    have hBR : B ≠ R := hBetweenData.2.1
+    have hABRCol : PrimCollinear Geo A B R :=
+      hBetweenData.2.2.2.1
+    rcases HilbertCongruence.segment_construction
+        (Geo := Geo) A B B R hBR with
+      ⟨T, hRay, hCong⟩
+    have hBRT : PrimCollinear Geo B R T :=
+      hilbert_sameRay_collinear Geo B R T hRay
+    have hABT : PrimCollinear Geo A B T :=
+      hilbert_primCollinear_trans Geo A B R T hBR hABRCol hBRT
+    exact
+      ⟨T, hABT,
+        hilbert_congruent_symmetry Geo B T A B hCong⟩
 
 /-- Group IV, Hilbert's Euclidean axiom of parallels. -/
 class HilbertEuclideanPlane (Geo : Geometry.Geo)

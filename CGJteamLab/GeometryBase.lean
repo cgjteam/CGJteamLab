@@ -306,11 +306,23 @@ axiom parallel_from_equal_angles
 -- Part VII. Geometric Constructions
 ------------------------------------------------------------------------
 
+/-
+Previous provisional declaration:
+
 axiom ExtendSegment
     (A B : Geo.Point) :
     ∃ T : Geo.Point,
       Collinear Geo A B T ∧
       Geo.Congruent A B B T
+-/
+
+theorem ExtendSegment
+    [HilbertCongruence Geo]
+    (A B : Geo.Point) :
+    ∃ T : Geo.Point,
+      Collinear Geo A B T ∧
+      Geo.Congruent A B B T := by
+  exact hilbert_extend_segment Geo A B
 
 
 axiom IntersectionOnSameLine
