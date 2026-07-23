@@ -370,11 +370,7 @@ theorem ParallelCollinearLeft
     hilbert_pointLine_eq_of_points_on_line
       Geo A B C B l hAB hCB hAl hBl hCl hBl
   refine ⟨hCB, hDE, ?_⟩
-  exact congrArg
-    (fun line =>
-      Geo.ParallelConfiguration
-        s(line, Geo.PointLine D E))
-    hPointLine ▸ hConfiguration
+  exact hPointLine ▸ hConfiguration
 
 
 /-
@@ -402,18 +398,32 @@ theorem collinear_parallel_trans
     hilbert_pointLine_eq_of_points_on_line
       Geo A C A B l hAC hAB hAl hCl hAl hBl
   refine ⟨hAB, hDE, ?_⟩
-  exact congrArg
-    (fun line =>
-      Geo.ParallelConfiguration
-        s(line, Geo.PointLine D E))
-    hPointLine ▸ hConfiguration
+  exact hPointLine ▸ hConfiguration
 
+
+/-
+Previous provisional declaration:
 
 axiom parallel_from_equal_angles
     (A C D B E F : Geo.Point) :
     Collinear Geo A C D →
     Geo.AngleCongruent E C D E B F →
     Geo.Parallel A D B F
+-/
+
+theorem parallel_from_equal_angles
+    [HilbertCongruence Geo]
+    (A C D B E F : Geo.Point)
+    (hADC : Geo.Between A D C)
+    (hCEB : Geo.Between C E B)
+    (hDEF : Geo.Between D E F)
+    (hCED : ¬ Collinear Geo C E D) :
+    Geo.AngleCongruent E C D E B F →
+    Geo.Parallel A D B F := by
+  exact
+    hilbert_parallel_of_alternate_angles
+      Geo A C D B E F
+      hADC hCEB hDEF hCED
 
 
 ------------------------------------------------------------------------

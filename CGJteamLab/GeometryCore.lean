@@ -24,10 +24,6 @@ structure Geo where
     (Point × Sym2 (Set Point)) →
     Prop
 
-  ParallelConfiguration :
-    Sym2 (Set Point) →
-    Prop
-
 namespace Geo
 
 /-- A ray is represented extensionally by its set of points. -/
@@ -153,7 +149,7 @@ the geometry library.
 def AngleCongruent
     (Geo : Geometry.Geo)
     (A B C D E F : Geo.Point) : Prop :=
-  Geo.UnorientedAngleCongruent
+  Relation.EqvGen Geo.UnorientedAngleCongruent
     (Geo.Angle A B C)
     (Geo.Angle D E F)
 
@@ -192,19 +188,19 @@ def PointLine
   {X | Geo.LineCollinear A B X}
 
 /--
-Parallelism of two unoriented point-lines, represented as an unordered
-pair so that exchanging the two lines is definitional.
+Parallelism of two nondegenerate extensional point-lines.
 
-The four-point interface is retained for compatibility with the rest of
-the geometry library.
+Hilbert defines parallel lines as coplanar lines without a common
+point. The project is planar, so disjointness of the two point-line
+carriers is the complete definition. The four-point interface is
+retained for compatibility with the rest of the geometry library.
 -/
 def Parallel
     (Geo : Geometry.Geo)
     (A B C D : Geo.Point) : Prop :=
   A ≠ B ∧
   C ≠ D ∧
-  Geo.ParallelConfiguration
-    s(Geo.PointLine A B, Geo.PointLine C D)
+  Disjoint (Geo.PointLine A B) (Geo.PointLine C D)
 
 theorem segment_swap
     (Geo : Geometry.Geo)
@@ -267,6 +263,37 @@ theorem angle_congruent_reverse_second
   · intro h
     exact (Geo.angle_swap F E D) ▸ h
 
+theorem angle_congruent_reflexive
+    (Geo : Geometry.Geo)
+    (A B C : Geo.Point) :
+    Geo.AngleCongruent A B C A B C := by
+  unfold AngleCongruent
+  exact Relation.EqvGen.refl _
+
+theorem angle_congruent_symmetry
+    (Geo : Geometry.Geo)
+    (A B C D E F : Geo.Point) :
+    Geo.AngleCongruent A B C D E F →
+    Geo.AngleCongruent D E F A B C := by
+  unfold AngleCongruent
+  intro h
+  exact h.symm
+
+theorem angle_congruent_transitivity
+    (Geo : Geometry.Geo)
+    (A B C D E F G H I : Geo.Point) :
+    Geo.AngleCongruent A B C D E F →
+    Geo.AngleCongruent D E F G H I →
+    Geo.AngleCongruent A B C G H I := by
+  unfold AngleCongruent
+  intro h₁ h₂
+  exact
+    Relation.EqvGen.trans
+      (Geo.Angle A B C)
+      (Geo.Angle D E F)
+      (Geo.Angle G H I)
+      h₁ h₂
+
 theorem pointLine_swap
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
@@ -284,15 +311,9 @@ theorem parallel_symmetry
   unfold Parallel
   constructor
   · rintro ⟨hAB, hCD, h⟩
-    refine ⟨hCD, hAB, ?_⟩
-    exact (Sym2.eq_swap
-      (a := Geo.PointLine A B)
-      (b := Geo.PointLine C D)) ▸ h
+    exact ⟨hCD, hAB, h.symm⟩
   · rintro ⟨hCD, hAB, h⟩
-    refine ⟨hAB, hCD, ?_⟩
-    exact (Sym2.eq_swap
-      (a := Geo.PointLine C D)
-      (b := Geo.PointLine A B)) ▸ h
+    exact ⟨hAB, hCD, h.symm⟩
 
 theorem parallel_swap_first
     (Geo : Geometry.Geo)
@@ -303,18 +324,10 @@ theorem parallel_swap_first
   constructor
   · rintro ⟨hAB, hCD, h⟩
     refine ⟨hAB.symm, hCD, ?_⟩
-    exact congrArg
-      (fun l =>
-        Geo.ParallelConfiguration
-          s(l, Geo.PointLine C D))
-      (Geo.pointLine_swap A B) ▸ h
+    exact (Geo.pointLine_swap A B) ▸ h
   · rintro ⟨hBA, hCD, h⟩
     refine ⟨hBA.symm, hCD, ?_⟩
-    exact congrArg
-      (fun l =>
-        Geo.ParallelConfiguration
-          s(l, Geo.PointLine C D))
-      (Geo.pointLine_swap B A) ▸ h
+    exact (Geo.pointLine_swap B A) ▸ h
 
 theorem parallel_swap_second
     (Geo : Geometry.Geo)
@@ -325,18 +338,10 @@ theorem parallel_swap_second
   constructor
   · rintro ⟨hAB, hCD, h⟩
     refine ⟨hAB, hCD.symm, ?_⟩
-    exact congrArg
-      (fun l =>
-        Geo.ParallelConfiguration
-          s(Geo.PointLine A B, l))
-      (Geo.pointLine_swap C D) ▸ h
+    exact (Geo.pointLine_swap C D) ▸ h
   · rintro ⟨hAB, hDC, h⟩
     refine ⟨hAB, hDC.symm, ?_⟩
-    exact congrArg
-      (fun l =>
-        Geo.ParallelConfiguration
-          s(Geo.PointLine A B, l))
-      (Geo.pointLine_swap D C) ▸ h
+    exact (Geo.pointLine_swap D C) ▸ h
 
 end Geo
 

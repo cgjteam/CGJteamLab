@@ -38,6 +38,7 @@ private theorem midsegmentParallelFromGeometryMidpoints
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
     (hM₁ : IsMidpoint Geo M₁ V₁ V₃)
     (hM₂ : IsMidpoint Geo M₂ V₂ V₃)
+    (hM₁Between : Geo.Between V₁ M₁ V₃)
     (hM₂Between : Geo.Between V₃ M₂ V₂)
     (hM₂V₂ : M₂ ≠ V₂)
     (hTri : ¬ Collinear Geo M₂ M₁ V₃) :
@@ -89,7 +90,11 @@ private theorem midsegmentParallelFromGeometryMidpoints
 
   have hParV₁M₁V₂T :=
     parallel_from_equal_angles Geo V₁ V₃ M₁ V₂ M₂ T
-      (CollinearRotate Geo V₁ M₁ V₃ hV₁M₁V₃)
+      hM₁Between
+      hM₂Between
+      hM₁M₂TBetween
+      (fun h =>
+        hTri (PrimCollinearCycle Geo V₃ M₂ M₁ h))
       hCong.angleC
 
   have hSideV₃M₁V₂T :=
@@ -140,7 +145,10 @@ theorem MidsegmentTheoremTarski
     (HilbertOrder.between_incidence A N C hN.left).2.1
   exact
     midsegmentParallelFromGeometryMidpoints
-      Geo B C A M N hMBA hNCA hN.left hNC hTri
+      Geo B C A M N hMBA hNCA
+      (HilbertOrder.between_incidence
+        A M B hM.left).2.2.2.2
+      hN.left hNC hTri
 
 end Tarski
 

@@ -86,7 +86,11 @@ theorem MidsegmentParallel
 
   have hParV₁M₁V₂T :=
     parallel_from_equal_angles Geo V₁ V₃ M₁ V₂ M₂ T
-      (CollinearRotate Geo V₁ M₁ V₃ hV₁M₁V₃)
+      hM₁.left
+      hV₃M₂V₂Between
+      hM₁M₂TBetween
+      (fun h =>
+        hTri (PrimCollinearCycle Geo V₃ M₂ M₁ h))
       hCong.angleC
 
   ------------------------------------------------------------------------
