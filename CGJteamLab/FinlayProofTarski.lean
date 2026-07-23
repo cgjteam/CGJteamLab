@@ -1,12 +1,13 @@
 import CGJteamLab.MidsegmentParallelTarski
+import CGJteamLab.FinlayCommon
 
 /-!
 # Finlay's proof via Tarski
 
-This module states the midpoint and collinearity assumptions in
-Tarski's primitive language. The explicit bridge from `TarskiBase`
-is used only when a result from the shared `GeometryBase` language
-is needed.
+This module is the Tarski adapter for the single proof in
+`FinlayCommon`.  It obtains the two parallelisms from
+`MidsegmentTheoremTarski` and performs only the explicit conversions
+between Tarski's primitive language and `GeometryBase`.
 -/
 
 namespace Geometry
@@ -20,7 +21,7 @@ variable [HilbertIncidence Geo]
 variable [HilbertCongruence Geo]
 variable [TarskiGeometryBaseBridge Geo]
 
-/-- Finlay's proof using the Tarski-based midsegment theorem. -/
+/-- Finlay's proof using the Tarski-based Midsegment Theorem. -/
 theorem FinlayTarski
     (A B C E F G P D : Geo.Point)
     (hE : TarskiIsMidpoint Geo E A C)
@@ -49,11 +50,6 @@ theorem FinlayTarski
   have hGEAGeometry : ¬ Collinear Geo G E A :=
     fun h => hGEA (tarski_collinear_of_geometry Geo G E A h)
 
-  have hCFG : Collinear Geo C F G :=
-    CollinearRotate Geo C G F hCFGeometry
-  have hBEG : Collinear Geo B E G :=
-    CollinearRotate Geo B G E hBEGeometry
-
   have hCGne : C ≠ G := by
     intro hCG
     subst C
@@ -70,43 +66,24 @@ theorem FinlayTarski
         (PrimCollinearSymm Geo A F G
           (HilbertOrder.between_incidence
             A F G hF.left).2.2.2.1)
-
   have hFG : Geo.Parallel F G B P :=
     MidsegmentTheoremTarski Geo A B P F G hF hG hGFAGeometry
-  have hCG : Geo.Parallel C G B P :=
-    ParallelCollinearLeft Geo F G C B P hCGne hFG hCFG
   have hEG : Geo.Parallel E G C P :=
     MidsegmentTheoremTarski Geo A C P E G hE hG hGEAGeometry
-  have hBG : Geo.Parallel B G C P :=
-    ParallelCollinearLeft Geo E G B C P hBGne hEG hBEG
-
-  have h₁ : Geo.Parallel B P C G :=
-    ParallelSymmetry Geo C G B P hCG
-  have h₂ : Geo.Parallel B G P C :=
-    ParallelSwapSecondLine Geo B G C P hBG
-  have hPar : IsParallelogram Geo B P C G :=
-    ParallelogramOfParallel Geo B P C G h₁ h₂
-
   have hAGP : Collinear Geo A G P :=
     collinear_of_tarski Geo A G P
       (tarski_midpoint_collinear Geo G A P hG)
-  have hIntAP : IsIntersection Geo A P B C D :=
-    And.intro hAPGeometry hBCGeometry
-  have hIntPG : IsIntersection Geo P G B C D :=
-    IntersectionOnSameLine Geo A G P B C D hAPne hAGP hIntAP
 
-  have hMid : IsMidpoint Geo D B C :=
-    ParallelogramDiagonals
-      Geo B P C G D hPar hIntPG.right hIntPG.left
-  have hMedian : IsMedian Geo A D B C :=
-    MidpointMedian Geo A B C D hMid
-  have hPG : Collinear Geo P D G := hIntPG.left
-  have hAGD : Collinear Geo A G D :=
-    CollinearTrans Geo A G P D hGP hAGP hPG
-  have hAGDTarski : TarskiCollinear Geo A G D :=
-    tarski_collinear_of_geometry Geo A G D hAGD
+  have hResult :=
+    FinlayFromMidsegmentParallels
+      Geo A B C E F G P D
+      hFG hEG hAGP
+      hGP hAPne hCGne hBGne
+      hBEGeometry hCFGeometry hAPGeometry hBCGeometry
 
-  exact And.intro hMedian hAGDTarski
+  exact
+    ⟨hResult.1,
+      tarski_collinear_of_geometry Geo A G D hResult.2⟩
 
 end Tarski
 

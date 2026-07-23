@@ -198,14 +198,19 @@ The reductions are not merely library cleanup:
 - `MidsegmentParallel` uses segment extension, vertical angles, SAS,
   congruence transitivity, and the alternate-angle parallel criterion
   to prove the midsegment result.
-- `FinlayProof` uses the two parallel transports, incidence
-  transport, and collinearity transitivity to move from the
-  midsegment theorem to the final concurrency configuration.
-- `MidsegmentParallelTarski` and `FinlayProofTarski` reuse the same
-  stable API after explicit conversion of Tarski betweenness and
-  midpoint data.
-- The Suppes path likewise reuses only the common interfaces made
-  available through its declared dependency path.
+- `FinlayCommon` contains the upper part of Finlay's argument exactly
+  once: the two parallel transports, parallelogram recognition,
+  incidence transport, diagonal bisection, and final collinearity
+  transitivity.
+- `FinlayProof`, `FinlayProofSuppes`, and `FinlayProofTarski` are
+  foundation adapters.  Each obtains `FG ∥ BP` and `EG ∥ CP` from its
+  imported Midsegment Theorem and calls
+  `FinlayFromMidsegmentParallels`.
+- The Tarski adapter additionally converts primitive Tarski
+  collinearity and midpoint data through the explicit bridge.  The
+  Suppes adapter likewise reuses only the interfaces made available by
+  its declared bridge.  Neither adapter repeats Finlay's five-step
+  mathematical argument.
 
 Thus a theorem in `HilbertAxioms` should record the mathematical
 dependency, while its wrapper in `GeometryBase` should explain which
@@ -277,4 +282,3 @@ Every future replacement should leave four durable records:
 Before a commit, compile the modified leaf modules and run a full
 `lake build`.  Also verify that no `sorry` or `admit` was introduced and
 that the count of active `axiom` declarations changed as expected.
-
