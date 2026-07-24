@@ -139,17 +139,7 @@ theorem MidsegmentParallel
       hM₁M₂T
       hParM₁TV₁V₂
 
-theorem MidpointSymmetry
-    (M A B : Geo.Point)
-    (h : HilbertIsMidpoint Geo M A B) :
-    HilbertIsMidpoint Geo M B A := by
-  rcases h with ⟨hCol, hCong⟩
-  constructor
-  · exact (HilbertOrder.between_incidence A M B hCol).2.2.2.2
-  ·
-    have h1 : Geo.Congruent M A B M :=
-      CongruentReverseBoth Geo A M M B hCong
-    exact CongruentSymmetry Geo M A B M h1
+
 
 theorem MidsegmentTheorem
     (A B C M N : Geo.Point)
