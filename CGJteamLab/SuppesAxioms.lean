@@ -1,4 +1,4 @@
-import CGJteamLab.GeometryCore
+--import CGJteamLab.HilbertCore
 import Mathlib.LinearAlgebra.AffineSpace.Midpoint
 
 namespace Geometry

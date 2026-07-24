@@ -1,4 +1,4 @@
-import CGJteamLab.SuppesBase
+import CGJteamLab.SuppesInterface
 
 /-!
 # Midsegment parallelism via Suppes

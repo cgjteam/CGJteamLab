@@ -1,4 +1,4 @@
-import CGJteamLab.GeometryBase
+--import CGJteamLab.HilbertInterface
 import CGJteamLab.SuppesAxioms
 
 namespace Geometry
@@ -323,76 +323,167 @@ theorem theorem11
 
   exact parallelogram_rotate3 hPar
 
+/-!
+## Parallel segments
+
+Suppes, Definition 3.
+-/
+
+/--
+Suppes' primitive definition of parallel segments.
+
+The segment AB is parallel to CD iff:
+1. A, B, C form a triangle,
+2. C and D are distinct,
+3. A, B, Dbl A (Mid B D), D form a primitive parallelogram,
+4. C, Dbl A (Mid B D), D are collinear.
+-/
+
+/-
+Cyclic permutation of a primitive triangle.
+Derived from Theorem 1(i) for collinearity.
+-/
+
+
+def SuppesParallel (A B C D : Point) : Prop :=
+  PrimTriangle A B C ∧
+  C ≠ D ∧
+  PrimParallelogram A B (Dbl A (Mid B D)) D ∧
+  Col C (Dbl A (Mid B D)) D
+
+
+
+
+/--
+Suppes, Theorem 1(i): cyclic permutation of collinearity.
+-/
+
+theorem collinear_rotate
+    {A B C : Point} :
+    Col A B C -> Col B C A := by
+  intro hABC
+  by_cases hAB : A = B
+  · apply L2
+    exact Or.inr (Or.inl hAB.symm)
+  · apply L3 A B B C A
+    · exact hAB
+    · apply L2
+      exact Or.inr (Or.inr rfl)
+    · exact hABC
+    · apply L2
+      exact Or.inr (Or.inl rfl)
+
+/-
+Cyclic permutation of a primitive triangle.
+-/
+theorem triangle_rotate
+    {A B C : Point} :
+    PrimTriangle A B C -> PrimTriangle B C A := by
+  intro hT
+  unfold PrimTriangle at hT ⊢
+  intro hBCA
+  apply hT
+  exact collinear_rotate (collinear_rotate hBCA)
+
+theorem parallelogram_construct
+    (A B C : Point)
+    (hT : PrimTriangle A B C) :
+    PrimParallelogram
+      C A B
+      (Dbl A (Mid B C)) := by
+  unfold PrimParallelogram
+  constructor
+  · exact triangle_rotate (triangle_rotate hT)
+  · calc
+      Mid C B = Mid B C :=
+        midpoint_commutative C B
+      _ = Mid A (Dbl A (Mid B C)) :=
+        (midpoint_double_reduction A (Mid B C)).symm
+
+theorem parallelogram_parallel_second
+    (A B C D : Point)
+    (hP : PrimParallelogram A B C D) :
+    SuppesParallel B C A D := by
+
+  unfold SuppesParallel
+
+  refine ⟨triangle_rotate hP.1, ?_, ?_, ?_⟩
+
+  · -- A ≠ D
+    intro hAD
+    have hT : PrimTriangle D A B :=
+      (parallelogram_rotate3 hP).1
+    apply hT
+    apply L2
+    exact Or.inl hAD.symm
+
+  · -- PrimParallelogram B C (Dbl B (Mid C D)) D
+    unfold PrimParallelogram
+    constructor
+
+    · -- triangularity
+      have hBCD : PrimTriangle B C D :=
+        (parallelogram_rotate3
+          (parallelogram_rotate3
+            (parallelogram_rotate3 hP))).1
+
+      have hConstruct :=
+        parallelogram_construct B C D hBCD
+
+      have hRot :=
+        parallelogram_rotate3
+          (parallelogram_rotate3
+            (parallelogram_rotate3 hConstruct))
+
+      exact hRot.1
+
+    · exact midpoint_double_reduction B (Mid C D)
+
+  · let X : Point := Dbl B (Mid C D)
+    change Col A X D
+
+    have hBX : Mid B X = Mid C D := by
+      dsimp [X]
+      exact midpoint_double_reduction B (Mid C D)
+
+    have hAXmid : Mid A X = D := by
+      apply midpoint_cancellation (Mid B C) (Mid A X) D
+      calc
+        Mid (Mid B C) (Mid A X)
+            = Mid (Mid A X) (Mid B C) := by
+                exact midpoint_commutative _ _
+        _ = Mid (Mid A B) (Mid X C) := by
+                exact midpoint_bicommutative A X B C
+        _ = Mid (Mid A B) (Mid C X) := by
+                rw [midpoint_commutative X C]
+        _ = Mid (Mid A C) (Mid B X) := by
+                exact midpoint_bicommutative A B C X
+        _ = Mid (Mid B D) (Mid C D) := by
+                rw [hP.2, hBX]
+        _ = Mid (Mid B C) (Mid D D) := by
+                exact midpoint_bicommutative B D C D
+        _ = Mid (Mid B C) D := by
+                rw [midpoint_idempotent D]
+
+    have hX : X = Dbl A D := by
+      apply midpoint_cancellation A X (Dbl A D)
+      calc
+        Mid A X = D := hAXmid
+        _ = Mid A (Dbl A D) := by
+              symm
+              exact midpoint_double_reduction A D
+
+    rw [hX]
+
+    have hCol :
+        Col A (Dbl A D) (Mid A (Dbl A D)) :=
+      midpoint_collinear A (Dbl A D)
+
+    rw [midpoint_double_reduction A D] at hCol
+    exact hCol
+
 end Suppes
 
 end Suppes
-
-end Geometry
-
-namespace Geometry
-
-universe u
-
-open Suppes
-
-variable (Geo : Geometry.Geo)
-variable [HilbertIncidence Geo]
-variable [SuppesGeometry Geo.Point]
-
-local notation "SMid" => SuppesGeometry.operation_midpoint
-local notation "SDbl" => SuppesGeometry.operation_double
-local notation "SCol" => SuppesGeometry.Collinear
-
-/-- Suppes' Definition 3 of parallel segments. -/
-def SuppesParallel (A B C D : Geo.Point) : Prop :=
-  PrimTriangle A B C ∧ C ≠ D ∧
-  PrimParallelogram A B (SDbl A (SMid B D)) D ∧
-  SCol C (SDbl A (SMid B D)) D
-
-/- Suppes' Theorem 16(vi), for one pair of opposite sides. -/
-omit [HilbertIncidence Geo] in
-theorem suppes_parallel_of_parallelogram
-    (A B C D : Geo.Point)
-    (h : PrimParallelogram A B C D) :
-    SuppesParallel Geo A B C D := by
-  rcases h with ⟨hTri, hMid⟩
-  have hCD : C ≠ D := by
-    intro hCD
-    have hMid' : SMid A C = SMid B C := by
-      calc
-        SMid A C = SMid B D := hMid
-        _ = SMid B C := by rw [hCD]
-    have hAB : A = B := by
-      apply midpoint_cancellation C A B
-      calc
-        SMid C A = SMid A C := midpoint_commutative C A
-        _ = SMid B C := hMid'
-        _ = SMid C B := midpoint_commutative B C
-    apply hTri
-    apply L2
-    exact Or.inl hAB
-  have hDouble : SDbl A (SMid B D) = C := by
-    apply midpoint_cancellation A (SDbl A (SMid B D)) C
-    calc
-      SMid A (SDbl A (SMid B D)) = SMid B D :=
-        midpoint_double_reduction A (SMid B D)
-      _ = SMid A C := hMid.symm
-  refine ⟨hTri, hCD, ?_, ?_⟩
-  · rw [hDouble]
-    exact ⟨hTri, hMid⟩
-  · rw [hDouble]
-    apply L2
-    exact Or.inl rfl
-
-/-- Interpretation data exposing Suppes' affine results through `GeometryBase`. -/
-class SuppesMidsegmentBridge (Geo : Geometry.Geo)
-    [HilbertIncidence Geo] [SuppesGeometry Geo.Point] : Prop where
-  midpoint_eq : ∀ (A B M : Geo.Point), IsMidpoint Geo M A B → M = SMid A B
-  collinear_iff : ∀ (A B C : Geo.Point), Collinear Geo A B C ↔ SCol A B C
-  parallel_of_suppes :
-    ∀ (A B C D : Geo.Point), SuppesParallel Geo A B C D → Geo.Parallel A B C D
-  degenerate_midsegment_parallel :
-    ∀ (A B C M N : Geo.Point), Collinear Geo A B C →
-      IsMidpoint Geo M A B → IsMidpoint Geo N A C → Geo.Parallel M N B C
 
 end Geometry

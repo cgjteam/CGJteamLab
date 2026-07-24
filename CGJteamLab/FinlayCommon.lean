@@ -1,4 +1,4 @@
-import CGJteamLab.GeometryBase
+import CGJteamLab.HilbertInterface
 
 /-!
 # The common upper part of Finlay's proof
