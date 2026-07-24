@@ -1,71 +1,47 @@
 import CGJteamLab.SuppesInterface
 
-/-!
-# Midsegment parallelism via Suppes
-
-This is the alternative, Suppes-based route to the midsegment theorem.
-`SuppesBase.lean` provides the interpretation of Suppes' affine theory
-through the common language of `GeometryBase.lean`.
--/
 
 namespace Geometry
+namespace Suppes
 
 universe u
 
-open Suppes
+variable {Point : Type u}
+variable [SuppesGeometry Point]
 
-variable (Geo : Geometry.Geo)
-variable [HilbertIncidence Geo]
-variable [HilbertOrder Geo]
-variable [SuppesGeometry Geo.Point]
+local notation "Mid" =>
+  (SuppesGeometry.operation_midpoint (Point := Point))
 
-local notation "SMid" => SuppesGeometry.operation_midpoint
-local notation "SDbl" => SuppesGeometry.operation_double
-local notation "SCol" => SuppesGeometry.Collinear
+/--
+Suppes midsegment theorem.
 
-variable [SuppesMidsegmentBridge Geo]
-
-/-- The midsegment theorem obtained from Suppes' Theorem 11. -/
+For a noncollinear triangle ABC, the segment joining the midpoints
+of AB and BC is parallel to the segment joining A to the midpoint
+of AC.
+-/
 theorem MidsegmentTheoremSuppes
-    (A B C M N : Geo.Point)
-    (hM : IsMidpoint Geo M A B)
-    (hN : IsMidpoint Geo N A C) :
-    Geo.Parallel M N B C := by
-  let bridge : SuppesMidsegmentBridge Geo := inferInstance
-  by_cases hCol : Collinear Geo A B C
-  · exact bridge.degenerate_midsegment_parallel A B C M N hCol hM hN
-  · have hTriBCA : PrimTriangle B C A := by
-      intro hSCol
-      apply hCol
-      have hBCA : Collinear Geo B C A :=
-        (bridge.collinear_iff B C A).mpr hSCol
-      have hACB : Collinear Geo A C B := CollinearSymmetry Geo B C A hBCA
-      exact CollinearRotate Geo A C B hACB
-    have hP : PrimParallelogram B (SMid B C) (SMid A C) (SMid A B) := by
-      simpa using (theorem11 B C A hTriBCA)
-    have hSP : SuppesParallel Geo B (SMid B C) (SMid A C) (SMid A B) :=
-      suppes_parallel_of_parallelogram Geo B (SMid B C) (SMid A C) (SMid A B) hP
-    have hPar : Geo.Parallel B (SMid B C) (SMid A C) (SMid A B) :=
-      bridge.parallel_of_suppes _ _ _ _ hSP
-    have hBCMid : Collinear Geo B C (SMid B C) :=
-      (bridge.collinear_iff B C (SMid B C)).mpr
-        (Suppes.midpoint_collinear B C)
-    have hBC : B ≠ C := by
-      intro h
-      apply hTriBCA
-      exact Suppes.L2 B C A (Or.inl h)
-    have hPar' : Geo.Parallel B C (SMid A C) (SMid A B) :=
-      collinear_parallel_trans
-        Geo B C (SMid B C) (SMid A C) (SMid A B)
-        hBC hBCMid hPar
-    have hPar'' : Geo.Parallel (SMid A C) (SMid A B) B C :=
-      ParallelSymmetry Geo B C (SMid A C) (SMid A B) hPar'
-    have hMidPar : Geo.Parallel (SMid A B) (SMid A C) B C :=
-      ParallelSwapFirstLine Geo (SMid A C) (SMid A B) B C hPar''
-    have hM' : M = SMid A B :=
-      bridge.midpoint_eq A B M hM
-    have hN' : N = SMid A C :=
-      bridge.midpoint_eq A C N hN
-    simpa [hM', hN'] using hMidPar
+    (A B C : Point)
+    (hT : PrimTriangle A B C) :
+    SuppesParallel
+      (Mid A B)
+      (Mid B C)
+      A
+      (Mid A C) := by
+  have hP :
+      PrimParallelogram
+        A
+        (Mid A B)
+        (Mid B C)
+        (Mid A C) :=
+    theorem11 A B C hT
 
+  exact
+    parallelogram_parallel_second
+      A
+      (Mid A B)
+      (Mid B C)
+      (Mid A C)
+      hP
+
+end Suppes
 end Geometry
