@@ -251,6 +251,30 @@ theorem CongruentReverseBoth
     (Geometry.Geo.congruent_reverse_second Geo B A C D).mp
       ((Geometry.Geo.congruent_reverse_first Geo A B C D).mp h)
 
+/--
+Symmetry of the Hilbert midpoint relation with respect to the endpoints.
+
+If `M` is the midpoint of `AB`, then `M` is also the midpoint of `BA`.
+This follows from symmetry of betweenness and endpoint symmetries of
+segment congruence.
+-/
+
+theorem MidpointSymmetry
+    [HilbertCongruence Geo]
+    (M A B : Geo.Point)
+    (h : HilbertIsMidpoint Geo M A B) :
+    HilbertIsMidpoint Geo M B A := by
+  rcases h with ⟨hBetween, hCong⟩
+  constructor
+  · exact
+      (HilbertOrder.between_incidence
+        A M B hBetween).2.2.2.2
+  ·
+    have hReverse : Geo.Congruent M A B M :=
+      CongruentReverseBoth Geo A M M B hCong
+    exact
+      CongruentSymmetry Geo M A B M hReverse
+
 
 /-
 Previous provisional declaration:
