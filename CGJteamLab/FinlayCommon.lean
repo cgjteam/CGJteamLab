@@ -7,10 +7,12 @@ The foundational paths differ in how they prove the two applications
 of the Midsegment Theorem.  Once the parallelisms `FG ∥ BP` and
 `EG ∥ CP` have been obtained, Finlay's remaining argument is identical.
 
-This module contains that argument once.  `FinlayProof`,
-`FinlayProofSuppes`, and `FinlayProofTarski` are thin adapters which
-produce the two parallelisms and translate their foundational language
-to the shared `GeometryBase` interface.
+This module is currently used by the Suppes and Tarski integration
+routes.  The canonical Hilbert file `FinlayProof` deliberately keeps
+the complete five-step argument in place, because that file is the
+formal pseudocode from which the lower geometry library was developed.
+The remaining adapters produce the two parallelisms and translate
+their foundational language to the shared `GeometryBase` interface.
 -/
 
 namespace Geometry

@@ -222,13 +222,15 @@ The reductions are not merely library cleanup:
   congruence transitivity, the alternate-angle parallel criterion, and
   the Euclidean one-pair parallelogram recognition theorem to prove the
   midsegment result.
-- `FinlayCommon` contains the upper part of Finlay's argument exactly
-  once: the two parallel transports, parallelogram recognition,
-  incidence transport, diagonal bisection, and final collinearity
-  transitivity.
-- `FinlayProof`, `FinlayProofSuppes`, and `FinlayProofTarski` are
-  foundation adapters.  Each obtains `FG ∥ BP` and `EG ∥ CP` from its
-  imported Midsegment Theorem and calls
+- `FinlayProof` is the canonical formal pseudocode of Finlay's
+  mathematical proof.  It keeps Steps 1--5, their explanatory
+  comments, and the complete dependency graph directly in the file.
+- `FinlayCommon` currently contains the shared upper part used by the
+  Suppes and Tarski integration routes: the two parallel transports,
+  parallelogram recognition, incidence transport, diagonal bisection,
+  and final collinearity transitivity.
+- `FinlayProofSuppes` and `FinlayProofTarski` obtain `FG ∥ BP` and
+  `EG ∥ CP` from their imported Midsegment Theorems and currently call
   `FinlayFromMidsegmentParallels`.
 - The Tarski adapter additionally converts primitive Tarski
   collinearity and midpoint data through the explicit bridge.  The
