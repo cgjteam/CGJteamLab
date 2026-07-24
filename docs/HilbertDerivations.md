@@ -34,6 +34,8 @@ The principal references are:
 | Theorem 14 (supplementary angles) | 14-15 | 26-27 |
 | Theorem 19 (transitivity and symmetry of angle congruence) | 18-19 | 30-31 |
 | Theorem 22 (exterior-angle theorem) | 21-22 | 33-34 |
+| Theorem 25 (extended triangle congruence theorem) | 22-23 | 34-35 |
+| Theorem 26 (bisection of every segment) | 23 | 35 |
 | Definition of parallel lines and Theorem 30 | 25 | 37 |
 
 The proof comments are independent paraphrases of the mathematical
@@ -147,8 +149,8 @@ silently used by the neutral `parallel_from_equal_angles`.
 | `ParallelogramOppositeSidesParallel` | theorem of the same name | Direct unfolding: `IsParallelogram` is currently defined as `OppositeSidesParallel`. |
 | `ParallelogramOppositeSidesCongruent` | theorem of the same name | Lay off a copy of one side on the ray containing its opposite side.  Same-side transport supplies the orientation for `OnePairParallelCongruentCriterion`; Hilbert IV then identifies the constructed parallel with the original side, and incidence uniqueness identifies the constructed endpoint.  Cyclic relabelling gives the other pair. |
 | Existence of a diagonal intersection | `ParallelogramDiagonalIntersectionExists` | The two cyclic applications of `onePair_diagonal_oppositeSide` construct crossing witnesses on the diagonals.  Incidence uniqueness identifies the witnesses, yielding a point strictly between both pairs of opposite vertices. |
-| `ParallelogramDiagonals` | theorem of the same name | The one-pair orientation lemma first proves that the named common point lies strictly inside both diagonals.  Theorem 30 gives two alternate-angle congruences, opposite sides are congruent by the preceding theorem, and the required ASA part of Hilbert's Theorem 25 gives equality of the two diagonal halves. |
-| Existence of a strict midpoint | `HilbertMidpointExists` | In the Euclidean project layer, copy a congruent side on the opposite side of the segment, use equal alternate angles and SAS to form an auxiliary parallelogram, then apply diagonal intersection and diagonal bisection.  The result is `Between A M B ∧ AM ≅ MB`.  Hilbert's stronger neutral midpoint result is Theorem 26. |
+| `ParallelogramDiagonals` | theorem of the same name | The one-pair orientation lemma first proves that the named common point lies strictly inside both diagonals.  Theorem 30 gives two alternate-angle congruences, opposite sides are congruent by the preceding theorem, and angle-side-angle congruence gives equality of the two diagonal halves. |
+| Existence of a strict midpoint | `HilbertMidpointExists` | Thin `GeometryBase` wrapper around `hilbert_midpoint_exists`.  The mathematical proof is Hilbert's neutral Theorem 26 in `HilbertAxioms`: opposite-side angle construction, Theorem 4, Pasch/Theorem 22 exclusion of exterior orders, vertical angles, and Theorem 25.  The result is `Between A M B ∧ AM ≅ MB` and needs only Groups I-III. |
 
 ## The nontrivial proof chain
 
@@ -202,6 +204,10 @@ The principal Lean names in this chain are:
   lemmas;
 - `hilbert_exterior_angle_not_congruent` - only the non-equality
   consequence of Theorem 22 needed here;
+- `hilbert_exterior_angle_not_congruent_other` - the companion remote
+  interior-angle form of Theorem 22;
+- `hilbert_aas_sides` - Theorem 25;
+- `hilbert_midpoint_exists` - Theorem 26;
 - `hilbert_parallel_of_alternate_angles` - the neutral implication used
   from Theorem 30;
 - `hilbert_oppositeSide_transport_right` - Pasch plane-separation
@@ -237,6 +243,12 @@ The reductions are not merely library cleanup:
 - `FinlayProofSuppes` and `FinlayProofTarski` obtain `FG ∥ BP` and
   `EG ∥ CP` from their imported Midsegment Theorems and currently call
   `FinlayFromMidsegmentParallels`.
+- The three foundation-specific final theorems are expected to have the
+  same mathematical conclusion but not necessarily identical
+  hypotheses.  Their headers and construction preludes must expose
+  exactly what Hilbert, Suppes, or Tarski supplies.  Only the visible
+  five-step Finlay argument after those constructions should retain the
+  same mathematical shape.
 - The Tarski adapter additionally converts primitive Tarski
   collinearity and midpoint data through the explicit bridge.  The
   Suppes adapter obtains its midsegment parallelisms through its
@@ -282,8 +294,8 @@ Theorem 30 and SAS to obtain the second pair of parallel sides.
 parallelogram theorem derived from segment construction, plane-side
 transport, the one-pair recognition theorem, and uniqueness of the
 parallel.  `ParallelogramDiagonals` is derived from it, strict
-diagonal-side separation, Theorem 30, and the necessary ASA
-consequence of Theorem 25.  Neither statement is a new field of
+diagonal-side separation, Theorem 30, and angle-side-angle
+congruence.  Neither statement is a new field of
 `HilbertAxioms`; every genuinely Euclidean step instead uses
 `HilbertEuclideanPlane`, whose only new field is Hilbert's axiom IV.
 

@@ -1755,7 +1755,7 @@ The crossing lemma first recovers the strict orders `A-M-C` and
 `B-M-D` from the weak collinearity hypotheses.  Hilbert's Theorem 30
 then supplies the two pairs of alternate angles in triangles `ABM`
 and `CDM`; opposite sides are congruent by the preceding theorem.
-The ASA consequence of Hilbert's Theorem 25 gives `AM ≅ CM`, which is
+The angle-side-angle congruence theorem gives `AM ≅ CM`, which is
 exactly the required midpoint statement after reversing the second
 unoriented segment.
 -/
@@ -1835,6 +1835,29 @@ theorem ParallelogramDiagonals
       (Geo.congruent_reverse_second
         A M C M).mp hASA.1⟩
 
+
+/--
+Stable `GeometryBase` wrapper for Hilbert's neutral Theorem 26.
+
+The mathematical proof is `hilbert_midpoint_exists` in
+`HilbertAxioms`; this declaration only packages its primitive
+betweenness-and-congruence conclusion as `HilbertIsMidpoint`.
+-/
+theorem HilbertMidpointExists
+    [HilbertCongruence Geo]
+    (A B : Geo.Point)
+    (hAB : A ≠ B) :
+    ∃ M : Geo.Point,
+      HilbertIsMidpoint Geo M A B := by
+  exact hilbert_midpoint_exists Geo A B hAB
+
+
+/-
+Previous Euclidean construction through an auxiliary parallelogram.
+
+It was mathematically valid but required the stronger axiom IV and
+placed the proof of Hilbert's neutral Theorem 26 in the wrong layer.
+It is retained here only as a historical implementation record.
 
 /--
 Every nondegenerate segment has a strict Hilbert midpoint.
@@ -2051,6 +2074,7 @@ theorem HilbertMidpointExists
       (HilbertOrder.between_incidence
         C M D hCMD).2.2.2.1
   exact ⟨M, hAMB, hMidpoint.2⟩
+-/
 
 
 ------------------------------------------------------------------------
