@@ -18,7 +18,7 @@ The first case study is Ian Finlay's synthetic proof of the concurrency of the t
 
 Hilbert derivation ledger:
 
-[docs/HilbertDerivations.md](docs/HilbertDerivations.md)
+https://github.com/cgjteam/CGJteamLab/wiki/Hilbert-Derivation-Ledger
 
 Project website:
 

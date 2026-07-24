@@ -21,8 +21,9 @@ blocks for higher-level geometric theories.
 
 Declarations headed `Previous provisional declaration` are retained
 inside block comments as historical API records; they are not active
-axioms.  See `docs/HilbertDerivations.md` for the mathematical source,
-proof dependency, and downstream role of every replacement.
+axioms.  See the project wiki page `Hilbert-Derivation-Ledger` for the
+mathematical source, proof dependency, and downstream role of every
+replacement.
 -/
 
 ------------------------------------------------------------------------
