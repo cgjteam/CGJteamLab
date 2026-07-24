@@ -19,6 +19,11 @@ historical axiom systems or individual proofs.
 Each section introduces reusable notions that serve as building
 blocks for higher-level geometric theories.
 
+The section map is compared against the Hilbert-style development in
+Borsuk-Szmielew, Foundations of Geometry. This file does not reproduce
+that book: the reference is used to identify local geometric theories,
+their scope, and their dependency level.
+
 Declarations headed `Previous provisional declaration` are retained
 inside block comments as historical API records; they are not active
 axioms.  See the project wiki page `Hilbert-Derivation-Ledger` for the
@@ -27,8 +32,13 @@ replacement.
 -/
 
 ------------------------------------------------------------------------
--- Part I. Basic Definitions
+-- Part I. Core Derived Notions
 ------------------------------------------------------------------------
+-- Cross-cutting definitions used by several local theories.
+-- Borsuk-Szmielew distribute the corresponding notions across:
+-- Ch. I (collinearity/intersection), Ch. II sec. 11 (midpoint),
+-- and Ch. V sec. 7 (parallelogram).
+--
 
 abbrev Collinear
     (A B C : Geo.Point) : Prop :=
@@ -80,8 +90,11 @@ def IsParallelogram
 
 
 ------------------------------------------------------------------------
--- Part II. Elementary Derived Results
+-- Part II. Midpoints and Medians
 ------------------------------------------------------------------------
+-- Reference point: Borsuk-Szmielew, Ch. II sec. 11, "Midpoint of a Segment".
+-- `IsMedian` is the project-level triangle notion built from midpoint.
+--
 
 theorem midpoint_collinear
     (A B M : Geo.Point) :
@@ -123,6 +136,9 @@ theorem MidpointMedian
 ------------------------------------------------------------------------
 -- Part III. Collinearity
 ------------------------------------------------------------------------
+-- Reference point: Borsuk-Szmielew, Ch. I secs. 2-3,
+-- non-collinearity together with the theory of lines and planes.
+--
 
 /-
 Previous provisional declaration:
@@ -183,8 +199,11 @@ theorem CollinearTrans
 
 
 ------------------------------------------------------------------------
--- Part IV. Congruence
+-- Part IV. Segment Congruence
 ------------------------------------------------------------------------
+-- Reference point: Borsuk-Szmielew, Ch. II secs. 1-3,
+-- congruence of segments and elementary relations between segments.
+--
 
 /-
 Previous provisional declaration:
@@ -303,6 +322,9 @@ theorem CongruentSwapSecond
 ------------------------------------------------------------------------
 -- Part V. Angle Congruence
 ------------------------------------------------------------------------
+-- Reference point: Borsuk-Szmielew, Ch. II secs. 4-5,
+-- "Congruence of Angles" and "Adjacent Angles. Vertical Angles".
+--
 
 /-
 Previous provisional declaration:
@@ -357,6 +379,10 @@ theorem VerticalAngles
 ------------------------------------------------------------------------
 -- Part VI. Parallelism
 ------------------------------------------------------------------------
+-- Reference points: Borsuk-Szmielew, Ch. II secs. 35-37
+-- (parallel half-lines, axes, lines) and Ch. V secs. 3-5
+-- (Euclidean conclusions about parallels and parallel-sided angles).
+--
 
 /-
 Previous provisional declaration:
@@ -593,8 +619,12 @@ theorem equal_angles_from_parallel
 
 
 ------------------------------------------------------------------------
--- Part VII. Geometric Constructions
+-- Part VII. Segment and Intersection Constructions
 ------------------------------------------------------------------------
+-- Cross-cutting construction infrastructure rather than one local theory.
+-- Reference points include Borsuk-Szmielew, Ch. I secs. 4-5
+-- (existence/intersection) and segment-construction results from Ch. II.
+--
 
 /-
 Previous provisional declaration:
@@ -707,6 +737,9 @@ theorem congruent_transitivity
 ------------------------------------------------------------------------
 -- Part VIII. Triangle Congruence
 ------------------------------------------------------------------------
+-- Reference point: Borsuk-Szmielew, Ch. II sec. 7,
+-- "Relations Between Sides and Angles of Two Triangles".
+--
 
 structure TriangleCongruenceResult
     (A B C D E F : Geo.Point) where
@@ -788,8 +821,14 @@ theorem TriangleCongruentFromSAS
     TriangleCongruenceResult Geo A B C D E F := by
   exact SAS Geo A B C D E F
 ------------------------------------------------------------------------
--- Part IX. Parallelogram Theory
+-- Part IX. Parallelograms
 ------------------------------------------------------------------------
+-- Reference point: Borsuk-Szmielew, Ch. V sec. 7, "Parallelograms".
+-- Their local theory starts from two pairs of opposite parallel sides
+-- and gives a recognition criterion using one oriented parallel pair
+-- together with congruence. The diagonal results below are a natural
+-- extension used by this library, not a transcription of sec. 7.
+--
 
 /-!
 A parallelogram is recognized from one pair of opposite sides that are
@@ -798,7 +837,7 @@ of parallelograms become available as reusable geometric tools.
 -/
 
 ------------------------------------------------------------------------
--- Recognition Criterion
+-- Recognition of Parallelograms
 ------------------------------------------------------------------------
 
 structure OnePairParallelCongruent
@@ -2103,7 +2142,7 @@ theorem HilbertMidpointExists
 
 
 ------------------------------------------------------------------------
--- Derived Results
+-- Basic Properties of Parallelograms
 ------------------------------------------------------------------------
 
 omit [HilbertIncidence Geo] in
@@ -2144,7 +2183,7 @@ theorem ParallelogramOfParallel
 
 
 ------------------------------------------------------------------------
--- Helper Theorems
+-- Generic Relation Helpers
 ------------------------------------------------------------------------
 
 omit [HilbertIncidence Geo] in
