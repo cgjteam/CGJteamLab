@@ -146,7 +146,9 @@ silently used by the neutral `parallel_from_equal_angles`.
 | `OnePairParallelCongruentCriterion` | theorem of the same name | The corrected same-side orientation excludes the bow-tie case. `onePair_diagonal_oppositeSide` derives the required diagonal orientation using plane separation, the Euclidean direction of Theorem 30, and SAS; a second SAS application and the neutral direction of Theorem 30 yield the missing parallel pair. |
 | `ParallelogramOppositeSidesParallel` | theorem of the same name | Direct unfolding: `IsParallelogram` is currently defined as `OppositeSidesParallel`. |
 | `ParallelogramOppositeSidesCongruent` | theorem of the same name | Lay off a copy of one side on the ray containing its opposite side.  Same-side transport supplies the orientation for `OnePairParallelCongruentCriterion`; Hilbert IV then identifies the constructed parallel with the original side, and incidence uniqueness identifies the constructed endpoint.  Cyclic relabelling gives the other pair. |
-| `ParallelogramDiagonals` | theorem of the same name | The one-pair orientation lemma first proves that the named common point lies strictly inside both diagonals.  Theorem 30 gives two alternate-angle congruences, opposite sides are congruent by the preceding theorem, and the required ASA part of Hilbert's Theorem 26 gives equality of the two diagonal halves. |
+| Existence of a diagonal intersection | `ParallelogramDiagonalIntersectionExists` | The two cyclic applications of `onePair_diagonal_oppositeSide` construct crossing witnesses on the diagonals.  Incidence uniqueness identifies the witnesses, yielding a point strictly between both pairs of opposite vertices. |
+| `ParallelogramDiagonals` | theorem of the same name | The one-pair orientation lemma first proves that the named common point lies strictly inside both diagonals.  Theorem 30 gives two alternate-angle congruences, opposite sides are congruent by the preceding theorem, and the required ASA part of Hilbert's Theorem 25 gives equality of the two diagonal halves. |
+| Existence of a strict midpoint | `HilbertMidpointExists` | In the Euclidean project layer, copy a congruent side on the opposite side of the segment, use equal alternate angles and SAS to form an auxiliary parallelogram, then apply diagonal intersection and diagonal bisection.  The result is `Between A M B ∧ AM ≅ MB`.  Hilbert's stronger neutral midpoint result is Theorem 26. |
 
 ## The nontrivial proof chain
 
@@ -223,8 +225,11 @@ The reductions are not merely library cleanup:
   the Euclidean one-pair parallelogram recognition theorem to prove the
   midsegment result.
 - `FinlayProof` is the canonical formal pseudocode of Finlay's
-  mathematical proof.  It keeps Steps 1--5, their explanatory
-  comments, and the complete dependency graph directly in the file.
+  mathematical proof.  Starting only from the assertion that `ABC` is
+  a triangle, it constructs the two initial midpoints, their
+  intersection `G`, the auxiliary point `P`, and the intersection
+  `D = AP ∩ BC`.  It then keeps Steps 1--5, their explanatory comments,
+  and the complete dependency graph directly in the file.
 - `FinlayCommon` currently contains the shared upper part used by the
   Suppes and Tarski integration routes: the two parallel transports,
   parallelogram recognition, incidence transport, diagonal bisection,
@@ -278,7 +283,7 @@ parallelogram theorem derived from segment construction, plane-side
 transport, the one-pair recognition theorem, and uniqueness of the
 parallel.  `ParallelogramDiagonals` is derived from it, strict
 diagonal-side separation, Theorem 30, and the necessary ASA
-consequence of Theorem 26.  Neither statement is a new field of
+consequence of Theorem 25.  Neither statement is a new field of
 `HilbertAxioms`; every genuinely Euclidean step instead uses
 `HilbertEuclideanPlane`, whose only new field is Hilbert's axiom IV.
 

@@ -1486,6 +1486,99 @@ theorem ParallelogramOppositeSidesCongruent
         Geo A B C D hParallelogram⟩
 
 
+/--
+The diagonals of a Hilbert parallelogram have an interior intersection.
+
+This is the missing existence statement behind the usual theorem that
+the diagonals bisect each other.  Applied to the two cyclic orientations
+of the parallelogram, `onePair_diagonal_oppositeSide` says that each
+diagonal separates the endpoints of the other.  The two corresponding
+crossing witnesses lie on both diagonal lines; incidence uniqueness
+identifies them.
+
+Unlike `ParallelogramDiagonals`, this theorem does not assume that a
+common point of the diagonals has already been supplied.
+-/
+theorem ParallelogramDiagonalIntersectionExists
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    ∃ M : Geo.Point,
+      Geo.Between A M C ∧
+      Geo.Between B M D := by
+  have hSides :=
+    ParallelogramOppositeSidesCongruent
+      Geo A B C D hParallelogram
+
+  -- The diagonal `BD` crosses the segment `AC`.
+  have hDA_BC : Geo.Parallel D A B C :=
+    ParallelSymmetry
+      Geo B C D A hParallelogram.2
+  have hAD_BC : Geo.Parallel A D B C :=
+    ParallelSwapFirstLine
+      Geo D A B C hDA_BC
+  have hADcongruentBC :
+      Geo.Congruent A D B C :=
+    CongruentReverseFirst
+      Geo D A B C
+      (hilbert_congruent_symmetry
+        Geo B C D A hSides.2)
+  rcases parallel_endpoints_sameSide
+      Geo A B C D hParallelogram.1 with
+    ⟨sideCD, hCcd, hDcd, hABSame⟩
+  have hData : OnePairParallelCongruent Geo A B C D :=
+    { parallel := hAD_BC
+      congruent := hADcongruentBC
+      oriented := ⟨sideCD, hDcd, hCcd, hABSame⟩ }
+  rcases onePair_diagonal_oppositeSide
+      Geo A B C D hData with
+    ⟨diagonalBD, hDbd, hBbd, hOppositeAC⟩
+
+  -- In the cyclic orientation, the diagonal `AC` crosses `BD`.
+  have hBA_CD : Geo.Parallel B A C D :=
+    ParallelSwapFirstLine
+      Geo A B C D hParallelogram.1
+  have hBAcongruentCD :
+      Geo.Congruent B A C D :=
+    CongruentReverseFirst
+      Geo A B C D hSides.1
+  rcases parallel_endpoints_sameSide
+      Geo B C D A hParallelogram.2 with
+    ⟨sideDA, hDda, hAda, hBCSame⟩
+  have hRotatedData :
+      OnePairParallelCongruent Geo B C D A :=
+    { parallel := hBA_CD
+      congruent := hBAcongruentCD
+      oriented := ⟨sideDA, hAda, hDda, hBCSame⟩ }
+  rcases onePair_diagonal_oppositeSide
+      Geo B C D A hRotatedData with
+    ⟨diagonalAC, hAac, hCac, hOppositeBD⟩
+
+  rcases hOppositeAC.2.2 with
+    ⟨X, hAXC, hXbd⟩
+  rcases hOppositeBD.2.2 with
+    ⟨Y, hBYD, hYac⟩
+  have hXac : HilbertIncidence.OnLine X diagonalAC :=
+    hilbert_between_on_line
+      Geo A X C diagonalAC hAac hCac hAXC
+  have hYbd : HilbertIncidence.OnLine Y diagonalBD :=
+    hilbert_between_on_line
+      Geo B Y D diagonalBD hBbd hDbd hBYD
+  have hXY : X = Y := by
+    by_contra hXY
+    have hLinesEqual : diagonalAC = diagonalBD :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY diagonalAC diagonalBD
+        hXac hYac hXbd hYbd
+    have hAdiagonalBD :
+        HilbertIncidence.OnLine A diagonalBD := by
+      rw [← hLinesEqual]
+      exact hAac
+    exact hOppositeAC.1 hAdiagonalBD
+  subst Y
+  exact ⟨X, hAXC, hBYD⟩
+
+
 /-
 Previous provisional declaration:
 
@@ -1662,7 +1755,7 @@ The crossing lemma first recovers the strict orders `A-M-C` and
 `B-M-D` from the weak collinearity hypotheses.  Hilbert's Theorem 30
 then supplies the two pairs of alternate angles in triangles `ABM`
 and `CDM`; opposite sides are congruent by the preceding theorem.
-The ASA consequence of Hilbert's Theorem 26 gives `AM ≅ CM`, which is
+The ASA consequence of Hilbert's Theorem 25 gives `AM ≅ CM`, which is
 exactly the required midpoint statement after reversing the second
 unoriented segment.
 -/
@@ -1741,6 +1834,223 @@ theorem ParallelogramDiagonals
     ⟨hAMC,
       (Geo.congruent_reverse_second
         A M C M).mp hASA.1⟩
+
+
+/--
+Every nondegenerate segment has a strict Hilbert midpoint.
+
+For the present Euclidean layer, construct points `C` and `D` on
+opposite sides of `AB` so that `AC ≅ BD` and the alternate angles made
+with `AB` are congruent.  Theorem 30 gives `AC ∥ BD`; SAS supplies the
+second pair of equal alternate angles and hence `CB ∥ DA`.  Thus
+`ACBD` is a parallelogram.  Its diagonal-intersection point lies
+strictly between `A` and `B`, and `ParallelogramDiagonals` makes the two
+parts congruent.
+
+Hilbert proves the stronger neutral result as Theorem 26.  This
+construction deliberately uses the already available Euclidean
+parallelogram theory because that is exactly the foundation assumed by
+the Hilbert path of Finlay's proof.
+-/
+theorem HilbertMidpointExists
+    [HilbertEuclideanPlane Geo]
+    (A B : Geo.Point)
+    (hAB : A ≠ B) :
+    ∃ M : Geo.Point,
+      HilbertIsMidpoint Geo M A B := by
+  rcases HilbertPlaneIncidence.line_through A B hAB with
+    ⟨base, hAbase, hBbase⟩
+  rcases hilbert_point_off_line Geo base with
+    ⟨C, hCbase⟩
+  have hABC : ¬ Collinear Geo A B C :=
+    hilbert_not_collinear_of_off_line
+      Geo A B C base hAB hAbase hBbase hCbase
+  have hBAC : ¬ Collinear Geo B A C := by
+    intro h
+    exact hABC (PrimCollinearSwap Geo B A C h)
+  have hCA : C ≠ A := by
+    intro h
+    subst C
+    exact hCbase hAbase
+
+  -- Select the side of `AB` opposite to `C`.
+  rcases HilbertOrder.between_extension C A hCA with
+    ⟨S, hCAS⟩
+  have hCASData :=
+    HilbertOrder.between_incidence C A S hCAS
+  have hSA : S ≠ A := hCASData.2.1.symm
+  have hSbase : ¬ HilbertIncidence.OnLine S base := by
+    intro hSbase
+    have hSAC : Collinear Geo S A C :=
+      PrimCollinearSymm Geo C A S
+        hCASData.2.2.2.1
+    have hCbase' : HilbertIncidence.OnLine C base :=
+      hilbert_collinear_on_line
+        Geo S A C base hSA
+        hSbase hAbase hSAC
+    exact hCbase hCbase'
+  have hOppositeCS :
+      HilbertOppositeSide Geo C S base :=
+    ⟨hCbase, hSbase, ⟨A, hCAS, hAbase⟩⟩
+
+  -- Copy `∠BAC` at `B` on the opposite side of `AB`.
+  rcases HilbertCongruence.angle_construction
+      (Geo := Geo) B A C A B S
+      hBAC hAB base hAbase hBbase hSbase with
+    ⟨D₀, hD₀SSame, hAngleD₀, _⟩
+  have hSD₀Same :
+      HilbertSameSide Geo S D₀ base :=
+    hilbert_sameSide_symm
+      Geo D₀ S base hD₀SSame
+  have hOppositeCD₀ :
+      HilbertOppositeSide Geo C D₀ base :=
+    hilbert_oppositeSide_transport_right
+      Geo C S D₀ base hOppositeCS hSD₀Same
+  have hBD₀ : B ≠ D₀ := by
+    intro h
+    subst D₀
+    exact hOppositeCD₀.2.1 hBbase
+
+  -- Lay off `BD ≅ AC` on the constructed ray.
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo) A C B D₀ hBD₀ with
+    ⟨D, hRayD₀D, hBD_AC⟩
+  rcases HilbertPlaneIncidence.line_through B D₀ hBD₀ with
+    ⟨rayLine, hBray, hD₀ray⟩
+  have hAray : ¬ HilbertIncidence.OnLine A rayLine := by
+    intro hAray
+    have hBaseRay : base = rayLine :=
+      HilbertPlaneIncidence.line_unique
+        A B hAB base rayLine
+        hAbase hBbase hAray hBray
+    exact hOppositeCD₀.2.1 (hBaseRay ▸ hD₀ray)
+  have hD₀DSame :
+      HilbertSameSide Geo D₀ D base :=
+    hilbert_sameRay_points_sameSide
+      Geo B D₀ D₀ D A rayLine base
+      hBray hD₀ray hBbase hAbase hAray
+      (hilbert_sameRay_refl Geo B D₀ hBD₀.symm)
+      hRayD₀D
+  have hSDsame :
+      HilbertSameSide Geo S D base :=
+    hilbert_sameSide_trans
+      Geo S D₀ D base hSD₀Same hD₀DSame
+  have hOppositeCD :
+      HilbertOppositeSide Geo C D base :=
+    hilbert_oppositeSide_transport_right
+      Geo C S D base hOppositeCS hSDsame
+  have hAngleD :
+      Geo.AngleCongruent B A C A B D := by
+    have hTarget :
+        Geo.Angle A B D₀ = Geo.Angle A B D :=
+      hilbert_angle_eq_of_sameRay_second
+        Geo B A D₀ D hRayD₀D
+    unfold Geometry.Geo.AngleCongruent at hAngleD₀ ⊢
+    rw [← hTarget]
+    exact hAngleD₀
+
+  -- An interior point of `AB` names the transversal directions.
+  rcases hilbert_between_exists Geo A B hAB with
+    ⟨E, hAEB⟩
+  have hAEBData :=
+    HilbertOrder.between_incidence A E B hAEB
+  have hBEA : Geo.Between B E A :=
+    hAEBData.2.2.2.2
+  have hAERay : HilbertSameRay Geo A E B :=
+    hilbert_sameRay_of_between Geo A E B hAEB
+  have hBERay : HilbertSameRay Geo B E A :=
+    hilbert_sameRay_of_between Geo B E A hBEA
+  have hFirstAlternate :
+      Geo.AngleCongruent E A C E B D := by
+    have hAtA :
+        Geo.Angle E A C = Geo.Angle B A C :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo A E B C hAERay
+    have hAtB :
+        Geo.Angle E B D = Geo.Angle A B D :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B E A D hBERay
+    unfold Geometry.Geo.AngleCongruent at hAngleD ⊢
+    rw [hAtA, hAtB]
+    exact hAngleD
+  have hAC_BD : Geo.Parallel A C B D :=
+    hilbert_parallel_of_alternate_angles_oppositeSide_lines
+      Geo A C B E D base
+      hAEB hAbase hBbase
+      hOppositeCD hFirstAlternate
+
+  -- SAS gives the alternate angles for the other pair of sides.
+  have hACB : ¬ Collinear Geo A C B := by
+    intro h
+    exact hABC (PrimCollinearRotate Geo A C B h)
+  have hBAD : ¬ Collinear Geo B A D :=
+    hilbert_not_collinear_of_off_line
+      Geo B A D base hAB.symm
+      hBbase hAbase hOppositeCD.2.1
+  have hBDA : ¬ Collinear Geo B D A := by
+    intro h
+    exact hBAD (PrimCollinearRotate Geo B D A h)
+  have hACcongruentBD :
+      Geo.Congruent A C B D :=
+    hilbert_congruent_symmetry
+      Geo B D A C hBD_AC
+  have hABcongruentBA :
+      Geo.Congruent A B B A :=
+    (Geo.congruent_reverse_second
+      A B A B).mp
+      (hilbert_congruent_reflexive Geo A B)
+  have hIncludedAngle :
+      Geo.AngleCongruent C A B D B A :=
+    (Geo.angle_congruent_reverse_second
+      C A B A B D).mp
+      ((Geo.angle_congruent_reverse_first
+        B A C A B D).mp hAngleD)
+  have hSAS :=
+    hilbert_sas_remaining_angles
+      Geo A C B B D A
+      hACB hBDA
+      hACcongruentBD hABcongruentBA
+      hIncludedAngle
+  have hSecondAlternate :
+      Geo.AngleCongruent E B C E A D := by
+    have hAtB :
+        Geo.Angle E B C = Geo.Angle A B C :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B E A C hBERay
+    have hAtA :
+        Geo.Angle E A D = Geo.Angle B A D :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo A E B D hAERay
+    unfold Geometry.Geo.AngleCongruent at hSAS ⊢
+    rw [hAtB, hAtA]
+    exact hSAS.2
+  have hBC_AD : Geo.Parallel B C A D :=
+    hilbert_parallel_of_alternate_angles_oppositeSide_lines
+      Geo B C A E D base
+      hBEA hBbase hAbase
+      hOppositeCD hSecondAlternate
+  have hCB_DA : Geo.Parallel C B D A :=
+    ParallelSwapFirstLine
+      Geo B C D A
+      (ParallelSwapSecondLine
+        Geo B C A D hBC_AD)
+  have hParallelogram :
+      IsParallelogram Geo A C B D :=
+    ⟨hAC_BD, hCB_DA⟩
+
+  rcases ParallelogramDiagonalIntersectionExists
+      Geo A C B D hParallelogram with
+    ⟨M, hAMB, hCMD⟩
+  have hMidpoint :
+      IsMidpoint Geo M A B :=
+    ParallelogramDiagonals
+      Geo A C B D M
+      hParallelogram
+      (HilbertOrder.between_incidence
+        A M B hAMB).2.2.2.1
+      (HilbertOrder.between_incidence
+        C M D hCMD).2.2.2.1
+  exact ⟨M, hAMB, hMidpoint.2⟩
 
 
 ------------------------------------------------------------------------

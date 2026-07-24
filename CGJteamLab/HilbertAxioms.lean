@@ -2903,7 +2903,7 @@ theorem hilbert_sas_third_side_and_angle
 
 /--
 The side conclusion of Hilbert's angle-side-angle triangle theorem
-(the required part of Theorem 26).
+(the required part of Theorem 25).
 
 Construct `X` on the ray `B'C'` with `B'X ≅ BC`.  SAS makes the angle
 at `A'` in `A'B'X` congruent to the corresponding angle of the given
