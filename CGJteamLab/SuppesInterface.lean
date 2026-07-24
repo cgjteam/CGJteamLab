@@ -288,7 +288,7 @@ theorem parallelogram_rotate3
 /-!
 ## Reverse engineering of Suppes' Theorem 9
 -/
-/--
+/-
 In a primitive parallelogram the fourth vertex cannot coincide
 with the first one.
 
@@ -302,8 +302,25 @@ Triangle formed by one vertex and the adjacent midpoints.
 This is the analogue of Suppes' Theorem 8.
 -/
 
+/--
+Suppes, Theorem 1(i): swapping the first two points
+preserves collinearity.
+-/
 
-
+theorem collinear_swap
+    {A B C : Point} :
+    SuppesGeometry.Collinear A B C ->
+    SuppesGeometry.Collinear B A C := by
+  intro hABC
+  by_cases hAB : A = B
+  · simpa [hAB] using hABC
+  · apply L3 A B B A C
+    · exact hAB
+    · apply L2
+      exact Or.inr (Or.inr rfl)
+    · apply L2
+      exact Or.inr (Or.inl rfl)
+    · exact hABC
 
 theorem theorem11
     (A B C : Point)
