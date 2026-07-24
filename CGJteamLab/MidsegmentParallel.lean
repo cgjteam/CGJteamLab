@@ -1,4 +1,4 @@
-import CGJteamLab.GeometryBase
+import CGJteamLab.HilbertInterface
 
 namespace Geometry
 
