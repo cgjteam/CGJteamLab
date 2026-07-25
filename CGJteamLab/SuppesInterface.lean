@@ -499,7 +499,94 @@ theorem parallelogram_parallel_second
     rw [midpoint_double_reduction A D] at hCol
     exact hCol
 
-end Suppes
+/--
+Suppes, Theorem 12.
+
+If P(a,b,c,d), P(c,d,e,f), T(a,b,e), and T(a,b,f),
+then P(a,b,f,e).
+
+This is the constructive affine analogue of a local
+transitivity property for parallelograms.
+-/
+
+theorem parallelogram_transitive
+    (a b c d e f : Point)
+    (hP1 : PrimParallelogram a b c d)
+    (hP2 : PrimParallelogram c d e f)
+    (_hTabe : PrimTriangle a b e)
+    (hTabf : PrimTriangle a b f) :
+    PrimParallelogram a b f e := by
+
+
+  unfold PrimParallelogram at hP1 hP2 ⊢
+
+  constructor
+
+  · exact hTabf
+  · have h1 :
+        Mid a c = Mid b d :=
+      hP1.2
+
+    have h2 :
+        Mid c e = Mid d f :=
+      hP2.2
+
+    apply midpoint_cancellation
+      (Mid c d)
+      (Mid a f)
+      (Mid b e)
+
+    calc
+      Mid (Mid c d) (Mid a f)
+          = Mid (Mid c a) (Mid d f) := by
+              exact midpoint_bicommutative c d a f
+
+      _ = Mid (Mid a c) (Mid d f) := by
+              rw [midpoint_commutative c a]
+
+           _ = Mid (Mid b d) (Mid c e) := by
+              rw [h1, h2]
+
+      _ = Mid (Mid b c) (Mid d e) := by
+              exact midpoint_bicommutative b d c e
+
+      _ = Mid (Mid c b) (Mid d e) := by
+              rw [midpoint_commutative b c]
+
+      _ = Mid (Mid c d) (Mid b e) := by
+              exact midpoint_bicommutative c b d e
+
+
+/--
+Suppes, Theorem 16(iii).
+
+If ab || pq, ab || rs, and T(p,q,r), then pq || rs.
+-/
+theorem parallel_transitive
+    (a b p q r s : Point)
+    (hPQ : SuppesParallel a b p q)
+    (hRS : SuppesParallel a b r s)
+    (hTpqr : PrimTriangle p q r) :
+    SuppesParallel p q r s := by
+
+  unfold SuppesParallel at hPQ hRS ⊢
+
+  rcases hPQ with
+    ⟨hTabp, hpq, hP1, hCol1⟩
+
+  rcases hRS with
+    ⟨hTabr, hrs, hP2, hCol2⟩
+
+  refine ⟨hTpqr, hrs, ?_, ?_⟩
+
+  · -- Suppes Theorem 16(iii): parallelogram part
+    sorry
+
+  · -- Suppes Theorem 16(iii): collinearity part
+    sorry
+
+
+ end Suppes
 
 end Suppes
 
