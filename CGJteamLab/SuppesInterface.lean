@@ -588,6 +588,7 @@ theorem parallel_transitive
 
  end Suppes
 
+
 end Suppes
 
 end Geometry
