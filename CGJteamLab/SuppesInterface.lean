@@ -586,6 +586,17 @@ theorem parallel_transitive
     sorry
 
 
+  theorem parallel_reverse_second
+    (A B C D : Point)
+    (h : SuppesParallel A B C D) :
+    SuppesParallel A B D C := by
+    sorry
+  theorem parallel_reverse_first
+    (A B C D : Point)
+    (h : SuppesParallel A B C D) :
+    SuppesParallel B A C D := by
+    sorry
+
  end Suppes
 
 

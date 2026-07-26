@@ -1,3 +1,4 @@
+import CGJteamLab.ParallelogramRecognitionSuppes
 import CGJteamLab.MidsegmentParallelSuppes
 
 namespace Geometry.Suppes
@@ -52,12 +53,13 @@ For ABCD the opposite pairs are:
     AB || CD
     CB || AD
 -/
+/-
 axiom parallelogram_of_opposite_sides_parallel
     (A B C D : Point)
     (hAB_CD : SuppesParallel A B C D)
     (hCB_AD : SuppesParallel C B A D) :
     PrimParallelogram A B C D
-
+-/
 
 /-
 Temporary interface axiom for Finlay Step 4.
@@ -165,15 +167,19 @@ theorem FinlayProofSuppes
 
   Hence BPCG is a parallelogram.
   -/
-
+  have hPC_BG :
+      SuppesParallel P C B G := by
+    exact
+      parallel_reverse_first
+        C P B G
+        hCP_BG
   have hBPCG :
       PrimParallelogram B P C G := by
     exact
       parallelogram_of_opposite_sides_parallel
         B P C G
         hBP_CG
-        hCP_BG
-
+        hPC_BG
 
   /-
   Step 3.
