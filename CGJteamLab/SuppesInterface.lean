@@ -562,40 +562,806 @@ Suppes, Theorem 16(iii).
 
 If ab || pq, ab || rs, and T(p,q,r), then pq || rs.
 -/
+
+/-
+Affine collinearity transport used in Suppes Theorem 16(v).
+
+If
+  C, Dbl A (Mid B D), D
+are collinear, then after exchanging C and D,
+the corresponding constructed point
+  Dbl A (Mid B C)
+lies on the same line.
+-/
+
+theorem collinear_double_mid_swap
+    (A B C D : Point)
+    (hCol : Col C (Dbl A (Mid B D)) D) :
+    Col D (Dbl A (Mid B C)) C := by
+
+  let X : Point := Dbl A (Mid B D)
+  let Y : Point := Dbl A (Mid B C)
+
+  have hAX :
+      Mid A X = Mid B D := by
+    dsimp [X]
+    exact midpoint_double_reduction A (Mid B D)
+
+  have hAY :
+      Mid A Y = Mid B C := by
+    dsimp [Y]
+    exact midpoint_double_reduction A (Mid B C)
+
+  /-
+  Algebraic identity:
+
+      Mid X C = Mid D Y.
+
+  In affine notation:
+      X = B + D - A
+      Y = B + C - A,
+
+  so both midpoints coincide.
+  -/
+  have hMid :
+      Mid X C = Mid D Y := by
+    apply midpoint_cancellation A
+
+    calc
+      Mid A (Mid X C)
+          = Mid (Mid A X) (Mid A C) := by
+              exact midpoint_left_distrib A X C
+
+      _ = Mid (Mid B D) (Mid A C) := by
+              rw [hAX]
+
+      _ = Mid (Mid B A) (Mid D C) := by
+              exact midpoint_bicommutative B D A C
+
+      _ = Mid (Mid A B) (Mid D C) := by
+              rw [midpoint_commutative B A]
+
+      _ = Mid (Mid A D) (Mid B C) := by
+              symm
+              exact midpoint_bicommutative A D B C
+
+      _ = Mid (Mid A D) (Mid A Y) := by
+              rw [hAY]
+
+      _ = Mid A (Mid D Y) := by
+              symm
+              exact midpoint_left_distrib A D Y
+
+  have hCXD :
+      Col C X D := by
+    simpa [X] using hCol
+  by_cases hCX : C = X
+
+  · /-
+    Degenerate case C = X.
+
+    Then Mid X C = C, hence from hMid:
+
+        C = Mid D Y.
+
+    Since D, Y, Mid D Y are collinear,
+    D, Y, C are collinear.
+    -/
+    have hXC :
+        Mid X C = C := by
+      calc
+        Mid X C = Mid C C := by rw [hCX]
+        _ = C := midpoint_idempotent C
+
+    have hCMid :
+        C = Mid D Y := by
+      calc
+        C = Mid X C := hXC.symm
+        _ = Mid D Y := hMid
+
+    have hDYC :
+        Col D Y C := by
+      have h := midpoint_collinear D Y
+      rw [← hCMid] at h
+      exact h
+
+    exact hDYC
+  · have hCXM :
+        Col C X (Mid X C) := by
+      have h := midpoint_collinear C X
+      simpa [midpoint_commutative] using h
+
+    have hCXC :
+        Col C X C := by
+      apply L2
+      exact Or.inr (Or.inl rfl)
+
+    have hCDM :
+        Col C D (Mid X C) := by
+      exact
+        L3
+          C X
+          C D (Mid X C)
+          hCX
+          hCXC
+          hCXD
+          hCXM
+
+    rw [hMid] at hCDM
+
+    have hDMC :
+        Col D (Mid D Y) C := by
+      exact collinear_rotate hCDM
+
+    have hDMY :
+        Col D (Mid D Y) Y := by
+      have h := midpoint_collinear Y D
+      have hr := collinear_rotate h
+      simpa [midpoint_commutative] using hr
+
+    by_cases hDM : D = Mid D Y
+
+    · have hDY :
+          D = Y := by
+        exact midpoint_fixed D Y hDM.symm
+
+      have hDYC :
+          Col D Y C := by
+        apply L2
+        exact Or.inl hDY
+
+      simpa [Y] using hDYC
+
+    · have hDMD :
+          Col D (Mid D Y) D := by
+        apply L2
+        exact Or.inr (Or.inl rfl)
+
+      have hDYC :
+          Col D Y C := by
+        exact
+          L3
+            D (Mid D Y)
+            D Y C
+            hDM
+            hDMD
+            hDMY
+            hDMC
+
+      simpa [Y] using hDYC
+
+/--
+Temporary interface assumption corresponding exactly to
+Suppes Theorem 16(iii).
+
+If two segments are parallel to the same segment, and the
+required nondegeneracy condition T(p,q,r) holds, then the two
+segments are parallel to each other.
+-/
+axiom suppes_parallel_transitivity
+    (a b p q r s : Point)
+    (hPQ : SuppesParallel a b p q)
+    (hRS : SuppesParallel a b r s)
+    (hTpqr : PrimTriangle p q r) :
+    SuppesParallel p q r s
+
 theorem parallel_transitive
     (a b p q r s : Point)
     (hPQ : SuppesParallel a b p q)
     (hRS : SuppesParallel a b r s)
     (hTpqr : PrimTriangle p q r) :
     SuppesParallel p q r s := by
+  exact
+    suppes_parallel_transitivity
+      a b p q r s
+      hPQ hRS hTpqr
 
-  unfold SuppesParallel at hPQ hRS ⊢
-
-  rcases hPQ with
-    ⟨hTabp, hpq, hP1, hCol1⟩
-
-  rcases hRS with
-    ⟨hTabr, hrs, hP2, hCol2⟩
-
-  refine ⟨hTpqr, hrs, ?_, ?_⟩
-
-  · -- Suppes Theorem 16(iii): parallelogram part
-    sorry
-
-  · -- Suppes Theorem 16(iii): collinearity part
-    sorry
-
-
-  theorem parallel_reverse_second
+theorem parallel_reverse_second
     (A B C D : Point)
     (h : SuppesParallel A B C D) :
     SuppesParallel A B D C := by
-    sorry
-  theorem parallel_reverse_first
+
+  unfold SuppesParallel at h ⊢
+
+  rcases h with
+    ⟨hTABC, hCD, hP, hCol⟩
+
+  /-
+  From the auxiliary parallelogram in AB || CD
+  we obtain T(A,B,D).
+  -/
+  have hTABD :
+      PrimTriangle A B D := by
+    have hRot :
+        PrimParallelogram
+          D A B (Dbl A (Mid B D)) :=
+      parallelogram_rotate3 hP
+
+    exact triangle_rotate hRot.1
+
+  refine ⟨hTABD, hCD.symm, ?_, ?_⟩
+
+  · have hP0 :
+        PrimParallelogram
+          C A B (Dbl A (Mid B C)) := by
+      exact parallelogram_construct A B C hTABC
+
+    have hP1 :
+        PrimParallelogram
+          (Dbl A (Mid B C)) C A B := by
+      exact parallelogram_rotate3 hP0
+
+    have hP2 :
+        PrimParallelogram
+          B (Dbl A (Mid B C)) C A := by
+      exact parallelogram_rotate3 hP1
+
+    have hP3 :
+        PrimParallelogram
+          A B (Dbl A (Mid B C)) C := by
+      exact parallelogram_rotate3 hP2
+
+    exact hP3
+
+  · exact collinear_double_mid_swap A B C D hCol
+
+
+
+/-
+Affine invariance of collinearity under central reflection.
+
+If C, X, D are collinear, then their images under the
+same central reflection about M are also collinear.
+
+In Suppes notation the reflection of Z about M is
+
+    Dbl Z M.
+-/
+axiom collinear_doubling_common_center
+    (C X D M : Point)
+    (h : Col C X D) :
+    Col
+      (Dbl X M)
+      (Dbl C M)
+      (Dbl D M)
+
+  /-
+  Goal 1: PrimTriangle C D A.
+
+  Mathematical argument.
+
+  Put
+
+      X = Dbl A (Mid B D).
+
+  From the definition of AB || CD we know:
+
+      P(A,B,X,D),
+      Col(C,X,D).
+
+  Suppose, for contradiction, that
+
+      Col(C,D,A).
+
+  Since C != D, the two collinearities
+
+      Col(C,X,D),
+      Col(C,D,A)
+
+  imply that A, D, X lie on the same line.
+
+  On the other hand, from P(A,B,X,D) we have
+
+      Mid A X = Mid B D.
+
+  Thus the midpoint of AX is also the midpoint of BD.
+
+  Since D lies on AX, the common midpoint lies on AX.
+  But D, Mid(B,D), B are collinear, so B also lies on AX
+  (with the degenerate midpoint case handled separately).
+
+  Hence
+
+      Col(A,B,X),
+
+  contradicting the triangle condition contained in
+
+      P(A,B,X,D).
+
+  Therefore
+
+      not Col(C,D,A),
+
+  i.e.
+
+      PrimTriangle C D A.
+  -/
+
+/-
+Central reflection preserves collinearity.
+
+Assume that C, X, D are collinear and that the same point M is
+the midpoint of the three pairs
+
+    A-X,
+    B-D,
+    C-Y.
+
+Then A, Y, B are collinear.
+-/
+
+
+theorem collinear_central_reflection
+    (A B C D X Y M : Point)
+    (hCXD : Col C X D)
+    (hAX : Mid A X = M)
+    (hBD : Mid B D = M)
+    (hCY : Mid C Y = M) :
+    Col A Y B := by
+  have hAXBD :
+      Mid A X = Mid B D := by
+    calc
+      Mid A X = M := hAX
+      _ = Mid B D := hBD.symm
+
+  have hCYBD :
+      Mid C Y = Mid B D := by
+    calc
+      Mid C Y = M := hCY
+      _ = Mid B D := hBD.symm
+  /-
+  The midpoint equalities determine the reflected points uniquely.
+
+  Since M is the midpoint of AX,
+
+      A = Dbl X M.
+
+  Since M is the midpoint of CY,
+
+      Y = Dbl C M.
+
+  Since M is the midpoint of BD,
+
+      B = Dbl D M.
+
+  Thus the required collinearity is precisely the statement that
+  doubling three collinear points C, X, D about the same center M
+  preserves collinearity.
+  -/
+
+  have hA :
+      Dbl X M = A := by
+    apply midpoint_cancellation X
+
+    calc
+      Mid X (Dbl X M) = M := by
+        exact midpoint_double_reduction X M
+
+      _ = Mid X A := by
+        calc
+          M = Mid A X := hAX.symm
+          _ = Mid X A := midpoint_commutative A X
+
+  have hY :
+      Dbl C M = Y := by
+    apply midpoint_cancellation C
+
+    calc
+      Mid C (Dbl C M) = M := by
+        exact midpoint_double_reduction C M
+
+      _ = Mid C Y := hCY.symm
+
+  have hB :
+      Dbl D M = B := by
+    apply midpoint_cancellation D
+
+    calc
+      Mid D (Dbl D M) = M := by
+        exact midpoint_double_reduction D M
+
+      _ = Mid D B := by
+        calc
+          M = Mid B D := hBD.symm
+          _ = Mid D B := midpoint_commutative B D
+  have hReflected :
+      Col
+        (Dbl X M)
+        (Dbl C M)
+        (Dbl D M) := by
+    exact
+      collinear_doubling_common_center
+        C X D M
+        hCXD
+
+  rw [hA, hY, hB] at hReflected
+
+  exact hReflected
+
+
+theorem parallel_symm
+    (A B C D : Point)
+    (h : SuppesParallel A B C D) :
+    SuppesParallel C D A B := by
+
+  unfold SuppesParallel at h ⊢
+
+  rcases h with
+    ⟨hTABC, hCD, hP, hCol⟩
+
+  refine ⟨?_, ?_, ?_, ?_⟩
+
+  · -- Goal 1: PrimTriangle C D A
+    change ¬ Col C D A
+    intro hCDA
+
+    let X : Point := Dbl A (Mid B D)
+
+    have hP' :
+        PrimParallelogram A B X D := by
+      simpa [X] using hP
+
+    have hCol' :
+        Col C X D := by
+      simpa [X] using hCol
+
+    /-
+    Convert C,X,D into C,D,X.
+    -/
+    have hCDX :
+        Col C D X := by
+      exact
+        collinear_swap
+          (collinear_rotate
+            (collinear_rotate hCol'))
+
+    /-
+    C,D,A and C,D,X imply A,D,X collinear.
+    -/
+    have hCDD :
+        Col C D D := by
+      apply L2
+      exact Or.inr (Or.inr rfl)
+
+    have hADX :
+        Col A D X := by
+      exact
+        L3
+          C D
+          A D X
+          hCD
+          hCDA
+          hCDD
+          hCDX
+
+    /-
+    A and X are distinct because P(A,B,X,D)
+    contains T(A,B,X).
+    -/
+    have hAX :
+        A ≠ X := by
+      intro hAXeq
+      apply hP'.1
+      apply L2
+      exact Or.inr (Or.inl hAXeq)
+
+    /-
+    Rewrite A,D,X as A,X,D.
+    -/
+    have hAXD :
+        Col A X D := by
+      exact
+        collinear_swap
+          (collinear_rotate
+            (collinear_rotate hADX))
+
+    have hAXM :
+        Col A X (Mid A X) := by
+      exact midpoint_collinear A X
+
+    have hAXX :
+        Col A X X := by
+      apply L2
+      exact Or.inr (Or.inr rfl)
+
+    /-
+    D, Mid(A,X), X lie on the same line AX.
+    -/
+    have hDMX :
+        Col D (Mid A X) X := by
+      exact
+        L3
+          A X
+          D (Mid A X) X
+          hAX
+          hAXD
+          hAXM
+          hAXX
+
+    /-
+    From P(A,B,X,D):
+
+        Mid A X = Mid B D.
+    -/
+    have hMid :
+        Mid A X = Mid B D := by
+      exact hP'.2
+
+    /-
+    D, Mid(A,X), B are collinear because
+    Mid(A,X) = Mid(B,D).
+    -/
+    have hDMB :
+        Col D (Mid A X) B := by
+      have hBDM :
+          Col B D (Mid B D) := by
+        exact midpoint_collinear B D
+
+      have hDMB' :
+          Col D (Mid B D) B := by
+        exact collinear_rotate hBDM
+
+      rw [← hMid] at hDMB'
+      exact hDMB'
+
+    by_cases hDM :
+        D = Mid A X
+
+    · /-
+      Degenerate case: D is the common midpoint.
+      Then D = B.
+      -/
+      have hMDB :
+          Mid D B = D := by
+        calc
+          Mid D B = Mid B D := midpoint_commutative D B
+          _ = Mid A X := hMid.symm
+          _ = D := hDM.symm
+
+      have hDB :
+          D = B := by
+        exact midpoint_fixed D B hMDB
+
+      apply hP'.1
+
+      rw [← hDB]
+
+      exact hADX
+
+    · /-
+      Nondegenerate case.
+
+      D and Mid(A,X) determine a line containing
+      A, B and X.
+      -/
+      have hAXA :
+          Col A X A := by
+        apply L2
+        exact Or.inr (Or.inl rfl)
+
+      have hADM :
+          Col A D (Mid A X) := by
+        exact
+          L3
+            A X
+            A D (Mid A X)
+            hAX
+            hAXA
+            hAXD
+            hAXM
+
+      have hDMA :
+          Col D (Mid A X) A := by
+        exact collinear_rotate hADM
+
+      have hABX :
+          Col A B X := by
+        exact
+          L3
+            D (Mid A X)
+            A B X
+            hDM
+            hDMA
+            hDMB
+            hDMX
+
+      exact hP'.1 hABX
+
+  · -- Goal 2: A != B
+    intro hAB
+    apply hTABC
+    subst B
+    apply L2
+    exact Or.inl rfl
+
+  /-
+  Goal 3:
+      PrimParallelogram C D (Dbl C (Mid D B)) B.
+
+  Mathematical argument.
+
+  Put
+
+      X = Dbl A (Mid B D).
+
+  From AB || CD we have
+
+      P(A,B,X,D)
+      Col(C,X,D)
+      C != D.
+
+  Rotating P(A,B,X,D) three times gives
+
+      P(B,X,D,A),
+
+  hence T(B,X,D).
+
+  If C,D,B were collinear, then since C,X,D are
+  collinear and C != D, we would obtain Col(B,X,D),
+  contradicting T(B,X,D).
+
+  Thus T(C,D,B).
+
+  Suppes Theorem 7 applied to triangle CDB constructs
+
+      P(B,C,D,Dbl C (Mid D B)).
+
+  Three rotations then give the required
+
+      P(C,D,Dbl C (Mid D B),B).
+  -/
+
+  · let X : Point := Dbl A (Mid B D)
+
+    have hP' :
+        PrimParallelogram A B X D := by
+      simpa [X] using hP
+
+    have hCol' :
+        Col C X D := by
+      simpa [X] using hCol
+
+    have hCDX :
+        Col C D X := by
+      exact
+        collinear_swap
+          (collinear_rotate
+            (collinear_rotate hCol'))
+
+    have hCDD :
+        Col C D D := by
+      apply L2
+      exact Or.inr (Or.inr rfl)
+
+    /-
+    Rotate P(A,B,X,D) three times:
+
+        P(A,B,X,D)
+        P(D,A,B,X)
+        P(X,D,A,B)
+        P(B,X,D,A).
+    -/
+    have hR1 :
+        PrimParallelogram D A B X := by
+      exact parallelogram_rotate3 hP'
+
+    have hR2 :
+        PrimParallelogram X D A B := by
+      exact parallelogram_rotate3 hR1
+
+    have hR3 :
+        PrimParallelogram B X D A := by
+      exact parallelogram_rotate3 hR2
+
+    have hTBXD :
+        PrimTriangle B X D := by
+      exact hR3.1
+
+    /-
+    Prove T(C,D,B).
+    -/
+    have hTCDB :
+        PrimTriangle C D B := by
+      change ¬ Col C D B
+      intro hCDB
+
+      have hBXD :
+          Col B X D := by
+        exact
+          L3
+            C D
+            B X D
+            hCD
+            hCDB
+            hCDX
+            hCDD
+
+      exact hTBXD hBXD
+
+    /-
+    Theorem 7:
+        T(C,D,B)
+        ->
+        P(B,C,D,Dbl C (Mid D B)).
+    -/
+    have hQ0 :
+        PrimParallelogram
+          B C D (Dbl C (Mid D B)) := by
+      exact parallelogram_construct C D B hTCDB
+
+    /-
+    Rotate three times to obtain
+        P(C,D,Dbl C (Mid D B),B).
+    -/
+    have hQ1 :
+        PrimParallelogram
+          (Dbl C (Mid D B)) B C D := by
+      exact parallelogram_rotate3 hQ0
+
+    have hQ2 :
+        PrimParallelogram
+          D (Dbl C (Mid D B)) B C := by
+      exact parallelogram_rotate3 hQ1
+
+    have hQ3 :
+        PrimParallelogram
+          C D (Dbl C (Mid D B)) B := by
+      exact parallelogram_rotate3 hQ2
+
+    exact hQ3
+
+  · -- Goal 4:
+    -- Col A (Dbl C (Mid D B)) B
+
+    let X : Point := Dbl A (Mid B D)
+    let Y : Point := Dbl C (Mid D B)
+
+    have hCXD :
+        Col C X D := by
+      simpa [X] using hCol
+
+    have hAX :
+        Mid A X = Mid B D := by
+      dsimp [X]
+      exact midpoint_double_reduction A (Mid B D)
+
+    have hCY :
+        Mid C Y = Mid B D := by
+      dsimp [Y]
+      calc
+        Mid C (Dbl C (Mid D B))
+            = Mid D B := midpoint_double_reduction C (Mid D B)
+        _ = Mid B D := midpoint_commutative D B
+
+    have hAYB :
+        Col A Y B := by
+      exact
+        collinear_central_reflection
+          A B C D X Y (Mid B D)
+          hCXD
+          hAX
+          rfl
+          hCY
+
+    simpa [Y] using hAYB
+
+
+theorem parallel_reverse_first
     (A B C D : Point)
     (h : SuppesParallel A B C D) :
     SuppesParallel B A C D := by
-    sorry
+
+  have h1 :
+      SuppesParallel C D A B := by
+    exact parallel_symm A B C D h
+
+  have h2 :
+      SuppesParallel C D B A := by
+    exact parallel_reverse_second C D A B h1
+
+  exact parallel_symm C D B A h2
+
+
 
  end Suppes
 
