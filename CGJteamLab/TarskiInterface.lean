@@ -1079,6 +1079,468 @@ theorem tarski_collinear_trans
       exact tarski_between_symmetry
         (Geo := Geo) D G A hDGA
 
+/--
+A parallelogram expressed in the Tarski language by the
+common-midpoint characterization of its diagonals.
+
+The nondegeneracy condition follows the standard Tarski
+definition used in the development of parallelogram theory.
+-/
+def TarskiParallelogram
+    (A B C D : Geo.Point) : Prop :=
+  (A ≠ C ∨ B ≠ D) ∧
+  ∃ M : Geo.Point,
+    TarskiIsMidpoint Geo M A C ∧
+    TarskiIsMidpoint Geo M B D
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_parallelogram_of_common_midpoint
+    (A B C D M : Geo.Point)
+    (hNondeg : A ≠ C ∨ B ≠ D)
+    (hMAC : TarskiIsMidpoint Geo M A C)
+    (hMBD : TarskiIsMidpoint Geo M B D) :
+    TarskiParallelogram Geo A B C D := by
+  constructor
+  · exact hNondeg
+  · exact ⟨M, hMAC, hMBD⟩
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_midpoint_parallelogram
+    [TarskiNeutral Geo]
+    (A B C D M : Geo.Point)
+    (hNonCol : ¬ TarskiCollinear Geo A B C)
+    (hMAC : TarskiIsMidpoint Geo M A C)
+    (hMBD : TarskiIsMidpoint Geo M B D) :
+    TarskiParallelogram Geo A B C D := by
+
+  have hAC : A ≠ C := by
+    intro hAC
+    subst C
+    apply hNonCol
+    right
+    left
+    exact tarski_between_reflexivity (Geo := Geo) B A
+
+  exact
+    tarski_parallelogram_of_common_midpoint
+      Geo A B C D M
+      (Or.inl hAC)
+      hMAC
+      hMBD
+/--
+Strict parallelism expressed solely in the Tarski language.
+
+The two lines are nondegenerate and have no common point.
+Since the present geometry is two-dimensional, no separate
+coplanarity condition is required.
+-/
+def TarskiParallelStrict
+    (A B C D : Geo.Point) : Prop :=
+  A ≠ B ∧
+  C ≠ D ∧
+  ¬ ∃ X : Geo.Point,
+      TarskiCollinear Geo X A B ∧
+      TarskiCollinear Geo X C D
+
+/-
+Derived construction of a point symmetric to P with respect to Q.
+
+For arbitrary P and Q there exists X such that Q is the midpoint
+of PX.
+
+This is the Tarski analogue of the Suppes doubling construction.
+
+It is derived from:
+  - Ax.4: segment construction,
+  - derived symmetry of segment congruence.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_symmetric_point_exists
+    [TarskiNeutral Geo]
+    (P Q : Geo.Point) :
+    ∃ X : Geo.Point,
+      TarskiIsMidpoint Geo Q P X := by
+
+  obtain ⟨X, hPQX, hQXPQ⟩ :=
+    TarskiNeutral.segment_construction
+      (Geo := Geo)
+      P Q P Q
+
+  have hPQQX : Geo.Congruent P Q Q X :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      Q X P Q
+      hQXPQ
+
+  exact ⟨X, hPQX, hPQQX⟩
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_midpoint_ne_second
+    [TarskiNeutral Geo]
+    (P B C : Geo.Point)
+    (hBC : B ≠ C)
+    (hP : TarskiIsMidpoint Geo P B C) :
+    P ≠ C := by
+  intro hPC
+  subst C
+
+  have hBP : B = P :=
+    TarskiNeutral.congruent_identity
+      (Geo := Geo) B P P hP.2
+
+  exact hBC hBP
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_noncollinear_ne_second_third
+    [TarskiNeutral Geo]
+    (A B C : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A B C)) :
+    B = C -> False := by
+  intro hBC
+  subst C
+  apply hNonCol
+  left
+  exact tarski_between_reflexivity
+    (Geo := Geo) A B
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_midpoint_ne_third_of_noncollinear
+    [TarskiNeutral Geo]
+    (A B C P : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A B C))
+    (hP : TarskiIsMidpoint Geo P B C) :
+    P = C -> False := by
+
+  have hBC : B = C -> False :=
+    tarski_noncollinear_ne_second_third
+      Geo A B C hNonCol
+
+  exact
+    tarski_midpoint_ne_second
+      Geo P B C hBC hP
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_noncollinear_midpoint_second
+    [TarskiNeutral Geo]
+    (A B C P : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A B C))
+    (hP : TarskiIsMidpoint Geo P B C) :
+    Not (TarskiCollinear Geo A P C) := by
+
+  intro hAPC
+
+  have hBC : B = C -> False :=
+    tarski_noncollinear_ne_second_third
+      Geo A B C hNonCol
+
+  have hPC : P = C -> False :=
+    tarski_midpoint_ne_second
+      Geo P B C hBC hP
+
+  have hPCB : TarskiCollinear Geo P C B := by
+    right
+    right
+    exact hP.1
+
+  have hAPB : TarskiCollinear Geo A P B :=
+    tarski_collinear_trans
+      Geo A P C B
+      hPC
+      hAPC
+      hPCB
+
+  have hABP : TarskiCollinear Geo A B P :=
+    tarski_collinear_symmetry
+      Geo A P B hAPB
+
+  have hBP : B = P -> False := by
+    intro hBP
+    subst B
+
+    have hPCPP : Geo.Congruent P C P P :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        P P P C
+        hP.2
+
+    have hPCeq : P = C :=
+      TarskiNeutral.congruent_identity
+        (Geo := Geo) P C P hPCPP
+
+    exact hPC hPCeq
+
+  have hBPC : TarskiCollinear Geo B P C := by
+    left
+    exact hP.1
+
+  have hABC : TarskiCollinear Geo A B C :=
+    tarski_collinear_trans
+      Geo A B P C
+      hBP
+      hABP
+      hBPC
+
+  exact hNonCol hABC
+
+/-
+TEMPORARY DERIVED AXIOM.
+
+Central symmetry preserves segment congruence.
+
+If M is the midpoint of AA' and BB', then AB is congruent to A'B'.
+
+This is a theorem of neutral Tarski geometry, corresponding to
+GeoCoq lemma l7_13.  Its derivation uses the earlier congruence
+and Five-Segment machinery.
+
+It is declared temporarily as an axiom in order to continue the
+reconstruction of the Tarski midsegment proof.
+
+TODO:
+Replace this declaration by a proof from TarskiNeutral.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+axiom tarski_central_symmetry_congruent
+    [TarskiNeutral Geo]
+    (M A B A' B' : Geo.Point)
+    (hA : TarskiIsMidpoint Geo M A A')
+    (hB : TarskiIsMidpoint Geo M B B') :
+    Geo.Congruent A B A' B'
+
+/-
+Derived symmetry of the Tarski midpoint relation.
+
+Mathematically:
+  if M is the midpoint of AB,
+  then M is also the midpoint of BA.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_midpoint_symmetry
+    [TarskiNeutral Geo]
+    (M A B : Geo.Point)
+    (hM : TarskiIsMidpoint Geo M A B) :
+    TarskiIsMidpoint Geo M B A := by
+
+  constructor
+
+  · exact
+      tarski_between_symmetry
+        (Geo := Geo) A M B hM.1
+
+  ·
+    have h₁ : Geo.Congruent M A B M :=
+      tarski_congruent_reverse_both
+        (Geo := Geo) A M M B hM.2
+
+    exact
+      tarski_congruent_symmetry
+        (Geo := Geo) M A B M h₁
+
+/-
+TEMPORARY DERIVED AXIOM.
+
+Central symmetry maps a nondegenerate line to a strictly parallel line.
+
+If M is the midpoint of AA' and BB', and A and B are distinct,
+then AB and A'B' are strictly parallel.
+
+This is a theorem of neutral Tarski geometry.  It is declared
+temporarily in order to continue the reconstruction of the
+natural Tarski proof of the Midsegment Theorem.
+
+TODO:
+Replace this declaration by a proof from TarskiNeutral.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+axiom tarski_central_symmetry_parallel
+    [TarskiNeutral Geo]
+    (M A B A' B' : Geo.Point)
+    (hAB : A = B -> False)
+    (hA : TarskiIsMidpoint Geo M A A')
+    (hB : TarskiIsMidpoint Geo M B B') :
+    TarskiParallelStrict Geo A B A' B'
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_parallel_strict_collinear_right
+    [TarskiNeutral Geo]
+    (A X B P C : Geo.Point)
+    (hPar : TarskiParallelStrict Geo A X C P)
+    (hBPC : TarskiCollinear Geo B P C)
+    (hBP : B = P -> False) :
+    TarskiParallelStrict Geo A X B P := by
+
+  rcases hPar with ⟨hAX, hCP, hNoInt⟩
+
+  constructor
+  · exact hAX
+
+  constructor
+  · exact hBP
+
+  · intro hInt
+    apply hNoInt
+
+    rcases hInt with ⟨Y, hYAX, hYBP⟩
+
+    have hYPB : TarskiCollinear Geo Y P B :=
+      tarski_collinear_symmetry
+        Geo Y B P hYBP
+
+    have hPCB : TarskiCollinear Geo P C B :=
+      (tarski_collinear_cycle Geo B P C).mp hBPC
+
+    have hPBC : TarskiCollinear Geo P B C :=
+      tarski_collinear_symmetry
+        Geo P C B hPCB
+
+    have hPB : P = B -> False := by
+      intro hPB
+      exact hBP hPB.symm
+
+    have hYPC : TarskiCollinear Geo Y P C :=
+      tarski_collinear_trans
+        Geo Y P B C
+        hPB
+        hYPB
+        hPBC
+
+    have hYCP : TarskiCollinear Geo Y C P :=
+      tarski_collinear_symmetry
+        Geo Y P C hYPC
+
+    exact ⟨Y, hYAX, hYCP⟩
+
+/-
+A nondegenerate midpoint is distinct from the first endpoint.
+
+Mathematically:
+  B != C and P is the midpoint of BC
+  imply B != P.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_midpoint_ne_first
+    [TarskiNeutral Geo]
+    (P B C : Geo.Point)
+    (hBC : B = C -> False)
+    (hP : TarskiIsMidpoint Geo P B C) :
+    B = P -> False := by
+
+  intro hBP
+  subst B
+
+  have hPCPP : Geo.Congruent P C P P :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      P P P C
+      hP.2
+
+  have hPC : P = C :=
+    TarskiNeutral.congruent_identity
+      (Geo := Geo) P C P hPCPP
+
+  exact hBC hPC
+
+/-
+TEMPORARY DERIVED AXIOM.
+
+One pair of opposite sides parallel and congruent determines
+one of the two possible parallelogram orientations.
+
+This corresponds to GeoCoq lemma par_cong_plg_2.
+
+TODO:
+Replace this declaration by a proof from TarskiNeutral.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+axiom tarski_parallel_congruent_parallelogram_cases
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hPar : TarskiParallelStrict Geo A B C D)
+    (hCong : Geo.Congruent A B C D) :
+    TarskiParallelogram Geo A B C D ∨
+    TarskiParallelogram Geo A B D C
+
+/-
+TEMPORARY DERIVED AXIOM.
+
+The midpoint of a segment is unique.
+
+If M and N are both midpoints of AB, then M = N.
+
+This is a theorem of neutral Tarski geometry. It is declared
+temporarily in order to continue the reconstruction of the
+natural Tarski proof of the Midsegment Theorem.
+
+TODO:
+Replace this declaration by a proof from TarskiNeutral.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+axiom tarski_midpoint_unique
+    [TarskiNeutral Geo]
+    (M N A B : Geo.Point)
+    (hM : TarskiIsMidpoint Geo M A B)
+    (hN : TarskiIsMidpoint Geo N A B) :
+    M = N
+
+/-
+TEMPORARY DERIVED AXIOM.
+
+A nondegenerate Tarski parallelogram has strictly parallel
+opposite sides.
+
+This formulation corresponds to the GeoCoq lemma
+ncol134_plg__pars1423:
+
+  not Col A C D
+  parallelogram A B C D
+  ---------------------
+  AD strictly parallel BC
+
+TODO:
+Replace this declaration by a proof from TarskiNeutral.
+-/
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+axiom tarski_parallelogram_opposite_parallel
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A C D))
+    (hPar : TarskiParallelogram Geo A B C D) :
+    TarskiParallelStrict Geo A D B C
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_midpoint_noncol_left
+    [TarskiNeutral Geo]
+    (A B C P : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A B C))
+    (hP : TarskiIsMidpoint Geo P B C) :
+    Not (TarskiCollinear Geo A P B) := by
+
+  intro hAPB
+
+  have hBC : B = C -> False :=
+    tarski_noncollinear_ne_second_third
+      Geo A B C hNonCol
+
+  have hBP : B = P -> False :=
+    tarski_midpoint_ne_first
+      Geo P B C hBC hP
+
+  have hBPC : TarskiCollinear Geo B P C := by
+    left
+    exact hP.1
+  have hABP : TarskiCollinear Geo A B P :=
+    tarski_collinear_symmetry
+      Geo A P B hAPB
+
+  have hABC : TarskiCollinear Geo A B C :=
+    tarski_collinear_trans
+      Geo A B P C
+      hBP
+      hABP
+      hBPC
+
+  exact hNonCol hABC
+
 end Tarski
 
 end Geometry
