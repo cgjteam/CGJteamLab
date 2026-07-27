@@ -1541,6 +1541,52 @@ theorem tarski_midpoint_noncol_left
 
   exact hNonCol hABC
 
+/-
+TEMPORARY DERIVED AXIOM.
+
+Two pairs of opposite strictly parallel sides determine
+a Tarski parallelogram.
+
+This corresponds to the role of GeoCoq lemma parallel_2_plg.
+
+TODO:
+Replace this declaration by a proof from TarskiNeutral.
+-/
+axiom tarski_parallelogram_of_two_parallel_pairs
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hABCD : TarskiParallelStrict Geo A B C D)
+    (hBCAD : TarskiParallelStrict Geo B C A D) :
+    TarskiParallelogram Geo A B C D
+
+omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
+theorem tarski_parallel_strict_symm_left
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hPar : TarskiParallelStrict Geo A B C D) :
+    TarskiParallelStrict Geo B A C D := by
+
+  rcases hPar with ⟨hAB, hCD, hNoInt⟩
+
+  constructor
+  · intro hBA
+    exact hAB hBA.symm
+
+  constructor
+  · exact hCD
+
+  · intro hInt
+    apply hNoInt
+
+    rcases hInt with ⟨X, hXBA, hXCD⟩
+
+    have hXAB : TarskiCollinear Geo X A B :=
+      tarski_collinear_symmetry
+        Geo X B A hXBA
+
+    exact ⟨X, hXAB, hXCD⟩
+
+
 end Tarski
 
 end Geometry
