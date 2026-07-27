@@ -1,4 +1,4 @@
-import CGJteamLab.TarskiBase
+import CGJteamLab.TarskiInterface
 
 /-!
 # Midsegment parallelism via Tarski
@@ -16,11 +16,12 @@ namespace Tarski
 universe u
 
 variable (Geo : Geometry.Geo)
+variable [TarskiNeutral Geo]
 variable [HilbertIncidence Geo]
 variable [HilbertEuclideanPlane Geo]
 variable [TarskiGeometryBaseBridge Geo]
 
-omit [TarskiGeometryBaseBridge Geo] in
+omit [TarskiNeutral Geo] [TarskiGeometryBaseBridge Geo] in
 private theorem midpointSymmetry
     (M A B : Geo.Point)
     (h : IsMidpoint Geo M A B) :
@@ -33,7 +34,7 @@ private theorem midpointSymmetry
       CongruentReverseBoth Geo A M M B hCong
     exact CongruentSymmetry Geo M A B M h₁
 
-omit [TarskiGeometryBaseBridge Geo] in
+
 private theorem midsegmentParallelFromGeometryMidpoints
     (V₁ V₂ V₃ M₁ M₂ : Geo.Point)
     (hM₁ : IsMidpoint Geo M₁ V₁ V₃)
@@ -43,29 +44,64 @@ private theorem midsegmentParallelFromGeometryMidpoints
     (hM₂V₂ : M₂ ≠ V₂)
     (hTri : ¬ Collinear Geo M₂ M₁ V₃) :
     Geo.Parallel M₁ M₂ V₁ V₂ := by
+
   have hM₂M₁ : M₂ ≠ M₁ :=
     hilbert_noncollinear_ne_first Geo M₂ M₁ V₃ hTri
+
   rcases ExtendSegmentBeyond Geo M₁ M₂ hM₂M₁.symm with
     ⟨T, hM₁M₂TBetween, hSeg⟩
+
   have hM₁M₂TData :=
     HilbertOrder.between_incidence M₁ M₂ T hM₁M₂TBetween
+
   have hM₁M₂T : Collinear Geo M₁ M₂ T :=
     hM₁M₂TData.2.2.2.1
-  have hM₂T : M₂ ≠ T := hM₁M₂TData.2.1
 
-  have hV₁M₁V₃ := hM₁.left
-  have hV₃M₂V₂ := CollinearSymmetry Geo V₂ M₂ V₃ hM₂.left
+  have hM₁M₂TTarski : TarskiCollinear Geo M₁ M₂ T := by
+    left
+    exact hM₁M₂TBetween
+
+  have hM₂T : M₂ ≠ T :=
+    hM₁M₂TData.2.1
+
+  have hV₁M₁V₃ :=
+    hM₁.left
+
+  have hV₃M₂V₂ :=
+    CollinearSymmetry Geo V₂ M₂ V₃ hM₂.left
+
   have hTri₂ : ¬ Collinear Geo M₂ T V₂ := by
     intro hM₂TV₂
-    have hM₁M₂V₂ : Collinear Geo M₁ M₂ V₂ :=
-      hilbert_primCollinear_trans
-        Geo M₁ M₂ T V₂ hM₂T hM₁M₂T hM₂TV₂
-    have hM₂V₂V₃ : Collinear Geo M₂ V₂ V₃ :=
-      PrimCollinearCycle Geo V₃ M₂ V₂ hV₃M₂V₂
-    have hM₁M₂V₃ : Collinear Geo M₁ M₂ V₃ :=
-      hilbert_primCollinear_trans
-        Geo M₁ M₂ V₂ V₃ hM₂V₂ hM₁M₂V₂ hM₂V₂V₃
-    exact hTri (PrimCollinearSwap Geo M₁ M₂ V₃ hM₁M₂V₃)
+
+    have hM₂TV₂Tarski : TarskiCollinear Geo M₂ T V₂ := by
+      exact tarski_collinear_of_geometry Geo M₂ T V₂ hM₂TV₂
+
+    have hM₁M₂V₂Tarski : TarskiCollinear Geo M₁ M₂ V₂ := by
+      exact
+        tarski_collinear_trans
+          Geo M₁ M₂ T V₂
+          hM₂T
+          hM₁M₂TTarski
+          hM₂TV₂Tarski
+
+    have hM₂V₂V₃Tarski : TarskiCollinear Geo M₂ V₂ V₃ := by
+      right
+      right
+      exact hM₂Between
+
+    have hM₁M₂V₃Tarski : TarskiCollinear Geo M₁ M₂ V₃ := by
+      exact
+        tarski_collinear_trans
+          Geo M₁ M₂ V₂ V₃
+          hM₂V₂
+          hM₁M₂V₂Tarski
+          hM₂V₂V₃Tarski
+
+    have hM₁M₂V₃ : Collinear Geo M₁ M₂ V₃ := by
+      exact collinear_of_tarski Geo M₁ M₂ V₃ hM₁M₂V₃Tarski
+
+    exact hTri
+      (PrimCollinearSwap Geo M₁ M₂ V₃ hM₁M₂V₃)
 
   have hVert :=
     VerticalAngles
