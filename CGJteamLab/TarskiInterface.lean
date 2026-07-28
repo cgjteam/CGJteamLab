@@ -1,4 +1,4 @@
-import CGJteamLab.HilbertInterface
+--import CGJteamLab.HilbertInterface
 import CGJteamLab.TarskiAxioms
 
 namespace Geometry
@@ -12,11 +12,9 @@ variable (Geo : Geometry.Geo)
 /-!
 # TarskiBase
 
-Basic notions derived from Tarski's primitive relations and their
-explicit connection to the shared language of `GeometryBase`.
+Basic notions and derived theorems in Tarski's primitive language.
 
-This module adds no geometric axioms. The only compatibility assumption
-is isolated in `TarskiGeometryBaseBridge`.
+This module is independent of the Hilbert incidence interface.
 -/
 
 /--
@@ -62,57 +60,6 @@ theorem tarski_midpoint_collinear
   intro h
   exact Or.inl h.left
 
-/--
-Compatibility data between Tarski collinearity and the incidence-based
-collinearity used by `GeometryBase`.
-
-Keeping this bridge explicit avoids identifying `Geo.OnLine` with
-`HilbertIncidence.OnLine` inside the axiom hierarchy.
--/
-class TarskiGeometryBaseBridge (Geo : Geometry.Geo)
-    [HilbertIncidence Geo] : Prop where
-  collinear_iff :
-    ∀ A B C : Geo.Point,
-      Collinear Geo A B C ↔
-      TarskiCollinear Geo A B C
-
-variable [HilbertIncidence Geo]
-variable [TarskiGeometryBaseBridge Geo]
-
-theorem collinear_of_tarski
-    (A B C : Geo.Point) :
-    TarskiCollinear Geo A B C →
-    Collinear Geo A B C := by
-  exact
-    (TarskiGeometryBaseBridge.collinear_iff
-      (Geo := Geo) A B C).mpr
-
-theorem tarski_collinear_of_geometry
-    (A B C : Geo.Point) :
-    Collinear Geo A B C →
-    TarskiCollinear Geo A B C := by
-  exact
-    (TarskiGeometryBaseBridge.collinear_iff
-      (Geo := Geo) A B C).mp
-
-theorem midpoint_of_tarski
-    (M A B : Geo.Point) :
-    TarskiIsMidpoint Geo M A B →
-    IsMidpoint Geo M A B := by
-  intro h
-  constructor
-  · exact collinear_of_tarski Geo A M B (Or.inl h.left)
-  · exact h.right
-
-omit [TarskiGeometryBaseBridge Geo] in
-theorem tarski_midpoint_of_geometry_between
-    (M A B : Geo.Point)
-    (hBetween : Geo.Between A M B) :
-    IsMidpoint Geo M A B →
-    TarskiIsMidpoint Geo M A B := by
-  intro h
-  exact ⟨hBetween, h.right⟩
-
 /-
 Derived Tarski theorem (historically Ax.12):
 reflexivity of betweenness.
@@ -131,7 +78,6 @@ Construct X such that B(A,B,X) and BX == BB.
 By Ax.3, B = X, hence B(A,B,B).
 -/
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_reflexivity
     [TarskiNeutral Geo]
     (A B : Geo.Point) :
@@ -165,7 +111,6 @@ Given B(A,B,C), derived Ax.12 gives B(B,C,C).
 Inner Pasch yields X with B(B,X,B) and B(C,X,A).
 By Ax.6, X = B, hence B(C,B,A).
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_symmetry
     [TarskiNeutral Geo]
     (A B C : Geo.Point)
@@ -200,7 +145,6 @@ The proof unfolds TarskiCollinear and applies the derived
 symmetry of betweenness (historically Ax.14) to each of the
 three possible betweenness configurations.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_collinear_symmetry
     [TarskiNeutral Geo]
     (A B C : Geo.Point)
@@ -238,7 +182,6 @@ Given B(A,B,D) and B(B,C,D), Inner Pasch yields X with
 B(B,X,B) and B(C,X,A). By Ax.6, X = B. Hence B(C,B,A),
 and symmetry gives B(A,B,C).
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_inner_transitivity
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -282,7 +225,6 @@ B(C,B,A) and B(D,C,A). Inner Pasch yields X with
 B(C,X,C) and B(B,X,D). By Ax.6, X = C, hence
 B(B,C,D).
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_exchange3
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -325,7 +267,6 @@ It is derived from:
 Ax.1 applied to B,A gives BA == AB.
 Using the same congruence twice in Ax.2 yields AB == AB.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_congruent_reflexivity
     [TarskiNeutral Geo]
     (A B : Geo.Point) :
@@ -356,7 +297,6 @@ It is derived from:
 
 Given AB == CD and AB == AB, Ax.2 yields CD == AB.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_congruent_symmetry
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -391,7 +331,6 @@ CD == DC. Ax.2 therefore yields AB == DC.
 Together with AB == BA from Ax.1, another application of
 Ax.2 yields BA == DC.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_congruent_reverse_both
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -438,7 +377,6 @@ It is derived from:
 Use Ax.4 to construct X such that B(A,A,X) and AX == BB.
 By Ax.3, A = X. Hence AA == BB.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_congruent_zero
     [TarskiNeutral Geo]
     (A B : Geo.Point) :
@@ -476,7 +414,6 @@ becomes AA == A'A', while BD == B'D' becomes
 BA == B'A'. The conclusion CD == C'D' is therefore
 CA == C'A', which is reversed to AC == A'C'.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_l2_11_nondegenerate
     [TarskiNeutral Geo]
     (A B C A' B' C' : Geo.Point)
@@ -536,7 +473,6 @@ Applying nondegenerate l2_11 to Q-A-X and Q-A-Y gives
 QX == QY. A final Five-Segment argument gives YX == XX.
 Ax.3 then implies Y = X.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_construction_uniqueness
     [TarskiNeutral Geo]
     (Q A X Y B C : Geo.Point)
@@ -628,7 +564,6 @@ Thus X and D are two points beyond C on the same ray from B,
 both realizing the segment CD from C. Construction uniqueness
 gives X = D, hence B(A,C,D).
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_outer_transitivity2
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -681,7 +616,6 @@ Reverse both betweenness relations:
 Since C != B, outer transitivity variant gives B(D,B,A).
 Symmetry then yields B(A,B,D).
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_outer_transitivity
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -758,7 +692,6 @@ This is derived from the temporary Outer Connectivity assumption
 
 It corresponds to l5_2 in the standard Tarski development.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_outer_connectivity2
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -800,7 +733,6 @@ and outer connectivity then compares B and C.
 Thus A18 remains the only deferred connectivity result in the
 current Tarski interface.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_between_inner_connectivity
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -890,7 +822,6 @@ order theory:
 A18 is currently the only deferred result in this dependency chain;
 all the remaining order laws used here are derived in this file.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_collinear_trans
     [TarskiNeutral Geo]
     (A G P D : Geo.Point)
@@ -1093,7 +1024,6 @@ def TarskiParallelogram
     TarskiIsMidpoint Geo M A C ∧
     TarskiIsMidpoint Geo M B D
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_parallelogram_of_common_midpoint
     (A B C D M : Geo.Point)
     (hNondeg : A ≠ C ∨ B ≠ D)
@@ -1104,7 +1034,6 @@ theorem tarski_parallelogram_of_common_midpoint
   · exact hNondeg
   · exact ⟨M, hMAC, hMBD⟩
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_parallelogram
     [TarskiNeutral Geo]
     (A B C D M : Geo.Point)
@@ -1154,7 +1083,6 @@ It is derived from:
   - Ax.4: segment construction,
   - derived symmetry of segment congruence.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_symmetric_point_exists
     [TarskiNeutral Geo]
     (P Q : Geo.Point) :
@@ -1174,7 +1102,6 @@ theorem tarski_symmetric_point_exists
 
   exact ⟨X, hPQX, hPQQX⟩
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_ne_second
     [TarskiNeutral Geo]
     (P B C : Geo.Point)
@@ -1190,7 +1117,6 @@ theorem tarski_midpoint_ne_second
 
   exact hBC hBP
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_noncollinear_ne_second_third
     [TarskiNeutral Geo]
     (A B C : Geo.Point)
@@ -1203,7 +1129,6 @@ theorem tarski_noncollinear_ne_second_third
   exact tarski_between_reflexivity
     (Geo := Geo) A B
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_ne_third_of_noncollinear
     [TarskiNeutral Geo]
     (A B C P : Geo.Point)
@@ -1219,7 +1144,6 @@ theorem tarski_midpoint_ne_third_of_noncollinear
     tarski_midpoint_ne_second
       Geo P B C hBC hP
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_noncollinear_midpoint_second
     [TarskiNeutral Geo]
     (A B C P : Geo.Point)
@@ -1299,7 +1223,6 @@ reconstruction of the Tarski midsegment proof.
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 axiom tarski_central_symmetry_congruent
     [TarskiNeutral Geo]
     (M A B A' B' : Geo.Point)
@@ -1314,7 +1237,6 @@ Mathematically:
   if M is the midpoint of AB,
   then M is also the midpoint of BA.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_symmetry
     [TarskiNeutral Geo]
     (M A B : Geo.Point)
@@ -1351,7 +1273,6 @@ natural Tarski proof of the Midsegment Theorem.
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 axiom tarski_central_symmetry_parallel
     [TarskiNeutral Geo]
     (M A B A' B' : Geo.Point)
@@ -1360,7 +1281,6 @@ axiom tarski_central_symmetry_parallel
     (hB : TarskiIsMidpoint Geo M B B') :
     TarskiParallelStrict Geo A B A' B'
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_parallel_strict_collinear_right
     [TarskiNeutral Geo]
     (A X B P C : Geo.Point)
@@ -1417,7 +1337,6 @@ Mathematically:
   B != C and P is the midpoint of BC
   imply B != P.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_ne_first
     [TarskiNeutral Geo]
     (P B C : Geo.Point)
@@ -1451,7 +1370,6 @@ This corresponds to GeoCoq lemma par_cong_plg_2.
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 axiom tarski_parallel_congruent_parallelogram_cases
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -1474,7 +1392,6 @@ natural Tarski proof of the Midsegment Theorem.
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 axiom tarski_midpoint_unique
     [TarskiNeutral Geo]
     (M N A B : Geo.Point)
@@ -1499,7 +1416,6 @@ ncol134_plg__pars1423:
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 axiom tarski_parallelogram_opposite_parallel
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -1507,7 +1423,6 @@ axiom tarski_parallelogram_opposite_parallel
     (hPar : TarskiParallelogram Geo A B C D) :
     TarskiParallelStrict Geo A D B C
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_midpoint_noncol_left
     [TarskiNeutral Geo]
     (A B C P : Geo.Point)
@@ -1559,7 +1474,6 @@ axiom tarski_parallelogram_of_two_parallel_pairs
     (hBCAD : TarskiParallelStrict Geo B C A D) :
     TarskiParallelogram Geo A B C D
 
-omit [HilbertIncidence Geo] [TarskiGeometryBaseBridge Geo] in
 theorem tarski_parallel_strict_symm_left
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)

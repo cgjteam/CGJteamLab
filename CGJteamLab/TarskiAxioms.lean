@@ -1,4 +1,4 @@
-import CGJteamLab.HilbertCore
+import CGJteamLab.TarskiCore
 
 namespace Geometry
 
