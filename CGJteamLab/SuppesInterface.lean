@@ -1,22 +1,9 @@
---import CGJteamLab.HilbertInterface
 import CGJteamLab.SuppesAxioms
 
 namespace Geometry
-
 namespace Suppes
 
 section Suppes
-
-variable
-  {R : Type*}
-  {V : Type*}
-  {Point : Type*}
-
-  [Ring R]
-  [Invertible (2 : R)]
-  [AddCommGroup V]
-  [Module R V]
-  [AddTorsor V Point]
 
 variable [SuppesGeometry Point]
 
@@ -52,12 +39,14 @@ The axioms are defined in `SuppesAxioms.lean`.
 /-- Algebraic part of Suppes' Theorem 11. -/
 theorem midpoint_left_distrib
     (A B C : Point) :
-    Mid A (Mid B C)
-      =
+    Mid A (Mid B C) =
     Mid (Mid A B) (Mid A C) := by
-  conv_lhs =>
-    rw [← midpoint_idempotent A]
-  simpa using midpoint_bicommutative A A B C
+  calc
+    Mid A (Mid B C)
+        = Mid (Mid A A) (Mid B C) := by
+            rw [midpoint_idempotent]
+    _ = Mid (Mid A B) (Mid A C) := by
+            exact midpoint_bicommutative A A B C
 
 /-- Geometric part of Suppes' Theorem 11. -/
 theorem midpoint_triangle

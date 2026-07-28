@@ -2,7 +2,6 @@ import CGJteamLab.SuppesInterface
 
 namespace Geometry.Suppes
 
-variable {Point : Type*}
 variable [SuppesGeometry Point]
 
 local notation "Mid" =>

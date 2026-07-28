@@ -1,21 +1,11 @@
 import CGJteamLab.SuppesCore
-import Mathlib.LinearAlgebra.AffineSpace.Midpoint
-namespace Geometry
 
+namespace Geometry
 namespace Suppes
 
 section Suppes
 
-variable
-  {R : Type*}
-  {V : Type*}
-  {Point : Type*}
-
-  [Ring R]
-  [Invertible (2 : R)]
-  [AddCommGroup V]
-  [Module R V]
-  [AddTorsor V Point]
+--variable {Point : Type*}
 
 open SuppesGeometry
 
