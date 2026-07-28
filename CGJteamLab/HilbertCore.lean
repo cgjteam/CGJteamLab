@@ -1,4 +1,5 @@
-import Mathlib.Data.Sym.Sym2
+import Mathlib.Data.Set.Lattice
+import CGJteamLab.UnorderedPair
 
 namespace Geometry
 
@@ -15,14 +16,14 @@ structure Geo where
     Point -> Point -> Point -> Prop
 
   SegmentCongruent :
-    Sym2 Point ->
-    Sym2 Point ->
+    UnorderedPair Point ->
+    UnorderedPair Point ->
     Prop
 
   UnorientedAngleCongruent :
-    (Point × Sym2 (Set Point)) ->
-    (Point × Sym2 (Set Point)) ->
-    Prop
+  (Point × UnorderedPair (Set Point)) ->
+  (Point × UnorderedPair (Set Point)) ->
+  Prop
 
 namespace Geo
 
@@ -90,14 +91,13 @@ theorem ray_eq_of_sameDirectionStep
         Or.inr
           ((Relation.ReflTransGen.single hAB).trans hBX)
 
-/-- The unoriented segment with endpoints `A` and `B`. -/
+/- The unoriented segment with endpoints `A` and `B`. -/
 def Segment
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
-    Sym2 Geo.Point :=
-  s(A, B)
-
-/--
+    UnorderedPair Geo.Point :=
+  UnorderedPair.mk A B
+/-
 Congruence of the unoriented segments `AB` and `CD`.
 
 The four-point interface is retained for compatibility with the rest of
@@ -108,17 +108,18 @@ def Congruent
     (A B C D : Geo.Point) : Prop :=
   Geo.SegmentCongruent (Geo.Segment A B) (Geo.Segment C D)
 
-/--
+/-
 The unoriented angle `ABC`, represented by its vertex `B` and the
 unordered pair of rays `BA` and `BC`.
 -/
+
 def Angle
     (Geo : Geometry.Geo)
     (A B C : Geo.Point) :
-    Geo.Point × Sym2 Geo.Ray :=
-  (B, s(Geo.ray B A, Geo.ray B C))
+    Geo.Point × UnorderedPair Geo.Ray :=
+  (B, UnorderedPair.mk (Geo.ray B A) (Geo.ray B C))
 
-/--
+/-
 The rays `OA` and `OC` are opposite when their determining points are
 distinct from the common origin and the origin lies between them.
 -/
@@ -210,8 +211,8 @@ def Parallel
 theorem segment_swap
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
-    Geo.Segment A B = Geo.Segment B A := by
-  exact Sym2.eq_swap
+    Geo.Segment A B = Geo.Segment B A :=
+  UnorderedPair.eq_swap A B
 
 theorem congruent_reverse_first
     (Geo : Geometry.Geo)
@@ -221,9 +222,9 @@ theorem congruent_reverse_first
   unfold Congruent Segment
   constructor
   · intro h
-    exact (Sym2.eq_swap (a := A) (b := B)) ▸ h
+    exact (UnorderedPair.eq_swap (a := A) (b := B)) ▸ h
   · intro h
-    exact (Sym2.eq_swap (a := B) (b := A)) ▸ h
+    exact (UnorderedPair.eq_swap (a := B) (b := A)) ▸ h
 
 theorem congruent_reverse_second
     (Geo : Geometry.Geo)
@@ -233,16 +234,19 @@ theorem congruent_reverse_second
   unfold Congruent Segment
   constructor
   · intro h
-    exact (Sym2.eq_swap (a := C) (b := D)) ▸ h
+    exact (UnorderedPair.eq_swap (a := C) (b := D)) ▸ h
   · intro h
-    exact (Sym2.eq_swap (a := D) (b := C)) ▸ h
+    exact (UnorderedPair.eq_swap (a := D) (b := C)) ▸ h
 
 theorem angle_swap
     (Geo : Geometry.Geo)
     (A B C : Geo.Point) :
-    Geo.Angle A B C = Geo.Angle C B A := by
-  unfold Angle
-  rw [Sym2.eq_swap]
+    Geo.Angle A B C =
+    Geo.Angle C B A := by
+  change
+    (B, UnorderedPair.mk (Geo.ray B A) (Geo.ray B C)) =
+    (B, UnorderedPair.mk (Geo.ray B C) (Geo.ray B A))
+  rw [UnorderedPair.eq_swap]
 
 theorem angle_congruent_reverse_first
     (Geo : Geometry.Geo)
