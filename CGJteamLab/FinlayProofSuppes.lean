@@ -1,4 +1,3 @@
-import CGJteamLab.ParallelogramRecognitionSuppes
 import CGJteamLab.MidsegmentParallelSuppes
 
 namespace Geometry.Suppes

@@ -2,6 +2,7 @@ import CGJteamLab.Basic
 
 -- Hilbert route
 import CGJteamLab.HilbertCore
+import CGJteamLab.UnorderedPair
 import CGJteamLab.HilbertAxioms
 import CGJteamLab.HilbertInterface
 import CGJteamLab.MidsegmentParallel
@@ -12,7 +13,6 @@ import CGJteamLab.SuppesCore
 import CGJteamLab.SuppesAxioms
 import CGJteamLab.SuppesInterface
 import CGJteamLab.MidsegmentParallelSuppes
-import CGJteamLab.ParallelogramRecognitionSuppes
 import CGJteamLab.FinlayProofSuppes
 
 -- Tarski route
