@@ -1,6 +1,28 @@
-import CGJteamLab.GeometryCore
+import Mathlib.Data.Sym.Sym2
 
 namespace Geometry
+
+universe u
+
+structure Geo where
+  Point : Type u
+  Line : Type u
+
+  OnLine :
+    Point -> Line -> Prop
+
+  Between :
+    Point -> Point -> Point -> Prop
+
+  SegmentCongruent :
+    Sym2 Point ->
+    Sym2 Point ->
+    Prop
+
+  UnorientedAngleCongruent :
+    (Point × Sym2 (Set Point)) ->
+    (Point × Sym2 (Set Point)) ->
+    Prop
 
 namespace Geo
 
