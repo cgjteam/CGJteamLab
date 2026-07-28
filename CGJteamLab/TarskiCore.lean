@@ -1,4 +1,4 @@
-import Mathlib.Data.Sym.Sym2
+import CGJteamLab.UnorderedPair
 
 namespace Geometry
 namespace Tarski
@@ -15,8 +15,8 @@ structure Geo where
     Point -> Point -> Point -> Prop
 
   SegmentCongruent :
-    Sym2 Point ->
-    Sym2 Point ->
+    UnorderedPair Point ->
+    UnorderedPair Point ->
     Prop
 
 namespace Geo
@@ -25,8 +25,8 @@ namespace Geo
 def Segment
     (Geo : Tarski.Geo)
     (A B : Geo.Point) :
-    Sym2 Geo.Point :=
-  s(A, B)
+    UnorderedPair Geo.Point :=
+  UnorderedPair.mk A B
 
 /--
 Congruence of the unoriented segments `AB` and `CD`.
@@ -46,7 +46,10 @@ theorem segment_swap
     (Geo : Tarski.Geo)
     (A B : Geo.Point) :
     Geo.Segment A B = Geo.Segment B A := by
-  exact Sym2.eq_swap
+  change
+    UnorderedPair.mk A B =
+    UnorderedPair.mk B A
+  exact UnorderedPair.eq_swap A B
 
 theorem congruent_reverse_first
     (Geo : Tarski.Geo)
@@ -56,9 +59,15 @@ theorem congruent_reverse_first
   unfold Congruent Segment
   constructor
   · intro h
-    exact (Sym2.eq_swap (a := A) (b := B)) ▸ h
+    exact
+      (UnorderedPair.eq_swap
+        (a := A)
+        (b := B)) ▸ h
   · intro h
-    exact (Sym2.eq_swap (a := B) (b := A)) ▸ h
+    exact
+      (UnorderedPair.eq_swap
+        (a := B)
+        (b := A)) ▸ h
 
 theorem congruent_reverse_second
     (Geo : Tarski.Geo)
@@ -68,9 +77,15 @@ theorem congruent_reverse_second
   unfold Congruent Segment
   constructor
   · intro h
-    exact (Sym2.eq_swap (a := C) (b := D)) ▸ h
+    exact
+      (UnorderedPair.eq_swap
+        (a := C)
+        (b := D)) ▸ h
   · intro h
-    exact (Sym2.eq_swap (a := D) (b := C)) ▸ h
+    exact
+      (UnorderedPair.eq_swap
+        (a := D)
+        (b := C)) ▸ h
 
 end Geo
 
