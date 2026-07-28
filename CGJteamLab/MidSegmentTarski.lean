@@ -1,5 +1,5 @@
 import CGJteamLab.TarskiInterface
-import CGJteamLab.TarskiAxioms
+--import CGJteamLab.TarskiAxioms
 
 namespace Geometry
 
@@ -7,7 +7,7 @@ namespace Tarski
 
 universe u
 
-variable (Geo : Geometry.Geo)
+variable (Geo : Geometry.Tarski.Geo)
 
 --variable [HilbertIncidence Geo]
 --variable [TarskiGeometryBaseBridge Geo]

@@ -1,4 +1,3 @@
---import CGJteamLab.HilbertInterface
 import CGJteamLab.TarskiAxioms
 
 namespace Geometry
@@ -7,7 +6,7 @@ namespace Tarski
 
 universe u
 
-variable (Geo : Geometry.Geo)
+variable (Geo : Geometry.Tarski.Geo)
 
 /-!
 # TarskiBase

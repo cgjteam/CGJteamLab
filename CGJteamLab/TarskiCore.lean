@@ -1,9 +1,13 @@
 import Mathlib.Data.Sym.Sym2
 
 namespace Geometry
+namespace Tarski
 
 universe u
 
+/--
+Primitive geometric signature used by the Tarski route.
+-/
 structure Geo where
   Point : Type u
 
@@ -19,7 +23,7 @@ namespace Geo
 
 /-- The unoriented segment with endpoints `A` and `B`. -/
 def Segment
-    (Geo : Geometry.Geo)
+    (Geo : Tarski.Geo)
     (A B : Geo.Point) :
     Sym2 Geo.Point :=
   s(A, B)
@@ -28,22 +32,24 @@ def Segment
 Congruence of the unoriented segments `AB` and `CD`.
 
 The four-point interface is retained for compatibility with the rest of
-the geometry library.
+the Tarski geometry library.
 -/
 def Congruent
-    (Geo : Geometry.Geo)
+    (Geo : Tarski.Geo)
     (A B C D : Geo.Point) : Prop :=
-  Geo.SegmentCongruent (Geo.Segment A B) (Geo.Segment C D)
+  Geo.SegmentCongruent
+    (Geo.Segment A B)
+    (Geo.Segment C D)
 
 /-- Reversal of the endpoints of an unoriented segment. -/
 theorem segment_swap
-    (Geo : Geometry.Geo)
+    (Geo : Tarski.Geo)
     (A B : Geo.Point) :
     Geo.Segment A B = Geo.Segment B A := by
   exact Sym2.eq_swap
 
 theorem congruent_reverse_first
-    (Geo : Geometry.Geo)
+    (Geo : Tarski.Geo)
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D <->
     Geo.Congruent B A C D := by
@@ -55,7 +61,7 @@ theorem congruent_reverse_first
     exact (Sym2.eq_swap (a := B) (b := A)) ▸ h
 
 theorem congruent_reverse_second
-    (Geo : Geometry.Geo)
+    (Geo : Tarski.Geo)
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D <->
     Geo.Congruent A B D C := by
@@ -68,4 +74,5 @@ theorem congruent_reverse_second
 
 end Geo
 
+end Tarski
 end Geometry

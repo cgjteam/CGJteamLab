@@ -32,7 +32,7 @@ The dimension-independent neutral axioms of Tarski geometry.
 Only `Geo.Point`, `Geo.Between`, and `Geo.Congruent` occur in these
 axioms. Equality is Lean's logical equality.
 -/
-class TarskiNeutral (Geo : Geometry.Geo) : Prop where
+class TarskiNeutral (Geo : Geometry.Tarski.Geo) : Prop where
   /-- Ax.1: reflexivity (endpoint reversal) for segment congruence. -/
   congruent_reversal :
     ∀ A B : Geo.Point,
@@ -86,7 +86,7 @@ class TarskiNeutral (Geo : Geometry.Geo) : Prop where
         Geo.Between Q X A
 
 /-- The lower and upper dimension axioms for a Tarski plane. -/
-class TarskiPlane (Geo : Geometry.Geo) : Prop
+class TarskiPlane (Geo : Geometry.Tarski.Geo) : Prop
     extends TarskiNeutral Geo where
   /-- Ax.8(2): three non-collinear points exist. -/
   lower_dimension_two :
@@ -114,7 +114,7 @@ A two-dimensional Euclidean Tarski geometry.
 
 The field `euclid` is the first form of Euclid's axiom, Ax.10.
 -/
-class TarskiEuclideanPlane (Geo : Geometry.Geo) : Prop
+class TarskiEuclideanPlane (Geo : Geometry.Tarski.Geo) : Prop
     extends TarskiPlane Geo where
   /-- Ax.10: the first form of Euclid's axiom. -/
   euclid :

@@ -5,7 +5,7 @@ namespace Tarski
 
 universe u
 
-variable (Geo : Geometry.Geo)
+variable (Geo : Geometry.Tarski.Geo)
 
 
 
