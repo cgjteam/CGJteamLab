@@ -1,6 +1,5 @@
---import CGJteamLab.HilbertCore
+import CGJteamLab.SuppesCore
 import Mathlib.LinearAlgebra.AffineSpace.Midpoint
-
 namespace Geometry
 
 namespace Suppes
@@ -17,17 +16,6 @@ variable
   [AddCommGroup V]
   [Module R V]
   [AddTorsor V Point]
-
-/-- Primitive operations of Suppes' constructive affine geometry. -/
-class SuppesGeometry (Point : Type*) where
-  /-- Midpoint operation. -/
-  operation_midpoint : Point → Point → Point
-
-  /-- Doubling operation. -/
-  operation_double : Point → Point → Point
-
-  /-- Primitive collinearity relation. -/
-  Collinear : Point → Point → Point → Prop
 
 open SuppesGeometry
 
