@@ -299,6 +299,7 @@ theorem angle_congruent_transitivity
       (Geo.Angle G H I)
       h₁ h₂
 
+/-
 theorem pointLine_swap
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
@@ -307,6 +308,44 @@ theorem pointLine_swap
   intro X
   simp only [PointLine, Set.mem_ofPred_eq, LineCollinear]
   aesop
+-/
+
+theorem pointLine_swap
+    (Geo : Geometry.Geo)
+    (A B : Geo.Point) :
+    Geo.PointLine A B = Geo.PointLine B A := by
+  apply Set.ext
+  intro X
+  simp only [PointLine, Set.mem_ofPred_eq, LineCollinear]
+  constructor
+  · intro h
+    rcases h with
+      hAB | hAX | hBX |
+      hABX | hAXB | hBAX |
+      hBXA | hXAB | hXBA
+    · exact Or.inl hAB.symm
+    · exact Or.inr (Or.inr (Or.inl hAX))
+    · exact Or.inr (Or.inl hBX)
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hABX)))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hAXB))))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inl hBAX)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hBXA))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr hXAB)))))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hXBA)))))))
+  · intro h
+    rcases h with
+      hBA | hBX | hAX |
+      hBAX | hBXA | hABX |
+      hAXB | hXBA | hXAB
+    · exact Or.inl hBA.symm
+    · exact Or.inr (Or.inr (Or.inl hBX))
+    · exact Or.inr (Or.inl hAX)
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hBAX)))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hBXA))))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inl hABX)))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hAXB))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr hXBA)))))))
+    · exact Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inr (Or.inl hXAB)))))))
 
 theorem parallel_symmetry
     (Geo : Geometry.Geo)
