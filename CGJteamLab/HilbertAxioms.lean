@@ -6,6 +6,13 @@ universe u
 
 variable (Geo : Geometry.Geo)
 
+/-!
+# Primitive incidence language
+
+This section introduces the primitive point-line incidence relation,
+the derived notion of collinearity, and its elementary permutations.
+-/
+
 class HilbertIncidence where
   OnLine :
     Geo.Point → Geo.Line → Prop
@@ -45,7 +52,6 @@ theorem PrimCollinearCycle
   rcases h with ⟨l, hA, hB, hC⟩
   exact ⟨l, hB, hC, hA⟩
 
-
 theorem PrimCollinear.mk
     [H : HilbertIncidence Geo]
     {A B C : Geo.Point}
@@ -56,6 +62,7 @@ theorem PrimCollinear.mk
     PrimCollinear Geo A B C :=
 by
   exact ⟨l, hA, hB, hC⟩
+
 theorem PrimCollinear.exists_line
     [H : HilbertIncidence Geo]
     {A B C : Geo.Point}
@@ -90,6 +97,13 @@ Consequently, the space incidence axioms I, 4-8 are intentionally not
 encoded here. Axiom V, 2 is also deferred: Hilbert's line-completeness
 axiom is a maximality statement about extensions of an entire ordered
 congruence structure and requires a separate model-theoretic interface.
+-/
+
+/-!
+## Derived line, ray, and separation notions
+
+These definitions are built from incidence and betweenness. They are not
+additional axioms.
 -/
 
 /-- Two Hilbert lines meet when they have a common point. -/
@@ -163,6 +177,13 @@ def HilbertOppositeSide
   ¬ H.OnLine P l ∧
   ¬ H.OnLine Q l ∧
   HilbertSegmentMeetsLine Geo P Q l
+
+/-!
+## Hilbert axiom classes
+
+The following classes encode the plane incidence, order, congruence,
+parallel, and continuity layers of the Hilbert system.
+-/
 
 /--
 Group I, axioms I, 1-3 for plane incidence.
@@ -326,6 +347,13 @@ class HilbertCongruence (Geo : Geometry.Geo)
       Geo.Congruent A C A' C' →
       Geo.AngleCongruent B A C B' A' C' →
       Geo.AngleCongruent A B C A' B' C'
+
+/-!
+## Elementary incidence and order consequences
+
+This section develops consequences needed by the later congruence and
+parallel theory.
+-/
 
 /--
 Incidence transitivity through two distinct shared points.
@@ -2142,6 +2170,10 @@ theorem hilbert_between_inner_trans
     hilbert_between_outer_trans Geo A B C D hABC hBC'D
   exact ⟨hBC'D, hOuter.2⟩
 
+/-!
+## Rays, sides, and angle transport
+-/
+
 theorem hilbert_sameRay_collinear
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
@@ -2609,6 +2641,10 @@ theorem hilbert_angle_eq_of_sameRay_second
   unfold Geometry.Geo.Angle
   rw [hilbert_sameRay_ray_eq Geo O B B' hBB']
 
+/-!
+## Elementary segment congruence
+-/
+
 /--
 Reflexivity of segment congruence derived exactly as Hilbert explains
 after III.2: construct one copy of `AB`, then apply III.2 to that same
@@ -2760,6 +2796,10 @@ theorem hilbert_segment_construction_unique
       X Y hXY base l hXbase hYbase hXl hYm
   rw [← hBaseL] at hCl
   exact hCbase hCl
+
+/-!
+## Triangle congruence consequences
+-/
 
 /--
 The angle part of Hilbert's Theorem 12.
@@ -3074,6 +3114,10 @@ theorem hilbert_noncollinear_of_sameRays
     hAOB
       (hilbert_primCollinear_trans
         Geo A O Y B hBY.2.1.symm hAOY hOYB)
+
+/-!
+## Angle theorems
+-/
 
 /--
 Hilbert's Theorem 14: angles adjacent to congruent angles are
@@ -3678,6 +3722,10 @@ theorem hilbert_aas_sides
     exact False.elim
       ((hilbert_exterior_angle_not_congruent_other
         Geo X C B A hXCB hCXA) hForbidden)
+
+/-!
+## Parallel-line criteria
+-/
 
 /--
 The equal-alternate-angles direction of Hilbert's Theorem 30.
@@ -4337,6 +4385,10 @@ theorem hilbert_parallel_of_alternate_angles_oppositeSide_lines
   exact
     ⟨hCD, hBF, hPointLine ▸ hAux.2.2⟩
 
+/-!
+## Segment and midpoint constructions
+-/
+
 /--
 Extension beyond `B`, with the order information retained.
 
@@ -4832,6 +4884,10 @@ theorem hilbert_midpoint_exists
       (Geo.congruent_reverse_second
         A E B E).mp hAAS.1⟩
 
+/-!
+## Euclidean parallel axiom and converse theorems
+-/
+
 /-- Group IV, Hilbert's Euclidean axiom of parallels. -/
 class HilbertEuclideanPlane (Geo : Geometry.Geo)
     [HilbertIncidence Geo] : Prop
@@ -5080,6 +5136,10 @@ theorem hilbert_alternate_angles_of_parallel_oppositeSide_lines
   unfold Geometry.Geo.AngleCongruent at hConstructed ⊢
   rw [← hAngleObject]
   exact hConstructed
+
+/-!
+## Archimedean continuity layer
+-/
 
 /--
 A finite chain of copies of segment `CD`, beginning at `A`, along the
