@@ -1875,7 +1875,53 @@ theorem tarski_midsegment_parallel_AB_XP
       hAPB
       hPar
 
+/--
+Every segment has a midpoint under the midpoint-existence extension.
+-/
+theorem tarski_midpoint_exists
+    [TarskiMidpointExistence Geo]
+    (A B : Geo.Point) :
+    ∃ M : Geo.Point,
+      TarskiIsMidpoint Geo M A B := by
+  obtain ⟨M, hBetween, hCongruent⟩ :=
+    TarskiMidpointExistence.midpoint_exists
+      (Geo := Geo)
+      A B
 
+  exact ⟨M, hBetween, hCongruent⟩
+
+/--
+An extension asserting that two medians of a nondegenerate triangle
+have a common point.
+-/
+class TarskiMedianIntersection
+    (Geo : Geometry.Tarski.Geo) : Prop where
+  intersection_exists :
+    forall A B C E F : Geo.Point,
+      Not (TarskiCollinear Geo A B C) ->
+      TarskiIsMidpoint Geo E A C ->
+      TarskiIsMidpoint Geo F A B ->
+      Exists fun G : Geo.Point =>
+        TarskiCollinear Geo B E G /\
+        TarskiCollinear Geo C F G
+
+/--
+Two medians of a nondegenerate triangle have a common point.
+-/
+theorem tarski_two_medians_intersect
+    [TarskiMedianIntersection Geo]
+    (A B C E F : Geo.Point)
+    (hNonColABC : Not (TarskiCollinear Geo A B C))
+    (hE : TarskiIsMidpoint Geo E A C)
+    (hF : TarskiIsMidpoint Geo F A B) :
+    Exists fun G : Geo.Point =>
+      TarskiCollinear Geo B E G /\
+      TarskiCollinear Geo C F G :=
+  TarskiMedianIntersection.intersection_exists
+    A B C E F
+    hNonColABC
+    hE
+    hF
 
 
 end Tarski

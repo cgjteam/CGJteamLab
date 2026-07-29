@@ -617,6 +617,102 @@ theorem FinlayProofTarski
       hE hF hG
       hCFG hBEG
 
+
+/-
+Finlay's theorem in Tarski geometry without exposing
+the auxiliary symmetric point P.
+
+The point P is constructed internally so that G is the midpoint
+of AP.
+-/
+theorem FinlayProofTarskiWithoutP
+    [TarskiNeutral Geo]
+    (A B C E F G : Geo.Point)
+    (hNonColABC : Not (TarskiCollinear Geo A B C))
+    (hE : TarskiIsMidpoint Geo E A C)
+    (hF : TarskiIsMidpoint Geo F A B)
+    (hCFG : TarskiCollinear Geo C F G)
+    (hBEG : TarskiCollinear Geo B E G) :
+    Exists fun D : Geo.Point =>
+      TarskiIsMidpoint Geo D B C /\
+      TarskiCollinear Geo A G D := by
+
+  obtain ⟨P, hG⟩ :=
+    tarski_symmetric_point_exists
+      (Geo := Geo)
+      A G
+
+  exact
+    FinlayProofTarski
+      Geo A B C P E F G
+      hNonColABC
+      hE
+      hF
+      hG
+      hCFG
+      hBEG
+
+/--
+Finlay's theorem in Tarski geometry.
+
+For every nondegenerate triangle ABC, there exist midpoints E, F, D
+of AC, AB, BC and a common point G of the medians BE and CF such that
+A, G and D are collinear.
+-/
+theorem FinlayTarski
+    [TarskiNeutral Geo]
+    [TarskiMidpointExistence Geo]
+    [TarskiMedianIntersection Geo]
+    (A B C : Geo.Point)
+    (hNonColABC : Not (TarskiCollinear Geo A B C)) :
+    Exists fun E : Geo.Point =>
+    Exists fun F : Geo.Point =>
+    Exists fun G : Geo.Point =>
+    Exists fun D : Geo.Point =>
+      TarskiIsMidpoint Geo E A C /\
+      TarskiIsMidpoint Geo F A B /\
+      TarskiCollinear Geo B E G /\
+      TarskiCollinear Geo C F G /\
+      TarskiIsMidpoint Geo D B C /\
+      TarskiCollinear Geo A G D := by
+
+  obtain ⟨E, hE⟩ :=
+    tarski_midpoint_exists
+      (Geo := Geo)
+      A C
+
+  obtain ⟨F, hF⟩ :=
+    tarski_midpoint_exists
+      (Geo := Geo)
+      A B
+
+  obtain ⟨G, hBEG, hCFG⟩ :=
+    tarski_two_medians_intersect
+      (Geo := Geo)
+      A B C E F
+      hNonColABC
+      hE
+      hF
+
+  obtain ⟨D, hD, hAGD⟩ :=
+    FinlayProofTarskiWithoutP
+      (Geo := Geo)
+      A B C E F G
+      hNonColABC
+      hE
+      hF
+      hCFG
+      hBEG
+
+  exact
+    ⟨E, F, G, D,
+      hE,
+      hF,
+      hBEG,
+      hCFG,
+      hD,
+      hAGD⟩
+
 end Tarski
 
 end Geometry

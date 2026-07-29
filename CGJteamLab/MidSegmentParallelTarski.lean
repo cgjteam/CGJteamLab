@@ -89,6 +89,8 @@ theorem MidsegmentTheoremTarski
       Geo A B C P Q X
       hNonCol hP hQ hQPX
 
+
+
 end Tarski
 
 end Geometry
