@@ -313,10 +313,7 @@ theorem CongruentSwapSecond
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D →
     Geo.Congruent A B D C := by
-  intro h
-  exact
-    CongruentReverseFirst Geo B A D C
-      (CongruentReverseBoth Geo A B C D h)
+  exact (Geometry.Geo.congruent_reverse_second Geo A B C D).mp
 
 
 ------------------------------------------------------------------------

@@ -310,54 +310,19 @@ theorem tarski_congruent_symmetry
     A B C D A B
     hABCD hABAB
 
-/-
-Derived endpoint reversal for segment congruence.
+/--
+Reversal of both unoriented segments.
 
-Mathematically:
-  AB == CD -> BA == DC.
-
-This theorem is entirely internal to Tarski neutral geometry.
-It does not use Hilbert incidence, the compatibility bridge,
-or decidable equality of points.
-
-It is derived from:
-  - Ax.1: endpoint reversal for congruence,
-  - Ax.2: transitivity for congruence,
-  - derived symmetry of segment congruence.
-
-From AB == CD, symmetry gives CD == AB, while Ax.1 gives
-CD == DC. Ax.2 therefore yields AB == DC.
-Together with AB == BA from Ax.1, another application of
-Ax.2 yields BA == DC.
+This is a representational consequence of `Common.PairRelation`, not a
+Tarski congruence theorem. No Tarski axiom instance is required.
 -/
 theorem tarski_congruent_reverse_both
-    [TarskiNeutral Geo]
     (A B C D : Geo.Point)
     (hABCD : Geo.Congruent A B C D) :
     Geo.Congruent B A D C := by
-
-  have hCDAB : Geo.Congruent C D A B :=
-    tarski_congruent_symmetry
-      (Geo := Geo) A B C D hABCD
-
-  have hCDDC : Geo.Congruent C D D C :=
-    TarskiNeutral.congruent_reversal
-      (Geo := Geo) C D
-
-  have hABDC : Geo.Congruent A B D C :=
-    TarskiNeutral.congruent_transitivity
-      (Geo := Geo)
-      C D A B D C
-      hCDAB hCDDC
-
-  have hABBA : Geo.Congruent A B B A :=
-    TarskiNeutral.congruent_reversal
-      (Geo := Geo) A B
-
-  exact TarskiNeutral.congruent_transitivity
-    (Geo := Geo)
-    A B B A D C
-    hABBA hABDC
+  exact
+    (Geometry.Tarski.Geo.congruent_reverse_second Geo B A C D).mp
+      ((Geometry.Tarski.Geo.congruent_reverse_first Geo A B C D).mp hABCD)
 
 /-
 Derived congruence of all zero-length segments.
