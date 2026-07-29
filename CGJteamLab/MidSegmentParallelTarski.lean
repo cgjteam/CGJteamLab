@@ -1,5 +1,4 @@
 import CGJteamLab.TarskiInterface
---import CGJteamLab.TarskiAxioms
 
 namespace Geometry
 
@@ -9,11 +8,15 @@ universe u
 
 variable (Geo : Geometry.Tarski.Geo)
 
---variable [HilbertIncidence Geo]
---variable [TarskiGeometryBaseBridge Geo]
 
 
+/-
+Final bridge between the three-midpoint theory developed
+in TarskiInterface and the public Midsegment theorem.
 
+The auxiliary point X is eliminated by transferring
+parallelism from XP to QP.
+-/
 theorem tarski_midsegment_parallel_strict
     [TarskiNeutral Geo]
     (A B C P Q X : Geo.Point)

@@ -1,4 +1,4 @@
-import CGJteamLab.MidSegmentTarski
+import CGJteamLab.MidSegmentParallelTarski
 
 namespace Geometry
 namespace Tarski

@@ -19,5 +19,5 @@ import CGJteamLab.FinlayProofSuppes
 import CGJteamLab.TarskiCore
 import CGJteamLab.TarskiAxioms
 import CGJteamLab.TarskiInterface
-import CGJteamLab.MidSegmentTarski
+import CGJteamLab.MidSegmentParallelTarski
 import CGJteamLab.FinlayProofTarski
