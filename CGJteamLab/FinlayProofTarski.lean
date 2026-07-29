@@ -128,17 +128,14 @@ theorem finlay_tarski_B_ne_G
 
   exact hCFB hCFG
 
-
-theorem finlay_tarski_noncollinear_BPA
+theorem finlay_tarski_A_ne_P
     [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
+    (A B C P F G : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
     (hF : TarskiIsMidpoint Geo F A B)
     (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Not (TarskiCollinear Geo B P A) := by
+    (hCFG : TarskiCollinear Geo C F G) :
+    A ≠ P := by
 
   have hCAB : Not (TarskiCollinear Geo C A B) := by
     intro hCAB
@@ -152,18 +149,36 @@ theorem finlay_tarski_noncollinear_BPA
       hCAB
       hF
 
-  have hAP : A = P -> False := by
-    intro hAP
-    subst P
+  intro hAP
+  subst P
 
-    have hAG : A = G :=
-      TarskiNeutral.between_identity
-        (Geo := Geo)
-        A G
-        hG.1
+  have hAG : A = G :=
+    TarskiNeutral.between_identity
+      (Geo := Geo)
+      A G
+      hG.1
 
-    subst G
-    exact hCFA hCFG
+  subst G
+  exact hCFA hCFG
+
+theorem finlay_tarski_noncollinear_BPA
+    [TarskiNeutral Geo]
+    (A B C P E F G : Geo.Point)
+    (hNonColABC : Not (TarskiCollinear Geo A B C))
+    (hE : TarskiIsMidpoint Geo E A C)
+    (hF : TarskiIsMidpoint Geo F A B)
+    (hG : TarskiIsMidpoint Geo G A P)
+    (hCFG : TarskiCollinear Geo C F G)
+    (hBEG : TarskiCollinear Geo B E G) :
+    Not (TarskiCollinear Geo B P A) := by
+
+  have hAP : A ≠ P :=
+    finlay_tarski_A_ne_P
+      Geo A B C P F G
+      hNonColABC
+      hF
+      hG
+      hCFG
 
   have hBG : B = G -> False :=
     finlay_tarski_B_ne_G
@@ -261,38 +276,14 @@ theorem finlay_tarski_noncollinear_CPA
     (hBEG : TarskiCollinear Geo B E G) :
     Not (TarskiCollinear Geo C P A) := by
 
-  have hBAC : Not (TarskiCollinear Geo B A C) := by
-    intro hBAC
-    apply hNonColABC
 
-    have hBCA : TarskiCollinear Geo B C A :=
-      tarski_collinear_symmetry
-        Geo B A C hBAC
-
-    have hCAB : TarskiCollinear Geo C A B :=
-      (tarski_collinear_cycle Geo B C A).mp hBCA
-
-    exact
-      (tarski_collinear_cycle Geo C A B).mp hCAB
-
-  have hBEA : Not (TarskiCollinear Geo B E A) :=
-    tarski_midpoint_noncol_left
-      Geo B A C E
-      hBAC
-      hE
-
-  have hAP : A = P -> False := by
-    intro hAP
-    subst P
-
-    have hAG : A = G :=
-      TarskiNeutral.between_identity
-        (Geo := Geo)
-        A G
-        hG.1
-
-    subst G
-    exact hBEA hBEG
+  have hAP : A ≠ P :=
+    finlay_tarski_A_ne_P
+      Geo A B C P F G
+      hNonColABC
+      hF
+      hG
+      hCFG
 
   have hCG : C = G -> False :=
     finlay_tarski_C_ne_G
@@ -564,23 +555,14 @@ theorem FinlayTarskiStep4
     left
     exact hDPG.1
 
-  have hNonColBPA : Not (TarskiCollinear Geo B P A) :=
-    finlay_tarski_noncollinear_BPA
-      Geo A B C P E F G
+  have hAP : A ≠ P :=
+    finlay_tarski_A_ne_P
+      Geo A B C P F G
       hNonColABC
-      hE hF hG
-      hCFG hBEG
-  have hBAP : Not (TarskiCollinear Geo B A P) := by
-    intro hBAP
-    apply hNonColBPA
-    exact
-      tarski_collinear_symmetry
-        Geo B A P hBAP
+      hF
+      hG
+      hCFG
 
-  have hAP : A = P -> False :=
-    tarski_noncollinear_ne_second_third
-      Geo B A P
-      hBAP
 
   have hGP : G = P -> False :=
     tarski_midpoint_ne_second
