@@ -26,51 +26,40 @@ theorem tarski_midsegment_parallel_strict
     (hQPX : TarskiIsMidpoint Geo Q P X) :
     TarskiParallelStrict Geo A B Q P := by
 
-  have hParABXP : TarskiParallelStrict Geo A B X P := by
-    exact
-      tarski_midsegment_parallel_AB_XP
-        Geo A B C P Q X
-        hNonCol hP hQ hQPX
-
-  rcases hParABXP with ⟨hAB, hXP, hNoInt⟩
+  have hParABXP : TarskiParallelStrict Geo A B X P :=
+    tarski_midsegment_parallel_AB_XP
+      Geo A B C P Q X
+      hNonCol hP hQ hQPX
 
   have hPQX : TarskiCollinear Geo P Q X := by
     left
     exact hQPX.1
 
-  have hQXP : TarskiCollinear Geo Q X P := by
-    exact
-      (tarski_collinear_cycle Geo P Q X).mp hPQX
+  have hQXP : TarskiCollinear Geo Q X P :=
+    (tarski_collinear_cycle Geo P Q X).mp hPQX
 
-  have hQPXcol : TarskiCollinear Geo Q P X := by
-    exact
-      tarski_collinear_symmetry
-        Geo Q X P hQXP
+  have hQPXcol : TarskiCollinear Geo Q P X :=
+    tarski_collinear_symmetry Geo Q X P hQXP
 
   have hPX : P = X -> False := by
     intro hPX
-    exact hXP hPX.symm
+    exact hParABXP.2.1 hPX.symm
 
-  have hPQ : P = Q -> False := by
-    exact
-      tarski_midpoint_ne_first
-        Geo Q P X
-        hPX
-        hQPX
+  have hPQ : P = Q -> False :=
+    tarski_midpoint_ne_first Geo Q P X hPX hQPX
 
   have hQP : Q = P -> False := by
     intro hQP
     exact hPQ hQP.symm
 
-  have hParABXP' : TarskiParallelStrict Geo A B X P := by
-    exact ⟨hAB, hXP, hNoInt⟩
-
   exact
     tarski_parallel_strict_collinear_right
       Geo A B Q P X
-      hParABXP'
+      hParABXP
       hQPXcol
       hQP
+
+
 
 
 /-
