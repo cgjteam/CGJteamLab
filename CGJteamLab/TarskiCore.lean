@@ -1,4 +1,4 @@
-import CGJteamLab.UnorderedPair
+import CGJteamLab.Common
 
 namespace Geometry
 namespace Tarski
@@ -26,7 +26,7 @@ def Segment
     (Geo : Tarski.Geo)
     (A B : Geo.Point) :
     UnorderedPair Geo.Point :=
-  UnorderedPair.mk A B
+  Common.Segment A B
 
 /--
 Congruence of the unoriented segments `AB` and `CD`.
@@ -37,55 +37,30 @@ the Tarski geometry library.
 def Congruent
     (Geo : Tarski.Geo)
     (A B C D : Geo.Point) : Prop :=
-  Geo.SegmentCongruent
-    (Geo.Segment A B)
-    (Geo.Segment C D)
+  Common.PairRelation Geo.SegmentCongruent A B C D
 
 /-- Reversal of the endpoints of an unoriented segment. -/
 theorem segment_swap
     (Geo : Tarski.Geo)
     (A B : Geo.Point) :
-    Geo.Segment A B = Geo.Segment B A := by
-  change
-    UnorderedPair.mk A B =
-    UnorderedPair.mk B A
-  exact UnorderedPair.eq_swap A B
+    Geo.Segment A B = Geo.Segment B A :=
+  Common.segment_swap A B
 
 theorem congruent_reverse_first
     (Geo : Tarski.Geo)
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D <->
-    Geo.Congruent B A C D := by
-  unfold Congruent Segment
-  constructor
-  · intro h
-    exact
-      (UnorderedPair.eq_swap
-        (a := A)
-        (b := B)) ▸ h
-  · intro h
-    exact
-      (UnorderedPair.eq_swap
-        (a := B)
-        (b := A)) ▸ h
+    Geo.Congruent B A C D :=
+  Common.pairRelation_reverse_first
+    Geo.SegmentCongruent A B C D
 
 theorem congruent_reverse_second
     (Geo : Tarski.Geo)
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D <->
-    Geo.Congruent A B D C := by
-  unfold Congruent Segment
-  constructor
-  · intro h
-    exact
-      (UnorderedPair.eq_swap
-        (a := C)
-        (b := D)) ▸ h
-  · intro h
-    exact
-      (UnorderedPair.eq_swap
-        (a := D)
-        (b := C)) ▸ h
+    Geo.Congruent A B D C :=
+  Common.pairRelation_reverse_second
+    Geo.SegmentCongruent A B C D
 
 end Geo
 

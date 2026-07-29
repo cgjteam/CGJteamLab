@@ -1,5 +1,5 @@
 import Mathlib.Data.Set.Lattice
-import CGJteamLab.UnorderedPair
+import CGJteamLab.Common
 
 namespace Geometry
 
@@ -96,7 +96,7 @@ def Segment
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
     UnorderedPair Geo.Point :=
-  UnorderedPair.mk A B
+  Common.Segment A B
 /-
 Congruence of the unoriented segments `AB` and `CD`.
 
@@ -106,7 +106,7 @@ the geometry library.
 def Congruent
     (Geo : Geometry.Geo)
     (A B C D : Geo.Point) : Prop :=
-  Geo.SegmentCongruent (Geo.Segment A B) (Geo.Segment C D)
+  Common.PairRelation Geo.SegmentCongruent A B C D
 
 /-
 The unoriented angle `ABC`, represented by its vertex `B` and the
@@ -212,31 +212,23 @@ theorem segment_swap
     (Geo : Geometry.Geo)
     (A B : Geo.Point) :
     Geo.Segment A B = Geo.Segment B A :=
-  UnorderedPair.eq_swap A B
+  Common.segment_swap A B
 
 theorem congruent_reverse_first
     (Geo : Geometry.Geo)
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D ↔
-    Geo.Congruent B A C D := by
-  unfold Congruent Segment
-  constructor
-  · intro h
-    exact (UnorderedPair.eq_swap (a := A) (b := B)) ▸ h
-  · intro h
-    exact (UnorderedPair.eq_swap (a := B) (b := A)) ▸ h
+    Geo.Congruent B A C D :=
+  Common.pairRelation_reverse_first
+    Geo.SegmentCongruent A B C D
 
 theorem congruent_reverse_second
     (Geo : Geometry.Geo)
     (A B C D : Geo.Point) :
     Geo.Congruent A B C D ↔
-    Geo.Congruent A B D C := by
-  unfold Congruent Segment
-  constructor
-  · intro h
-    exact (UnorderedPair.eq_swap (a := C) (b := D)) ▸ h
-  · intro h
-    exact (UnorderedPair.eq_swap (a := D) (b := C)) ▸ h
+    Geo.Congruent A B D C :=
+  Common.pairRelation_reverse_second
+    Geo.SegmentCongruent A B C D
 
 theorem angle_swap
     (Geo : Geometry.Geo)

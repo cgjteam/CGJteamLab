@@ -1,3 +1,5 @@
+import CGJteamLab.Common
+
 namespace Geometry
 
 namespace Suppes
