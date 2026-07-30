@@ -314,26 +314,182 @@ theorem gupta_BP_congruent_AQ
       P B Q A
       hPBQA
 
-/-!
-## Five-Segment variants
+/--
+The auxiliary point R1 used in Gupta's proof lies on AQ
+and cuts from A a segment congruent to BR.
 -/
+theorem gupta_R1_properties
+    [TarskiNeutral Geo]
+    (A B Q R R1 : Geo.Point)
+    (hAR1Q : Geo.Between A R1 Q)
+    (hAR1BR : Geo.Congruent A R1 B R) :
+    Geo.Between A R1 Q ∧
+    Geo.Congruent A R1 B R := by
+  exact ⟨hAR1Q, hAR1BR⟩
+
+theorem gupta_RA_congruent_R1B
+    [TarskiNeutral Geo]
+    (A B P Q R R1 : Geo.Point)
+    (hBR : B ≠ R)
+    (hBRP : Geo.Between B R P)
+    (hAR1Q : Geo.Between A R1 Q)
+    (hBPAQ : Geo.Congruent B P A Q)
+    (hRPR1Q : Geo.Congruent R P R1 Q)
+    (hBAAB : Geo.Congruent B A A B)
+    (hPAQB : Geo.Congruent P A Q B) :
+    Geo.Congruent R A R1 B := by
+
+  exact
+    tarski_inner_five_segment
+      (Geo := Geo)
+      B A R R1 P Q A B
+      hBR
+      hBRP
+      hAR1Q
+      hBPAQ
+      hRPR1Q
+      hBAAB
+      hPAQB
 
 /--
-Alternative form of the Five-Segment theorem.
-
-This is the version used in Gupta's midpoint proof.
+The auxiliary point R1 is collinear with B and P.
 -/
-theorem tarski_five_segment_alternative
-    [TarskiNeutral Geo]
-    (A A' B B' C C' D D' : Geo.Point)
-    (hAB : A ≠ B)
-    (hABC : Geo.Between A B C)
-    (hA'B'C' : Geo.Between A' B' C')
-    (hAC : Geo.Congruent A C A' C')
-    (hBC : Geo.Congruent B C B' C')
-    (hAD : Geo.Congruent A D A' D')
-    (hCD : Geo.Congruent C D C' D') :
-    Geo.Congruent B D B' D' := by
+theorem gupta_R1_collinear_BRP
+    [TarskiPlane Geo]
+    (A B P Q R R1 : Geo.Point)
+    (hARQ : Geo.Between A R Q)
+    (hRAR1B : Geo.Congruent R A R1 B)
+    (hAQBP : Geo.Congruent A Q B P)
+    (hRQR1P : Geo.Congruent R Q R1 P) :
+    TarskiCollinear Geo B R1 P := by
+
+  have hColARQ : TarskiCollinear Geo A R Q := by
+    exact Or.inl hARQ
+
+  have hARBR1 : Geo.Congruent A R B R1 := by
+    exact
+      tarski_congruent_reverse_both
+        (Geo := Geo)
+        R A R1 B
+        hRAR1B
+
+  exact
+    tarski_collinear_congruence_transfer
+      (Geo := Geo)
+      A R Q
+      B R1 P
+      hColARQ
+      hARBR1
+      hAQBP
+      hRQR1P
+
+/--
+The auxiliary point R1 coincides with R.
+
+This is the direct translation of clause 104 as used at line 2956
+of the OTTER proof of SST Satz 7.25.
+-/
+theorem gupta_R1_eq_R
+    [TarskiPlane Geo]
+    (A B P Q R R1 : Geo.Point)
+    (hAQ : A ≠ Q)
+    (hPB : P ≠ B)
+    (hARQ : Geo.Between A R Q)
+    (hBRP : Geo.Between B R P)
+    (hAR1Q : Geo.Between A R1 Q)
+    (hBR1P : TarskiCollinear Geo B R1 P)
+    (hNotPBQ : ¬ TarskiCollinear Geo P B Q) :
+    R1 = R := by
+
+  apply Classical.byContradiction
+  intro hR1R
+
+  have hRR1 : R ≠ R1 := by
+    intro h
+    exact hR1R h.symm
+
+  have hAQR : TarskiCollinear Geo A Q R := by
+    exact
+      tarski_collinear_symmetry
+        (Geo := Geo)
+        A R Q
+        (Or.inl hARQ)
+
+  have hPBR : TarskiCollinear Geo P B R := by
+    have hBRPcol : TarskiCollinear Geo B R P :=
+      Or.inl hBRP
+
+    have hRPB : TarskiCollinear Geo R P B :=
+      tarski_collinear_rotate
+        (Geo := Geo)
+        B R P
+        hBRPcol
+
+    exact
+      tarski_collinear_rotate
+        (Geo := Geo)
+        R P B
+        hRPB
+
+  have hAQR1 : TarskiCollinear Geo A Q R1 := by
+    exact
+      tarski_collinear_symmetry
+        (Geo := Geo)
+        A R1 Q
+        (Or.inl hAR1Q)
+
+  have hPBR1 : TarskiCollinear Geo P B R1 := by
+    have hR1PB : TarskiCollinear Geo R1 P B :=
+      tarski_collinear_rotate
+        (Geo := Geo)
+        B R1 P
+        hBR1P
+
+    exact
+      tarski_collinear_rotate
+        (Geo := Geo)
+        R1 P B
+        hR1PB
+
+  have hAQQ : TarskiCollinear Geo A Q Q := by
+    exact
+      Or.inl
+        (tarski_between_reflexivity
+          (Geo := Geo)
+          A Q)
+
+  have hPBQ : TarskiCollinear Geo P B Q :=
+    tarski_collinear_two_common_points
+      (Geo := Geo)
+      A Q
+      P B
+      R R1 Q
+      hAQ
+      hPB
+      hAQR
+      hPBR
+      hAQR1
+      hPBR1
+      hRR1
+      hAQQ
+
+  exact hNotPBQ hPBQ
+
+/--
+After identifying the auxiliary point R1 with R,
+the congruence RA ≅ R1B becomes RA ≅ RB.
+-/
+theorem gupta_RA_congruent_RB
+    [TarskiPlane Geo]
+    (A B R R1 : Geo.Point)
+    (hRAR1B : Geo.Congruent R A R1 B)
+    (hR1R : R1 = R) :
+    Geo.Congruent R A R B := by
+  simpa [hR1R] using hRAR1B
+
+
+
+
 
 end Tarski
 

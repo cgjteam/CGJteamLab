@@ -2280,8 +2280,57 @@ theorem tarski_two_medians_intersect
 
   exact ⟨G, hBEG, hCFG⟩
 
+/-
+Collinearity is preserved by equality of the three corresponding
+pairwise distances.
 
+This is the Tarski-language counterpart of the OTTER rule
 
+  Col(A,B,C) and E3(A,B,C,A',B',C')
+  imply Col(A',B',C').
+
+The proof from the neutral Tarski axioms is still to be reconstructed.
+-/
+
+/--
+Transfer of collinearity under equality of the three pairwise
+distances.
+
+This corresponds to clause 53 in the OTTER proof of SST Satz 7.25.
+It is currently treated as an explicit interface assumption.
+-/
+axiom tarski_collinear_congruence_transfer
+    [TarskiPlane Geo]
+    (A B C A' B' C' : Geo.Point)
+    (hCol : TarskiCollinear Geo A B C)
+    (hAB : Geo.Congruent A B A' B')
+    (hAC : Geo.Congruent A C A' C')
+    (hBC : Geo.Congruent B C B' C') :
+    TarskiCollinear Geo A' B' C'
+/--
+Uniqueness of a line determined by two distinct points.
+
+If two nondegenerate lines contain two distinct common points,
+then every point collinear with the first pair is also collinear
+with the second pair.
+
+This corresponds to clause 104 used in the OTTER proof of
+SST Satz 7.25.
+
+The derivation from the primitive Tarski plane axioms is deferred.
+-/
+axiom tarski_collinear_two_common_points
+    [TarskiPlane Geo]
+    (A B P Q C D E : Geo.Point)
+    (hAB : A ≠ B)
+    (hPQ : P ≠ Q)
+    (hABC : TarskiCollinear Geo A B C)
+    (hPQC : TarskiCollinear Geo P Q C)
+    (hABD : TarskiCollinear Geo A B D)
+    (hPQD : TarskiCollinear Geo P Q D)
+    (hCD : C ≠ D)
+    (hABE : TarskiCollinear Geo A B E) :
+    TarskiCollinear Geo P Q E
 
 end Tarski
 
