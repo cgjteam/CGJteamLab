@@ -641,7 +641,7 @@ the auxiliary symmetric point P.
 The point P is constructed internally so that G is the midpoint
 of AP.
 -/
-theorem FinlayProofTarskiWithoutP
+theorem FinlayTarskiCore
     [TarskiNeutral Geo]
     (A B C E F G : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C))
@@ -677,8 +677,6 @@ A, G and D are collinear.
 -/
 theorem FinlayTarski
     [TarskiNeutral Geo]
-    --[TarskiMidpointExistence Geo]
-    [TarskiMedianIntersection Geo]
     (A B C : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C)) :
     Exists fun E : Geo.Point =>
@@ -703,20 +701,25 @@ theorem FinlayTarski
       A B
 
   obtain ⟨G, hBEG, hCFG⟩ :=
-    tarski_two_medians_intersect
+  tarski_two_medians_intersect
+    (Geo := Geo)
+    A B C E F
+    hE
+    hF
+
+  obtain ⟨P, hG⟩ :=
+    tarski_symmetric_point_exists
       (Geo := Geo)
-      A B C E F
-      hNonColABC
-      hE
-      hF
+      A G
 
   obtain ⟨D, hD, hAGD⟩ :=
-    FinlayProofTarskiWithoutP
+    FinlayProofTarski
       (Geo := Geo)
-      A B C E F G
+      A B C P E F G
       hNonColABC
       hE
       hF
+      hG
       hCFG
       hBEG
 

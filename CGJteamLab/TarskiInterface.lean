@@ -2000,38 +2000,57 @@ theorem tarski_midpoint_exists
       hCAB
 
 
-/-
-An extension asserting that two medians of a nondegenerate triangle
-have a common point.
--/
-class TarskiMedianIntersection
-    (Geo : Geometry.Tarski.Geo) : Prop where
-  intersection_exists :
-    forall A B C E F : Geo.Point,
-      Not (TarskiCollinear Geo A B C) ->
-      TarskiIsMidpoint Geo E A C ->
-      TarskiIsMidpoint Geo F A B ->
-      Exists fun G : Geo.Point =>
-        TarskiCollinear Geo B E G /\
-        TarskiCollinear Geo C F G
 
 /--
 Two medians of a nondegenerate triangle have a common point.
+
+Let E be the midpoint of AC and F the midpoint of AB. Then
+
+  C - E - A
+  B - F - A
+
+and inner Pasch applied to triangle CBA gives a point G such that
+
+  E - G - B
+  F - G - C.
+
+Hence G lies on both median lines BE and CF.
 -/
 theorem tarski_two_medians_intersect
-    [TarskiMedianIntersection Geo]
+    [TarskiNeutral Geo]
     (A B C E F : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
     (hE : TarskiIsMidpoint Geo E A C)
     (hF : TarskiIsMidpoint Geo F A B) :
     Exists fun G : Geo.Point =>
       TarskiCollinear Geo B E G /\
-      TarskiCollinear Geo C F G :=
-  TarskiMedianIntersection.intersection_exists
-    A B C E F
-    hNonColABC
-    hE
-    hF
+      TarskiCollinear Geo C F G := by
+
+  have hCEA : Geo.Between C E A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A E C
+      hE.1
+
+  have hBFA : Geo.Between B F A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A F B
+      hF.1
+
+  obtain ⟨G, hEGB, hFGC⟩ :=
+    TarskiNeutral.inner_pasch
+      (Geo := Geo)
+      C B A E F
+      hCEA
+      hBFA
+
+  have hBEG : TarskiCollinear Geo B E G :=
+    Or.inr (Or.inl hEGB)
+
+  have hCFG : TarskiCollinear Geo C F G :=
+    Or.inr (Or.inl hFGC)
+
+  exact ⟨G, hBEG, hCFG⟩
 
 
 end Tarski
