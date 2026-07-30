@@ -1112,44 +1112,91 @@ axiom tarski_equidistant_point_exists
     ∃ C : Geo.Point,
       Geo.Congruent C A C B
 
-/-
-Temporary placeholder for the midpoint of the base of an isosceles
-triangle.
 
-Given a point C equidistant from A and B, this statement provides
-a midpoint of AB.
-
-Planned replacement:
-  prove this statement constructively from TarskiNeutral,
-  following Gupta's midpoint construction.
-
-This declaration is intentionally isolated so that the public interface
-remains unchanged when the constructive proof replaces the placeholder.
--/
-axiom tarski_isosceles_base_midpoint
-    [TarskiNeutral Geo]
-    (A B C : Geo.Point)
-    (hCAB : Geo.Congruent C A C B) :
-    ∃ M : Geo.Point,
-      TarskiIsMidpoint Geo M A B
 
 /-
-Interface theorem exposing the temporary midpoint construction.
+Gupta configuration for the midpoint of the base of an
+isosceles triangle.
 
-Later, only the implementation of tarski_isosceles_base_midpoint should
-change. The statement and all uses of this theorem should remain stable.
+Given CA == CB, construct:
+
+  P beyond A on CA,
+  Q beyond B on CB,
+  R as the Inner-Pasch intersection of AQ and BP,
+  X as the Inner-Pasch intersection of AB and RC.
+
+At this stage no metric property of X is asserted.
+The theorem isolates the purely constructive part of Gupta's proof.
 -/
-theorem tarski_midpoint_exists_of_equidistant
+
+/-
+theorem tarski_gupta_configuration
     [TarskiNeutral Geo]
     (A B C : Geo.Point)
-    (hCAB : Geo.Congruent C A C B) :
-    ∃ M : Geo.Point,
-      TarskiIsMidpoint Geo M A B := by
-  exact
-    tarski_isosceles_base_midpoint
+    (_hCAB : Geo.Congruent C A C B) :
+    ∃ P Q R X : Geo.Point,
+      Geo.Between C A P ∧
+      Geo.Congruent A P A C ∧
+      Geo.Between C B Q ∧
+      Geo.Congruent B Q A P ∧
+      Geo.Between A R Q ∧
+      Geo.Between B R P ∧
+      Geo.Between R X C ∧
+      Geo.Between A X B := by
+
+  obtain ⟨P, hCAP, hAPAC⟩ :=
+    TarskiNeutral.segment_construction
       (Geo := Geo)
-      A B C
-      hCAB
+      C A A C
+
+  obtain ⟨Q, hCBQ, hBQAP⟩ :=
+    TarskiNeutral.segment_construction
+      (Geo := Geo)
+      C B A P
+
+  have hPAC : Geo.Between P A C :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      C A P
+      hCAP
+
+  have hQBC : Geo.Between Q B C :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      C B Q
+      hCBQ
+
+  obtain ⟨R, hARQ, hBRP⟩ :=
+    TarskiNeutral.inner_pasch
+      (Geo := Geo)
+      P Q C A B
+      hPAC
+      hQBC
+
+  obtain ⟨X, hRXC, hAXB⟩ :=
+    TarskiNeutral.inner_pasch
+      (Geo := Geo)
+      B C P R A
+      hBRP
+      hCAP
+
+  exact
+    ⟨P, Q, R, X,
+      hCAP,
+      hAPAC,
+      hCBQ,
+      hBQAP,
+      hARQ,
+      hBRP,
+      hRXC,
+      hAXB⟩
+-/
+
+
+
+
+
+
 
 
 
@@ -1982,26 +2029,207 @@ theorem tarski_midsegment_parallel_AB_XP
 Every segment has a midpoint under the midpoint-existence extension.
 -/
 
-theorem tarski_midpoint_exists
+----------------------------------------------------
+-- Five-Segment variants
+----------------------------------------------------
+
+/-
+Inner Five-Segment theorem (SST, Satz 4.2).
+
+This is the variant of the Five-Segment theorem used in
+Gupta's midpoint construction.
+-/
+
+theorem tarski_inner_five_segment
+    [TarskiNeutral Geo]
+    (A A' B B' C C' D D' : Geo.Point)
+    (hAB : A ≠ B)
+    (hABC : Geo.Between A B C)
+    (hA'B'C' : Geo.Between A' B' C')
+    (hAC : Geo.Congruent A C A' C')
+    (hBC : Geo.Congruent B C B' C')
+    (hAD : Geo.Congruent A D A' D')
+    (hCD : Geo.Congruent C D C' D') :
+    Geo.Congruent B D B' D' := by
+
+  by_cases hACeq : A = C
+
+  · subst C
+
+    have hABeq : A = B :=
+      TarskiNeutral.between_identity
+        (Geo := Geo)
+        A B
+        hABC
+
+    subst B
+
+    have hA'C'AA : Geo.Congruent A' C' A A :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        A A A' C'
+        hAC
+
+    have hA'C'eq : A' = C' :=
+      TarskiNeutral.congruent_identity
+        (Geo := Geo)
+        A' C' A
+        hA'C'AA
+
+    subst C'
+
+    have hA'B'eq : A' = B' :=
+      TarskiNeutral.between_identity
+        (Geo := Geo)
+        A' B'
+        hA'B'C'
+
+    subst B'
+
+    exact hAD
+
+  · obtain ⟨E, hACE, hCEAC⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo)
+        A C A C
+
+    obtain ⟨E', hA'C'E', hC'E'AC⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo)
+        A' C' A C
+
+    have hACCE : Geo.Congruent A C C E :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        C E A C
+        hCEAC
+
+    have hACC'E' : Geo.Congruent A C C' E' :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        C' E' A C
+        hC'E'AC
+
+    have hCEC'E' : Geo.Congruent C E C' E' :=
+      TarskiNeutral.congruent_transitivity
+        (Geo := Geo)
+        A C C E C' E'
+        hACCE
+        hACC'E'
+
+    have hEDE'D' : Geo.Congruent E D E' D' :=
+      TarskiNeutral.five_segment
+        (Geo := Geo)
+        A A' C C' E E' D D'
+        hACeq
+        hACE
+        hA'C'E'
+        hAC
+        hCEC'E'
+        hAD
+        hCD
+
+    have hECA : Geo.Between E C A :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A C E
+        hACE
+
+    have hCBA : Geo.Between C B A :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A B C
+        hABC
+
+    have hECB : Geo.Between E C B :=
+      tarski_between_inner_transitivity
+        (Geo := Geo)
+        E C B A
+        hECA
+        hCBA
+
+    have hE'C'A' : Geo.Between E' C' A' :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A' C' E'
+        hA'C'E'
+
+    have hC'B'A' : Geo.Between C' B' A' :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A' B' C'
+        hA'B'C'
+
+    have hE'C'B' : Geo.Between E' C' B' :=
+      tarski_between_inner_transitivity
+        (Geo := Geo)
+        E' C' B' A'
+        hE'C'A'
+        hC'B'A'
+
+    have hEC : E ≠ C := by
+      intro hEq
+
+      subst E
+
+      have hCCAC : Geo.Congruent C C A C :=
+        hCEAC
+
+      have hACCC : Geo.Congruent A C C C :=
+        tarski_congruent_symmetry
+          (Geo := Geo)
+          C C A C
+          hCCAC
+
+      have hAC' : A = C :=
+        TarskiNeutral.congruent_identity
+          (Geo := Geo)
+          A C C
+          hACCC
+
+      exact hACeq hAC'
+    have hECE'C' : Geo.Congruent E C E' C' :=
+      tarski_congruent_reverse_both
+        (Geo := Geo)
+        C E C' E'
+        hCEC'E'
+
+    have hCBC'B' : Geo.Congruent C B C' B' :=
+      tarski_congruent_reverse_both
+        (Geo := Geo)
+        B C B' C'
+        hBC
+
+    exact
+      TarskiNeutral.five_segment
+        (Geo := Geo)
+        E E' C C' B B' D D'
+        hEC
+        hECB
+        hE'C'B'
+        hECE'C'
+        hCBC'B'
+        hEDE'D'
+        hCD
+
+
+/-
+Existence of a midpoint for an arbitrary segment.
+
+Temporary interface axiom.
+
+This declaration will later be replaced by the constructive
+proof developed in `TarskiGupta.lean`.
+-/
+axiom tarski_midpoint_exists
     [TarskiNeutral Geo]
     (A B : Geo.Point) :
     ∃ M : Geo.Point,
-      TarskiIsMidpoint Geo M A B := by
-  rcases
-      tarski_equidistant_point_exists
-        (Geo := Geo)
-        A B
-    with ⟨C, hCAB⟩
-
-  exact
-    tarski_midpoint_exists_of_equidistant
-      (Geo := Geo)
-      A B C
-      hCAB
+      TarskiIsMidpoint Geo M A B
 
 
 
-/--
+/-
 Two medians of a nondegenerate triangle have a common point.
 
 Let E be the midpoint of AC and F the midpoint of AB. Then
@@ -2051,6 +2279,8 @@ theorem tarski_two_medians_intersect
     Or.inr (Or.inl hFGC)
 
   exact ⟨G, hBEG, hCFG⟩
+
+
 
 
 end Tarski
