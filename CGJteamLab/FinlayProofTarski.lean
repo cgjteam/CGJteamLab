@@ -67,7 +67,28 @@ theorem FinlayTarskiStep1b
       hCGF
       hCG
 
+/--
+Let M be the midpoint of AC. If B, A, C are noncollinear
+and B, M, G are collinear, then G is distinct from C.
+-/
+theorem tarski_midpoint_line_endpoint_ne
+    [TarskiNeutral Geo]
+    (B A C M G : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo B A C))
+    (hM : TarskiIsMidpoint Geo M A C)
+    (hBMG : TarskiCollinear Geo B M G) :
+    C ≠ G := by
 
+  have hBMC : Not (TarskiCollinear Geo B M C) :=
+    tarski_noncollinear_midpoint_second
+      Geo B A C M
+      hNonCol
+      hM
+
+  intro hCG
+  subst G
+
+  exact hBMC hBMG
 
 theorem finlay_tarski_C_ne_G
     [TarskiNeutral Geo]
@@ -91,16 +112,13 @@ theorem finlay_tarski_C_ne_G
     exact
       (tarski_collinear_cycle Geo C A B).mp hCAB
 
-  have hBEC : Not (TarskiCollinear Geo B E C) :=
-    tarski_noncollinear_midpoint_second
-      Geo B A C E
+  exact
+    tarski_midpoint_line_endpoint_ne
+      Geo B A C E G
       hBAC
       hE
+      hBEG
 
-  intro hCG
-  subst G
-
-  exact hBEC hBEG
 
 theorem finlay_tarski_B_ne_G
     [TarskiNeutral Geo]
@@ -117,16 +135,14 @@ theorem finlay_tarski_B_ne_G
     exact
       (tarski_collinear_cycle Geo C A B).mp hCAB
 
-  have hCFB : Not (TarskiCollinear Geo C F B) :=
-    tarski_noncollinear_midpoint_second
-      Geo C A B F
+  exact
+    tarski_midpoint_line_endpoint_ne
+      Geo C A B F G
       hCAB
       hF
+      hCFG
 
-  intro hBG
-  subst G
 
-  exact hCFB hCFG
 
 theorem finlay_tarski_A_ne_P
     [TarskiNeutral Geo]
@@ -661,7 +677,7 @@ A, G and D are collinear.
 -/
 theorem FinlayTarski
     [TarskiNeutral Geo]
-    [TarskiMidpointExistence Geo]
+    --[TarskiMidpointExistence Geo]
     [TarskiMedianIntersection Geo]
     (A B C : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C)) :

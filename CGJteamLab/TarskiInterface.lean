@@ -1066,6 +1066,91 @@ theorem tarski_symmetric_point_exists
 
   exact ⟨X, hPQX, hPQQX⟩
 
+
+
+/-
+Temporary placeholder for the direct midpoint construction in neutral
+Tarski geometry.
+
+Mathematically this states that if C is equidistant from A and B, then
+the base AB of the isosceles triangle ACB has a midpoint.
+
+This result is not intended to remain an additional axiom of the final
+theory. It is introduced temporarily so that the Tarski route can be
+developed further without first formalizing the complete construction.
+
+Planned replacement:
+  prove this statement from TarskiNeutral using Gupta's direct
+  construction based on segment_construction and inner_pasch.
+
+The intended proof does not pass through the GeoCoq development of
+perpendicularity. Once the direct construction has been formalized,
+this axiom should be replaced by a theorem with the same statement, so
+that no later code needs to change.
+-/
+
+
+/-
+Temporary placeholder for the construction of an equidistant point.
+
+For every pair of points A and B, this statement provides a point C
+such that CA is congruent to CB.
+
+Together with tarski_isosceles_base_midpoint, this yields general
+midpoint existence.
+
+This result is not intended to remain an additional axiom of the final
+theory.
+
+Planned replacement:
+  prove this statement from TarskiNeutral by an explicit construction.
+
+Once such a proof is available, this axiom should be replaced by a
+theorem with the same statement, so that no later code needs to change.
+-/
+axiom tarski_equidistant_point_exists
+    [TarskiNeutral Geo]
+    (A B : Geo.Point) :
+    ∃ C : Geo.Point,
+      Geo.Congruent C A C B
+
+axiom tarski_isosceles_base_midpoint
+    [TarskiNeutral Geo]
+    (A B C : Geo.Point)
+    (hCAB : Geo.Congruent C A C B) :
+    ∃ M : Geo.Point,
+      TarskiIsMidpoint Geo M A B
+
+/-
+Interface theorem exposing the temporary midpoint construction.
+
+Later, only the implementation of tarski_isosceles_base_midpoint should
+change. The statement and all uses of this theorem should remain stable.
+-/
+theorem tarski_midpoint_exists_of_equidistant
+    [TarskiNeutral Geo]
+    (A B C : Geo.Point)
+    (hCAB : Geo.Congruent C A C B) :
+    ∃ M : Geo.Point,
+      TarskiIsMidpoint Geo M A B := by
+  exact
+    tarski_isosceles_base_midpoint
+      (Geo := Geo)
+      A B C
+      hCAB
+
+
+
+/-
+Existence of a midpoint for an arbitrary segment.
+
+The degenerate case A = B is immediate.
+The nondegenerate case will be obtained by constructing
+a point equidistant from A and B and applying
+tarski_midpoint_exists_of_equidistant.
+-/
+
+
 theorem tarski_midpoint_ne_second
     [TarskiNeutral Geo]
     (P B C : Geo.Point)
@@ -1878,19 +1963,26 @@ theorem tarski_midsegment_parallel_AB_XP
 /--
 Every segment has a midpoint under the midpoint-existence extension.
 -/
+
 theorem tarski_midpoint_exists
-    [TarskiMidpointExistence Geo]
+    [TarskiNeutral Geo]
     (A B : Geo.Point) :
     ∃ M : Geo.Point,
       TarskiIsMidpoint Geo M A B := by
-  obtain ⟨M, hBetween, hCongruent⟩ :=
-    TarskiMidpointExistence.midpoint_exists
+  rcases
+      tarski_equidistant_point_exists
+        (Geo := Geo)
+        A B
+    with ⟨C, hCAB⟩
+
+  exact
+    tarski_midpoint_exists_of_equidistant
       (Geo := Geo)
-      A B
+      A B C
+      hCAB
 
-  exact ⟨M, hBetween, hCongruent⟩
 
-/--
+/-
 An extension asserting that two medians of a nondegenerate triangle
 have a common point.
 -/
@@ -1923,6 +2015,21 @@ theorem tarski_two_medians_intersect
     hE
     hF
 
+/-
+------------------------------------------------------------
+Midpoint Theory
+------------------------------------------------------------
+
+This section develops the basic theory of midpoints in
+neutral Tarski geometry.
+
+The first fundamental result is the construction of a
+midpoint from an equidistant point.
+
+Subsequent results will derive midpoint existence for
+arbitrary segments and replace the temporary
+TarskiMidpointExistence capability.
+-/
 
 end Tarski
 

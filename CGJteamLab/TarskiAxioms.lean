@@ -127,20 +127,6 @@ class TarskiEuclideanPlane (Geo : Geometry.Tarski.Geo) : Prop
         Geo.Between A C Y ∧
         Geo.Between X T Y
 
-/--
-A constructive extension of Tarski neutral geometry asserting
-the existence of a midpoint for every segment.
-
-In GeoCoq this property is derived through a substantial development
-of neutral geometry. Here it is isolated as a separate interface layer.
--/
-class TarskiMidpointExistence
-    (Geo : Geometry.Tarski.Geo) : Prop where
-  midpoint_exists :
-    ∀ A B : Geo.Point,
-      ∃ M : Geo.Point,
-        Geo.Between A M B ∧
-        Geo.Congruent A M M B
 
 end Tarski
 
