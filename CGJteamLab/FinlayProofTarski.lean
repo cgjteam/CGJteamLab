@@ -484,7 +484,7 @@ axiom tarski_finlay_midpoint_exists
     Exists fun M =>
       TarskiIsMidpoint Geo M A B
 
-
+/-
 axiom tarski_finlay_noncol_ADC
     [TarskiNeutral Geo]
     (A B C D G I J : Geo.Point)
@@ -495,7 +495,111 @@ axiom tarski_finlay_noncol_ADC
     (hAGI : TarskiCollinear Geo A G I)
     (hBGJ : TarskiCollinear Geo B G J) :
     Not (TarskiCollinear Geo A D C)
+-/
 
+theorem tarski_finlay_noncol_ADC
+    [TarskiNeutral Geo]
+    (A B C D G I J : Geo.Point)
+    (hABC : Not (TarskiCollinear Geo A B C))
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBGJ : TarskiCollinear Geo B G J) :
+    Not (TarskiCollinear Geo A D C) := by
+
+  intro hADC
+
+  have hAIC : Not (TarskiCollinear Geo A I C) :=
+    tarski_noncollinear_midpoint_second
+      Geo A B C I hABC hI
+
+  have hAC : A ≠ C :=
+    tarski_noncollinear_ne_second_third
+      Geo B A C
+      (by
+        intro hBAC
+        apply hABC
+        exact
+          tarski_collinear_rotate Geo C A B
+            (tarski_collinear_rotate Geo B C A
+              (tarski_collinear_symmetry Geo B A C hBAC)))
+
+  have hAJ : A ≠ J :=
+    tarski_midpoint_ne_first
+      Geo J A C hAC hJ
+
+  have hAG : A ≠ G := by
+    intro hAGeq
+    subst G
+
+    have hBAC : TarskiCollinear Geo B A C :=
+      tarski_collinear_trans
+        Geo B A J C
+        hAJ
+        hBGJ
+        (tarski_midpoint_collinear Geo J A C hJ)
+
+    apply hABC
+    exact
+      tarski_collinear_rotate Geo C A B
+        (tarski_collinear_rotate Geo B C A
+          (tarski_collinear_symmetry Geo B A C hBAC))
+
+  have hCGne : C ≠ G := by
+    intro hCG
+    apply hAIC
+    subst G
+    exact tarski_collinear_symmetry Geo A C I hAGI
+
+  have hCD : C ≠ D := by
+    intro hCD
+    subst D
+
+    have hCG : C = G :=
+      TarskiNeutral.between_identity
+        (Geo := Geo)
+        C G hG.1
+
+    exact hCGne hCG
+
+  have hACD : TarskiCollinear Geo A C D :=
+    tarski_collinear_symmetry
+      Geo A D C hADC
+
+  have hCDG : TarskiCollinear Geo C D G :=
+    tarski_collinear_symmetry
+      Geo C G D
+      (tarski_midpoint_collinear Geo G C D hG)
+
+  have hACG : TarskiCollinear Geo A C G :=
+    tarski_collinear_trans
+      Geo A C D G
+      hCD
+      hACD
+      hCDG
+
+  have hCAG : TarskiCollinear Geo C A G := by
+    have hAGC : TarskiCollinear Geo A G C :=
+      tarski_collinear_symmetry Geo A C G hACG
+
+    exact
+      tarski_collinear_rotate Geo G C A
+        (tarski_collinear_rotate Geo A G C hAGC)
+
+  have hCAI : TarskiCollinear Geo C A I :=
+    tarski_collinear_trans
+      Geo C A G I
+      hAG
+      hCAG
+      hAGI
+
+  have hAIC' : TarskiCollinear Geo A I C :=
+    tarski_collinear_rotate Geo C A I hCAI
+
+  exact hAIC hAIC'
+
+/-
 axiom tarski_finlay_noncol_BDC
     [TarskiNeutral Geo]
     (A B C D G I J : Geo.Point)
@@ -506,6 +610,106 @@ axiom tarski_finlay_noncol_BDC
     (hAGI : TarskiCollinear Geo A G I)
     (hBGJ : TarskiCollinear Geo B G J) :
     Not (TarskiCollinear Geo B D C)
+-/
+
+theorem tarski_finlay_noncol_BDC
+    [TarskiNeutral Geo]
+    (A B C D G I J : Geo.Point)
+    (hABC : Not (TarskiCollinear Geo A B C))
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBGJ : TarskiCollinear Geo B G J) :
+    Not (TarskiCollinear Geo B D C) := by
+
+  intro hBDC
+
+  have hBAC : Not (TarskiCollinear Geo B A C) := by
+    intro hBAC
+    apply hABC
+    exact
+      tarski_collinear_rotate Geo C A B
+        (tarski_collinear_rotate Geo B C A
+          (tarski_collinear_symmetry Geo B A C hBAC))
+
+  have hBJC : Not (TarskiCollinear Geo B J C) :=
+    tarski_noncollinear_midpoint_second
+      Geo B A C J hBAC hJ
+
+  have hBC : B ≠ C :=
+    tarski_noncollinear_ne_second_third
+      Geo A B C hABC
+
+  have hBI : B ≠ I :=
+    tarski_midpoint_ne_first
+      Geo I B C hBC hI
+
+  have hBG : B ≠ G := by
+    intro hBGeq
+    subst G
+
+    have hABC' : TarskiCollinear Geo A B C :=
+      tarski_collinear_trans
+        Geo A B I C
+        hBI
+        hAGI
+        (tarski_midpoint_collinear Geo I B C hI)
+
+    exact hABC hABC'
+
+  have hCGne : C ≠ G := by
+    intro hCG
+    apply hBJC
+    subst G
+    exact tarski_collinear_symmetry Geo B C J hBGJ
+
+  have hCD : C ≠ D := by
+    intro hCD
+    subst D
+
+    have hCG : C = G :=
+      TarskiNeutral.between_identity
+        (Geo := Geo)
+        C G hG.1
+
+    exact hCGne hCG
+
+  have hBCD : TarskiCollinear Geo B C D :=
+    tarski_collinear_symmetry
+      Geo B D C hBDC
+
+  have hCDG : TarskiCollinear Geo C D G :=
+    tarski_collinear_symmetry
+      Geo C G D
+      (tarski_midpoint_collinear Geo G C D hG)
+
+  have hBCG : TarskiCollinear Geo B C G :=
+    tarski_collinear_trans
+      Geo B C D G
+      hCD
+      hBCD
+      hCDG
+
+  have hCBG : TarskiCollinear Geo C B G := by
+    have hBGC : TarskiCollinear Geo B G C :=
+      tarski_collinear_symmetry Geo B C G hBCG
+
+    exact
+      tarski_collinear_rotate Geo G C B
+        (tarski_collinear_rotate Geo B G C hBGC)
+
+  have hCBJ : TarskiCollinear Geo C B J :=
+    tarski_collinear_trans
+      Geo C B G J
+      hBG
+      hCBG
+      hBGJ
+
+  have hBJC' : TarskiCollinear Geo B J C :=
+    tarski_collinear_rotate Geo C B J hCBJ
+
+  exact hBJC hBJC'
 
 theorem FinlayTarski
     [TarskiNeutral Geo]
