@@ -1035,11 +1035,6 @@ def TarskiParallelStrict
       TarskiCollinear Geo X A B ∧
       TarskiCollinear Geo X C D
 
-def TarskiParallel
-    (A B C D : Geo.Point) : Prop :=
-  TarskiParallelStrict Geo A B C D ∨
-  (TarskiCollinear Geo A B C ∧
-   TarskiCollinear Geo A B D)
 
 
 /-
@@ -2420,19 +2415,6 @@ theorem tarski_inner_five_segment
         hCD
 
 
-/-
-Existence of a midpoint for an arbitrary segment.
-
-Temporary interface axiom.
-
-This declaration will later be replaced by the constructive
-proof developed in `TarskiGupta.lean`.
--/
-axiom tarski_midpoint_exists
-    [TarskiNeutral Geo]
-    (A B : Geo.Point) :
-    ∃ M : Geo.Point,
-      TarskiIsMidpoint Geo M A B
 
 
 
@@ -2549,3 +2531,80 @@ axiom tarski_collinear_two_common_points
 end Tarski
 
 end Geometry
+
+
+/-
+===============================================================================
+Temporary axioms - research status
+===============================================================================
+
+The following axioms are temporary.
+
+They are intentionally kept explicit until corresponding proofs are reconstructed
+inside the CGJteamLab interface.
+
+Current status:
+
+1. tarski_between_outer_connectivity
+
+   GeoCoq:
+     Chapter 5 (l5_1)
+
+   Status:
+     Fundamental theorem.
+     Standard proofs use additional machinery
+     (decidable equality / Gupta development).
+
+2. tarski_central_symmetry_congruent
+
+   GeoCoq:
+     Chapter 7 (l7_13)
+
+   Status:
+     Major theorem about central symmetry preserving congruence.
+     Long proof with many auxiliary lemmas.
+
+3. tarski_midpoint_unique
+
+   GeoCoq:
+     Chapter 7 (l7_17)
+
+   Status:
+     Most promising candidate for future elimination.
+     Should be investigated before other Chapter 7 axioms.
+
+4. tarski_central_symmetry_parallel
+
+   GeoCoq:
+     Annexes/quadrilaterals
+
+   Status:
+     Two reconstruction attempts failed.
+     Do not restart before understanding the complete GeoCoq dependency graph.
+
+5. tarski_parallel_congruent_parallelogram_cases
+
+   GeoCoq:
+     quadrilaterals_inter_dec
+
+   Status:
+     Part of the advanced parallelogram theory.
+     Depends on several intermediate equivalence results.
+
+6. tarski_parallelogram_opposite_parallel
+
+   GeoCoq:
+     Annexes/quadrilaterals
+
+   Status:
+     Also belongs to the advanced parallelogram theory.
+
+General strategy:
+
+- Keep the public interface stable.
+- Remove temporary axioms one by one.
+- Always replace an axiom by a theorem before removing it.
+- Do not introduce additional interface axioms unless absolutely necessary.
+
+===============================================================================
+-/

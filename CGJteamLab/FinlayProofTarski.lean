@@ -478,5 +478,151 @@ theorem finlay_tarski
       hBGJ
       hAGI
 
+axiom tarski_finlay_midpoint_exists
+    [TarskiNeutral Geo]
+    (A B : Geo.Point) :
+    Exists fun M =>
+      TarskiIsMidpoint Geo M A B
+
+
+axiom tarski_finlay_noncol_ADC
+    [TarskiNeutral Geo]
+    (A B C D G I J : Geo.Point)
+    (hABC : Not (TarskiCollinear Geo A B C))
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBGJ : TarskiCollinear Geo B G J) :
+    Not (TarskiCollinear Geo A D C)
+
+axiom tarski_finlay_noncol_BDC
+    [TarskiNeutral Geo]
+    (A B C D G I J : Geo.Point)
+    (hABC : Not (TarskiCollinear Geo A B C))
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBGJ : TarskiCollinear Geo B G J) :
+    Not (TarskiCollinear Geo B D C)
+
+theorem FinlayTarski
+    [TarskiNeutral Geo]
+    (A B C : Geo.Point)
+    (hABC : Not (TarskiCollinear Geo A B C)) :
+    Exists fun I =>
+    Exists fun J =>
+    Exists fun G =>
+    Exists fun M =>
+      TarskiIsMidpoint Geo I B C /\
+      TarskiIsMidpoint Geo J A C /\
+      TarskiCollinear Geo A G I /\
+      TarskiCollinear Geo B G J /\
+      TarskiIsMidpoint Geo M A B /\
+      TarskiCollinear Geo C G M := by
+  obtain ⟨I, hI⟩ :=
+    tarski_finlay_midpoint_exists Geo B C
+
+  obtain ⟨J, hJ⟩ :=
+    tarski_finlay_midpoint_exists Geo A C
+
+  have hJCA : TarskiIsMidpoint Geo J C A :=
+    tarski_midpoint_symmetry
+      (Geo := Geo)
+      J A C
+      hJ
+
+  have hICB : TarskiIsMidpoint Geo I C B :=
+    tarski_midpoint_symmetry
+      (Geo := Geo)
+      I B C
+      hI
+
+  obtain ⟨G, hBJG, hAIG⟩ :=
+    tarski_two_medians_intersect
+      Geo C B A J I
+      hJCA hICB
+
+  have hBGJ : TarskiCollinear Geo B G J :=
+    tarski_collinear_symmetry
+      Geo B J G
+      hBJG
+
+  have hAGI : TarskiCollinear Geo A G I :=
+    tarski_collinear_symmetry
+      Geo A I G
+      hAIG
+
+  obtain ⟨D, hG⟩ :=
+  tarski_symmetric_point_exists Geo C G
+
+  have hADC :=
+    tarski_finlay_noncol_ADC
+      Geo A B C D G I J
+      hABC hI hJ hG hAGI hBGJ
+
+  have hBDC :=
+    tarski_finlay_noncol_BDC
+      Geo A B C D G I J
+      hABC hI hJ hG hAGI hBGJ
+
+  obtain ⟨M, hM, hCGM⟩ :=
+    finlay_tarski
+      Geo
+      A B C D G I J
+      hABC hADC hBDC
+      hJ hI hG
+      hBGJ hAGI
+
+  exact ⟨I, J, G, M, hI, hJ, hAGI, hBGJ, hM, hCGM⟩
+
 end Tarski
 end Geometry
+
+/-
+===============================================================================
+Architecture
+===============================================================================
+
+This file contains two layers.
+
+1. finlay_tarski
+
+   Internal theorem.
+
+   Assumes that the complete Finlay configuration has already been
+   constructed and proves that the third median passes through G.
+
+2. FinlayTarski
+
+   Public theorem.
+
+   Starts from a non-collinear triangle only.
+
+   All auxiliary objects (midpoints, centroid, symmetric point)
+   are introduced before invoking the internal theorem.
+
+Current state:
+
+The public theorem has the same mathematical interface as the
+corresponding Hilbert development.
+
+Some construction steps are still represented by temporary axioms.
+These axioms are intentionally placed immediately before FinlayTarski.
+
+Future work should replace them one by one with genuine proofs.
+
+===============================================================================
+-/
+
+
+/-
+Temporary construction axioms.
+
+These axioms are used only to lift the internal theorem
+`finlay_tarski` to the public theorem `FinlayTarski`.
+
+They should disappear one at a time as the corresponding
+construction theorems become available.
+-/
