@@ -330,7 +330,6 @@ theorem gupta_R1_properties
 theorem gupta_RA_congruent_R1B
     [TarskiNeutral Geo]
     (A B P Q R R1 : Geo.Point)
-    (hBR : B ≠ R)
     (hBRP : Geo.Between B R P)
     (hAR1Q : Geo.Between A R1 Q)
     (hBPAQ : Geo.Congruent B P A Q)
@@ -343,7 +342,6 @@ theorem gupta_RA_congruent_R1B
     tarski_inner_five_segment
       (Geo := Geo)
       B A R R1 P Q A B
-      hBR
       hBRP
       hAR1Q
       hBPAQ

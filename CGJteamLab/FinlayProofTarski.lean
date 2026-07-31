@@ -7,731 +7,476 @@ universe u
 
 variable (Geo : Geometry.Tarski.Geo)
 
-
-
-/-
-Finlay configuration: C and G are distinct.
-
-Since E is the midpoint of AC, noncollinearity of ABC implies
-that B,E,C are noncollinear. Hence G cannot coincide with C
-when B,E,G are collinear.
+/--
+If J is the midpoint of AC and G is the midpoint of CD,
+then AD is parallel to JG.
 -/
-
-theorem FinlayTarskiStep1a
+theorem parallel_AD_JG_from_midpoints
     [TarskiNeutral Geo]
-    (A B P F G : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo B P A))
-    (hF : TarskiIsMidpoint Geo F B A)
-    (hG : TarskiIsMidpoint Geo G A P) :
-    TarskiParallelStrict Geo B P F G := by
+    (A C D G J : Geo.Point)
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hG : TarskiIsMidpoint Geo G C D) :
+    TarskiParallelStrict Geo A D J G := by
 
-  have hGPA : TarskiIsMidpoint Geo G P A :=
+  have hGDC : TarskiIsMidpoint Geo G D C :=
     tarski_midpoint_symmetry
-      Geo G A P hG
+      Geo G C D hG
 
   exact
     MidsegmentTheoremTarski
-      Geo B P A G F
-      hNonCol
-      hGPA
-      hF
-/-
-Finlay Step 1b.
+      Geo A D C G J
+      hNonColADC
+      hGDC
+      hJ
 
-From BP strictly parallel FG and the collinearity of C,F,G,
-extend the second parallel line from FG to CG.
+/--
+If I is the midpoint of BC and G is the midpoint of CD,
+then BD is parallel to IG.
 -/
-theorem FinlayTarskiStep1b
+theorem parallel_BD_IG_from_midpoints
     [TarskiNeutral Geo]
-    (A B C P F G : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo B P A))
-    (hF : TarskiIsMidpoint Geo F B A)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hCG : C = G -> False) :
-    TarskiParallelStrict Geo B P C G := by
+    (B C D G I : Geo.Point)
+    (hNonColBDC : Not (TarskiCollinear Geo B D C))
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hG : TarskiIsMidpoint Geo G C D) :
+    TarskiParallelStrict Geo B D I G := by
 
-  have hBPFG : TarskiParallelStrict Geo B P F G :=
-    FinlayTarskiStep1a
-      Geo A B P F G
-      hNonCol hF hG
+  have hGDC : TarskiIsMidpoint Geo G D C :=
+    tarski_midpoint_symmetry
+      Geo G C D hG
 
-  have hCGF : TarskiCollinear Geo C G F :=
-    tarski_collinear_symmetry
-      Geo C F G hCFG
+  exact
+    MidsegmentTheoremTarski
+      Geo B D C G I
+      hNonColBDC
+      hGDC
+      hI
+/--
+If AD is parallel to JG, and B, G, J are collinear with B ≠ G,
+then AD is parallel to BG.
+-/
+theorem parallel_AD_BG_from_collinear
+    [TarskiNeutral Geo]
+    (A B D G J : Geo.Point)
+    (hPar : TarskiParallelStrict Geo A D J G)
+    (hBGJ : TarskiCollinear Geo B G J)
+    (hBG : B = G -> False) :
+    TarskiParallelStrict Geo A D B G := by
 
   exact
     tarski_parallel_strict_collinear_right
-      Geo B P C G F
-      hBPFG
-      hCGF
-      hCG
+      Geo A D B G J
+      hPar
+      hBGJ
+      hBG
 
 /--
-Let M be the midpoint of AC. If B, A, C are noncollinear
-and B, M, G are collinear, then G is distinct from C.
+If BD is parallel to IG, and A, G, I are collinear with A ≠ G,
+then BD is parallel to AG.
 -/
-theorem tarski_midpoint_line_endpoint_ne
+theorem parallel_BD_AG_from_collinear
     [TarskiNeutral Geo]
-    (B A C M G : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo B A C))
-    (hM : TarskiIsMidpoint Geo M A C)
-    (hBMG : TarskiCollinear Geo B M G) :
-    C ≠ G := by
-
-  have hBMC : Not (TarskiCollinear Geo B M C) :=
-    tarski_noncollinear_midpoint_second
-      Geo B A C M
-      hNonCol
-      hM
-
-  intro hCG
-  subst G
-
-  exact hBMC hBMG
-
-theorem finlay_tarski_C_ne_G
-    [TarskiNeutral Geo]
-    (A B C E G : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hBEG : TarskiCollinear Geo B E G) :
-    C = G -> False := by
-
-  have hBAC : Not (TarskiCollinear Geo B A C) := by
-    intro hBAC
-    apply hNonCol
-
-    have hBCA : TarskiCollinear Geo B C A :=
-      tarski_collinear_symmetry
-        Geo B A C hBAC
-
-    have hCAB : TarskiCollinear Geo C A B :=
-      (tarski_collinear_cycle Geo B C A).mp hBCA
-
-    exact
-      (tarski_collinear_cycle Geo C A B).mp hCAB
+    (A B D G I : Geo.Point)
+    (hPar : TarskiParallelStrict Geo B D I G)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hAG : A = G -> False) :
+    TarskiParallelStrict Geo B D A G := by
 
   exact
-    tarski_midpoint_line_endpoint_ne
-      Geo B A C E G
-      hBAC
-      hE
-      hBEG
+    tarski_parallel_strict_collinear_right
+      Geo B D A G I
+      hPar
+      hAGI
+      hAG
 
-
-theorem finlay_tarski_B_ne_G
+/--
+Construct the two pairs of opposite parallel sides
+used in the GeoCoq proof.
+-/
+theorem opposite_sides_parallel
     [TarskiNeutral Geo]
-    (A B C F G : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo A B C))
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hCFG : TarskiCollinear Geo C F G) :
+    (A B C D G I J : Geo.Point)
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hNonColBDC : Not (TarskiCollinear Geo B D C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hBGJ : TarskiCollinear Geo B G J)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBG : B = G -> False)
+    (hAG : A = G -> False) :
+    TarskiParallelStrict Geo A D B G /\
+    TarskiParallelStrict Geo B D A G := by
+
+  have hADJG :=
+    parallel_AD_JG_from_midpoints
+      (Geo := Geo)
+      A C D G J
+      hNonColADC
+      hJ
+      hG
+
+  have hBDIG :=
+    parallel_BD_IG_from_midpoints
+      (Geo := Geo)
+      B C D G I
+      hNonColBDC
+      hI
+      hG
+
+  have hADBG :=
+    parallel_AD_BG_from_collinear
+      (Geo := Geo)
+      A B D G J
+      hADJG
+      hBGJ
+      hBG
+
+  have hBDAG :=
+    parallel_BD_AG_from_collinear
+      (Geo := Geo)
+      A B D G I
+      hBDIG
+      hAGI
+      hAG
+
+  exact ⟨hADBG, hBDAG⟩
+
+
+/--
+Temporary assumption used in this proof:
+two pairs of opposite strict parallel sides determine a parallelogram.
+-/
+axiom parallelogram_of_two_parallel_pairs
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hABCD : TarskiParallelStrict Geo A B C D)
+    (hBCAD : TarskiParallelStrict Geo B C A D) :
+    TarskiParallelogram Geo A B C D
+
+theorem parallelogram_GADB
+    [TarskiNeutral Geo]
+    (A B C D G I J : Geo.Point)
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hNonColBDC : Not (TarskiCollinear Geo B D C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hBGJ : TarskiCollinear Geo B G J)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBG : B = G -> False)
+    (hAG : A = G -> False) :
+    TarskiParallelogram Geo G A D B := by
+
+  obtain ⟨hADBG, hBDAG⟩ :=
+    opposite_sides_parallel
+      (Geo := Geo)
+      A B C D G I J
+      hNonColADC
+      hNonColBDC
+      hJ
+      hI
+      hG
+      hBGJ
+      hAGI
+      hBG
+      hAG
+
+  have hGADB : TarskiParallelStrict Geo G A D B := by
+    rcases hBDAG with ⟨hBD, hAG', hNoInt⟩
+
+    constructor
+    · intro hGA
+      exact hAG' hGA.symm
+
+    constructor
+    · intro hDB
+      exact hBD hDB.symm
+
+    · intro hInt
+      apply hNoInt
+
+      rcases hInt with ⟨X, hXGA, hXDB⟩
+
+      have hXAG : TarskiCollinear Geo X A G :=
+        tarski_collinear_symmetry
+          Geo X G A hXGA
+
+      have hXBD : TarskiCollinear Geo X B D :=
+        tarski_collinear_symmetry
+          Geo X D B hXDB
+
+      exact ⟨X, hXBD, hXAG⟩
+
+  have hADGB : TarskiParallelStrict Geo A D G B :=
+    tarski_parallel_strict_symm_right
+      Geo A D B G hADBG
+
+  exact
+    parallelogram_of_two_parallel_pairs
+      Geo G A D B
+      hGADB
+      hADGB
+
+/--
+The common midpoint of the diagonals of parallelogram GADB
+is the midpoint of GD and AB.
+-/
+theorem midpoint_GD_AB_from_parallelogram
+    [TarskiNeutral Geo]
+    (A B C D G I J : Geo.Point)
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hNonColBDC : Not (TarskiCollinear Geo B D C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hBGJ : TarskiCollinear Geo B G J)
+    (hAGI : TarskiCollinear Geo A G I)
+    (hBG : B = G -> False)
+    (hAG : A = G -> False) :
+    Exists fun M : Geo.Point =>
+      TarskiIsMidpoint Geo M G D /\
+      TarskiIsMidpoint Geo M A B := by
+
+  have hPar : TarskiParallelogram Geo G A D B :=
+    parallelogram_GADB
+      (Geo := Geo)
+      A B C D G I J
+      hNonColADC
+      hNonColBDC
+      hJ
+      hI
+      hG
+      hBGJ
+      hAGI
+      hBG
+      hAG
+
+  exact hPar.2
+
+/--
+If G is the midpoint of CD and M is the midpoint of GD,
+then C, G, M are collinear.
+-/
+theorem collinear_CGM_from_midpoints
+    [TarskiNeutral Geo]
+    (A C D G M : Geo.Point)
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hM : TarskiIsMidpoint Geo M G D) :
+    TarskiCollinear Geo C G M := by
+
+  have hDC : D = C -> False :=
+    tarski_noncollinear_ne_second_third
+      Geo A D C hNonColADC
+
+  have hCD : C = D -> False := by
+    intro hCD
+    exact hDC hCD.symm
+
+  have hGD : G = D -> False :=
+    tarski_midpoint_ne_second
+      Geo G C D hCD hG
+
+  have hCGD : TarskiCollinear Geo C G D :=
+    tarski_midpoint_collinear
+      Geo G C D hG
+
+  have hGMD : TarskiCollinear Geo G M D :=
+    tarski_midpoint_collinear
+      Geo M G D hM
+
+  have hGDM : TarskiCollinear Geo G D M :=
+    tarski_collinear_symmetry
+      Geo G M D hGMD
+
+  exact
+    tarski_collinear_trans
+      Geo C G D M
+      hGD
+      hCGD
+      hGDM
+
+theorem B_ne_G_from_medians
+    [TarskiNeutral Geo]
+    (A B C G I : Geo.Point)
+    (hNonColABC : Not (TarskiCollinear Geo A B C))
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hAGI : TarskiCollinear Geo A G I) :
     B = G -> False := by
 
-  have hCAB : Not (TarskiCollinear Geo C A B) := by
-    intro hCAB
-    apply hNonCol
+  intro hBG
 
-    exact
-      (tarski_collinear_cycle Geo C A B).mp hCAB
+  have hABI : TarskiCollinear Geo A B I := by
+    rw [hBG]
+    exact hAGI
 
-  exact
-    tarski_midpoint_line_endpoint_ne
-      Geo C A B F G
-      hCAB
-      hF
-      hCFG
+  have hBIC : TarskiCollinear Geo B I C :=
+    tarski_midpoint_collinear
+      Geo I B C hI
 
+  have hBC : B = C -> False :=
+    tarski_noncollinear_ne_second_third
+      Geo A B C hNonColABC
 
+  have hBI : B = I -> False :=
+    tarski_midpoint_ne_first
+      Geo I B C hBC hI
 
-theorem finlay_tarski_A_ne_P
-    [TarskiNeutral Geo]
-    (A B C P F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G) :
-    A ≠ P := by
-
-  have hCAB : Not (TarskiCollinear Geo C A B) := by
-    intro hCAB
-    apply hNonColABC
-    exact
-      (tarski_collinear_cycle Geo C A B).mp hCAB
-
-  have hCFA : Not (TarskiCollinear Geo C F A) :=
-    tarski_midpoint_noncol_left
-      Geo C A B F
-      hCAB
-      hF
-
-  intro hAP
-  subst P
-
-  have hAG : A = G :=
-    TarskiNeutral.between_identity
-      (Geo := Geo)
-      A G
-      hG.1
-
-  subst G
-  exact hCFA hCFG
-
-theorem finlay_tarski_noncollinear_BPA
-    [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Not (TarskiCollinear Geo B P A) := by
-
-  have hAP : A ≠ P :=
-    finlay_tarski_A_ne_P
-      Geo A B C P F G
-      hNonColABC
-      hF
-      hG
-      hCFG
-
-  have hBG : B = G -> False :=
-    finlay_tarski_B_ne_G
-      Geo A B C F G
-      hNonColABC
-      hF
-      hCFG
-
-  intro hBPA
-
-  have hBAP : TarskiCollinear Geo B A P :=
-    tarski_collinear_symmetry
-      Geo B P A hBPA
-
-  have hAGP : TarskiCollinear Geo A G P := by
-    left
-    exact hG.1
-
-  have hAPG : TarskiCollinear Geo A P G :=
-    tarski_collinear_symmetry
-      Geo A G P hAGP
-
-  have hBAG : TarskiCollinear Geo B A G :=
+  have hABC : TarskiCollinear Geo A B C :=
     tarski_collinear_trans
-      Geo B A P G
-      hAP
-      hBAP
-      hAPG
+      Geo A B I C
+      hBI
+      hABI
+      hBIC
 
-  have hBGA : TarskiCollinear Geo B G A :=
-    tarski_collinear_symmetry
-      Geo B A G hBAG
+  exact hNonColABC hABC
 
-  have hGAB : TarskiCollinear Geo G A B :=
-    (tarski_collinear_cycle Geo B G A).mp hBGA
+theorem A_ne_G_from_medians
+    [TarskiNeutral Geo]
+    (A B C G J : Geo.Point)
+    (hNonColABC : Not (TarskiCollinear Geo A B C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hBGJ : TarskiCollinear Geo B G J) :
+    A = G -> False := by
 
-  have hABG : TarskiCollinear Geo A B G :=
-    (tarski_collinear_cycle Geo G A B).mp hGAB
+  intro hAG
 
-  have hBGE : TarskiCollinear Geo B G E :=
-    tarski_collinear_symmetry
-      Geo B E G hBEG
+  have hBAJ : TarskiCollinear Geo B A J := by
+    rw [hAG]
+    exact hBGJ
 
-  have hABE : TarskiCollinear Geo A B E :=
-    tarski_collinear_trans
-      Geo A B G E
-      hBG
-      hABG
-      hBGE
+  have hAJC : TarskiCollinear Geo A J C :=
+    tarski_midpoint_collinear
+      Geo J A C hJ
 
-  have hAEB : TarskiCollinear Geo A E B :=
-    tarski_collinear_symmetry
-      Geo A B E hABE
-
-  have hEBA : TarskiCollinear Geo E B A :=
-    (tarski_collinear_cycle Geo A E B).mp hAEB
-
-  have hBAE : TarskiCollinear Geo B A E :=
-    (tarski_collinear_cycle Geo E B A).mp hEBA
-
-  have hBEA : TarskiCollinear Geo B E A :=
-    tarski_collinear_symmetry
-      Geo B A E hBAE
-
-  have hBAC : Not (TarskiCollinear Geo B A C) := by
+  have hNonColBAC : Not (TarskiCollinear Geo B A C) := by
     intro hBAC
-    apply hNonColABC
 
     have hBCA : TarskiCollinear Geo B C A :=
       tarski_collinear_symmetry
         Geo B A C hBAC
 
-    have hCAB' : TarskiCollinear Geo C A B :=
-      (tarski_collinear_cycle Geo B C A).mp hBCA
+    have hABC : TarskiCollinear Geo A B C :=
+      (tarski_collinear_cycle Geo A B C).mpr hBCA
 
-    exact
-      (tarski_collinear_cycle Geo C A B).mp hCAB'
+    exact hNonColABC hABC
 
-  have hBEA_not : Not (TarskiCollinear Geo B E A) :=
-    tarski_midpoint_noncol_left
-      Geo B A C E
-      hBAC
-      hE
+  have hAC : A = C -> False :=
+    tarski_noncollinear_ne_second_third
+      Geo B A C hNonColBAC
 
-  exact hBEA_not hBEA
+  have hAJ : A = J -> False :=
+    tarski_midpoint_ne_first
+      Geo J A C hAC hJ
 
-theorem finlay_tarski_noncollinear_CPA
-    [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Not (TarskiCollinear Geo C P A) := by
-
-
-  have hAP : A ≠ P :=
-    finlay_tarski_A_ne_P
-      Geo A B C P F G
-      hNonColABC
-      hF
-      hG
-      hCFG
-
-  have hCG : C = G -> False :=
-    finlay_tarski_C_ne_G
-      Geo A B C E G
-      hNonColABC
-      hE
-      hBEG
-
-  intro hCPA
-
-  have hCAP : TarskiCollinear Geo C A P :=
-    tarski_collinear_symmetry
-      Geo C P A hCPA
-
-  have hAGP : TarskiCollinear Geo A G P := by
-    left
-    exact hG.1
-
-  have hAPG : TarskiCollinear Geo A P G :=
-    tarski_collinear_symmetry
-      Geo A G P hAGP
-
-  have hCAG : TarskiCollinear Geo C A G :=
+  have hBAC : TarskiCollinear Geo B A C :=
     tarski_collinear_trans
-      Geo C A P G
-      hAP
-      hCAP
-      hAPG
+      Geo B A J C
+      hAJ
+      hBAJ
+      hAJC
 
-  have hCGA : TarskiCollinear Geo C G A :=
+  have hBCA : TarskiCollinear Geo B C A :=
     tarski_collinear_symmetry
-      Geo C A G hCAG
+      Geo B A C hBAC
 
-  have hGAC : TarskiCollinear Geo G A C :=
-    (tarski_collinear_cycle Geo C G A).mp hCGA
+  have hABC : TarskiCollinear Geo A B C :=
+    (tarski_collinear_cycle Geo A B C).mpr hBCA
 
-  have hACG : TarskiCollinear Geo A C G :=
-    (tarski_collinear_cycle Geo G A C).mp hGAC
+  exact hNonColABC hABC
 
-  have hCGF : TarskiCollinear Geo C G F :=
-    tarski_collinear_symmetry
-      Geo C F G hCFG
-
-  have hACF : TarskiCollinear Geo A C F :=
-    tarski_collinear_trans
-      Geo A C G F
-      hCG
-      hACG
-      hCGF
-
-  have hCFA : TarskiCollinear Geo C F A :=
-    (tarski_collinear_cycle Geo A C F).mp hACF
-
-  have hCAB : Not (TarskiCollinear Geo C A B) := by
-    intro hCAB
-    apply hNonColABC
-    exact
-      (tarski_collinear_cycle Geo C A B).mp hCAB
-
-  have hCFA_not : Not (TarskiCollinear Geo C F A) :=
-    tarski_midpoint_noncol_left
-      Geo C A B F
-      hCAB
-      hF
-
-  exact hCFA_not hCFA
 
 /-
-Finlay Step 1.
-
-Using the two midpoint configurations:
-  F midpoint AB,
-  E midpoint AC,
-  G midpoint AP,
-
-together with the median collinearities
-  C,F,G and B,E,G,
-
-we obtain:
-  BP strictly parallel CG,
-  CP strictly parallel BG.
+There exists a midpoint of AB lying on the line CG.
 -/
-theorem FinlayTarskiStep1
+theorem third_median_point
     [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
+    (A B C D G I J : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    TarskiParallelStrict Geo B P C G ∧
-    TarskiParallelStrict Geo C P B G := by
-
-  have hNonColBPA : Not (TarskiCollinear Geo B P A) :=
-    finlay_tarski_noncollinear_BPA
-      Geo A B C P E F G
-      hNonColABC
-      hE hF hG
-      hCFG hBEG
-
-  have hNonColCPA : Not (TarskiCollinear Geo C P A) :=
-    finlay_tarski_noncollinear_CPA
-      Geo A B C P E F G
-      hNonColABC
-      hE hF hG
-      hCFG hBEG
-
-  have hCG : C = G -> False :=
-    finlay_tarski_C_ne_G
-      Geo A B C E G
-      hNonColABC
-      hE
-      hBEG
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hNonColBDC : Not (TarskiCollinear Geo B D C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hBGJ : TarskiCollinear Geo B G J)
+    (hAGI : TarskiCollinear Geo A G I) :
+    Exists fun M : Geo.Point =>
+      TarskiIsMidpoint Geo M A B /\
+      TarskiCollinear Geo C G M := by
 
   have hBG : B = G -> False :=
-    finlay_tarski_B_ne_G
-      Geo A B C F G
+    B_ne_G_from_medians
+      Geo A B C G I
       hNonColABC
-      hF
-      hCFG
+      hI
+      hAGI
 
-  have hFBA : TarskiIsMidpoint Geo F B A :=
-    tarski_midpoint_symmetry
-      Geo F A B hF
+  have hAG : A = G -> False :=
+    A_ne_G_from_medians
+      Geo A B C G J
+      hNonColABC
+      hJ
+      hBGJ
 
-  have hBPCG : TarskiParallelStrict Geo B P C G :=
-    FinlayTarskiStep1b
-      Geo A B C P F G
-      hNonColBPA
-      hFBA
+  rcases
+    midpoint_GD_AB_from_parallelogram
+      Geo
+      A B C D G I J
+      hNonColADC
+      hNonColBDC
+      hJ
+      hI
       hG
-      hCFG
-      hCG
-
-  have hGPA : TarskiIsMidpoint Geo G P A :=
-    tarski_midpoint_symmetry
-      Geo G A P hG
-
-  have hECA : TarskiIsMidpoint Geo E C A :=
-    tarski_midpoint_symmetry
-      Geo E A C hE
-
-  have hCPEG : TarskiParallelStrict Geo C P E G :=
-    MidsegmentTheoremTarski
-      Geo C P A G E
-      hNonColCPA
-      hGPA
-      hECA
-
-  have hBGE : TarskiCollinear Geo B G E :=
-    tarski_collinear_symmetry
-      Geo B E G hBEG
-
-  have hCPBG : TarskiParallelStrict Geo C P B G :=
-    tarski_parallel_strict_collinear_right
-      Geo C P B G E
-      hCPEG
-      hBGE
+      hBGJ
+      hAGI
       hBG
+      hAG
+  with ⟨M, hMGD, hMAB⟩
 
-  exact ⟨hBPCG, hCPBG⟩
-
-theorem FinlayTarskiStep2
-    [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    TarskiParallelogram Geo B P C G := by
-
-  have hStep1 :=
-    FinlayTarskiStep1
-      Geo A B C P E F G
-      hNonColABC
-      hE hF hG
-      hCFG hBEG
-
-  rcases hStep1 with ⟨hBPCG, hCPBG⟩
-
-  have hPCBG : TarskiParallelStrict Geo P C B G :=
-    tarski_parallel_strict_symm_left
-      Geo C P B G hCPBG
-
-  exact
-    tarski_parallelogram_of_two_parallel_pairs
-      Geo B P C G
-      hBPCG
-      hPCBG
-
-/-
-Finlay Step 3.
-
-Since BPCG is a Tarski parallelogram, its diagonals BC and PG
-have a common midpoint D.
-
-Thus D is simultaneously:
-  - the midpoint of BC,
-  - the midpoint of PG.
-
-In the Tarski formulation this combines the intersection and
-diagonal-midpoint steps of the classical Finlay proof.
--/
-theorem FinlayTarskiStep3
-    [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Exists fun D : Geo.Point =>
-      TarskiIsMidpoint Geo D B C /\
-      TarskiIsMidpoint Geo D P G := by
-
-  have hPar :
-      TarskiParallelogram Geo B P C G :=
-    FinlayTarskiStep2
-      Geo A B C P E F G
-      hNonColABC
-      hE hF hG
-      hCFG hBEG
-
-  rcases hPar with ⟨hNondeg, D, hDBC, hDPG⟩
-
-  exact ⟨D, hDBC, hDPG⟩
-
-/-
-Finlay Step 4.
-
-Let D be the common midpoint of the diagonals BC and PG
-of the Tarski parallelogram BPCG.
-
-Since G is the midpoint of AP, the points A,G,P are collinear.
-Since D is the midpoint of PG, the points P,D,G are collinear.
-
-Hence A,G,D are collinear, and since D is the midpoint of BC,
-the line AG is the third median of triangle ABC.
--/
-theorem FinlayTarskiStep4
-    [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Exists fun D : Geo.Point =>
-      TarskiIsMidpoint Geo D B C /\
-      TarskiCollinear Geo A G D := by
-
-  obtain ⟨D, hDBC, hDPG⟩ :=
-    FinlayTarskiStep3
-      Geo A B C P E F G
-      hNonColABC
-      hE hF hG
-      hCFG hBEG
-
-  have hAGP : TarskiCollinear Geo A G P := by
-    left
-    exact hG.1
-
-  have hPDG : TarskiCollinear Geo P D G := by
-    left
-    exact hDPG.1
-
-  have hAP : A ≠ P :=
-    finlay_tarski_A_ne_P
-      Geo A B C P F G
-      hNonColABC
-      hF
+  have hCGM : TarskiCollinear Geo C G M :=
+    collinear_CGM_from_midpoints
+      Geo
+      A C D G M
+      hNonColADC
       hG
-      hCFG
+      hMGD
 
-
-  have hGP : G = P -> False :=
-    tarski_midpoint_ne_second
-      Geo G A P
-      hAP
-      hG
-
-  have hDGP : TarskiCollinear Geo D G P :=
-    (tarski_collinear_cycle Geo P D G).mp hPDG
-
-  have hGPD : TarskiCollinear Geo G P D :=
-    (tarski_collinear_cycle Geo D G P).mp hDGP
-
-  have hAGD : TarskiCollinear Geo A G D :=
-    tarski_collinear_trans
-      Geo A G P D
-      hGP
-      hAGP
-      hGPD
-
-  exact ⟨D, hDBC, hAGD⟩
-
-/-
-Finlay's Theorem in Tarski geometry.
-
-Let ABC be a noncollinear triangle. Let E and F be the midpoints
-of AC and AB, respectively, and let G lie on the medians BE and CF.
-
-Assume G is the midpoint of AP for the auxiliary point P used in
-the midsegment construction.
-
-Then there exists a midpoint D of BC such that A, G, and D are
-collinear. Hence G lies on the third median of triangle ABC.
--/
-theorem FinlayProofTarski
-    [TarskiNeutral Geo]
-    (A B C P E F G : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hG : TarskiIsMidpoint Geo G A P)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Exists fun D : Geo.Point =>
-      TarskiIsMidpoint Geo D B C /\
-      TarskiCollinear Geo A G D := by
-
-  exact
-    FinlayTarskiStep4
-      Geo A B C P E F G
-      hNonColABC
-      hE hF hG
-      hCFG hBEG
+  exact ⟨M, hMAB, hCGM⟩
 
 
 /-
-Finlay's theorem in Tarski geometry without exposing
-the auxiliary symmetric point P.
-
-The point P is constructed internally so that G is the midpoint
-of AP.
+If G lies on the medians from A and B of the non-collinear triangle ABC,
+then G also lies on the median from C.
 -/
-theorem FinlayTarskiCore
+theorem finlay_tarski
     [TarskiNeutral Geo]
-    (A B C E F G : Geo.Point)
+    (A B C D G I J : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C))
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B)
-    (hCFG : TarskiCollinear Geo C F G)
-    (hBEG : TarskiCollinear Geo B E G) :
-    Exists fun D : Geo.Point =>
-      TarskiIsMidpoint Geo D B C /\
-      TarskiCollinear Geo A G D := by
-
-  obtain ⟨P, hG⟩ :=
-    tarski_symmetric_point_exists
-      (Geo := Geo)
-      A G
+    (hNonColADC : Not (TarskiCollinear Geo A D C))
+    (hNonColBDC : Not (TarskiCollinear Geo B D C))
+    (hJ : TarskiIsMidpoint Geo J A C)
+    (hI : TarskiIsMidpoint Geo I B C)
+    (hG : TarskiIsMidpoint Geo G C D)
+    (hBGJ : TarskiCollinear Geo B G J)
+    (hAGI : TarskiCollinear Geo A G I) :
+    Exists fun M : Geo.Point =>
+      TarskiIsMidpoint Geo M A B /\
+      TarskiCollinear Geo C G M := by
 
   exact
-    FinlayProofTarski
-      Geo A B C P E F G
+    third_median_point
+      Geo
+      A B C D G I J
       hNonColABC
-      hE
-      hF
+      hNonColADC
+      hNonColBDC
+      hJ
+      hI
       hG
-      hCFG
-      hBEG
-
-/--
-Finlay's theorem in Tarski geometry.
-
-For every nondegenerate triangle ABC, there exist midpoints E, F, D
-of AC, AB, BC and a common point G of the medians BE and CF such that
-A, G and D are collinear.
--/
-theorem FinlayTarski
-    [TarskiNeutral Geo]
-    (A B C : Geo.Point)
-    (hNonColABC : Not (TarskiCollinear Geo A B C)) :
-    Exists fun E : Geo.Point =>
-    Exists fun F : Geo.Point =>
-    Exists fun G : Geo.Point =>
-    Exists fun D : Geo.Point =>
-      TarskiIsMidpoint Geo E A C /\
-      TarskiIsMidpoint Geo F A B /\
-      TarskiCollinear Geo B E G /\
-      TarskiCollinear Geo C F G /\
-      TarskiIsMidpoint Geo D B C /\
-      TarskiCollinear Geo A G D := by
-
-  obtain ⟨E, hE⟩ :=
-    tarski_midpoint_exists
-      (Geo := Geo)
-      A C
-
-  obtain ⟨F, hF⟩ :=
-    tarski_midpoint_exists
-      (Geo := Geo)
-      A B
-
-  obtain ⟨G, hBEG, hCFG⟩ :=
-  tarski_two_medians_intersect
-    (Geo := Geo)
-    A B C E F
-    hE
-    hF
-
-  obtain ⟨P, hG⟩ :=
-    tarski_symmetric_point_exists
-      (Geo := Geo)
-      A G
-
-  obtain ⟨D, hD, hAGD⟩ :=
-    FinlayProofTarski
-      (Geo := Geo)
-      A B C P E F G
-      hNonColABC
-      hE
-      hF
-      hG
-      hCFG
-      hBEG
-
-  exact
-    ⟨E, F, G, D,
-      hE,
-      hF,
-      hBEG,
-      hCFG,
-      hD,
-      hAGD⟩
+      hBGJ
+      hAGI
 
 end Tarski
-
 end Geometry

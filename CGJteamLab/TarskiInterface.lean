@@ -1106,12 +1106,13 @@ Planned replacement:
 Once such a proof is available, this axiom should be replaced by a
 theorem with the same statement, so that no later code needs to change.
 -/
+/-
 axiom tarski_equidistant_point_exists
     [TarskiNeutral Geo]
     (A B : Geo.Point) :
     ∃ C : Geo.Point,
       Geo.Congruent C A C B
-
+-/
 
 
 /-
@@ -1444,6 +1445,54 @@ theorem tarski_parallel_strict_collinear_right
 
     exact ⟨Y, hYAX, hYCP⟩
 
+theorem tarski_parallel_strict_collinear_left
+    [TarskiNeutral Geo]
+    (A X B P C : Geo.Point)
+    (hPar : TarskiParallelStrict Geo C P A X)
+    (hBPC : TarskiCollinear Geo B P C)
+    (hBP : B = P -> False) :
+    TarskiParallelStrict Geo B P A X := by
+
+  rcases hPar with ⟨hCP, hAX, hNoInt⟩
+
+  constructor
+  · exact hBP
+
+  constructor
+  · exact hAX
+
+  · intro hInt
+    apply hNoInt
+
+    rcases hInt with ⟨Y, hYBP, hYAX⟩
+
+    have hYPB : TarskiCollinear Geo Y P B :=
+      tarski_collinear_symmetry
+        Geo Y B P hYBP
+
+    have hPCB : TarskiCollinear Geo P C B :=
+      (tarski_collinear_cycle Geo B P C).mp hBPC
+
+    have hPBC : TarskiCollinear Geo P B C :=
+      tarski_collinear_symmetry
+        Geo P C B hPCB
+
+    have hPB : P = B -> False := by
+      intro hPB
+      exact hBP hPB.symm
+
+    have hYPC : TarskiCollinear Geo Y P C :=
+      tarski_collinear_trans
+        Geo Y P B C
+        hPB
+        hYPB
+        hPBC
+
+    have hYCP : TarskiCollinear Geo Y C P :=
+      tarski_collinear_symmetry
+        Geo Y P C hYPC
+
+    exact ⟨Y, hYCP, hYAX⟩
 /-
 A nondegenerate midpoint is distinct from the first endpoint.
 
@@ -1581,12 +1630,7 @@ This corresponds to the role of GeoCoq lemma parallel_2_plg.
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
-axiom tarski_parallelogram_of_two_parallel_pairs
-    [TarskiNeutral Geo]
-    (A B C D : Geo.Point)
-    (hABCD : TarskiParallelStrict Geo A B C D)
-    (hBCAD : TarskiParallelStrict Geo B C A D) :
-    TarskiParallelogram Geo A B C D
+
 
 theorem tarski_parallel_strict_symm_left
     [TarskiNeutral Geo]
@@ -1613,6 +1657,47 @@ theorem tarski_parallel_strict_symm_left
         Geo X B A hXBA
 
     exact ⟨X, hXAB, hXCD⟩
+
+theorem tarski_parallel_strict_symm_right
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hPar : TarskiParallelStrict Geo A B C D) :
+    TarskiParallelStrict Geo A B D C := by
+
+  rcases hPar with ⟨hAB, hCD, hNoInt⟩
+
+  constructor
+  · exact hAB
+
+  constructor
+  · intro hDC
+    exact hCD hDC.symm
+
+  · intro hInt
+    apply hNoInt
+
+    rcases hInt with ⟨X, hXAB, hXDC⟩
+
+    have hXCD : TarskiCollinear Geo X C D :=
+      tarski_collinear_symmetry
+        Geo X D C hXDC
+
+    exact ⟨X, hXAB, hXCD⟩
+
+
+theorem tarski_parallel_strict_symm_both
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hPar : TarskiParallelStrict Geo A B C D) :
+    TarskiParallelStrict Geo B A D C := by
+
+  have hLeft : TarskiParallelStrict Geo B A C D :=
+    tarski_parallel_strict_symm_left
+      Geo A B C D hPar
+
+  exact
+    tarski_parallel_strict_symm_right
+      Geo B A C D hLeft
 
 /-!
 ## Three-midpoint configuration
@@ -2043,7 +2128,7 @@ Gupta's midpoint construction.
 theorem tarski_inner_five_segment
     [TarskiNeutral Geo]
     (A A' B B' C C' D D' : Geo.Point)
-    (hAB : A ≠ B)
+    --(hAB : A ≠ B)
     (hABC : Geo.Between A B C)
     (hA'B'C' : Geo.Between A' B' C')
     (hAC : Geo.Congruent A C A' C')
@@ -2292,13 +2377,15 @@ This is the Tarski-language counterpart of the OTTER rule
 The proof from the neutral Tarski axioms is still to be reconstructed.
 -/
 
-/--
+/-
 Transfer of collinearity under equality of the three pairwise
 distances.
 
 This corresponds to clause 53 in the OTTER proof of SST Satz 7.25.
 It is currently treated as an explicit interface assumption.
 -/
+
+/-
 axiom tarski_collinear_congruence_transfer
     [TarskiPlane Geo]
     (A B C A' B' C' : Geo.Point)
@@ -2307,7 +2394,9 @@ axiom tarski_collinear_congruence_transfer
     (hAC : Geo.Congruent A C A' C')
     (hBC : Geo.Congruent B C B' C') :
     TarskiCollinear Geo A' B' C'
-/--
+-/
+
+/-
 Uniqueness of a line determined by two distinct points.
 
 If two nondegenerate lines contain two distinct common points,
@@ -2319,6 +2408,8 @@ SST Satz 7.25.
 
 The derivation from the primitive Tarski plane axioms is deferred.
 -/
+
+/-
 axiom tarski_collinear_two_common_points
     [TarskiPlane Geo]
     (A B P Q C D E : Geo.Point)
@@ -2331,6 +2422,7 @@ axiom tarski_collinear_two_common_points
     (hCD : C ≠ D)
     (hABE : TarskiCollinear Geo A B E) :
     TarskiCollinear Geo P Q E
+-/
 
 end Tarski
 
