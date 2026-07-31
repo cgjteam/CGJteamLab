@@ -155,6 +155,17 @@ axiom parallelogram_of_two_parallel_pairs
     (hBCAD : TarskiParallelStrict Geo B C A D) :
     TarskiParallelogram Geo A B C D
 
+/-
+Temporary interface axiom.
+
+Reverse engineering of GeoCoq (lemma l12_19) showed that this statement
+is derivable in Euclidean Tarski geometry from the theory of parallel
+lines (via `par_trans`), but its reconstruction would require a
+substantial development of the Euclidean parallel theory.
+
+For the present project this theorem is kept as a local interface axiom.
+-/
+
 theorem parallelogram_GADB
     [TarskiNeutral Geo]
     (A B C D G I J : Geo.Point)

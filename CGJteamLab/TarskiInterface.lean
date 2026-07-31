@@ -1646,6 +1646,7 @@ Replace this declaration by a proof from TarskiNeutral.
 -/
 
 
+
 theorem tarski_parallel_strict_symm_left
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -2527,6 +2528,7 @@ axiom tarski_collinear_two_common_points
     (hABE : TarskiCollinear Geo A B E) :
     TarskiCollinear Geo P Q E
 -/
+
 
 end Tarski
 
