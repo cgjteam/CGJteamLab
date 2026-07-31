@@ -1035,6 +1035,13 @@ def TarskiParallelStrict
       TarskiCollinear Geo X A B ∧
       TarskiCollinear Geo X C D
 
+def TarskiParallel
+    (A B C D : Geo.Point) : Prop :=
+  TarskiParallelStrict Geo A B C D ∨
+  (TarskiCollinear Geo A B C ∧
+   TarskiCollinear Geo A B D)
+
+
 /-
 Derived construction of a point symmetric to P with respect to Q.
 
@@ -1388,10 +1395,22 @@ natural Tarski proof of the Midsegment Theorem.
 TODO:
 Replace this declaration by a proof from TarskiNeutral.
 -/
+
+/-
+TEMPORARY DERIVED AXIOM.
+
+If M is the midpoint of AA' and BB', then the lines AB and A'B'
+have no common point, unless they belong to the degenerate
+collinear case.
+
+This corresponds to GeoCoq lemma midpoint_par.
+-/
+
+
 axiom tarski_central_symmetry_parallel
     [TarskiNeutral Geo]
     (M A B A' B' : Geo.Point)
-    (hAB : A = B -> False)
+    (hNonCol : Not (TarskiCollinear Geo A B M))
     (hA : TarskiIsMidpoint Geo M A A')
     (hB : TarskiIsMidpoint Geo M B B') :
     TarskiParallelStrict Geo A B A' B'
@@ -1871,6 +1890,104 @@ theorem tarski_midsegment_aux_ne
 
   exact hAPC hAPC'
 
+theorem tarski_midsegment_aux_noncol
+    [TarskiNeutral Geo]
+    (A B C P Q X : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A B C))
+    (hP : TarskiIsMidpoint Geo P B C)
+    (hQ : TarskiIsMidpoint Geo Q A C)
+    (hQPX : TarskiIsMidpoint Geo Q P X) :
+    Not (TarskiCollinear Geo A X Q) := by
+
+  intro hAXQ
+
+  have hAPC : Not (TarskiCollinear Geo A P C) :=
+    tarski_noncollinear_midpoint_second
+      Geo A B C P hNonCol hP
+
+  have hAC : A = C -> False :=
+    fun hAC =>
+      hNonCol (by
+        right
+        left
+        rw [hAC]
+        exact tarski_between_reflexivity
+          (Geo := Geo) B C)
+
+  have hAQ : A = Q -> False :=
+    tarski_midpoint_ne_first
+      Geo Q A C hAC hQ
+
+  have hAQX : TarskiCollinear Geo A Q X :=
+    tarski_collinear_symmetry
+      Geo A X Q hAXQ
+
+  have hQXP : TarskiCollinear Geo Q X P := by
+    right
+    right
+    exact hQPX.1
+
+  have hPX : P = X -> False := by
+    intro hPX
+
+    have hPQP : Geo.Between P Q P := by
+      simpa [hPX] using hQPX.1
+
+    have hPQ : P = Q :=
+      TarskiNeutral.between_identity
+        (Geo := Geo) P Q hPQP
+
+    apply hAPC
+
+    simpa [hPQ] using
+      (tarski_midpoint_collinear
+        Geo Q A C hQ)
+
+  have hQX : Q = X -> False :=
+    tarski_midpoint_ne_second
+      Geo Q P X hPX hQPX
+
+  have hAQP : TarskiCollinear Geo A Q P :=
+    tarski_collinear_trans
+      Geo A Q X P
+      hQX
+      hAQX
+      hQXP
+
+  have hAPQ : TarskiCollinear Geo A P Q :=
+    tarski_collinear_symmetry
+      Geo A Q P hAQP
+
+  have hQAC : TarskiCollinear Geo Q A C :=
+    tarski_collinear_symmetry
+      Geo Q C A
+      ((tarski_collinear_cycle Geo A Q C).mp
+        (tarski_midpoint_collinear Geo Q A C hQ))
+
+  have hPQC : TarskiCollinear Geo P Q C :=
+    tarski_collinear_trans
+      Geo P Q A C
+      (fun hQA => hAQ hQA.symm)
+      ((tarski_collinear_cycle Geo A P Q).mp hAPQ)
+      hQAC
+
+  have hPQ : P = Q -> False := by
+    intro hPQ
+    subst P
+
+    apply hAPC
+
+    exact tarski_midpoint_collinear
+      Geo Q A C hQ
+
+  have hAPC' : TarskiCollinear Geo A P C :=
+    tarski_collinear_trans
+      Geo A P Q C
+      hPQ
+      hAPQ
+      hPQC
+
+  exact hAPC hAPC'
 
 theorem tarski_midsegment_aux_parallel
     [TarskiNeutral Geo]
@@ -1886,6 +2003,11 @@ theorem tarski_midsegment_aux_parallel
       Geo A B C P Q X
       hNonCol hP hQ hQPX
 
+  have hAXQ : Not (TarskiCollinear Geo A X Q) :=
+    tarski_midsegment_aux_noncol
+      Geo A B C P Q X
+      hNonCol hP hQ hQPX
+
   have hQXP : TarskiIsMidpoint Geo Q X P :=
     tarski_midpoint_symmetry
       Geo Q P X hQPX
@@ -1893,7 +2015,7 @@ theorem tarski_midsegment_aux_parallel
   exact
     tarski_central_symmetry_parallel
       Geo Q A X C P
-      hAX
+      hAXQ
       hQ
       hQXP
 
