@@ -988,6 +988,9 @@ def TarskiParallelogram
     TarskiIsMidpoint Geo M A C ∧
     TarskiIsMidpoint Geo M B D
 
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_parallelogram_of_common_midpoint
+
 theorem tarski_parallelogram_of_common_midpoint
     (A B C D M : Geo.Point)
     (hNondeg : A ≠ C ∨ B ≠ D)
@@ -997,6 +1000,10 @@ theorem tarski_parallelogram_of_common_midpoint
   constructor
   · exact hNondeg
   · exact ⟨M, hMAC, hMBD⟩
+-/
+
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_midpoint_parallelogram
 
 theorem tarski_midpoint_parallelogram
     [TarskiNeutral Geo]
@@ -1027,6 +1034,8 @@ The two lines are nondegenerate and have no common point.
 Since the present geometry is two-dimensional, no separate
 coplanarity condition is required.
 -/
+-/
+
 def TarskiParallelStrict
     (A B C D : Geo.Point) : Prop :=
   A ≠ B ∧
@@ -1246,6 +1255,9 @@ theorem tarski_noncollinear_ne_second_third
   exact tarski_between_reflexivity
     (Geo := Geo) A B
 
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_midpoint_ne_third_of_noncollinear
+
 theorem tarski_midpoint_ne_third_of_noncollinear
     [TarskiNeutral Geo]
     (A B C P : Geo.Point)
@@ -1260,6 +1272,7 @@ theorem tarski_midpoint_ne_third_of_noncollinear
   exact
     tarski_midpoint_ne_second
       Geo P B C hBC hP
+-/
 
 theorem tarski_noncollinear_midpoint_second
     [TarskiNeutral Geo]
@@ -1323,29 +1336,1674 @@ theorem tarski_noncollinear_midpoint_second
 
   exact hNonCol hABC
 
+
+----------------------------------------------------
+-- Five-Segment variants
+----------------------------------------------------
+
 /-
-TEMPORARY DERIVED AXIOM.
+Inner Five-Segment theorem (SST, Satz 4.2).
 
-Central symmetry preserves segment congruence.
-
-If M is the midpoint of AA' and BB', then AB is congruent to A'B'.
-
-This is a theorem of neutral Tarski geometry, corresponding to
-GeoCoq lemma l7_13.  Its derivation uses the earlier congruence
-and Five-Segment machinery.
-
-It is declared temporarily as an axiom in order to continue the
-reconstruction of the Tarski midsegment proof.
-
-TODO:
-Replace this declaration by a proof from TarskiNeutral.
+This is the variant of the Five-Segment theorem used in
+Gupta's midpoint construction.
 -/
-axiom tarski_central_symmetry_congruent
+
+theorem tarski_inner_five_segment
     [TarskiNeutral Geo]
-    (M A B A' B' : Geo.Point)
-    (hA : TarskiIsMidpoint Geo M A A')
-    (hB : TarskiIsMidpoint Geo M B B') :
-    Geo.Congruent A B A' B'
+    (A A' B B' C C' D D' : Geo.Point)
+    --(hAB : A ≠ B)
+    (hABC : Geo.Between A B C)
+    (hA'B'C' : Geo.Between A' B' C')
+    (hAC : Geo.Congruent A C A' C')
+    (hBC : Geo.Congruent B C B' C')
+    (hAD : Geo.Congruent A D A' D')
+    (hCD : Geo.Congruent C D C' D') :
+    Geo.Congruent B D B' D' := by
+
+  by_cases hACeq : A = C
+
+  · subst C
+
+    have hABeq : A = B :=
+      TarskiNeutral.between_identity
+        (Geo := Geo)
+        A B
+        hABC
+
+    subst B
+
+    have hA'C'AA : Geo.Congruent A' C' A A :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        A A A' C'
+        hAC
+
+    have hA'C'eq : A' = C' :=
+      TarskiNeutral.congruent_identity
+        (Geo := Geo)
+        A' C' A
+        hA'C'AA
+
+    subst C'
+
+    have hA'B'eq : A' = B' :=
+      TarskiNeutral.between_identity
+        (Geo := Geo)
+        A' B'
+        hA'B'C'
+
+    subst B'
+
+    exact hAD
+
+  · obtain ⟨E, hACE, hCEAC⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo)
+        A C A C
+
+    obtain ⟨E', hA'C'E', hC'E'AC⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo)
+        A' C' A C
+
+    have hACCE : Geo.Congruent A C C E :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        C E A C
+        hCEAC
+
+    have hACC'E' : Geo.Congruent A C C' E' :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        C' E' A C
+        hC'E'AC
+
+    have hCEC'E' : Geo.Congruent C E C' E' :=
+      TarskiNeutral.congruent_transitivity
+        (Geo := Geo)
+        A C C E C' E'
+        hACCE
+        hACC'E'
+
+    have hEDE'D' : Geo.Congruent E D E' D' :=
+      TarskiNeutral.five_segment
+        (Geo := Geo)
+        A A' C C' E E' D D'
+        hACeq
+        hACE
+        hA'C'E'
+        hAC
+        hCEC'E'
+        hAD
+        hCD
+
+    have hECA : Geo.Between E C A :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A C E
+        hACE
+
+    have hCBA : Geo.Between C B A :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A B C
+        hABC
+
+    have hECB : Geo.Between E C B :=
+      tarski_between_inner_transitivity
+        (Geo := Geo)
+        E C B A
+        hECA
+        hCBA
+
+    have hE'C'A' : Geo.Between E' C' A' :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A' C' E'
+        hA'C'E'
+
+    have hC'B'A' : Geo.Between C' B' A' :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A' B' C'
+        hA'B'C'
+
+    have hE'C'B' : Geo.Between E' C' B' :=
+      tarski_between_inner_transitivity
+        (Geo := Geo)
+        E' C' B' A'
+        hE'C'A'
+        hC'B'A'
+
+    have hEC : E ≠ C := by
+      intro hEq
+
+      subst E
+
+      have hCCAC : Geo.Congruent C C A C :=
+        hCEAC
+
+      have hACCC : Geo.Congruent A C C C :=
+        tarski_congruent_symmetry
+          (Geo := Geo)
+          C C A C
+          hCCAC
+
+      have hAC' : A = C :=
+        TarskiNeutral.congruent_identity
+          (Geo := Geo)
+          A C C
+          hACCC
+
+      exact hACeq hAC'
+    have hECE'C' : Geo.Congruent E C E' C' :=
+      tarski_congruent_reverse_both
+        (Geo := Geo)
+        C E C' E'
+        hCEC'E'
+
+    have hCBC'B' : Geo.Congruent C B C' B' :=
+      tarski_congruent_reverse_both
+        (Geo := Geo)
+        B C B' C'
+        hBC
+
+    exact
+      TarskiNeutral.five_segment
+        (Geo := Geo)
+        E E' C C' B B' D D'
+        hEC
+        hECB
+        hE'C'B'
+        hECE'C'
+        hCBC'B'
+        hEDE'D'
+        hCD
+
+
+
+
+
+/-
+Two medians of a nondegenerate triangle have a common point.
+
+Let E be the midpoint of AC and F the midpoint of AB. Then
+
+  C - E - A
+  B - F - A
+
+and inner Pasch applied to triangle CBA gives a point G such that
+
+  E - G - B
+  F - G - C.
+
+Hence G lies on both median lines BE and CF.
+-/
+
+theorem tarski_two_medians_intersect
+    [TarskiNeutral Geo]
+    (A B C E F : Geo.Point)
+    (hE : TarskiIsMidpoint Geo E A C)
+    (hF : TarskiIsMidpoint Geo F A B) :
+    Exists fun G : Geo.Point =>
+      TarskiCollinear Geo B E G /\
+      TarskiCollinear Geo C F G := by
+
+  have hCEA : Geo.Between C E A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A E C
+      hE.1
+
+  have hBFA : Geo.Between B F A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A F B
+      hF.1
+
+  obtain ⟨G, hEGB, hFGC⟩ :=
+    TarskiNeutral.inner_pasch
+      (Geo := Geo)
+      C B A E F
+      hCEA
+      hBFA
+
+  have hBEG : TarskiCollinear Geo B E G :=
+    Or.inr (Or.inl hEGB)
+
+  have hCFG : TarskiCollinear Geo C F G :=
+    Or.inr (Or.inl hFGC)
+
+  exact ⟨G, hBEG, hCFG⟩
+
+/-
+Collinearity is preserved by equality of the three corresponding
+pairwise distances.
+
+This is the Tarski-language counterpart of the OTTER rule
+
+  Col(A,B,C) and E3(A,B,C,A',B',C')
+  imply Col(A',B',C').
+
+The proof from the neutral Tarski axioms is still to be reconstructed.
+-/
+
+/-
+Transfer of collinearity under equality of the three pairwise
+distances.
+
+This corresponds to clause 53 in the OTTER proof of SST Satz 7.25.
+It is currently treated as an explicit interface assumption.
+-/
+
+/-
+axiom tarski_collinear_congruence_transfer
+    [TarskiPlane Geo]
+    (A B C A' B' C' : Geo.Point)
+    (hCol : TarskiCollinear Geo A B C)
+    (hAB : Geo.Congruent A B A' B')
+    (hAC : Geo.Congruent A C A' C')
+    (hBC : Geo.Congruent B C B' C') :
+    TarskiCollinear Geo A' B' C'
+-/
+
+/-
+Uniqueness of a line determined by two distinct points.
+
+If two nondegenerate lines contain two distinct common points,
+then every point collinear with the first pair is also collinear
+with the second pair.
+
+This corresponds to clause 104 used in the OTTER proof of
+SST Satz 7.25.
+
+The derivation from the primitive Tarski plane axioms is deferred.
+-/
+
+/-
+axiom tarski_collinear_two_common_points
+    [TarskiPlane Geo]
+    (A B P Q C D E : Geo.Point)
+    (hAB : A ≠ B)
+    (hPQ : P ≠ Q)
+    (hABC : TarskiCollinear Geo A B C)
+    (hPQC : TarskiCollinear Geo P Q C)
+    (hABD : TarskiCollinear Geo A B D)
+    (hPQD : TarskiCollinear Geo P Q D)
+    (hCD : C ≠ D)
+    (hABE : TarskiCollinear Geo A B E) :
+    TarskiCollinear Geo P Q E
+-/
+
+
+
+/-
+SST Satz 4.5 (GeoCoq `l4_5`).
+
+A point lying between the endpoints of a segment can be transferred
+onto any congruent segment, preserving the three corresponding
+segment congruences.
+
+This theorem is derived entirely from `TarskiNeutral` and previously
+proved lemmas. No additional axiom is used.
+-/
+
+theorem tarski_l4_5
+    [TarskiNeutral Geo]
+    (A B C A' C' : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hAC : Geo.Congruent A C A' C') :
+    ∃ B' : Geo.Point,
+      Geo.Between A' B' C' ∧
+      Geo.Congruent A B A' B' ∧
+      Geo.Congruent B C B' C' ∧
+      Geo.Congruent A C A' C' := by
+
+  by_cases hABeq : A = B
+
+  · subst B
+
+    have hA'A'C' : Geo.Between A' A' C' := by
+      have hC'A'A' : Geo.Between C' A' A' :=
+        tarski_between_reflexivity (Geo := Geo) C' A'
+      exact tarski_between_symmetry
+        (Geo := Geo) C' A' A' hC'A'A'
+
+    have hAAA'A' : Geo.Congruent A A A' A' :=
+      tarski_congruent_zero (Geo := Geo) A A'
+
+    exact ⟨A', hA'A'C', hAAA'A', hAC, hAC⟩
+
+  · have hACne : A ≠ C := by
+      intro hACeq
+      subst C
+      have hAB : A = B :=
+        TarskiNeutral.between_identity
+          (Geo := Geo) A B hABC
+      exact hABeq hAB
+
+    have hA'C'ne : A' ≠ C' := by
+      intro hA'C'eq
+      subst C'
+      have hACA'A' : Geo.Congruent A C A' A' := hAC
+      have hACeq : A = C :=
+        TarskiNeutral.congruent_identity
+          (Geo := Geo) A C A' hACA'A'
+      exact hACne hACeq
+
+    obtain ⟨X, hC'A'X, hA'XA'C'⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo) C' A' A' C'
+
+    have hXA' : X ≠ A' := by
+      intro hXA'eq
+      subst X
+      have hA'A'A'C' : Geo.Congruent A' A' A' C' := hA'XA'C'
+      have hA'C'A'A' : Geo.Congruent A' C' A' A' :=
+        tarski_congruent_symmetry
+          (Geo := Geo) A' A' A' C' hA'A'A'C'
+      have hA'C'eq : A' = C' :=
+        TarskiNeutral.congruent_identity
+          (Geo := Geo) A' C' A' hA'C'A'A'
+      exact hA'C'ne hA'C'eq
+
+    obtain ⟨B', hXA'B', hA'B'AB⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo) X A' A B
+
+    have hA'B'ne : A' ≠ B' := by
+      intro hA'B'eq
+      subst B'
+      have hA'A'AB : Geo.Congruent A' A' A B := hA'B'AB
+      have hABA'A' : Geo.Congruent A B A' A' :=
+        tarski_congruent_symmetry
+          (Geo := Geo) A' A' A B hA'A'AB
+      have hABeq' : A = B :=
+        TarskiNeutral.congruent_identity
+          (Geo := Geo) A B A' hABA'A'
+      exact hABeq hABeq'
+
+    obtain ⟨C'', hXB'C'', hB'C''BC⟩ :=
+      TarskiNeutral.segment_construction
+        (Geo := Geo) X B' B C
+
+    have hA'B'C'' : Geo.Between A' B' C'' :=
+      tarski_between_exchange3
+        (Geo := Geo) X A' B' C'' hXA'B' hXB'C''
+
+    have hXA'C'' : Geo.Between X A' C'' :=
+      tarski_between_outer_transitivity
+        (Geo := Geo)
+        X A' B' C''
+        hXA'B'
+        hA'B'C''
+        hA'B'ne
+
+    have hA'C''AC : Geo.Congruent A' C'' A C :=
+      tarski_l2_11_nondegenerate
+        (Geo := Geo)
+        A' B' C'' A B C
+        hA'B'C''
+        hABC
+        hA'B'ne
+        hA'B'AB
+        hB'C''BC
+
+    have hXA'C' : Geo.Between X A' C' :=
+      tarski_between_symmetry
+        (Geo := Geo) C' A' X hC'A'X
+
+    have hA'C'AC : Geo.Congruent A' C' A C :=
+      tarski_congruent_symmetry
+        (Geo := Geo) A C A' C' hAC
+
+    have hC''C' : C'' = C' :=
+      tarski_construction_uniqueness
+        (Geo := Geo)
+        X A' C'' C' A C
+        hXA'
+        hXA'C''
+        hXA'C'
+        hA'C''AC
+        hA'C'AC
+
+    subst C''
+
+    have hABA'B' : Geo.Congruent A B A' B' :=
+      tarski_congruent_symmetry
+        (Geo := Geo) A' B' A B hA'B'AB
+
+    have hBCB'C' : Geo.Congruent B C B' C' :=
+      tarski_congruent_symmetry
+        (Geo := Geo) B' C' B C hB'C''BC
+
+    exact ⟨B', hA'B'C'', hABA'B', hBCB'C', hAC⟩
+
+/-- GeoCoq l4_6:
+Betweenness is preserved when the three corresponding segments are congruent.
+-/
+
+theorem tarski_l4_6
+    [TarskiNeutral Geo]
+    (A B C A' B' C' : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hAB : Geo.Congruent A B A' B')
+    (hBC : Geo.Congruent B C B' C')
+    (hAC : Geo.Congruent A C A' C') :
+    Geo.Between A' B' C' := by
+
+  obtain ⟨B'', hA'B''C', hABB'', hBCB'', _⟩ :=
+    tarski_l4_5
+      (Geo := Geo)
+      A B C A' C'
+      hABC
+      hAC
+
+  have hCBC'B' : Geo.Congruent C B C' B' :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      B C B' C'
+      hBC
+
+  have hBBB''B' : Geo.Congruent B B B'' B' :=
+    tarski_inner_five_segment
+      (Geo := Geo)
+      A A' B B'' C C' B B'
+      hABC
+      hA'B''C'
+      hAC
+      hBCB''
+      hAB
+      hCBC'B'
+
+  have hB''B'BB : Geo.Congruent B'' B' B B :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      B B B'' B'
+      hBBB''B'
+
+  have hB''eqB' : B'' = B' :=
+    TarskiNeutral.congruent_identity
+      (Geo := Geo)
+      B'' B' B
+      hB''B'BB
+
+  subst B'
+
+  exact hA'B''C'
+
+/-- GeoCoq l4_16:
+The Five-Segment conclusion remains valid when A, B, C are merely collinear.
+-/
+theorem tarski_l4_16
+    [TarskiNeutral Geo]
+    (A B C D A' B' C' D' : Geo.Point)
+    (hCol : TarskiCollinear Geo A B C)
+    (hABne : A ≠ B)
+    (hAB : Geo.Congruent A B A' B')
+    (hBC : Geo.Congruent B C B' C')
+    (hAC : Geo.Congruent A C A' C')
+    (hAD : Geo.Congruent A D A' D')
+    (hBD : Geo.Congruent B D B' D') :
+    Geo.Congruent C D C' D' := by
+
+  rcases hCol with hABC | hBCA | hCAB
+
+  · have hA'B'C' : Geo.Between A' B' C' :=
+      tarski_l4_6
+        (Geo := Geo)
+        A B C A' B' C'
+        hABC
+        hAB
+        hBC
+        hAC
+
+    exact
+      TarskiNeutral.five_segment
+        (Geo := Geo)
+        A A' B B' C C' D D'
+        hABne
+        hABC
+        hA'B'C'
+        hAB
+        hBC
+        hAD
+        hBD
+
+  · have hB'C'A' : Geo.Between B' C' A' :=
+      tarski_l4_6
+        (Geo := Geo)
+        B C A B' C' A'
+        hBCA
+        hBC
+        (tarski_congruent_reverse_both
+          (Geo := Geo) A C A' C' hAC)
+        (tarski_congruent_reverse_both
+          (Geo := Geo) A B A' B' hAB)
+
+    exact
+      tarski_inner_five_segment
+        (Geo := Geo)
+        B B' C C' A A' D D'
+        hBCA
+        hB'C'A'
+        (tarski_congruent_reverse_both
+          (Geo := Geo) A B A' B' hAB)
+        (tarski_congruent_reverse_both
+          (Geo := Geo) A C A' C' hAC)
+        hBD
+        hAD
+
+  · have hBAC : Geo.Between B A C :=
+      tarski_between_symmetry
+        (Geo := Geo) C A B hCAB
+
+    have hB'A'C' : Geo.Between B' A' C' :=
+      tarski_l4_6
+        (Geo := Geo)
+        B A C B' A' C'
+        hBAC
+        (tarski_congruent_reverse_both
+          (Geo := Geo) A B A' B' hAB)
+        hAC
+        hBC
+
+    exact
+      TarskiNeutral.five_segment
+        (Geo := Geo)
+        B B' A A' C C' D D'
+        (Ne.symm hABne)
+        hBAC
+        hB'A'C'
+        (tarski_congruent_reverse_both
+          (Geo := Geo) A B A' B' hAB)
+        hAC
+        hBD
+        hAD
+
+/-- Auxiliary construction used in GeoCoq l7_13. -/
+theorem tarski_l7_13_aux
+    [TarskiNeutral Geo]
+    (A P Q P' Q' : Geo.Point) :
+    exists X X' Y Y' : Geo.Point,
+      Geo.Between P' P X /\
+      Geo.Congruent P X Q A /\
+      Geo.Between X P' X' /\
+      Geo.Congruent P' X' Q A /\
+      Geo.Between Q' Q Y /\
+      Geo.Congruent Q Y P A /\
+      Geo.Between Y Q' Y' /\
+      Geo.Congruent Q' Y' P A := by
+
+  obtain ⟨X, hPprimePX, hPXQA⟩ :=
+    TarskiNeutral.segment_construction
+      (Geo := Geo) P' P Q A
+
+  obtain ⟨X', hXPprimeXprime, hPprimeXprimeQA⟩ :=
+    TarskiNeutral.segment_construction
+      (Geo := Geo) X P' Q A
+
+  obtain ⟨Y, hQprimeQY, hQYPA⟩ :=
+    TarskiNeutral.segment_construction
+      (Geo := Geo) Q' Q P A
+
+  obtain ⟨Y', hYQprimeYprime, hQprimeYprimePA⟩ :=
+    TarskiNeutral.segment_construction
+      (Geo := Geo) Y Q' P A
+
+  exact
+    ⟨X, X', Y, Y',
+      hPprimePX,
+      hPXQA,
+      hXPprimeXprime,
+      hPprimeXprimeQA,
+      hQprimeQY,
+      hQYPA,
+      hYQprimeYprime,
+      hQprimeYprimePA⟩
+/- Betweenness relations used in the nondegenerate branch of GeoCoq l7_13. -/
+
+/-- Betweenness relations used in the nondegenerate branch of GeoCoq l7_13. -/
+theorem tarski_l7_13_betweenness
+    [TarskiNeutral Geo]
+    (A P Q P' Q' X X' Y Y' : Geo.Point)
+    (hPA : P ≠ A)
+    (hPmid : TarskiIsMidpoint Geo A P' P)
+    (hQmid : TarskiIsMidpoint Geo A Q' Q)
+    (hPprimePX : Geo.Between P' P X)
+    (hXPprimeXprime : Geo.Between X P' X')
+    (hQprimeQY : Geo.Between Q' Q Y)
+    (hYQprimeYprime : Geo.Between Y Q' Y') :
+    Geo.Between Y A Q' /\
+    Geo.Between P' A X /\
+    Geo.Between A P X /\
+    Geo.Between Y Q A /\
+    Geo.Between A Q' Y' /\
+    Geo.Between X' P' A /\
+    Geo.Between X A X' /\
+    Geo.Between Y A Y' := by
+
+  rcases hPmid with ⟨hPprimeAP, hPprimeAAP⟩
+  rcases hQmid with ⟨hQprimeAQ, hQprimeAAQ⟩
+
+  have hAP : A ≠ P := by
+    intro hAPeq
+    exact hPA hAPeq.symm
+
+  have hPprimeA : P' ≠ A := by
+    intro hEq
+    subst P'
+
+    have hAPAA : Geo.Congruent A P A A :=
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        A A A P
+        hPprimeAAP
+
+    have hEqAP : A = P :=
+      TarskiNeutral.congruent_identity
+        (Geo := Geo)
+        A P A
+        hAPAA
+
+    exact hAP hEqAP
+
+  have hAPprime : A ≠ P' := by
+    intro hEq
+    exact hPprimeA hEq.symm
+
+  have hAPX : Geo.Between A P X :=
+    tarski_between_exchange3
+      (Geo := Geo)
+      P' A P X
+      hPprimeAP
+      hPprimePX
+
+  have hPprimeAX : Geo.Between P' A X :=
+    tarski_between_outer_transitivity
+      (Geo := Geo)
+      P' A P X
+      hPprimeAP
+      hAPX
+      hAP
+
+  have hXprimePprimeX : Geo.Between X' P' X :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      X P' X'
+      hXPprimeXprime
+
+  have hXprimePprimeA : Geo.Between X' P' A :=
+    tarski_between_inner_transitivity
+      (Geo := Geo)
+      X' P' A X
+      hXprimePprimeX
+      hPprimeAX
+
+  have hXAPprime : Geo.Between X A P' :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      P' A X
+      hPprimeAX
+
+  have hAPprimeXprime : Geo.Between A P' X' :=
+    tarski_between_exchange3
+      (Geo := Geo)
+      X A P' X'
+      hXAPprime
+      hXPprimeXprime
+
+  have hXAXprime : Geo.Between X A X' :=
+    tarski_between_outer_transitivity
+      (Geo := Geo)
+      X A P' X'
+      hXAPprime
+      hAPprimeXprime
+      hAPprime
+
+  have hAQY : Geo.Between A Q Y :=
+    tarski_between_exchange3
+      (Geo := Geo)
+      Q' A Q Y
+      hQprimeAQ
+      hQprimeQY
+
+  have hYQA : Geo.Between Y Q A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A Q Y
+      hAQY
+
+  by_cases hQA : Q = A
+
+  · subst Q
+
+    have hQprimeEqA : Q' = A :=
+      TarskiNeutral.congruent_identity
+        (Geo := Geo)
+        Q' A A
+        hQprimeAAQ
+
+    subst Q'
+
+    have hYAA : Geo.Between Y A A :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        A A Y
+        hQprimeQY
+
+    have hYprimeAA : Geo.Between Y' A A :=
+      tarski_between_reflexivity
+        (Geo := Geo)
+        Y' A
+
+    have hAAYprime : Geo.Between A A Y' :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        Y' A A
+        hYprimeAA
+
+    exact
+      ⟨hYAA,
+       hPprimeAX,
+       hAPX,
+       hYQA,
+       hAAYprime,
+       hXprimePprimeA,
+       hXAXprime,
+       hYQprimeYprime⟩
+
+  · have hAQ : A ≠ Q := by
+      intro hAQeq
+      exact hQA hAQeq.symm
+
+    have hQprimeA : Q' ≠ A := by
+      intro hEq
+      subst Q'
+
+      have hAQAA : Geo.Congruent A Q A A :=
+        tarski_congruent_symmetry
+          (Geo := Geo)
+          A A A Q
+          hQprimeAAQ
+
+      have hEqAQ : A = Q :=
+        TarskiNeutral.congruent_identity
+          (Geo := Geo)
+          A Q A
+          hAQAA
+
+      exact hAQ hEqAQ
+
+    have hAQprime : A ≠ Q' := by
+      intro hEq
+      exact hQprimeA hEq.symm
+
+    have hQprimeAY : Geo.Between Q' A Y :=
+      tarski_between_outer_transitivity
+        (Geo := Geo)
+        Q' A Q Y
+        hQprimeAQ
+        hAQY
+        hAQ
+
+    have hYAQprime : Geo.Between Y A Q' :=
+      tarski_between_symmetry
+        (Geo := Geo)
+        Q' A Y
+        hQprimeAY
+
+    have hAQprimeYprime : Geo.Between A Q' Y' :=
+      tarski_between_exchange3
+        (Geo := Geo)
+        Y A Q' Y'
+        hYAQprime
+        hYQprimeYprime
+
+    have hYAYprime : Geo.Between Y A Y' :=
+      tarski_between_outer_transitivity
+        (Geo := Geo)
+        Y A Q' Y'
+        hYAQprime
+        hAQprimeYprime
+        hAQprime
+
+    exact
+      ⟨hYAQprime,
+       hPprimeAX,
+       hAPX,
+       hYQA,
+       hAQprimeYprime,
+       hXprimePprimeA,
+       hXAXprime,
+       hYAYprime⟩
+
+/-- First `l2_11` step in GeoCoq l7_13:
+from A-P-X and Y-Q-A, with AP == YQ and PX == QA, obtain AX == YA.
+-/
+theorem tarski_l7_13_congruent_AX_YA
+    [TarskiNeutral Geo]
+    (A P Q X Y : Geo.Point)
+    (hPA : P ≠ A)
+    (hAPX : Geo.Between A P X)
+    (hYQA : Geo.Between Y Q A)
+    (hPXQA : Geo.Congruent P X Q A)
+    (hQYPA : Geo.Congruent Q Y P A) :
+    Geo.Congruent A X Y A := by
+
+  have hAP : A ≠ P := by
+    intro hAPeq
+    exact hPA hAPeq.symm
+
+  have hYQAP : Geo.Congruent Y Q A P :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      Q Y P A
+      hQYPA
+
+  have hAPYQ : Geo.Congruent A P Y Q :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      Y Q A P
+      hYQAP
+
+  exact
+    tarski_l2_11_nondegenerate
+      (Geo := Geo)
+      A P X
+      Y Q A
+      hAPX
+      hYQA
+      hAP
+      hAPYQ
+      hPXQA
+
+/-- Second `l2_11` step in GeoCoq l7_13:
+from Y-A-Q' and P'-A-X, with YA == P'A and AQ' == AX,
+obtain YQ' == P'X.
+-/
+theorem tarski_l7_13_congruent_YQprime_PprimeX
+    [TarskiNeutral Geo]
+    (A P' Q' X Y : Geo.Point)
+    (hYA : Y ≠ A)
+    (hYAQprime : Geo.Between Y A Q')
+    (hPprimeAX : Geo.Between P' A X)
+    (hYAPprimeA : Geo.Congruent Y A P' A)
+    (hAQprimeAX : Geo.Congruent A Q' A X) :
+    Geo.Congruent Y Q' P' X := by
+
+  exact
+    tarski_l2_11_nondegenerate
+      (Geo := Geo)
+      Y A Q'
+      P' A X
+      hYAQprime
+      hPprimeAX
+      hYA
+      hYAPprimeA
+      hAQprimeAX
+
+/-- Congruence orientation needed for the l4_16 step in GeoCoq l7_13. -/
+theorem tarski_l7_13_congruent_QprimeY_XPprime
+    [TarskiNeutral Geo]
+    (P' Q' X Y : Geo.Point)
+    (hYQprimePprimeX : Geo.Congruent Y Q' P' X) :
+    Geo.Congruent Q' Y X P' := by
+
+  exact
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      Y Q' P' X
+      hYQprimePprimeX
+
+/-- The l4_16 congruence step in the reconstruction of GeoCoq l7_13. -/
+theorem tarski_l7_13_l4_16_step
+    [TarskiNeutral Geo]
+    (A P' Q' X Y : Geo.Point)
+    (hYAQprime : Geo.Between Y A Q')
+    (hYA : Y ≠ A)
+    (hYAPprimeA : Geo.Congruent Y A P' A)
+    (hAQprimeAX : Geo.Congruent A Q' A X)
+    (hYQprimePprimeX : Geo.Congruent Y Q' P' X)
+    (hYPprime : Geo.Congruent Y P' P' Y)
+    (hAPprime : Geo.Congruent A P' A Y) :
+    Geo.Congruent Q' P' X Y := by
+
+  have hColYAQprime : TarskiCollinear Geo Y A Q' :=
+    Or.inl hYAQprime
+
+  exact
+    tarski_l4_16
+      (Geo := Geo)
+      Y A Q' P'
+      P' A X Y
+      hColYAQprime
+      hYA
+      hYAPprimeA
+      hAQprimeAX
+      hYQprimePprimeX
+      hYPprime
+      hAPprime
+
+/-- Second `l2_11` step in GeoCoq l7_13:
+from A-Q'-Y' and X'-P'-A, obtain AY' == X'A.
+-/
+theorem tarski_l7_13_congruent_AYprime_XprimeA
+    [TarskiNeutral Geo]
+    (A P' Q' X' Y' : Geo.Point)
+    (hAQprime : A ≠ Q')
+    (hAQprimeYprime : Geo.Between A Q' Y')
+    (hXprimePprimeA : Geo.Between X' P' A)
+    (hAQprimeXprimePprime :
+      Geo.Congruent A Q' X' P')
+    (hQprimeYprimePprimeA :
+      Geo.Congruent Q' Y' P' A) :
+    Geo.Congruent A Y' X' A := by
+
+  exact
+    tarski_l2_11_nondegenerate
+      (Geo := Geo)
+      A Q' Y'
+      X' P' A
+      hAQprimeYprime
+      hXprimePprimeA
+      hAQprime
+      hAQprimeXprimePprime
+      hQprimeYprimePprimeA
+
+
+/-- Third `l2_11` step in GeoCoq l7_13:
+from A-Q-Y and A-Q'-Y', obtain AY == AY'.
+-/
+theorem tarski_l7_13_congruent_AY_AYprime
+    [TarskiNeutral Geo]
+    (A P Q Q' Y Y' : Geo.Point)
+    (hAQ : A ≠ Q)
+    (hAQY : Geo.Between A Q Y)
+    (hAQprimeYprime : Geo.Between A Q' Y')
+    (hAQAQprime : Geo.Congruent A Q A Q')
+    (hQYPA : Geo.Congruent Q Y P A)
+    (hQprimeYprimePA : Geo.Congruent Q' Y' P A) :
+    Geo.Congruent A Y A Y' := by
+
+  have hPAQY : Geo.Congruent P A Q Y :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      Q Y P A
+      hQYPA
+
+  have hPAQprimeYprime : Geo.Congruent P A Q' Y' :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      Q' Y' P A
+      hQprimeYprimePA
+
+  have hQYQprimeYprime : Geo.Congruent Q Y Q' Y' :=
+    TarskiNeutral.congruent_transitivity
+      (Geo := Geo)
+      P A Q Y Q' Y'
+      hPAQY
+      hPAQprimeYprime
+
+  exact
+    tarski_l2_11_nondegenerate
+      (Geo := Geo)
+      A Q Y
+      A Q' Y'
+      hAQY
+      hAQprimeYprime
+      hAQ
+      hAQAQprime
+      hQYQprimeYprime
+
+/-- Congruence composition used in GeoCoq l7_13:
+from AX == YA and AY == AY', obtain XA == Y'A.
+-/
+theorem tarski_l7_13_congruent_XA_YprimeA
+    [TarskiNeutral Geo]
+    (A X Y Y' : Geo.Point)
+    (hAXYA : Geo.Congruent A X Y A)
+    (hAYAYprime : Geo.Congruent A Y A Y') :
+    Geo.Congruent X A Y' A := by
+
+  have hXAAY : Geo.Congruent X A A Y :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      A X Y A
+      hAXYA
+
+  have hAYXA : Geo.Congruent A Y X A :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      X A A Y
+      hXAAY
+
+  have hAYYprimeA : Geo.Congruent A Y Y' A :=
+    (Geometry.Tarski.Geo.congruent_reverse_second
+      Geo A Y A Y').mp hAYAYprime
+
+  exact
+    TarskiNeutral.congruent_transitivity
+      (Geo := Geo)
+      A Y
+      X A
+      Y' A
+      hAYXA
+      hAYYprimeA
+
+/-- Congruence composition used in GeoCoq l7_13:
+from AY' == X'A and AY == AY', obtain AX' == AY.
+-/
+theorem tarski_l7_13_congruent_AXprime_AY
+    [TarskiNeutral Geo]
+    (A X' Y Y' : Geo.Point)
+    (hAYprimeXprimeA : Geo.Congruent A Y' X' A)
+    (hAYAYprime : Geo.Congruent A Y A Y') :
+    Geo.Congruent A X' A Y := by
+
+  have hYprimeAAXprime : Geo.Congruent Y' A A X' :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      A Y' X' A
+      hAYprimeXprimeA
+
+  have hYAYprimeA : Geo.Congruent Y A Y' A :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      A Y A Y'
+      hAYAYprime
+
+  have hYprimeAYA : Geo.Congruent Y' A Y A :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      Y A Y' A
+      hYAYprimeA
+
+  have hAXprimeYA : Geo.Congruent A X' Y A :=
+    TarskiNeutral.congruent_transitivity
+      (Geo := Geo)
+      Y' A
+      A X'
+      Y A
+      hYprimeAAXprime
+      hYprimeAYA
+
+  exact
+    (Geometry.Tarski.Geo.congruent_reverse_second
+      Geo A X' Y A).mp hAXprimeYA
+
+
+/-- Congruence composition used in GeoCoq l7_13:
+from AX == YA and AX' == AY, obtain AX == AX'.
+-/
+theorem tarski_l7_13_congruent_AX_AXprime
+    [TarskiNeutral Geo]
+    (A X X' Y : Geo.Point)
+    (hAXYA : Geo.Congruent A X Y A)
+    (hAXprimeAY : Geo.Congruent A X' A Y) :
+    Geo.Congruent A X A X' := by
+
+  have hYAAX : Geo.Congruent Y A A X :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      A X Y A
+      hAXYA
+
+  have hAYAX : Geo.Congruent A Y A X :=
+    (Geometry.Tarski.Geo.congruent_reverse_first
+      Geo Y A A X).mp hYAAX
+
+  have hAYAXprime : Geo.Congruent A Y A X' :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      A X' A Y
+      hAXprimeAY
+
+  exact
+    TarskiNeutral.congruent_transitivity
+      (Geo := Geo)
+      A Y
+      A X
+      A X'
+      hAYAX
+      hAYAXprime
+
+
+/-- Fourth `l2_11` step in GeoCoq l7_13:
+from X-A-X' and Y'-A-Y, obtain XX' == Y'Y.
+-/
+theorem tarski_l7_13_congruent_XXprime_YprimeY
+    [TarskiNeutral Geo]
+    (A X X' Y Y' : Geo.Point)
+    (hXA : X ≠ A)
+    (hXAXprime : Geo.Between X A X')
+    (hYAYprime : Geo.Between Y A Y')
+    (hXAYprimeA : Geo.Congruent X A Y' A)
+    (hAXprimeAY : Geo.Congruent A X' A Y) :
+    Geo.Congruent X X' Y' Y := by
+
+  have hYprimeAY : Geo.Between Y' A Y :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      Y A Y'
+      hYAYprime
+
+  exact
+    tarski_l2_11_nondegenerate
+      (Geo := Geo)
+      X A X'
+      Y' A Y
+      hXAXprime
+      hYprimeAY
+      hXA
+      hXAYprimeA
+      hAXprimeAY
+
+/-- The `l4_16` step at line 163 of GeoCoq l7_13:
+from the configuration `FSC X A X' Y' Y' A Y X`,
+obtain `X'Y' == YX`.
+-/
+theorem tarski_l7_13_congruent_XprimeYprime_YX
+    [TarskiNeutral Geo]
+    (A X X' Y Y' : Geo.Point)
+    (hXA : X ≠ A)
+    (hXAXprime : Geo.Between X A X')
+    (hXAYprimeA : Geo.Congruent X A Y' A)
+    (hAXprimeAY : Geo.Congruent A X' A Y)
+    (hXXprimeYprimeY : Geo.Congruent X X' Y' Y) :
+    Geo.Congruent X' Y' Y X := by
+
+  have hColXAXprime : TarskiCollinear Geo X A X' :=
+    Or.inl hXAXprime
+
+  have hXYprimeYprimeX : Geo.Congruent X Y' Y' X := by
+    have hXYprimeXYprime : Geo.Congruent X Y' X Y' :=
+      tarski_congruent_reflexivity
+        (Geo := Geo)
+        X Y'
+
+    exact
+      (Geometry.Tarski.Geo.congruent_reverse_second
+        Geo X Y' X Y').mp hXYprimeXYprime
+
+  have hAXAYprime : Geo.Congruent A X A Y' :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      X A Y' A
+      hXAYprimeA
+
+  have hAYprimeAX : Geo.Congruent A Y' A X :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      A X A Y'
+      hAXAYprime
+
+  exact
+    tarski_l4_16
+      (Geo := Geo)
+      X A X' Y'
+      Y' A Y X
+      hColXAXprime
+      hXA
+      hXAYprimeA
+      hAXprimeAY
+      hXXprimeYprimeY
+      hXYprimeYprimeX
+      hAYprimeAX
+/-- First final Inner Five-Segment step in GeoCoq l7_13:
+from the configuration `IFSC Y Q A X Y' Q' A X'`,
+obtain `QX == Q'X'`.
+-/
+theorem tarski_l7_13_congruent_QX_QprimeXprime
+    [TarskiNeutral Geo]
+    (A Q Q' X X' Y Y' : Geo.Point)
+    (hYQA : Geo.Between Y Q A)
+    (hAQprimeYprime : Geo.Between A Q' Y')
+    (hAYAYprime : Geo.Congruent A Y A Y')
+    (hQAQprimeA : Geo.Congruent Q A Q' A)
+    (hXprimeYprimeYX : Geo.Congruent X' Y' Y X)
+    (hAXAXprime : Geo.Congruent A X A X') :
+    Geo.Congruent Q X Q' X' := by
+
+  have hYprimeQprimeA : Geo.Between Y' Q' A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A Q' Y'
+      hAQprimeYprime
+
+  have hYAYprimeA : Geo.Congruent Y A Y' A :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      A Y A Y'
+      hAYAYprime
+
+  have hYXXprimeYprime : Geo.Congruent Y X X' Y' :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      X' Y' Y X
+      hXprimeYprimeYX
+
+  have hYXYprimeXprime : Geo.Congruent Y X Y' X' :=
+    (Geometry.Tarski.Geo.congruent_reverse_second
+      Geo Y X X' Y').mp hYXXprimeYprime
+
+  exact
+    tarski_inner_five_segment
+      (Geo := Geo)
+      Y Y'
+      Q Q'
+      A A
+      X X'
+      hYQA
+      hYprimeQprimeA
+      hYAYprimeA
+      hQAQprimeA
+      hYXYprimeXprime
+      hAXAXprime
+
+/-- Final Inner Five-Segment step in GeoCoq l7_13:
+from the configuration `IFSC X P A Q X' P' A Q'`,
+obtain `PQ == P'Q'`.
+-/
+theorem tarski_l7_13_final_inner_step
+    [TarskiNeutral Geo]
+    (A P Q P' Q' X X' : Geo.Point)
+    (hPmid : TarskiIsMidpoint Geo A P' P)
+    (hQmid : TarskiIsMidpoint Geo A Q' Q)
+    (hAPX : Geo.Between A P X)
+    (hXprimePprimeA : Geo.Between X' P' A)
+    (hAXAXprime : Geo.Congruent A X A X')
+    (hQXQprimeXprime : Geo.Congruent Q X Q' X') :
+    Geo.Congruent P Q P' Q' := by
+
+  rcases hPmid with ⟨_, hPprimeAAP⟩
+  rcases hQmid with ⟨_, hQprimeAAQ⟩
+
+  have hXPA : Geo.Between X P A :=
+    tarski_between_symmetry
+      (Geo := Geo)
+      A P X
+      hAPX
+
+  have hXAXprimeA : Geo.Congruent X A X' A :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      A X A X'
+      hAXAXprime
+
+  have hAPPprimeA : Geo.Congruent A P P' A :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      P' A A P
+      hPprimeAAP
+
+  have hPAPprimeA : Geo.Congruent P A P' A :=
+    (Geometry.Tarski.Geo.congruent_reverse_first
+      Geo A P P' A).mp hAPPprimeA
+
+  have hXQXprimeQprime : Geo.Congruent X Q X' Q' :=
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      Q X Q' X'
+      hQXQprimeXprime
+
+  have hAQQprimeA : Geo.Congruent A Q Q' A :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      Q' A A Q
+      hQprimeAAQ
+
+  have hAQAQprime : Geo.Congruent A Q A Q' :=
+    (Geometry.Tarski.Geo.congruent_reverse_second
+      Geo A Q Q' A).mp hAQQprimeA
+
+  exact
+    tarski_inner_five_segment
+      (Geo := Geo)
+      X X'
+      P P'
+      A A
+      Q Q'
+      hXPA
+      hXprimePprimeA
+      hXAXprimeA
+      hPAPprimeA
+      hXQXprimeQprime
+      hAQAQprime
+
+/-- GeoCoq l7_13:
+central symmetry preserves segment congruence.
+-/
+theorem tarski_central_symmetry_congruent
+    [TarskiNeutral Geo]
+    (M P Q P' Q' : Geo.Point)
+    (hPmid : TarskiIsMidpoint Geo M P P')
+    (hQmid : TarskiIsMidpoint Geo M Q Q') :
+    Geo.Congruent P Q P' Q' := by
+
+  by_cases hPM : P = M
+
+  · subst P
+
+    have hPprimeM : P' = M := by
+      have hMMPprimeM : Geo.Congruent M M P' M :=
+        (Geometry.Tarski.Geo.congruent_reverse_second
+          Geo M M M P').mp hPmid.2
+
+      have hPprimeMMM : Geo.Congruent P' M M M :=
+        tarski_congruent_symmetry
+          (Geo := Geo)
+          M M P' M
+          hMMPprimeM
+
+      exact
+        TarskiNeutral.congruent_identity
+          (Geo := Geo)
+          P' M M
+          hPprimeMMM
+
+    subst P'
+
+    exact
+      (Geometry.Tarski.Geo.congruent_reverse_first
+        Geo Q M M Q').mp hQmid.2
+
+  · by_cases hQM : Q = M
+
+    · subst Q
+
+      have hQprimeM : Q' = M := by
+        have hMMQprimeM : Geo.Congruent M M Q' M :=
+          (Geometry.Tarski.Geo.congruent_reverse_second
+            Geo M M M Q').mp hQmid.2
+
+        have hQprimeMMM : Geo.Congruent Q' M M M :=
+          tarski_congruent_symmetry
+            (Geo := Geo)
+            M M Q' M
+            hMMQprimeM
+
+        exact
+          TarskiNeutral.congruent_identity
+            (Geo := Geo)
+            Q' M M
+            hQprimeMMM
+
+      subst Q'
+
+      exact
+        (Geometry.Tarski.Geo.congruent_reverse_second
+          Geo P M M P').mp hPmid.2
+
+    · have hPmidRev : TarskiIsMidpoint Geo M P' P := by
+        constructor
+
+        · exact
+            tarski_between_symmetry
+              (Geo := Geo)
+              P M P'
+              hPmid.1
+
+        · have hMPPPprimeM : Geo.Congruent M P P' M :=
+            tarski_congruent_reverse_both
+              (Geo := Geo)
+              P M M P'
+              hPmid.2
+
+          exact
+            tarski_congruent_symmetry
+              (Geo := Geo)
+              M P P' M
+              hMPPPprimeM
+
+      have hQmidRev : TarskiIsMidpoint Geo M Q' Q := by
+        constructor
+
+        · exact
+            tarski_between_symmetry
+              (Geo := Geo)
+              Q M Q'
+              hQmid.1
+
+        · have hMQQprimeM : Geo.Congruent M Q Q' M :=
+            tarski_congruent_reverse_both
+              (Geo := Geo)
+              Q M M Q'
+              hQmid.2
+
+          exact
+            tarski_congruent_symmetry
+              (Geo := Geo)
+              M Q Q' M
+              hMQQprimeM
+
+      obtain
+        ⟨X, X', Y, Y',
+         hPprimePX,
+         hPXQM,
+         hXPprimeXprime,
+         hPprimeXprimeQM,
+         hQprimeQY,
+         hQYPM,
+         hYQprimeYprime,
+         hQprimeYprimePM⟩ :=
+        tarski_l7_13_aux
+          (Geo := Geo)
+          M P Q P' Q'
+
+      obtain
+        ⟨hYMQprime,
+         hPprimeMX,
+         hMPX,
+         hYQM,
+         hMQprimeYprime,
+         hXprimePprimeM,
+         hXMXprime,
+         hYMYprime⟩ :=
+        tarski_l7_13_betweenness
+          (Geo := Geo)
+          M P Q P' Q' X X' Y Y'
+          hPM
+          hPmidRev
+          hQmidRev
+          hPprimePX
+          hXPprimeXprime
+          hQprimeQY
+          hYQprimeYprime
+
+      have hMX_YM : Geo.Congruent M X Y M :=
+        tarski_l7_13_congruent_AX_YA
+          (Geo := Geo)
+          M P Q X Y
+          hPM
+          hMPX
+          hYQM
+          hPXQM
+          hQYPM
+
+      have hQMPprimeXprime :
+          Geo.Congruent Q M P' X' :=
+        tarski_congruent_symmetry
+          (Geo := Geo)
+          P' X' Q M
+          hPprimeXprimeQM
+
+      have hMQprimePprimeXprime :
+          Geo.Congruent M Q' P' X' :=
+        TarskiNeutral.congruent_transitivity
+          (Geo := Geo)
+          Q M
+          M Q'
+          P' X'
+          hQmid.2
+          hQMPprimeXprime
+
+      have hMQprimeXprimePprime :
+          Geo.Congruent M Q' X' P' :=
+        (Geometry.Tarski.Geo.congruent_reverse_second
+          Geo M Q' P' X').mp
+          hMQprimePprimeXprime
+
+      have hPMPprimeM : Geo.Congruent P M P' M :=
+        (Geometry.Tarski.Geo.congruent_reverse_second
+          Geo P M M P').mp hPmid.2
+
+      have hQprimeYprimePprimeM :
+          Geo.Congruent Q' Y' P' M :=
+        TarskiNeutral.congruent_transitivity
+          (Geo := Geo)
+          P M
+          Q' Y'
+          P' M
+          (tarski_congruent_symmetry
+            (Geo := Geo)
+            Q' Y' P M
+            hQprimeYprimePM)
+          hPMPprimeM
+
+      have hMYprimeXprimeM :
+          Geo.Congruent M Y' X' M :=
+        tarski_l7_13_congruent_AYprime_XprimeA
+          (Geo := Geo)
+          M P' Q' X' Y'
+          (by
+            intro hMQprime
+            have hQprimeM : Q' = M := hMQprime.symm
+            subst Q'
+            have hQM' : Q = M := by
+              exact
+                TarskiNeutral.congruent_identity
+                  (Geo := Geo)
+                  Q M M
+                  hQmid.2
+            exact hQM hQM')
+          hMQprimeYprime
+          hXprimePprimeM
+          hMQprimeXprimePprime
+          hQprimeYprimePprimeM
+
+      have hMQMQprime :
+          Geo.Congruent M Q M Q' :=
+        (Geometry.Tarski.Geo.congruent_reverse_second
+          Geo M Q Q' M).mp
+          (tarski_congruent_reverse_both
+            (Geo := Geo)
+            Q M M Q'
+            hQmid.2)
+
+      have hMQY : Geo.Between M Q Y :=
+        tarski_between_symmetry
+          (Geo := Geo)
+          Y Q M
+          hYQM
+
+      have hMY_MYprime :
+          Geo.Congruent M Y M Y' :=
+        tarski_l7_13_congruent_AY_AYprime
+          (Geo := Geo)
+          M P Q Q' Y Y'
+          (by
+            intro hMQ
+            exact hQM hMQ.symm)
+          hMQY
+          hMQprimeYprime
+          hMQMQprime
+          hQYPM
+          hQprimeYprimePM
+
+      have hXM_YprimeM :
+          Geo.Congruent X M Y' M :=
+        tarski_l7_13_congruent_XA_YprimeA
+          (Geo := Geo)
+          M X Y Y'
+          hMX_YM
+          hMY_MYprime
+
+      have hMXprime_MY :
+          Geo.Congruent M X' M Y :=
+        tarski_l7_13_congruent_AXprime_AY
+          (Geo := Geo)
+          M X' Y Y'
+          hMYprimeXprimeM
+          hMY_MYprime
+
+      have hXXprime_YprimeY :
+          Geo.Congruent X X' Y' Y :=
+        tarski_l7_13_congruent_XXprime_YprimeY
+          (Geo := Geo)
+          M X X' Y Y'
+          (by
+            intro hXM
+            subst X
+            have hMPM : Geo.Between M P M :=
+              hMPX
+            have hMPeq : M = P :=
+              TarskiNeutral.between_identity
+                (Geo := Geo)
+                M P
+                hMPM
+            exact hPM hMPeq.symm)
+          hXMXprime
+          hYMYprime
+          hXM_YprimeM
+          hMXprime_MY
+
+      have hXprimeYprime_YX :
+          Geo.Congruent X' Y' Y X :=
+        tarski_l7_13_congruent_XprimeYprime_YX
+          (Geo := Geo)
+          M X X' Y Y'
+          (by
+            intro hXM
+            subst X
+            have hMPM : Geo.Between M P M :=
+              hMPX
+            have hMPeq : M = P :=
+              TarskiNeutral.between_identity
+                (Geo := Geo)
+                M P
+                hMPM
+            exact hPM hMPeq.symm)
+          hXMXprime
+          hXM_YprimeM
+          hMXprime_MY
+          hXXprime_YprimeY
+
+      have hMX_MXprime :
+          Geo.Congruent M X M X' :=
+        tarski_l7_13_congruent_AX_AXprime
+          (Geo := Geo)
+          M X X' Y
+          hMX_YM
+          hMXprime_MY
+
+      have hQM_QprimeM :
+          Geo.Congruent Q M Q' M :=
+        (Geometry.Tarski.Geo.congruent_reverse_second
+          Geo Q M M Q').mp hQmid.2
+
+      have hQX_QprimeXprime :
+          Geo.Congruent Q X Q' X' :=
+        tarski_l7_13_congruent_QX_QprimeXprime
+          (Geo := Geo)
+          M Q Q' X X' Y Y'
+          hYQM
+          hMQprimeYprime
+          hMY_MYprime
+          hQM_QprimeM
+          hXprimeYprime_YX
+          hMX_MXprime
+
+      exact
+        tarski_l7_13_final_inner_step
+          (Geo := Geo)
+          M P Q P' Q' X X'
+          hPmidRev
+          hQmidRev
+          hMPX
+          hXprimePprimeM
+          hMX_MXprime
+          hQX_QprimeXprime
 
 /-
 Derived symmetry of the Tarski midpoint relation.
@@ -1459,6 +3117,9 @@ theorem tarski_parallel_strict_collinear_right
 
     exact ⟨Y, hYAX, hYCP⟩
 
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_parallel_strict_collinear_left
+
 theorem tarski_parallel_strict_collinear_left
     [TarskiNeutral Geo]
     (A X B P C : Geo.Point)
@@ -1514,6 +3175,8 @@ Mathematically:
   B != C and P is the midpoint of BC
   imply B != P.
 -/
+-/
+
 theorem tarski_midpoint_ne_first
     [TarskiNeutral Geo]
     (P B C : Geo.Point)
@@ -1647,6 +3310,9 @@ Replace this declaration by a proof from TarskiNeutral.
 
 
 
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_parallel_strict_symm_left
+
 theorem tarski_parallel_strict_symm_left
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -1672,6 +3338,7 @@ theorem tarski_parallel_strict_symm_left
         Geo X B A hXBA
 
     exact ⟨X, hXAB, hXCD⟩
+-/
 
 theorem tarski_parallel_strict_symm_right
     [TarskiNeutral Geo]
@@ -1700,6 +3367,9 @@ theorem tarski_parallel_strict_symm_right
     exact ⟨X, hXAB, hXCD⟩
 
 
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_parallel_strict_symm_both
+
 theorem tarski_parallel_strict_symm_both
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -1717,6 +3387,10 @@ theorem tarski_parallel_strict_symm_both
 /-!
 ## Three-midpoint configuration
 -/
+-/
+
+/-
+UNUSED IN CURRENT FINLAY TARSKI PROOF: tarski_midpoint_parallelogram_construction
 
 theorem tarski_midpoint_parallelogram_construction
     [TarskiNeutral Geo]
@@ -1745,7 +3419,7 @@ theorem tarski_midpoint_parallelogram_construction
       hQPX
 
   exact ⟨X, hQPX, hPar⟩
-
+-/
 
 theorem tarski_midsegment_aux_congruent
     [TarskiNeutral Geo]
@@ -2227,307 +3901,6 @@ theorem tarski_midsegment_parallel_AB_XP
       Geo A X P B
       hAPB
       hPar
-
-/--
-Every segment has a midpoint under the midpoint-existence extension.
--/
-
-----------------------------------------------------
--- Five-Segment variants
-----------------------------------------------------
-
-/-
-Inner Five-Segment theorem (SST, Satz 4.2).
-
-This is the variant of the Five-Segment theorem used in
-Gupta's midpoint construction.
--/
-
-theorem tarski_inner_five_segment
-    [TarskiNeutral Geo]
-    (A A' B B' C C' D D' : Geo.Point)
-    --(hAB : A ≠ B)
-    (hABC : Geo.Between A B C)
-    (hA'B'C' : Geo.Between A' B' C')
-    (hAC : Geo.Congruent A C A' C')
-    (hBC : Geo.Congruent B C B' C')
-    (hAD : Geo.Congruent A D A' D')
-    (hCD : Geo.Congruent C D C' D') :
-    Geo.Congruent B D B' D' := by
-
-  by_cases hACeq : A = C
-
-  · subst C
-
-    have hABeq : A = B :=
-      TarskiNeutral.between_identity
-        (Geo := Geo)
-        A B
-        hABC
-
-    subst B
-
-    have hA'C'AA : Geo.Congruent A' C' A A :=
-      tarski_congruent_symmetry
-        (Geo := Geo)
-        A A A' C'
-        hAC
-
-    have hA'C'eq : A' = C' :=
-      TarskiNeutral.congruent_identity
-        (Geo := Geo)
-        A' C' A
-        hA'C'AA
-
-    subst C'
-
-    have hA'B'eq : A' = B' :=
-      TarskiNeutral.between_identity
-        (Geo := Geo)
-        A' B'
-        hA'B'C'
-
-    subst B'
-
-    exact hAD
-
-  · obtain ⟨E, hACE, hCEAC⟩ :=
-      TarskiNeutral.segment_construction
-        (Geo := Geo)
-        A C A C
-
-    obtain ⟨E', hA'C'E', hC'E'AC⟩ :=
-      TarskiNeutral.segment_construction
-        (Geo := Geo)
-        A' C' A C
-
-    have hACCE : Geo.Congruent A C C E :=
-      tarski_congruent_symmetry
-        (Geo := Geo)
-        C E A C
-        hCEAC
-
-    have hACC'E' : Geo.Congruent A C C' E' :=
-      tarski_congruent_symmetry
-        (Geo := Geo)
-        C' E' A C
-        hC'E'AC
-
-    have hCEC'E' : Geo.Congruent C E C' E' :=
-      TarskiNeutral.congruent_transitivity
-        (Geo := Geo)
-        A C C E C' E'
-        hACCE
-        hACC'E'
-
-    have hEDE'D' : Geo.Congruent E D E' D' :=
-      TarskiNeutral.five_segment
-        (Geo := Geo)
-        A A' C C' E E' D D'
-        hACeq
-        hACE
-        hA'C'E'
-        hAC
-        hCEC'E'
-        hAD
-        hCD
-
-    have hECA : Geo.Between E C A :=
-      tarski_between_symmetry
-        (Geo := Geo)
-        A C E
-        hACE
-
-    have hCBA : Geo.Between C B A :=
-      tarski_between_symmetry
-        (Geo := Geo)
-        A B C
-        hABC
-
-    have hECB : Geo.Between E C B :=
-      tarski_between_inner_transitivity
-        (Geo := Geo)
-        E C B A
-        hECA
-        hCBA
-
-    have hE'C'A' : Geo.Between E' C' A' :=
-      tarski_between_symmetry
-        (Geo := Geo)
-        A' C' E'
-        hA'C'E'
-
-    have hC'B'A' : Geo.Between C' B' A' :=
-      tarski_between_symmetry
-        (Geo := Geo)
-        A' B' C'
-        hA'B'C'
-
-    have hE'C'B' : Geo.Between E' C' B' :=
-      tarski_between_inner_transitivity
-        (Geo := Geo)
-        E' C' B' A'
-        hE'C'A'
-        hC'B'A'
-
-    have hEC : E ≠ C := by
-      intro hEq
-
-      subst E
-
-      have hCCAC : Geo.Congruent C C A C :=
-        hCEAC
-
-      have hACCC : Geo.Congruent A C C C :=
-        tarski_congruent_symmetry
-          (Geo := Geo)
-          C C A C
-          hCCAC
-
-      have hAC' : A = C :=
-        TarskiNeutral.congruent_identity
-          (Geo := Geo)
-          A C C
-          hACCC
-
-      exact hACeq hAC'
-    have hECE'C' : Geo.Congruent E C E' C' :=
-      tarski_congruent_reverse_both
-        (Geo := Geo)
-        C E C' E'
-        hCEC'E'
-
-    have hCBC'B' : Geo.Congruent C B C' B' :=
-      tarski_congruent_reverse_both
-        (Geo := Geo)
-        B C B' C'
-        hBC
-
-    exact
-      TarskiNeutral.five_segment
-        (Geo := Geo)
-        E E' C C' B B' D D'
-        hEC
-        hECB
-        hE'C'B'
-        hECE'C'
-        hCBC'B'
-        hEDE'D'
-        hCD
-
-
-
-
-
-/-
-Two medians of a nondegenerate triangle have a common point.
-
-Let E be the midpoint of AC and F the midpoint of AB. Then
-
-  C - E - A
-  B - F - A
-
-and inner Pasch applied to triangle CBA gives a point G such that
-
-  E - G - B
-  F - G - C.
-
-Hence G lies on both median lines BE and CF.
--/
-theorem tarski_two_medians_intersect
-    [TarskiNeutral Geo]
-    (A B C E F : Geo.Point)
-    (hE : TarskiIsMidpoint Geo E A C)
-    (hF : TarskiIsMidpoint Geo F A B) :
-    Exists fun G : Geo.Point =>
-      TarskiCollinear Geo B E G /\
-      TarskiCollinear Geo C F G := by
-
-  have hCEA : Geo.Between C E A :=
-    tarski_between_symmetry
-      (Geo := Geo)
-      A E C
-      hE.1
-
-  have hBFA : Geo.Between B F A :=
-    tarski_between_symmetry
-      (Geo := Geo)
-      A F B
-      hF.1
-
-  obtain ⟨G, hEGB, hFGC⟩ :=
-    TarskiNeutral.inner_pasch
-      (Geo := Geo)
-      C B A E F
-      hCEA
-      hBFA
-
-  have hBEG : TarskiCollinear Geo B E G :=
-    Or.inr (Or.inl hEGB)
-
-  have hCFG : TarskiCollinear Geo C F G :=
-    Or.inr (Or.inl hFGC)
-
-  exact ⟨G, hBEG, hCFG⟩
-
-/-
-Collinearity is preserved by equality of the three corresponding
-pairwise distances.
-
-This is the Tarski-language counterpart of the OTTER rule
-
-  Col(A,B,C) and E3(A,B,C,A',B',C')
-  imply Col(A',B',C').
-
-The proof from the neutral Tarski axioms is still to be reconstructed.
--/
-
-/-
-Transfer of collinearity under equality of the three pairwise
-distances.
-
-This corresponds to clause 53 in the OTTER proof of SST Satz 7.25.
-It is currently treated as an explicit interface assumption.
--/
-
-/-
-axiom tarski_collinear_congruence_transfer
-    [TarskiPlane Geo]
-    (A B C A' B' C' : Geo.Point)
-    (hCol : TarskiCollinear Geo A B C)
-    (hAB : Geo.Congruent A B A' B')
-    (hAC : Geo.Congruent A C A' C')
-    (hBC : Geo.Congruent B C B' C') :
-    TarskiCollinear Geo A' B' C'
--/
-
-/-
-Uniqueness of a line determined by two distinct points.
-
-If two nondegenerate lines contain two distinct common points,
-then every point collinear with the first pair is also collinear
-with the second pair.
-
-This corresponds to clause 104 used in the OTTER proof of
-SST Satz 7.25.
-
-The derivation from the primitive Tarski plane axioms is deferred.
--/
-
-/-
-axiom tarski_collinear_two_common_points
-    [TarskiPlane Geo]
-    (A B P Q C D E : Geo.Point)
-    (hAB : A ≠ B)
-    (hPQ : P ≠ Q)
-    (hABC : TarskiCollinear Geo A B C)
-    (hPQC : TarskiCollinear Geo P Q C)
-    (hABD : TarskiCollinear Geo A B D)
-    (hPQD : TarskiCollinear Geo P Q D)
-    (hCD : C ≠ D)
-    (hABE : TarskiCollinear Geo A B E) :
-    TarskiCollinear Geo P Q E
--/
 
 
 end Tarski
