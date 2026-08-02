@@ -44,7 +44,7 @@ def TarskiParallelStrict
       TarskiCollinear Geo X A B ∧
       TarskiCollinear Geo X C D
 
-axiom tarski_between_outer_connectivity
+axiom gupta_sst_5_1_connectivity
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
     (hAB : A ≠ B)
@@ -68,6 +68,7 @@ axiom tarski_parallel_congruent_parallelogram_cases
     TarskiParallelogram Geo A B C D ∨
     TarskiParallelogram Geo A B D C
 
+
 axiom tarski_midpoint_unique
     [TarskiNeutral Geo]
     (M N A B : Geo.Point)
@@ -75,13 +76,12 @@ axiom tarski_midpoint_unique
     (hN : TarskiIsMidpoint Geo N A B) :
     M = N
 
-axiom tarski_parallelogram_opposite_parallel
-    [TarskiNeutral Geo]
+axiom tarski_parallelogram_of_two_parallel_pairs
+    [TarskiEuclideanPlane Geo]
     (A B C D : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo A C D))
-    (hPar : TarskiParallelogram Geo A B C D) :
-    TarskiParallelStrict Geo A D B C
-
+    (hABCD : TarskiParallelStrict Geo A B C D)
+    (hBCAD : TarskiParallelStrict Geo B C A D) :
+    TarskiParallelogram Geo A B C D
 
 ------------------------------------------------------------
 -- Teoria relacji pomiędzy i współliniowości
@@ -377,14 +377,14 @@ theorem tarski_between_outer_transitivity
   exact tarski_between_symmetry
     (Geo := Geo) D B A hDBA
 
-theorem tarski_between_outer_connectivity2
+theorem gupta_sst_5_1_connectivity2
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
     (hAB : A ≠ B)
     (hABC : Geo.Between A B C)
     (hABD : Geo.Between A B D) :
     Geo.Between B C D ∨ Geo.Between B D C := by
-  rcases tarski_between_outer_connectivity
+  rcases gupta_sst_5_1_connectivity
       (Geo := Geo) A B C D hAB hABC hABD with hACD | hADC
   · left
     exact tarski_between_exchange3
@@ -433,7 +433,7 @@ theorem tarski_between_inner_connectivity
     have hPAC : Geo.Between P A C :=
       tarski_between_inner_transitivity
         (Geo := Geo) P A C D hPAD hACD
-    exact tarski_between_outer_connectivity2
+    exact gupta_sst_5_1_connectivity2
       (Geo := Geo)
       P A B C
       hPA
@@ -461,7 +461,7 @@ theorem tarski_collinear_trans
         tarski_between_symmetry (Geo := Geo) A G P hAGP
       have hPGD : Geo.Between P G D :=
         tarski_between_symmetry (Geo := Geo) D G P hDGP
-      rcases tarski_between_outer_connectivity
+      rcases gupta_sst_5_1_connectivity
           (Geo := Geo) P G A D hGP.symm hPGA hPGD with hPAD | hPDA
       · have hGAD : Geo.Between G A D :=
           tarski_between_exchange3 (Geo := Geo) P G A D hPGA hPAD
@@ -472,7 +472,7 @@ theorem tarski_collinear_trans
         left
         exact tarski_between_exchange3 (Geo := Geo) P G D A hPGD hPDA
   · rcases hGPD with hGPD | hPDG | hDGP
-    · rcases tarski_between_outer_connectivity
+    · rcases gupta_sst_5_1_connectivity
           (Geo := Geo) G P A D hGP hGPA hGPD with hGAD | hGDA
       · right
         right
@@ -1617,6 +1617,36 @@ theorem tarski_midsegment_second_parallelogram
       (tarski_midsegment_first_parallelogram_impossible Geo A B C P Q X hNonCol hQ hQPX hBad)
   · exact hGood
 
+theorem tarski_parallelogram_opposite_parallel
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A C D))
+    (hPar : TarskiParallelogram Geo A B C D) :
+    TarskiParallelStrict Geo A D B C := by
+  rcases hPar with ⟨_, M, hMAC, hMBD⟩
+
+  have hDAC : Not (TarskiCollinear Geo D A C) := by
+    intro h
+    exact hNonCol ((tarski_collinear_cycle Geo D A C).mp h)
+
+  have hDMA : Not (TarskiCollinear Geo D M A) :=
+    tarski_midpoint_noncol_left Geo D A C M hDAC hMAC
+
+  have hADM : Not (TarskiCollinear Geo A D M) := by
+    intro h
+    exact hDMA ((tarski_collinear_cycle Geo A D M).mp h)
+
+  have hMDB : TarskiIsMidpoint Geo M D B :=
+    tarski_midpoint_symmetry Geo M B D hMBD
+
+  have hParADCB : TarskiParallelStrict Geo A D C B :=
+    tarski_central_symmetry_parallel
+      Geo M A D C B hADM hMAC hMDB
+
+  exact
+    tarski_parallel_strict_symm_right
+      Geo A D C B hParADCB
+
 theorem tarski_midsegment_parallel_AB_XP
     [TarskiNeutral Geo]
     (A B C P Q X : Geo.Point)
@@ -1632,6 +1662,240 @@ theorem tarski_midsegment_parallel_AB_XP
     tarski_midpoint_noncol_left Geo A B C P hNonCol hP
   exact
     tarski_parallelogram_opposite_parallel Geo A X P B hAPB hPar
+
+theorem tarski_midpoint_reverse
+    [TarskiNeutral Geo]
+    (M A B : Geo.Point)
+    (hM : TarskiIsMidpoint Geo M A B) :
+    TarskiIsMidpoint Geo M B A := by
+  rcases hM with ⟨hBet, hCong⟩
+  constructor
+  ·
+    exact
+      tarski_between_symmetry
+        (Geo := Geo)
+        A M B
+        hBet
+  ·
+    have h₁ : Geo.Congruent M A B M := by
+      exact
+        tarski_congruent_reverse_both
+          (Geo := Geo)
+          A M M B
+          hCong
+
+    exact
+      tarski_congruent_symmetry
+        (Geo := Geo)
+        M A B M
+        h₁
+
+theorem tarski_congruent_commutativity
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (h : Geo.Congruent A B C D) :
+    Geo.Congruent B A D C := by
+  exact
+    tarski_congruent_reverse_both
+      (Geo := Geo)
+      A B C D
+      h
+
+theorem tarski_congruent_4321
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (h : Geo.Congruent A B C D) :
+    Geo.Congruent D C B A := by
+  have h1 : Geo.Congruent B A D C :=
+    tarski_congruent_commutativity
+      (Geo := Geo)
+      A B C D
+      h
+  exact
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      B A D C
+      h1
+
+theorem tarski_congruent_right_commutativity
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hABCD : Geo.Congruent A B C D) :
+    Geo.Congruent A B D C := by
+  exact
+    (Geometry.Tarski.Geo.congruent_reverse_second Geo A B C D).mp hABCD
+
+theorem tarski_congruent_left_commutativity
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hABCD : Geo.Congruent A B C D) :
+    Geo.Congruent B A C D := by
+  exact
+    (Geometry.Tarski.Geo.congruent_reverse_first Geo A B C D).mp hABCD
+
+theorem tarski_congruent_3421
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (h : Geo.Congruent A B C D) :
+    Geo.Congruent C D B A := by
+
+  have h1 : Geo.Congruent C D A B :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      A B C D
+      h
+
+  exact
+    tarski_congruent_right_commutativity
+      (Geo := Geo)
+      C D A B
+      h1
+theorem tarski_congruent_4312
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (h : Geo.Congruent A B C D) :
+    Geo.Congruent D C A B := by
+
+  have h1 : Geo.Congruent C D A B :=
+    tarski_congruent_symmetry
+      (Geo := Geo)
+      A B C D
+      h
+
+  exact
+    tarski_congruent_left_commutativity
+      (Geo := Geo)
+      C D A B
+      h1
+
+theorem tarski_midpoint_unique_prim
+    [TarskiNeutral Geo]
+    (M A B C : Geo.Point)
+    (hMAB : TarskiIsMidpoint Geo M A B)
+    (hMAC : TarskiIsMidpoint Geo M A C) :
+    B = C := by
+
+  have hMBA : TarskiIsMidpoint Geo M B A :=
+    tarski_midpoint_reverse
+      (Geo := Geo)
+      M A B
+      hMAB
+
+  have hMCA : TarskiIsMidpoint Geo M C A :=
+    tarski_midpoint_reverse
+      (Geo := Geo)
+      M A C
+      hMAC
+
+  rcases hMBA with ⟨hBetB, hCongB⟩
+  rcases hMCA with ⟨hBetC, hCongC⟩
+
+  by_cases hMA : M = A
+
+  · subst hMA
+
+    have hBM : B = M := by
+      exact
+        TarskiNeutral.congruent_identity
+          (Geo := Geo)
+          B
+          M
+          M
+          hCongB
+
+    have hCM : C = M := by
+      exact
+        TarskiNeutral.congruent_identity
+          (Geo := Geo)
+          C
+          M
+          M
+          hCongC
+
+    subst B
+    subst C
+    rfl
+
+  ·
+    have hAB : Geo.Between A M B := by
+      exact
+        tarski_between_symmetry
+          (Geo := Geo)
+          B M A
+          hBetB
+
+    have hAC : Geo.Between A M C := by
+      exact
+        tarski_between_symmetry
+          (Geo := Geo)
+          C M A
+          hBetC
+
+    have hCongB' : Geo.Congruent M B M A := by
+      exact
+        tarski_congruent_left_commutativity
+          (Geo := Geo)
+          B M M A
+          hCongB
+
+    have hCongC' : Geo.Congruent M C M A := by
+      exact
+        tarski_congruent_left_commutativity
+          (Geo := Geo)
+          C M M A
+          hCongC
+
+    have hAM : A ≠ M := by
+      intro h
+      exact hMA h.symm
+
+    exact
+      tarski_construction_uniqueness
+        (Geo := Geo)
+        A
+        M
+        B
+        C
+        M
+        A
+        hAM
+        hAB
+        hAC
+        hCongB'
+        hCongC'
+
+
+theorem tarski_parallelogram_opposite_parallel_prim
+    [TarskiNeutral Geo]
+    (A B C D : Geo.Point)
+    (hNonCol : Not (TarskiCollinear Geo A C D))
+    (hPar : TarskiParallelogram Geo A B C D) :
+    TarskiParallelStrict Geo A D B C := by
+  rcases hPar with ⟨_, M, hMAC, hMBD⟩
+
+  have hDAC : Not (TarskiCollinear Geo D A C) := by
+    intro h
+    exact hNonCol ((tarski_collinear_cycle Geo D A C).mp h)
+
+  have hDMA : Not (TarskiCollinear Geo D M A) :=
+    tarski_midpoint_noncol_left Geo D A C M hDAC hMAC
+
+  have hADM : Not (TarskiCollinear Geo A D M) := by
+    intro h
+    exact hDMA ((tarski_collinear_cycle Geo A D M).mp h)
+
+  have hMDB : TarskiIsMidpoint Geo M D B :=
+    tarski_midpoint_symmetry Geo M B D hMBD
+
+  have hParADCB : TarskiParallelStrict Geo A D C B :=
+    tarski_central_symmetry_parallel
+      Geo M A D C B hADM hMAC hMDB
+
+  exact
+    tarski_parallel_strict_symm_right
+      Geo A D C B hParADCB
+
+
 
 end Tarski
 

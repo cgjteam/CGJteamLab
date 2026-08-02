@@ -148,12 +148,14 @@ theorem opposite_sides_parallel
 Temporary assumption used in this proof:
 two pairs of opposite strict parallel sides determine a parallelogram.
 -/
+/-
 axiom parallelogram_of_two_parallel_pairs
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
     (hABCD : TarskiParallelStrict Geo A B C D)
     (hBCAD : TarskiParallelStrict Geo B C A D) :
     TarskiParallelogram Geo A B C D
+-/
 
 /-
 Temporary interface axiom.
@@ -167,7 +169,7 @@ For the present project this theorem is kept as a local interface axiom.
 -/
 
 theorem parallelogram_GADB
-    [TarskiNeutral Geo]
+    [TarskiEuclideanPlane Geo]
     (A B C D G I J : Geo.Point)
     (hNonColADC : Not (TarskiCollinear Geo A D C))
     (hNonColBDC : Not (TarskiCollinear Geo B D C))
@@ -225,7 +227,7 @@ theorem parallelogram_GADB
       Geo A D B G hADBG
 
   exact
-    parallelogram_of_two_parallel_pairs
+    tarski_parallelogram_of_two_parallel_pairs
       Geo G A D B
       hGADB
       hADGB
@@ -235,7 +237,7 @@ The common midpoint of the diagonals of parallelogram GADB
 is the midpoint of GD and AB.
 -/
 theorem midpoint_GD_AB_from_parallelogram
-    [TarskiNeutral Geo]
+    [TarskiEuclideanPlane Geo]
     (A B C D G I J : Geo.Point)
     (hNonColADC : Not (TarskiCollinear Geo A D C))
     (hNonColBDC : Not (TarskiCollinear Geo B D C))
@@ -403,7 +405,7 @@ theorem A_ne_G_from_medians
 There exists a midpoint of AB lying on the line CG.
 -/
 theorem third_median_point
-    [TarskiNeutral Geo]
+    [TarskiEuclideanPlane Geo]
     (A B C D G I J : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C))
     (hNonColADC : Not (TarskiCollinear Geo A D C))
@@ -462,7 +464,7 @@ If G lies on the medians from A and B of the non-collinear triangle ABC,
 then G also lies on the median from C.
 -/
 theorem finlay_tarski
-    [TarskiNeutral Geo]
+     [TarskiEuclideanPlane Geo]
     (A B C D G I J : Geo.Point)
     (hNonColABC : Not (TarskiCollinear Geo A B C))
     (hNonColADC : Not (TarskiCollinear Geo A D C))
@@ -489,24 +491,23 @@ theorem finlay_tarski
       hBGJ
       hAGI
 
-axiom tarski_finlay_midpoint_exists
+
+
+/--
+Gupta's midpoint existence theorem.
+
+Equivalent to the classical theorem:
+Every segment has a midpoint.
+
+See SST (Gupta's construction), GeoCoq midpoint_existence.
+-/
+axiom gupta_midpoint_existence
     [TarskiNeutral Geo]
     (A B : Geo.Point) :
     Exists fun M =>
       TarskiIsMidpoint Geo M A B
 
-/-
-axiom tarski_finlay_noncol_ADC
-    [TarskiNeutral Geo]
-    (A B C D G I J : Geo.Point)
-    (hABC : Not (TarskiCollinear Geo A B C))
-    (hI : TarskiIsMidpoint Geo I B C)
-    (hJ : TarskiIsMidpoint Geo J A C)
-    (hG : TarskiIsMidpoint Geo G C D)
-    (hAGI : TarskiCollinear Geo A G I)
-    (hBGJ : TarskiCollinear Geo B G J) :
-    Not (TarskiCollinear Geo A D C)
--/
+
 
 theorem tarski_finlay_noncol_ADC
     [TarskiNeutral Geo]
@@ -610,18 +611,7 @@ theorem tarski_finlay_noncol_ADC
 
   exact hAIC hAIC'
 
-/-
-axiom tarski_finlay_noncol_BDC
-    [TarskiNeutral Geo]
-    (A B C D G I J : Geo.Point)
-    (hABC : Not (TarskiCollinear Geo A B C))
-    (hI : TarskiIsMidpoint Geo I B C)
-    (hJ : TarskiIsMidpoint Geo J A C)
-    (hG : TarskiIsMidpoint Geo G C D)
-    (hAGI : TarskiCollinear Geo A G I)
-    (hBGJ : TarskiCollinear Geo B G J) :
-    Not (TarskiCollinear Geo B D C)
--/
+
 
 theorem tarski_finlay_noncol_BDC
     [TarskiNeutral Geo]
@@ -723,7 +713,7 @@ theorem tarski_finlay_noncol_BDC
   exact hBJC hBJC'
 
 theorem FinlayTarski
-    [TarskiNeutral Geo]
+     [TarskiEuclideanPlane Geo]
     (A B C : Geo.Point)
     (hABC : Not (TarskiCollinear Geo A B C)) :
     Exists fun I =>
@@ -737,10 +727,10 @@ theorem FinlayTarski
       TarskiIsMidpoint Geo M A B /\
       TarskiCollinear Geo C G M := by
   obtain ⟨I, hI⟩ :=
-    tarski_finlay_midpoint_exists Geo B C
+    gupta_midpoint_existence Geo B C
 
   obtain ⟨J, hJ⟩ :=
-    tarski_finlay_midpoint_exists Geo A C
+    gupta_midpoint_existence Geo A C
 
   have hJCA : TarskiIsMidpoint Geo J C A :=
     tarski_midpoint_symmetry
