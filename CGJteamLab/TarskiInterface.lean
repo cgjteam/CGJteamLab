@@ -1895,6 +1895,259 @@ theorem tarski_parallelogram_opposite_parallel_prim
     tarski_parallel_strict_symm_right
       Geo A D C B hParADCB
 
+theorem tarski_between_congruent_eq
+    [TarskiNeutral Geo]
+    (A B C : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hCong : Geo.Congruent A B A C) :
+    B = C := by
+  have hBCBC : Geo.Congruent B C B C :=
+    tarski_congruent_reflexivity
+      (Geo := Geo) B C
+
+  have hBCCB : Geo.Congruent B C C B :=
+    (Geometry.Tarski.Geo.congruent_reverse_second
+      Geo B C B C).mp hBCBC
+
+  have hACAB : Geo.Congruent A C A B :=
+    tarski_congruent_symmetry
+      (Geo := Geo) A B A C hCong
+
+  have hACB : Geo.Between A C B :=
+    tarski_l4_6
+      (Geo := Geo)
+      A B C
+      A C B
+      hABC
+      hCong
+      hBCCB
+      hACAB
+
+  have hBCB : Geo.Between B C B :=
+    tarski_between_exchange3
+      (Geo := Geo)
+      A B C B
+      hABC
+      hACB
+
+  exact
+    TarskiNeutral.between_identity
+      (Geo := Geo) B C hBCB
+
+
+theorem tarski_collinear_equidistant_midpoint_cases
+    [TarskiNeutral Geo]
+    (M A B : Geo.Point)
+    (hCol : TarskiCollinear Geo A M B)
+    (hCong : Geo.Congruent M A M B) :
+    A = B ∨ TarskiIsMidpoint Geo M A B := by
+  rcases hCol with hAMB | hMAB | hABM
+
+  · right
+    constructor
+    · exact hAMB
+    · exact
+        (Geometry.Tarski.Geo.congruent_reverse_first
+          Geo A M M B).mpr hCong
+
+  · left
+    have hMBA : Geo.Congruent M B M A :=
+      tarski_congruent_symmetry
+        (Geo := Geo) M A M B hCong
+
+    exact
+      (tarski_between_congruent_eq
+        (Geo := Geo) M B A hMAB hMBA).symm
+
+  · left
+    have hMAB : Geo.Between M A B :=
+      tarski_between_symmetry
+        (Geo := Geo) B A M hABM
+
+    exact
+      tarski_between_congruent_eq
+        (Geo := Geo) M A B hMAB hCong
+
+theorem tarski_collinear_trans1
+    [TarskiNeutral Geo]
+    (P Q A B : Geo.Point)
+    (hPQ : P ≠ Q)
+    (hPQA : TarskiCollinear Geo P Q A)
+    (hPQB : TarskiCollinear Geo P Q B) :
+    TarskiCollinear Geo P A B := by
+
+  have hQAP : TarskiCollinear Geo Q A P :=
+    tarski_collinear_rotate
+      Geo P Q A hPQA
+
+  have hAPQ : TarskiCollinear Geo A P Q :=
+    tarski_collinear_rotate
+      Geo Q A P hQAP
+
+  have hAPB : TarskiCollinear Geo A P B :=
+    tarski_collinear_trans
+      Geo A P Q B
+      hPQ
+      hAPQ
+      hPQB
+
+  exact
+    tarski_collinear_symmetry
+      Geo P B A
+      (tarski_collinear_rotate Geo A P B hAPB)
+
+theorem tarski_midpoint_midpoint_col
+    [TarskiNeutral Geo]
+    (A B A' B' M : Geo.Point)
+    (hAB : A ≠ B)
+    (hMA : TarskiIsMidpoint Geo M A A')
+    (hMB : TarskiIsMidpoint Geo M B B')
+    (hCol : TarskiCollinear Geo A B B') :
+    A' ≠ B' ∧
+    TarskiCollinear Geo A A' B' ∧
+    TarskiCollinear Geo B A' B' := by
+
+  have hCong : Geo.Congruent A B A' B' :=
+    tarski_central_symmetry_congruent
+      Geo M A B A' B' hMA hMB
+
+  have hA'B' : A' ≠ B' := by
+    intro hEq
+    subst B'
+
+    have hABeq : A = B :=
+      TarskiNeutral.congruent_identity
+        A B A' hCong
+
+    exact hAB hABeq
+
+  have hAMA' : TarskiCollinear Geo A M A' :=
+    tarski_midpoint_collinear
+      Geo M A A' hMA
+
+  have hBMB' : TarskiCollinear Geo B M B' :=
+    tarski_midpoint_collinear
+      Geo M B B' hMB
+
+  by_cases hBB' : B = B'
+
+  · subst B'
+
+    have hBM : B = M :=
+      TarskiNeutral.between_identity
+        (Geo := Geo) B M hMB.left
+
+    subst M
+
+    have hABA' : TarskiCollinear Geo A B A' :=
+      tarski_midpoint_collinear
+        Geo B A A' hMA
+
+    have hAA'B : TarskiCollinear Geo A A' B :=
+      tarski_collinear_symmetry
+        Geo A B A' hABA'
+
+    have hBA'B : TarskiCollinear Geo B A' B :=
+      Or.inr
+        (Or.inl
+          (tarski_between_reflexivity
+            (Geo := Geo) A' B))
+
+    exact
+      And.intro hA'B'
+        (And.intro hAA'B hBA'B)
+
+  ·
+    have hBB'M : TarskiCollinear Geo B B' M :=
+      tarski_collinear_symmetry
+        Geo B M B' hBMB'
+
+    have hABM : TarskiCollinear Geo A B M := by
+      exact
+        tarski_collinear_trans
+          Geo A B B' M hBB' hCol hBB'M
+
+    by_cases hAM : A = M
+
+    ·
+      have hCongAA' : Geo.Congruent A A A A' := by
+        simpa [hAM] using hMA.right
+
+      have hCongA'AA : Geo.Congruent A A' A A :=
+        tarski_congruent_symmetry
+          (Geo := Geo) A A A A' hCongAA'
+
+      have hAA' : A = A' :=
+        TarskiNeutral.congruent_identity
+          A A' A hCongA'AA
+
+      subst A'
+
+      have hAAB' : TarskiCollinear Geo A A B' :=
+        Or.inr
+          (Or.inr
+            (tarski_between_reflexivity
+              (Geo := Geo) B' A))
+
+      have hBB'A : TarskiCollinear Geo B B' A :=
+        tarski_collinear_rotate
+          Geo A B B' hCol
+
+      have hBAB' : TarskiCollinear Geo B A B' :=
+        tarski_collinear_symmetry
+          Geo B B' A hBB'A
+
+      exact
+        And.intro hA'B'
+          (And.intro hAAB' hBAB')
+
+    ·
+      have hAMB : TarskiCollinear Geo A M B :=
+        tarski_collinear_symmetry
+          Geo A B M hABM
+
+      have hABA' : TarskiCollinear Geo A B A' :=
+        tarski_collinear_trans1
+          Geo A M B A'
+          hAM
+          hAMB
+          hAMA'
+
+      have hAA'B' : TarskiCollinear Geo A A' B' :=
+        tarski_collinear_trans1
+          Geo A B A' B'
+          hAB
+          hABA'
+          hCol
+
+      have hBA'A : TarskiCollinear Geo B A' A :=
+        tarski_collinear_rotate
+          Geo A B A' hABA'
+
+      have hBAA' : TarskiCollinear Geo B A A' :=
+        tarski_collinear_symmetry
+          Geo B A' A hBA'A
+
+      have hBB'A : TarskiCollinear Geo B B' A :=
+        tarski_collinear_rotate
+          Geo A B B' hCol
+
+      have hBAB' : TarskiCollinear Geo B A B' :=
+        tarski_collinear_symmetry
+          Geo B B' A hBB'A
+
+      have hBA'B' : TarskiCollinear Geo B A' B' :=
+        tarski_collinear_trans1
+          Geo B A A' B'
+          hAB.symm
+          hBAA'
+          hBAB'
+
+      exact
+        And.intro hA'B'
+          (And.intro hAA'B' hBA'B')
+
+
 
 
 end Tarski
