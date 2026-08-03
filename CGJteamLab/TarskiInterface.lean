@@ -52,14 +52,6 @@ axiom gupta_sst_5_1_connectivity
     (hABD : Geo.Between A B D) :
     Geo.Between A C D ∨ Geo.Between A D C
 
-axiom tarski_central_symmetry_parallel
-    [TarskiNeutral Geo]
-    (M A B A' B' : Geo.Point)
-    (hNonCol : Not (TarskiCollinear Geo A B M))
-    (hA : TarskiIsMidpoint Geo M A A')
-    (hB : TarskiIsMidpoint Geo M B B') :
-    TarskiParallelStrict Geo A B A' B'
-
 axiom tarski_parallel_congruent_parallelogram_cases
     [TarskiNeutral Geo]
     (A B C D : Geo.Point)
@@ -1495,6 +1487,634 @@ theorem tarski_midsegment_aux_noncol
     tarski_collinear_trans Geo A P Q C hPQ hAPQ hPQC
   exact hAPC hAPC'
 
+theorem tarski_between_congruent_eq
+    [TarskiNeutral Geo]
+    (A B C : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (hCong : Geo.Congruent A B A C) :
+    B = C := by
+  have hBCBC : Geo.Congruent B C B C :=
+    tarski_congruent_reflexivity
+      (Geo := Geo) B C
+
+  have hBCCB : Geo.Congruent B C C B :=
+    (Geometry.Tarski.Geo.congruent_reverse_second
+      Geo B C B C).mp hBCBC
+
+  have hACAB : Geo.Congruent A C A B :=
+    tarski_congruent_symmetry
+      (Geo := Geo) A B A C hCong
+
+  have hACB : Geo.Between A C B :=
+    tarski_l4_6
+      (Geo := Geo)
+      A B C
+      A C B
+      hABC
+      hCong
+      hBCCB
+      hACAB
+
+  have hBCB : Geo.Between B C B :=
+    tarski_between_exchange3
+      (Geo := Geo)
+      A B C B
+      hABC
+      hACB
+
+  exact
+    TarskiNeutral.between_identity
+      (Geo := Geo) B C hBCB
+
+
+theorem tarski_collinear_equidistant_midpoint_cases
+    [TarskiNeutral Geo]
+    (M A B : Geo.Point)
+    (hCol : TarskiCollinear Geo A M B)
+    (hCong : Geo.Congruent M A M B) :
+    A = B ∨ TarskiIsMidpoint Geo M A B := by
+  rcases hCol with hAMB | hMAB | hABM
+
+  · right
+    constructor
+    · exact hAMB
+    · exact
+        (Geometry.Tarski.Geo.congruent_reverse_first
+          Geo A M M B).mpr hCong
+
+  · left
+    have hMBA : Geo.Congruent M B M A :=
+      tarski_congruent_symmetry
+        (Geo := Geo) M A M B hCong
+
+    exact
+      (tarski_between_congruent_eq
+        (Geo := Geo) M B A hMAB hMBA).symm
+
+  · left
+    have hMAB : Geo.Between M A B :=
+      tarski_between_symmetry
+        (Geo := Geo) B A M hABM
+
+    exact
+      tarski_between_congruent_eq
+        (Geo := Geo) M A B hMAB hCong
+
+theorem tarski_collinear_trans1
+    [TarskiNeutral Geo]
+    (P Q A B : Geo.Point)
+    (hPQ : P ≠ Q)
+    (hPQA : TarskiCollinear Geo P Q A)
+    (hPQB : TarskiCollinear Geo P Q B) :
+    TarskiCollinear Geo P A B := by
+
+  have hQAP : TarskiCollinear Geo Q A P :=
+    tarski_collinear_rotate
+      Geo P Q A hPQA
+
+  have hAPQ : TarskiCollinear Geo A P Q :=
+    tarski_collinear_rotate
+      Geo Q A P hQAP
+
+  have hAPB : TarskiCollinear Geo A P B :=
+    tarski_collinear_trans
+      Geo A P Q B
+      hPQ
+      hAPQ
+      hPQB
+
+  exact
+    tarski_collinear_symmetry
+      Geo P B A
+      (tarski_collinear_rotate Geo A P B hAPB)
+
+theorem tarski_midpoint_midpoint_col
+    [TarskiNeutral Geo]
+    (A B A' B' M : Geo.Point)
+    (hAB : A ≠ B)
+    (hMA : TarskiIsMidpoint Geo M A A')
+    (hMB : TarskiIsMidpoint Geo M B B')
+    (hCol : TarskiCollinear Geo A B B') :
+    A' ≠ B' ∧
+    TarskiCollinear Geo A A' B' ∧
+    TarskiCollinear Geo B A' B' := by
+
+  have hCong : Geo.Congruent A B A' B' :=
+    tarski_central_symmetry_congruent
+      Geo M A B A' B' hMA hMB
+
+  have hA'B' : A' ≠ B' := by
+    intro hEq
+    subst B'
+
+    have hABeq : A = B :=
+      TarskiNeutral.congruent_identity
+        A B A' hCong
+
+    exact hAB hABeq
+
+  have hAMA' : TarskiCollinear Geo A M A' :=
+    tarski_midpoint_collinear
+      Geo M A A' hMA
+
+  have hBMB' : TarskiCollinear Geo B M B' :=
+    tarski_midpoint_collinear
+      Geo M B B' hMB
+
+  by_cases hBB' : B = B'
+
+  · subst B'
+
+    have hBM : B = M :=
+      TarskiNeutral.between_identity
+        (Geo := Geo) B M hMB.left
+
+    subst M
+
+    have hABA' : TarskiCollinear Geo A B A' :=
+      tarski_midpoint_collinear
+        Geo B A A' hMA
+
+    have hAA'B : TarskiCollinear Geo A A' B :=
+      tarski_collinear_symmetry
+        Geo A B A' hABA'
+
+    have hBA'B : TarskiCollinear Geo B A' B :=
+      Or.inr
+        (Or.inl
+          (tarski_between_reflexivity
+            (Geo := Geo) A' B))
+
+    exact
+      And.intro hA'B'
+        (And.intro hAA'B hBA'B)
+
+  ·
+    have hBB'M : TarskiCollinear Geo B B' M :=
+      tarski_collinear_symmetry
+        Geo B M B' hBMB'
+
+    have hABM : TarskiCollinear Geo A B M := by
+      exact
+        tarski_collinear_trans
+          Geo A B B' M hBB' hCol hBB'M
+
+    by_cases hAM : A = M
+
+    ·
+      have hCongAA' : Geo.Congruent A A A A' := by
+        simpa [hAM] using hMA.right
+
+      have hCongA'AA : Geo.Congruent A A' A A :=
+        tarski_congruent_symmetry
+          (Geo := Geo) A A A A' hCongAA'
+
+      have hAA' : A = A' :=
+        TarskiNeutral.congruent_identity
+          A A' A hCongA'AA
+
+      subst A'
+
+      have hAAB' : TarskiCollinear Geo A A B' :=
+        Or.inr
+          (Or.inr
+            (tarski_between_reflexivity
+              (Geo := Geo) B' A))
+
+      have hBB'A : TarskiCollinear Geo B B' A :=
+        tarski_collinear_rotate
+          Geo A B B' hCol
+
+      have hBAB' : TarskiCollinear Geo B A B' :=
+        tarski_collinear_symmetry
+          Geo B B' A hBB'A
+
+      exact
+        And.intro hA'B'
+          (And.intro hAAB' hBAB')
+
+    ·
+      have hAMB : TarskiCollinear Geo A M B :=
+        tarski_collinear_symmetry
+          Geo A B M hABM
+
+      have hABA' : TarskiCollinear Geo A B A' :=
+        tarski_collinear_trans1
+          Geo A M B A'
+          hAM
+          hAMB
+          hAMA'
+
+      have hAA'B' : TarskiCollinear Geo A A' B' :=
+        tarski_collinear_trans1
+          Geo A B A' B'
+          hAB
+          hABA'
+          hCol
+
+      have hBA'A : TarskiCollinear Geo B A' A :=
+        tarski_collinear_rotate
+          Geo A B A' hABA'
+
+      have hBAA' : TarskiCollinear Geo B A A' :=
+        tarski_collinear_symmetry
+          Geo B A' A hBA'A
+
+      have hBB'A : TarskiCollinear Geo B B' A :=
+        tarski_collinear_rotate
+          Geo A B B' hCol
+
+      have hBAB' : TarskiCollinear Geo B A B' :=
+        tarski_collinear_symmetry
+          Geo B B' A hBB'A
+
+      have hBA'B' : TarskiCollinear Geo B A' B' :=
+        tarski_collinear_trans1
+          Geo B A A' B'
+          hAB.symm
+          hBAA'
+          hBAB'
+
+      exact
+        And.intro hA'B'
+          (And.intro hAA'B' hBA'B')
+
+theorem tarski_central_symmetry_between
+    [TarskiNeutral Geo]
+    (M P Q R P' Q' R' : Geo.Point)
+    (hMP : TarskiIsMidpoint Geo M P P')
+    (hMQ : TarskiIsMidpoint Geo M Q Q')
+    (hMR : TarskiIsMidpoint Geo M R R')
+    (hPQR : Geo.Between P Q R) :
+    Geo.Between P' Q' R' := by
+
+  have hPQ : Geo.Congruent P Q P' Q' :=
+    tarski_central_symmetry_congruent
+      Geo M P Q P' Q' hMP hMQ
+
+  have hQR : Geo.Congruent Q R Q' R' :=
+    tarski_central_symmetry_congruent
+      Geo M Q R Q' R' hMQ hMR
+
+  have hPR : Geo.Congruent P R P' R' :=
+    tarski_central_symmetry_congruent
+      Geo M P R P' R' hMP hMR
+
+  exact
+    tarski_l4_6
+      (Geo := Geo)
+      P Q R P' Q' R'
+      hPQR hPQ hQR hPR
+
+theorem tarski_central_symmetry_collinear
+    [TarskiNeutral Geo]
+    (M P Q R P' Q' R' : Geo.Point)
+    (hMP : TarskiIsMidpoint Geo M P P')
+    (hMQ : TarskiIsMidpoint Geo M Q Q')
+    (hMR : TarskiIsMidpoint Geo M R R')
+    (hCol : TarskiCollinear Geo P Q R) :
+    TarskiCollinear Geo P' Q' R' := by
+  rcases hCol with hPQR | hQRP | hRPQ
+
+  · exact Or.inl
+      (tarski_central_symmetry_between
+        Geo M P Q R P' Q' R'
+        hMP hMQ hMR hPQR)
+
+  · exact Or.inr (Or.inl
+      (tarski_central_symmetry_between
+        Geo M Q R P Q' R' P'
+        hMQ hMR hMP hQRP))
+
+  · exact Or.inr (Or.inr
+      (tarski_central_symmetry_between
+        Geo M R P Q R' P' Q'
+        hMR hMP hMQ hRPQ))
+
+theorem tarski_collinear_trans2
+    [TarskiNeutral Geo]
+    (P Q A B : Geo.Point)
+    (hPQ : P ≠ Q)
+    (hPQA : TarskiCollinear Geo P Q A)
+    (hPQB : TarskiCollinear Geo P Q B) :
+    TarskiCollinear Geo Q A B := by
+
+  have hQPA : TarskiCollinear Geo Q P A :=
+    tarski_collinear_symmetry
+      Geo Q A P
+      (tarski_collinear_rotate Geo P Q A hPQA)
+
+  have hQPB : TarskiCollinear Geo Q P B :=
+    tarski_collinear_symmetry
+      Geo Q B P
+      (tarski_collinear_rotate Geo P Q B hPQB)
+
+  exact
+    tarski_collinear_trans1
+      Geo Q P A B
+      hPQ.symm
+      hQPA
+      hQPB
+
+
+theorem tarski_central_symmetry_parallel
+    [TarskiNeutral Geo]
+    (M A B A' B' : Geo.Point)
+    (hNoncol : ¬ TarskiCollinear Geo A B M)
+    (hMA : TarskiIsMidpoint Geo M A A')
+    (hMB : TarskiIsMidpoint Geo M B B') :
+    TarskiParallelStrict Geo A B A' B' := by
+
+  have hAB : A ≠ B := by
+    intro hEq
+    subst B
+
+    apply hNoncol
+
+    exact
+      Or.inr
+        (Or.inr
+          (tarski_between_reflexivity
+            (Geo := Geo) M A))
+
+  have hCong : Geo.Congruent A B A' B' :=
+    tarski_central_symmetry_congruent
+      Geo M A B A' B' hMA hMB
+
+  have hA'B' : A' ≠ B' := by
+    intro hEq
+    subst B'
+
+    have hABeq : A = B :=
+      TarskiNeutral.congruent_identity
+        A B A' hCong
+
+    exact hAB hABeq
+
+  refine ⟨hAB, hA'B', ?_⟩
+
+  rintro ⟨X, hXAB, hXA'B'⟩
+
+  obtain ⟨X', hMX⟩ :=
+    tarski_symmetric_point_exists Geo X M
+
+  have hX'A'B' : TarskiCollinear Geo X' A' B' :=
+    tarski_central_symmetry_collinear
+      Geo M X A B X' A' B'
+      hMX hMA hMB hXAB
+
+  have hA'B'X : TarskiCollinear Geo A' B' X :=
+    tarski_collinear_rotate
+      Geo X A' B' hXA'B'
+
+  have hA'B'X' : TarskiCollinear Geo A' B' X' :=
+    tarski_collinear_rotate
+      Geo X' A' B' hX'A'B'
+
+  have hB'XX' : TarskiCollinear Geo B' X X' :=
+    tarski_collinear_trans2
+      Geo A' B' X X'
+      hA'B'
+      hA'B'X
+      hA'B'X'
+
+  by_cases hXX' : X = X'
+
+  ·
+    subst X'
+
+    have hXM : X = M :=
+      TarskiNeutral.between_identity
+        (Geo := Geo) X M hMX.left
+
+    subst M
+
+    have hABX : TarskiCollinear Geo A B X :=
+      tarski_collinear_rotate
+        Geo X A B hXAB
+
+    exact hNoncol hABX
+
+  ·
+    by_cases hBM : B = M
+
+    ·
+      have hABB : TarskiCollinear Geo A B B :=
+        Or.inl
+          (tarski_between_reflexivity
+            (Geo := Geo) A B)
+
+      have hABM : TarskiCollinear Geo A B M := by
+        simpa [← hBM] using hABB
+
+      exact hNoncol hABM
+
+    ·
+      have hXMX' : TarskiCollinear Geo X M X' :=
+        tarski_midpoint_collinear
+          Geo M X X' hMX
+
+      have hXX'B' : TarskiCollinear Geo X X' B' :=
+        tarski_collinear_rotate
+          Geo B' X X' hB'XX'
+
+      have hXX'M : TarskiCollinear Geo X X' M :=
+        tarski_collinear_symmetry
+          Geo X M X' hXMX'
+
+      have hXB'M : TarskiCollinear Geo X B' M :=
+        tarski_collinear_trans1
+          Geo X X' B' M
+          hXX'
+          hXX'B'
+          hXX'M
+
+      have hXMB' : TarskiCollinear Geo X M B' :=
+        tarski_collinear_symmetry
+          Geo X B' M hXB'M
+
+      have hX'MB' : TarskiCollinear Geo X' M B' := by
+        have hX'XB' : TarskiCollinear Geo X' X B' := by
+          have hX'B'X : TarskiCollinear Geo X' B' X :=
+            tarski_collinear_rotate
+              Geo X X' B' hXX'B'
+
+          have hBprimeXXprime1 :
+              TarskiCollinear Geo B' X X' :=
+            tarski_collinear_rotate
+              Geo X' B' X hX'B'X
+
+          have hB'X'X : TarskiCollinear Geo B' X' X :=
+            tarski_collinear_symmetry
+              Geo B' X X' hBprimeXXprime1
+
+          exact
+            tarski_collinear_rotate
+              Geo B' X' X hB'X'X
+
+        have hX'XM : TarskiCollinear Geo X' X M := by
+          have hX'MX : TarskiCollinear Geo X' M X :=
+            tarski_collinear_rotate
+              Geo X X' M hXX'M
+
+          have hMXX' : TarskiCollinear Geo M X X' :=
+            tarski_collinear_rotate
+              Geo X' M X hX'MX
+
+          have hMX'X : TarskiCollinear Geo M X' X :=
+            tarski_collinear_symmetry
+              Geo M X X' hMXX'
+
+          exact
+            tarski_collinear_rotate
+              Geo M X' X hMX'X
+
+        have hX'X : X' ≠ X := by
+          intro hEq
+          exact hXX' hEq.symm
+
+        have hX'B'M : TarskiCollinear Geo X' B' M :=
+          tarski_collinear_trans1
+            Geo X' X B' M
+            hX'X
+            hX'XB'
+            hX'XM
+
+        exact
+          tarski_collinear_symmetry
+            Geo X' B' M hX'B'M
+
+      have hMBprime : M ≠ B' := by
+        intro hEq
+        subst B'
+
+        have hCongMBMM : Geo.Congruent M B M M :=
+          (Geometry.Tarski.Geo.congruent_reverse_first
+            Geo B M M M).mp hMB.right
+
+        have hMB_eq : M = B :=
+          TarskiNeutral.congruent_identity
+            M B M hCongMBMM
+
+        exact hBM hMB_eq.symm
+
+      have hBMBprime : TarskiCollinear Geo B M B' :=
+        tarski_midpoint_collinear
+          Geo M B B' hMB
+
+      have hMBprimeX : TarskiCollinear Geo M B' X :=
+        tarski_collinear_rotate
+          Geo X M B' hXMB'
+
+      have hMBprimeB : TarskiCollinear Geo M B' B :=
+        tarski_collinear_rotate
+          Geo B M B' hBMBprime
+
+      have hMXB : TarskiCollinear Geo M X B :=
+        tarski_collinear_trans1
+          Geo M B' X B
+          hMBprime
+          hMBprimeX
+          hMBprimeB
+
+      have hXBM : TarskiCollinear Geo X B M :=
+        tarski_collinear_rotate
+          Geo M X B hMXB
+
+      by_cases hXB : X = B
+
+      ·
+        subst X
+
+        have hAprimeBprimeB :
+            TarskiCollinear Geo A' B' B :=
+          tarski_collinear_rotate
+            Geo B A' B' hXA'B'
+
+        have hMArev : TarskiIsMidpoint Geo M A' A :=
+          tarski_midpoint_symmetry
+            Geo M A A' hMA
+
+        have hMBrev : TarskiIsMidpoint Geo M B' B :=
+          tarski_midpoint_symmetry
+            Geo M B B' hMB
+
+        have hMidCol :=
+          tarski_midpoint_midpoint_col
+            Geo A' B' A B M
+            hA'B'
+            hMArev
+            hMBrev
+            hAprimeBprimeB
+
+        have hBprimeAB : TarskiCollinear Geo B' A B :=
+          hMidCol.2.2
+
+        have hABBprime : TarskiCollinear Geo A B B' :=
+          tarski_collinear_rotate
+            Geo B' A B hBprimeAB
+
+        have hBBprime : B ≠ B' := by
+          intro hEq
+          subst B'
+
+          have hBMB : Geo.Between B M B :=
+            hMB.left
+
+          have hBM_eq : B = M :=
+            TarskiNeutral.between_identity
+              (Geo := Geo) B M hBMB
+
+          exact hBM hBM_eq
+
+        have hBBprimeA : TarskiCollinear Geo B B' A :=
+          tarski_collinear_rotate
+            Geo A B B' hABBprime
+
+        have hBBprimeM : TarskiCollinear Geo B B' M :=
+          tarski_collinear_symmetry
+            Geo B M B' hBMBprime
+
+        have hBAM : TarskiCollinear Geo B A M :=
+          tarski_collinear_trans1
+            Geo B B' A M
+            hBBprime
+            hBBprimeA
+            hBBprimeM
+
+        have hAMB : TarskiCollinear Geo A M B :=
+          tarski_collinear_rotate
+            Geo B A M hBAM
+
+        have hABM : TarskiCollinear Geo A B M :=
+          tarski_collinear_symmetry
+            Geo A M B hAMB
+
+        exact hNoncol hABM
+
+      ·
+        have hXBA : TarskiCollinear Geo X B A :=
+          tarski_collinear_symmetry
+            Geo X A B hXAB
+
+        have hBAM : TarskiCollinear Geo B A M :=
+          tarski_collinear_trans2
+            Geo X B A M
+            hXB
+            hXBA
+            hXBM
+
+        have hAMB : TarskiCollinear Geo A M B :=
+          tarski_collinear_rotate
+            Geo B A M hBAM
+
+        have hABM : TarskiCollinear Geo A B M :=
+          tarski_collinear_symmetry
+            Geo A M B hAMB
+
+        exact hNoncol hABM
+
+
 theorem tarski_midsegment_aux_parallel
     [TarskiNeutral Geo]
     (A B C P Q X : Geo.Point)
@@ -1894,258 +2514,6 @@ theorem tarski_parallelogram_opposite_parallel_prim
   exact
     tarski_parallel_strict_symm_right
       Geo A D C B hParADCB
-
-theorem tarski_between_congruent_eq
-    [TarskiNeutral Geo]
-    (A B C : Geo.Point)
-    (hABC : Geo.Between A B C)
-    (hCong : Geo.Congruent A B A C) :
-    B = C := by
-  have hBCBC : Geo.Congruent B C B C :=
-    tarski_congruent_reflexivity
-      (Geo := Geo) B C
-
-  have hBCCB : Geo.Congruent B C C B :=
-    (Geometry.Tarski.Geo.congruent_reverse_second
-      Geo B C B C).mp hBCBC
-
-  have hACAB : Geo.Congruent A C A B :=
-    tarski_congruent_symmetry
-      (Geo := Geo) A B A C hCong
-
-  have hACB : Geo.Between A C B :=
-    tarski_l4_6
-      (Geo := Geo)
-      A B C
-      A C B
-      hABC
-      hCong
-      hBCCB
-      hACAB
-
-  have hBCB : Geo.Between B C B :=
-    tarski_between_exchange3
-      (Geo := Geo)
-      A B C B
-      hABC
-      hACB
-
-  exact
-    TarskiNeutral.between_identity
-      (Geo := Geo) B C hBCB
-
-
-theorem tarski_collinear_equidistant_midpoint_cases
-    [TarskiNeutral Geo]
-    (M A B : Geo.Point)
-    (hCol : TarskiCollinear Geo A M B)
-    (hCong : Geo.Congruent M A M B) :
-    A = B ∨ TarskiIsMidpoint Geo M A B := by
-  rcases hCol with hAMB | hMAB | hABM
-
-  · right
-    constructor
-    · exact hAMB
-    · exact
-        (Geometry.Tarski.Geo.congruent_reverse_first
-          Geo A M M B).mpr hCong
-
-  · left
-    have hMBA : Geo.Congruent M B M A :=
-      tarski_congruent_symmetry
-        (Geo := Geo) M A M B hCong
-
-    exact
-      (tarski_between_congruent_eq
-        (Geo := Geo) M B A hMAB hMBA).symm
-
-  · left
-    have hMAB : Geo.Between M A B :=
-      tarski_between_symmetry
-        (Geo := Geo) B A M hABM
-
-    exact
-      tarski_between_congruent_eq
-        (Geo := Geo) M A B hMAB hCong
-
-theorem tarski_collinear_trans1
-    [TarskiNeutral Geo]
-    (P Q A B : Geo.Point)
-    (hPQ : P ≠ Q)
-    (hPQA : TarskiCollinear Geo P Q A)
-    (hPQB : TarskiCollinear Geo P Q B) :
-    TarskiCollinear Geo P A B := by
-
-  have hQAP : TarskiCollinear Geo Q A P :=
-    tarski_collinear_rotate
-      Geo P Q A hPQA
-
-  have hAPQ : TarskiCollinear Geo A P Q :=
-    tarski_collinear_rotate
-      Geo Q A P hQAP
-
-  have hAPB : TarskiCollinear Geo A P B :=
-    tarski_collinear_trans
-      Geo A P Q B
-      hPQ
-      hAPQ
-      hPQB
-
-  exact
-    tarski_collinear_symmetry
-      Geo P B A
-      (tarski_collinear_rotate Geo A P B hAPB)
-
-theorem tarski_midpoint_midpoint_col
-    [TarskiNeutral Geo]
-    (A B A' B' M : Geo.Point)
-    (hAB : A ≠ B)
-    (hMA : TarskiIsMidpoint Geo M A A')
-    (hMB : TarskiIsMidpoint Geo M B B')
-    (hCol : TarskiCollinear Geo A B B') :
-    A' ≠ B' ∧
-    TarskiCollinear Geo A A' B' ∧
-    TarskiCollinear Geo B A' B' := by
-
-  have hCong : Geo.Congruent A B A' B' :=
-    tarski_central_symmetry_congruent
-      Geo M A B A' B' hMA hMB
-
-  have hA'B' : A' ≠ B' := by
-    intro hEq
-    subst B'
-
-    have hABeq : A = B :=
-      TarskiNeutral.congruent_identity
-        A B A' hCong
-
-    exact hAB hABeq
-
-  have hAMA' : TarskiCollinear Geo A M A' :=
-    tarski_midpoint_collinear
-      Geo M A A' hMA
-
-  have hBMB' : TarskiCollinear Geo B M B' :=
-    tarski_midpoint_collinear
-      Geo M B B' hMB
-
-  by_cases hBB' : B = B'
-
-  · subst B'
-
-    have hBM : B = M :=
-      TarskiNeutral.between_identity
-        (Geo := Geo) B M hMB.left
-
-    subst M
-
-    have hABA' : TarskiCollinear Geo A B A' :=
-      tarski_midpoint_collinear
-        Geo B A A' hMA
-
-    have hAA'B : TarskiCollinear Geo A A' B :=
-      tarski_collinear_symmetry
-        Geo A B A' hABA'
-
-    have hBA'B : TarskiCollinear Geo B A' B :=
-      Or.inr
-        (Or.inl
-          (tarski_between_reflexivity
-            (Geo := Geo) A' B))
-
-    exact
-      And.intro hA'B'
-        (And.intro hAA'B hBA'B)
-
-  ·
-    have hBB'M : TarskiCollinear Geo B B' M :=
-      tarski_collinear_symmetry
-        Geo B M B' hBMB'
-
-    have hABM : TarskiCollinear Geo A B M := by
-      exact
-        tarski_collinear_trans
-          Geo A B B' M hBB' hCol hBB'M
-
-    by_cases hAM : A = M
-
-    ·
-      have hCongAA' : Geo.Congruent A A A A' := by
-        simpa [hAM] using hMA.right
-
-      have hCongA'AA : Geo.Congruent A A' A A :=
-        tarski_congruent_symmetry
-          (Geo := Geo) A A A A' hCongAA'
-
-      have hAA' : A = A' :=
-        TarskiNeutral.congruent_identity
-          A A' A hCongA'AA
-
-      subst A'
-
-      have hAAB' : TarskiCollinear Geo A A B' :=
-        Or.inr
-          (Or.inr
-            (tarski_between_reflexivity
-              (Geo := Geo) B' A))
-
-      have hBB'A : TarskiCollinear Geo B B' A :=
-        tarski_collinear_rotate
-          Geo A B B' hCol
-
-      have hBAB' : TarskiCollinear Geo B A B' :=
-        tarski_collinear_symmetry
-          Geo B B' A hBB'A
-
-      exact
-        And.intro hA'B'
-          (And.intro hAAB' hBAB')
-
-    ·
-      have hAMB : TarskiCollinear Geo A M B :=
-        tarski_collinear_symmetry
-          Geo A B M hABM
-
-      have hABA' : TarskiCollinear Geo A B A' :=
-        tarski_collinear_trans1
-          Geo A M B A'
-          hAM
-          hAMB
-          hAMA'
-
-      have hAA'B' : TarskiCollinear Geo A A' B' :=
-        tarski_collinear_trans1
-          Geo A B A' B'
-          hAB
-          hABA'
-          hCol
-
-      have hBA'A : TarskiCollinear Geo B A' A :=
-        tarski_collinear_rotate
-          Geo A B A' hABA'
-
-      have hBAA' : TarskiCollinear Geo B A A' :=
-        tarski_collinear_symmetry
-          Geo B A' A hBA'A
-
-      have hBB'A : TarskiCollinear Geo B B' A :=
-        tarski_collinear_rotate
-          Geo A B B' hCol
-
-      have hBAB' : TarskiCollinear Geo B A B' :=
-        tarski_collinear_symmetry
-          Geo B B' A hBB'A
-
-      have hBA'B' : TarskiCollinear Geo B A' B' :=
-        tarski_collinear_trans1
-          Geo B A A' B'
-          hAB.symm
-          hBAA'
-          hBAB'
-
-      exact
-        And.intro hA'B'
-          (And.intro hAA'B' hBA'B')
 
 
 
