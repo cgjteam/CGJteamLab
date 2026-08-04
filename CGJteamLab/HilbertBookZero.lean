@@ -1969,5 +1969,724 @@ theorem bookZero_27_NChelper
 
   exact hNCABC hABC
 
+/--
+Book Zero #28: fiveline.
+
+A convenient collinear form of the BNW five-line principle.
+-/
+theorem bookZero_28_fiveline
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C a b c D d : Geo.Point)
+    (hCol : PrimCollinear Geo A B C)
+    (hAB : Geo.Congruent A B a b)
+    (hBC : Geo.Congruent B C b c)
+    (hAD : Geo.Congruent A D a d)
+    (hCD : Geo.Congruent C D c d)
+    (hAC : Geo.Congruent A C a c)
+    (hACne : A ≠ C) :
+    Geo.Congruent B D b d := by
+
+  by_cases hABeq : A = B
+
+  · subst B
+
+    have habeq : a = b :=
+      bookZero_nullSegment1 Geo a b A
+        (hilbert_congruent_symmetry Geo A A a b hAB)
+
+    subst b
+
+    exact hAD
+
+  · by_cases hBCeq : B = C
+
+    · subst C
+
+      have hbceq : b = c :=
+        bookZero_nullSegment1 Geo b c B
+          (hilbert_congruent_symmetry Geo B B b c hBC)
+
+      subst c
+
+      exact hCD
+
+    ·
+      have hBCne : B ≠ C := hBCeq
+
+      rcases
+          hilbert_between_trichotomy
+            Geo A B C
+            hABeq
+            hBCne
+            hACne
+            hCol with
+        hABC | hBAC | hACB
+
+      ------------------------------------------------------------------
+      -- Case A-B-C.
+      ------------------------------------------------------------------
+
+      · have hab : a ≠ b :=
+          bookZero_nullSegment3
+            Geo A B a b
+            hABeq
+            hAB
+
+        have hbc : b ≠ c :=
+          bookZero_nullSegment3
+            Geo B C b c
+            hBCne
+            hBC
+
+        have hac : a ≠ c :=
+          bookZero_nullSegment3
+            Geo A C a c
+            hACne
+            hAC
+
+        have habc : Geo.Between a b c :=
+          bookZero_17_three_points
+            Geo
+            A B C
+            a b c
+            hABC
+            hab
+            hbc
+            hac
+            hAB
+            hAC
+            hBC
+
+        exact
+          bookZero_19_interior5
+            Geo
+            A B C
+            a b c
+            D d
+            hABC
+            habc
+            hAB
+            hBC
+            hAD
+            hCD
+
+      ------------------------------------------------------------------
+      -- Case B-A-C. Reverse the order and use C-A-B.
+      ------------------------------------------------------------------
+
+      · have hCAB : Geo.Between C A B :=
+          (HilbertOrder.between_incidence B A C hBAC).2.2.2.2
+
+        have hab : a ≠ b :=
+          bookZero_nullSegment3
+            Geo A B a b
+            hABeq
+            hAB
+
+        have hbc : b ≠ c :=
+          bookZero_nullSegment3
+            Geo B C b c
+            hBCne
+            hBC
+
+        have hac : a ≠ c :=
+          bookZero_nullSegment3
+            Geo A C a c
+            hACne
+            hAC
+
+        have hca : c ≠ a := by
+          intro hcaEq
+          exact hac hcaEq.symm
+
+        have hcb : c ≠ b := by
+          intro hcbEq
+          exact hbc hcbEq.symm
+
+        have hCAca : Geo.Congruent C A c a := by
+          exact
+            hilbert_congruent_symmetry
+              Geo c a C A
+              (bookZero_doubleReverse Geo A C a c hAC).1
+
+        have hCBcb : Geo.Congruent C B c b := by
+          exact
+            hilbert_congruent_symmetry
+              Geo c b C B
+              (bookZero_doubleReverse Geo B C b c hBC).1
+
+        have hcab : Geo.Between c a b :=
+          bookZero_17_three_points
+            Geo
+            C A B
+            c a b
+            hCAB
+            hca
+            hab
+            hcb
+            hCAca
+            hCBcb
+            hAB
+
+        exact
+          bookZero_fiveLine
+            Geo
+            C A B
+            c a b
+            D d
+            hCAB
+            hcab
+            hCAca
+            hAB
+            hCD
+            hAD
+
+
+      ------------------------------------------------------------------
+      -- Case A-C-B.
+      ------------------------------------------------------------------
+
+      · have hab : a ≠ b :=
+          bookZero_nullSegment3
+            Geo A B a b
+            hABeq
+            hAB
+
+        have hbc : b ≠ c :=
+          bookZero_nullSegment3
+            Geo B C b c
+            hBCne
+            hBC
+
+        have hac : a ≠ c :=
+          bookZero_nullSegment3
+            Geo A C a c
+            hACne
+            hAC
+
+        have hcb : c ≠ b := by
+          intro hcbEq
+          exact hbc hcbEq.symm
+
+        have hCBcb : Geo.Congruent C B c b := by
+          exact
+            hilbert_congruent_symmetry
+              Geo c b C B
+              (bookZero_doubleReverse Geo B C b c hBC).1
+
+        have hacb : Geo.Between a c b :=
+          bookZero_17_three_points
+            Geo
+            A C B
+            a c b
+            hACB
+            hac
+            hcb
+            hab
+            hAC
+            hAB
+            hCBcb
+
+        exact
+          bookZero_fiveLine
+            Geo
+            A C B
+            a c b
+            D d
+            hACB
+            hacb
+            hAC
+            hCBcb
+            hAD
+            hCD
+
+
+/--
+BNW relation `CU A B C D E`.
+
+The segments AB and CD cut each other at E.
+-/
+def BookZeroCut
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    (A B C D E : Geo.Point) : Prop :=
+  Geo.Between A E B ∧
+  Geo.Between C E D ∧
+  ¬ PrimCollinear Geo A B C ∧
+  ¬ PrimCollinear Geo A B D
+
+
+/--
+Book Zero #29: twolines.
+
+Two distinct lines have at most one common intersection point.
+-/
+theorem bookZero_29_twoLines
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D E F : Geo.Point)
+    (hCutE : BookZeroCut Geo A B C D E)
+    (hCutF : BookZeroCut Geo A B C D F)
+    (hNCBCD : ¬ PrimCollinear Geo B C D) :
+    E = F := by
+
+  rcases hCutE with
+    ⟨hAEB, hCED, hNCABC, hNCABD⟩
+
+  rcases hCutF with
+    ⟨hAFB, hCFD, _, _⟩
+
+  by_contra hEF
+
+  have hAB : A ≠ B :=
+    (HilbertOrder.between_incidence A E B hAEB).2.2.1
+
+  have hCD : C ≠ D :=
+    (HilbertOrder.between_incidence C E D hCED).2.2.1
+
+  ----------------------------------------------------------------------
+  -- E and F lie on line AB.
+  ----------------------------------------------------------------------
+
+  have hABE : PrimCollinear Geo A B E := by
+    rcases
+        (HilbertOrder.between_incidence A E B hAEB).2.2.2.1 with
+      ⟨l, hAl, hEl, hBl⟩
+    exact ⟨l, hAl, hBl, hEl⟩
+
+  have hABF : PrimCollinear Geo A B F := by
+    rcases
+        (HilbertOrder.between_incidence A F B hAFB).2.2.2.1 with
+      ⟨l, hAl, hFl, hBl⟩
+    exact ⟨l, hAl, hBl, hFl⟩
+
+  have hBEF : PrimCollinear Geo B E F :=
+    bookZero_24_collinear4
+      Geo A B E F
+      hABE hABF hAB
+
+  have hEFB : PrimCollinear Geo E F B := by
+    rcases bookZero_22_collinearOrder Geo B E F hBEF with
+      ⟨_, hEFB, _, _, _⟩
+    exact hEFB
+
+  ----------------------------------------------------------------------
+  -- E and F lie on line CD.
+  ----------------------------------------------------------------------
+
+  have hCDE : PrimCollinear Geo C D E := by
+    rcases
+        (HilbertOrder.between_incidence C E D hCED).2.2.2.1 with
+      ⟨l, hCl, hEl, hDl⟩
+    exact ⟨l, hCl, hDl, hEl⟩
+
+  have hCDF : PrimCollinear Geo C D F := by
+    rcases
+        (HilbertOrder.between_incidence C F D hCFD).2.2.2.1 with
+      ⟨l, hCl, hFl, hDl⟩
+    exact ⟨l, hCl, hDl, hFl⟩
+
+  have hDEF : PrimCollinear Geo D E F :=
+    bookZero_24_collinear4
+      Geo C D E F
+      hCDE hCDF hCD
+
+  have hEFD : PrimCollinear Geo E F D := by
+    rcases bookZero_22_collinearOrder Geo D E F hDEF with
+      ⟨_, hEFD, _, _, _⟩
+    exact hEFD
+
+  have hDCE : PrimCollinear Geo D C E :=
+    bookZero_20_collinear1 Geo C D E hCDE
+
+  have hDCF : PrimCollinear Geo D C F :=
+    bookZero_20_collinear1 Geo C D F hCDF
+
+  have hCEF : PrimCollinear Geo C E F :=
+    bookZero_24_collinear4
+      Geo D C E F
+      hDCE hDCF hCD.symm
+
+  have hEFC : PrimCollinear Geo E F C := by
+    rcases bookZero_22_collinearOrder Geo C E F hCEF with
+      ⟨_, hEFC, _, _, _⟩
+    exact hEFC
+
+  ----------------------------------------------------------------------
+  -- If E and F were distinct, B, C and D would lie on line EF.
+  ----------------------------------------------------------------------
+
+  have hBCD : PrimCollinear Geo B C D :=
+    bookZero_25_collinear5
+      Geo
+      E F B C D
+      hEF
+      hEFB
+      hEFC
+      hEFD
+
+  exact hNCBCD hBCD
+
+
+/--
+Book Zero #30: lessthancongruence.
+
+Strict segment comparison is preserved when the larger segment
+is replaced by a congruent segment.
+-/
+theorem bookZero_30_lessThanCongruence
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D E F : Geo.Point)
+    (hLess : HilbertSegmentLess Geo A B C D)
+    (hCong : Geo.Congruent C D E F) :
+    HilbertSegmentLess Geo A B E F := by
+
+  rcases hLess with ⟨G, hCGD, hABCG⟩
+
+  have hCD : C ≠ D :=
+    (HilbertOrder.between_incidence C G D hCGD).2.2.1
+
+  have hEF : E ≠ F :=
+    bookZero_nullSegment3
+      Geo C D E F
+      hCD
+      hCong
+
+  have hFE : F ≠ E := by
+    intro hFEeq
+    exact hEF hFEeq.symm
+
+  ----------------------------------------------------------------------
+  -- Construct P beyond E on the line FE, with EP congruent to FE.
+  ----------------------------------------------------------------------
+
+  rcases HilbertOrder.between_extension F E hFE with
+    ⟨R, hFER⟩
+
+  have hER : E ≠ R :=
+    (HilbertOrder.between_incidence F E R hFER).2.1
+
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo)
+      F E
+      E R
+      hER with
+    ⟨P, hRayP, hEPFE⟩
+
+  have hRayF : HilbertSameRay Geo E F F :=
+    hilbert_sameRay_refl Geo E F hFE
+
+  have hFEP : Geo.Between F E P :=
+    hilbert_between_transport_sameRays
+      Geo
+      F E R
+      F P
+      hFER
+      hRayF
+      hRayP
+
+  have hPEF : Geo.Between P E F :=
+    (HilbertOrder.between_incidence F E P hFEP).2.2.2.2
+
+  have hPE : P ≠ E :=
+    (HilbertOrder.between_incidence P E F hPEF).1
+
+  ----------------------------------------------------------------------
+  -- Construct Q beyond C on the line DC, with CQ congruent to EP.
+  ----------------------------------------------------------------------
+
+  have hDC : D ≠ C := by
+    intro hDCeq
+    exact hCD hDCeq.symm
+
+  rcases HilbertOrder.between_extension D C hDC with
+    ⟨S, hDCS⟩
+
+  have hCS : C ≠ S :=
+    (HilbertOrder.between_incidence D C S hDCS).2.1
+
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo)
+      E P
+      C S
+      hCS with
+    ⟨Q, hRayQ, hCQEP⟩
+
+  have hRayD : HilbertSameRay Geo C D D :=
+  hilbert_sameRay_refl Geo C D hDC
+
+  have hDCQ : Geo.Between D C Q :=
+    hilbert_between_transport_sameRays
+      Geo
+      D C S
+      D Q
+      hDCS
+      hRayD
+      hRayQ
+
+  have hQCD : Geo.Between Q C D :=
+    (HilbertOrder.between_incidence D C Q hDCQ).2.2.2.2
+
+  have hQCPE : Geo.Congruent Q C P E :=
+    CongruentReverseBoth Geo C Q E P hCQEP
+
+  ----------------------------------------------------------------------
+  -- Construct H beyond E on the line PE, with EH congruent to AB.
+  ----------------------------------------------------------------------
+
+  rcases HilbertOrder.between_extension P E hPE with
+    ⟨T, hPET⟩
+
+  have hET : E ≠ T :=
+    (HilbertOrder.between_incidence P E T hPET).2.1
+
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo)
+      A B
+      E T
+      hET with
+    ⟨H, hRayH, hEHAB⟩
+
+  have hRayP' : HilbertSameRay Geo E P P :=
+    hilbert_sameRay_refl Geo E P hPE
+
+  have hPEH : Geo.Between P E H :=
+    hilbert_between_transport_sameRays
+      Geo
+      P E T
+      P H
+      hPET
+      hRayP'
+      hRayH
+
+  ----------------------------------------------------------------------
+  -- QD is congruent to PF by addition of corresponding parts.
+  ----------------------------------------------------------------------
+
+  have hQDPF : Geo.Congruent Q D P F :=
+    HilbertCongruence.segment_additivity
+      (Geo := Geo)
+      Q C D
+      P E F
+      hQCD
+      hPEF
+      hQCPE
+      hCong
+
+  ----------------------------------------------------------------------
+  -- CG is congruent to EH.
+  ----------------------------------------------------------------------
+
+  have hCGAB : Geo.Congruent C G A B :=
+    hilbert_congruent_symmetry Geo A B C G hABCG
+
+  have hABEH : Geo.Congruent A B E H :=
+    hilbert_congruent_symmetry Geo E H A B hEHAB
+
+  have hCGEH : Geo.Congruent C G E H :=
+    hilbert_congruent_transitivity
+      Geo
+      C G
+      A B
+      E H
+      hCGAB
+      hABEH
+
+  ----------------------------------------------------------------------
+  -- Since Q-C-D and C-G-D, we have Q-C-G.
+  ----------------------------------------------------------------------
+
+  have hDGC : Geo.Between D G C :=
+    (HilbertOrder.between_incidence C G D hCGD).2.2.2.2
+
+  have hDCQ' : Geo.Between D C Q :=
+    (HilbertOrder.between_incidence Q C D hQCD).2.2.2.2
+
+  have hGCQ : Geo.Between G C Q :=
+    (hilbert_between_inner_trans
+      Geo D G C Q hDGC hDCQ').1
+
+  have hQCG : Geo.Between Q C G :=
+    (HilbertOrder.between_incidence G C Q hGCQ).2.2.2.2
+
+  ----------------------------------------------------------------------
+  -- Apply the primitive five-line principle.
+  ----------------------------------------------------------------------
+
+  have hGDHF : Geo.Congruent G D H F :=
+    bookZero_fiveLine
+      Geo
+      Q C G
+      P E H
+      D F
+      hQCG
+      hPEH
+      hQCPE
+      hCGEH
+      hQDPF
+      hCong
+
+  have hDGFH : Geo.Congruent D G F H :=
+    (bookZero_congruenceFlip Geo G D H F hGDHF).1
+
+  ----------------------------------------------------------------------
+  -- Transfer C-G-D to E-H-F.
+  ----------------------------------------------------------------------
+
+  have hEH : E ≠ H :=
+    (HilbertOrder.between_incidence P E H hPEH).2.1
+
+  have hGD : G ≠ D :=
+    (HilbertOrder.between_incidence C G D hCGD).2.1
+
+  have hFH : F ≠ H :=
+    bookZero_nullSegment3
+      Geo D G F H
+      hGD.symm
+      hDGFH
+
+  have hHF : H ≠ F := by
+    intro hHFeq
+    exact hFH hHFeq.symm
+
+  have hEHF : Geo.Between E H F :=
+    bookZero_17_three_points
+      Geo
+      C G D
+      E H F
+      hCGD
+      hEH
+      hHF
+      hEF
+      hCGEH
+      hCong
+      hGDHF
+
+  ----------------------------------------------------------------------
+  -- AB is congruent to EH, so H witnesses AB < EF.
+  ----------------------------------------------------------------------
+
+  have hABEH' : Geo.Congruent A B E H :=
+    hilbert_congruent_transitivity
+      Geo
+      A B
+      C G
+      E H
+      hABCG
+      hCGEH
+
+  exact ⟨H, hEHF, hABEH'⟩
+
+
+/--
+Book Zero #31: trichotomy1.
+
+Two non-null segments which are not strictly shorter than one another
+are congruent.
+-/
+theorem bookZero_31_trichotomy1
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point)
+    (hNotABCD : ¬ HilbertSegmentLess Geo A B C D)
+    (hNotCDAB : ¬ HilbertSegmentLess Geo C D A B)
+    (hAB : A ≠ B)
+    (hCD : C ≠ D) :
+    Geo.Congruent A B C D := by
+
+  ----------------------------------------------------------------------
+  -- Lay off CD from A on ray AB.
+  ----------------------------------------------------------------------
+
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo)
+      C D
+      A B
+      hAB with
+    ⟨E, hRayE, hAECD⟩
+
+  have hCDAE : Geo.Congruent C D A E :=
+    hilbert_congruent_symmetry
+      Geo A E C D hAECD
+
+  have hAE : A ≠ E :=
+    bookZero_nullSegment3
+      Geo C D A E
+      hCD
+      hCDAE
+
+  ----------------------------------------------------------------------
+  -- Points B and E lie on the same ray from A.
+  ----------------------------------------------------------------------
+
+  rcases hilbert_sameRay_cases Geo A B E hRayE with
+    hBE | hABE | hAEB
+
+  ----------------------------------------------------------------------
+  -- Case B = E.
+  ----------------------------------------------------------------------
+
+  · subst E
+    exact hAECD
+
+  ----------------------------------------------------------------------
+  -- Case A-B-E: then AB < AE congruent to CD.
+  ----------------------------------------------------------------------
+
+  · have hABAE : HilbertSegmentLess Geo A B A E :=
+      ⟨B, hABE, hilbert_congruent_reflexive Geo A B⟩
+
+    have hABCD : HilbertSegmentLess Geo A B C D :=
+      bookZero_30_lessThanCongruence
+        Geo
+        A B A E C D
+        hABAE
+        hAECD
+
+    exact (hNotABCD hABCD).elim
+
+  ----------------------------------------------------------------------
+  -- Case A-E-B: then CD congruent to AE < AB.
+  ----------------------------------------------------------------------
+
+  · have hAEAB : HilbertSegmentLess Geo A E A B :=
+      ⟨E, hAEB, hilbert_congruent_reflexive Geo A E⟩
+
+    have hCDAB : HilbertSegmentLess Geo C D A B := by
+      exact
+        hilbert_segmentLess_congruent_left
+          Geo
+          A E
+          C D
+          A B
+          hAEAB
+          hCDAE
+
+    exact (hNotCDAB hCDAB).elim
+
+/--
+Book Zero #32: lessthancongruence2.
+
+Strict segment comparison is preserved when the smaller segment
+is replaced by a congruent segment.
+-/
+theorem bookZero_32_lessThanCongruence2
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D E F : Geo.Point)
+    (hLess : HilbertSegmentLess Geo A B C D)
+    (hCong : Geo.Congruent A B E F) :
+    HilbertSegmentLess Geo E F C D := by
+  exact
+    hilbert_segmentLess_congruent_left
+      Geo
+      A B
+      E F
+      C D
+      hLess
+      (hilbert_congruent_symmetry Geo A B E F hCong)
+
 
 end Geometry
