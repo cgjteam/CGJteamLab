@@ -297,4 +297,135 @@ theorem bookZero_congruenceFlip
     · exact CongruentSwapSecond Geo A B C D h
 
 
+/--
+Book Zero 15: sumofparts
+
+If B lies between A and C, b lies between a and c,
+AB is congruent to ab, and BC is congruent to bc,
+then AC is congruent to ac.
+
+This is exactly Hilbert's congruence axiom III.3:
+additivity of adjacent congruent segments.
+-/
+theorem bookZero_sumOfParts
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C a b c : Geo.Point)
+    (hABab : Geo.Congruent A B a b)
+    (hBCbc : Geo.Congruent B C b c)
+    (hABC : Geo.Between A B C)
+    (habc : Geo.Between a b c) :
+    Geo.Congruent A C a c := by
+  exact
+    HilbertCongruence.segment_additivity
+      (Geo := Geo)
+      A B C
+      a b c
+      hABC
+      habc
+      hABab
+      hBCbc
+
+------------------------------------------------------------------------
+-- Hilbert working layer: subtraction of congruent segment parts
+------------------------------------------------------------------------
+
+/--
+Hilbert segment subtraction.
+
+If B lies between A and C, b lies between a and c,
+AB is congruent to ab, and AC is congruent to ac,
+then BC is congruent to bc.
+
+This is the cancellation counterpart of Hilbert III.3.
+-/
+theorem hilbert_segment_subtraction
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C a b c : Geo.Point)
+    (hABC : Geo.Between A B C)
+    (habc : Geo.Between a b c)
+    (hABab : Geo.Congruent A B a b)
+    (hACac : Geo.Congruent A C a c) :
+    Geo.Congruent B C b c := by
+
+  have hbc : b ≠ c :=
+    (HilbertOrder.between_incidence a b c habc).2.1
+
+  obtain ⟨X, hRayX, hBXBC⟩ :=
+    HilbertCongruence.segment_construction
+      (Geo := Geo)
+      B C b c hbc
+
+  have hSymmBetween :
+      ∀ P Q R : Geo.Point,
+        Geo.Between P Q R →
+        Geo.Between R Q P :=
+    fun P Q R h =>
+      (HilbertOrder.between_incidence P Q R h).2.2.2.2
+
+  have habX : Geo.Between a b X := by
+    rcases hilbert_sameRay_cases Geo b c X hRayX with
+      hXc | hbcX | hbXc
+
+    · subst X
+      exact habc
+
+    · exact
+        (hilbert_between_outer_trans
+          Geo a b c X habc hbcX).2
+
+    · have hcXb : Geo.Between c X b :=
+        hSymmBetween b X c hbXc
+
+      have hcbA : Geo.Between c b a :=
+        hSymmBetween a b c habc
+
+      have hXba : Geo.Between X b a :=
+        (hilbert_between_inner_trans
+          Geo c X b a hcXb hcbA).1
+
+      exact hSymmBetween X b a hXba
+
+  have hBCbX : Geo.Congruent B C b X :=
+    hilbert_congruent_symmetry Geo b X B C hBXBC
+
+  have hACaX : Geo.Congruent A C a X :=
+    HilbertCongruence.segment_additivity
+      (Geo := Geo)
+      A B C
+      a b X
+      hABC
+      habX
+      hABab
+      hBCbX
+
+  have hRayAX : HilbertSameRay Geo a b X :=
+    hilbert_sameRay_of_between Geo a b X habX
+
+  have hRayAC : HilbertSameRay Geo a b c :=
+    hilbert_sameRay_of_between Geo a b c habc
+
+  have haXAC : Geo.Congruent a X A C :=
+    hilbert_congruent_symmetry Geo A C a X hACaX
+
+  have hacAC : Geo.Congruent a c A C :=
+    hilbert_congruent_symmetry Geo A C a c hACac
+
+  have hXc : X = c :=
+    hilbert_segment_construction_unique
+      Geo
+      A C
+      a b
+      X c
+      hRayAX
+      hRayAC
+      haXAC
+      hacAC
+
+  subst X
+
+  exact
+    hilbert_congruent_symmetry Geo b c B C hBXBC
+
 end Geometry
