@@ -3751,117 +3751,596 @@ theorem bookZero_53_lessThanAdditive
 
   exact ⟨Q, hCQF, hAECQ⟩
 
-/--
-Book Zero #54: subtractequals.
-
-If A-B-C, A-D-E, BC is congruent to DE, and A-C-E,
-then A-B-D.
--/
-theorem bookZero_54_subtractEquals
+theorem bookZero_55_crossbar
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
-    (A B C D E : Geo.Point)
-    (hABC : Geo.Between A B C)
-    (hADE : Geo.Between A D E)
-    (hBCDE : Geo.Congruent B C D E)
-    (hACE : Geo.Between A C E) :
-    Geo.Between A B D := by
+    (A B C E U V : Geo.Point)
+    (hTriangle : ¬ PrimCollinear Geo A B C)
+    (hAEC : Geo.Between A E C)
+    (hBAU : HilbertSameRay Geo B A U)
+    (hBCV : HilbertSameRay Geo B C V) :
+    ∃ X : Geo.Point,
+      HilbertSameRay Geo B E X ∧
+      Geo.Between U X V := by
 
   ----------------------------------------------------------------------
-  -- B and D lie on the same ray AE.
+  -- Basic nondegeneracy.
   ----------------------------------------------------------------------
 
-  have hABERay : HilbertSameRay Geo A B E :=
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hTriangle
+
+  rcases bookZero_23_NCorder Geo A B C hTriangle with
+    ⟨_, hNCBCA, _, _, _⟩
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hNCBCA
+
+  ----------------------------------------------------------------------
+  -- Construct P with B-A-P and AP congruent to BU.
+  ----------------------------------------------------------------------
+
+  rcases HilbertOrder.between_extension B A hAB.symm with
+    ⟨R, hBAR⟩
+
+  have hAR : A ≠ R :=
+    (HilbertOrder.between_incidence B A R hBAR).2.1
+
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo)
+      B U
+      A R
+      hAR with
+    ⟨P, hARP, hAPBU⟩
+
+  have hABRay : HilbertSameRay Geo A B B :=
+    hilbert_sameRay_refl Geo A B hAB.symm
+
+  have hBAP : Geo.Between B A P :=
+    hilbert_between_transport_sameRays
+      Geo
+      B A R
+      B P
+      hBAR
+      hABRay
+      hARP
+
+  ----------------------------------------------------------------------
+  -- Construct Q with B-C-Q and CQ congruent to BV.
+  ----------------------------------------------------------------------
+
+  rcases HilbertOrder.between_extension B C hBC with
+    ⟨S, hBCS⟩
+
+  have hCS : C ≠ S :=
+    (HilbertOrder.between_incidence B C S hBCS).2.1
+
+  rcases HilbertCongruence.segment_construction
+      (Geo := Geo)
+      B V
+      C S
+      hCS with
+    ⟨Q, hCSQ, hCQBV⟩
+
+  have hCBRay : HilbertSameRay Geo C B B :=
+    hilbert_sameRay_refl Geo C B hBC
+
+  have hBCQ : Geo.Between B C Q :=
+    hilbert_between_transport_sameRays
+      Geo
+      B C S
+      B Q
+      hBCS
+      hCBRay
+      hCSQ
+
+  have hQCB : Geo.Between Q C B :=
+    (HilbertOrder.between_incidence
+      B C Q hBCQ).2.2.2.2
+
+  have hBCQcol : PrimCollinear Geo B C Q :=
+    (HilbertOrder.between_incidence
+      B C Q hBCQ).2.2.2.1
+
+  have hBCC : PrimCollinear Geo B C C := by
+    rcases hBCQcol with
+      ⟨l, hBl, hCl, hQl⟩
+
+    exact ⟨l, hBl, hCl, hCl⟩
+
+  have hCQ : C ≠ Q :=
+    (HilbertOrder.between_incidence
+      B C Q hBCQ).2.1
+
+  have hQC : Q ≠ C := by
+    intro hQCeq
+    exact hCQ hQCeq.symm
+
+  ----------------------------------------------------------------------
+  -- A, Q and C are noncollinear.
+  ----------------------------------------------------------------------
+
+  have hNCQCA : ¬ PrimCollinear Geo Q C A :=
+    bookZero_27_NChelper
+      Geo
+      B C A Q C
+      hNCBCA
+      hBCQcol
+      hBCC
+      hQC
+
+  have hNCAQC : ¬ PrimCollinear Geo A Q C := by
+    intro hAQC
+
+    rcases bookZero_22_collinearOrder
+        Geo A Q C hAQC with
+      ⟨_, hQCA, _, _, _⟩
+
+    exact hNCQCA hQCA
+
+  ----------------------------------------------------------------------
+  -- First outer Pasch:
+  --
+  -- Q-C-B and A-E-C produce F with
+  -- B-E-F and A-F-Q.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_outer_pasch_strong
+        Geo
+        A Q C
+        B E
+        hNCAQC
+        hQCB
+        hAEC with
+    ⟨F, hBEF, hAFQ⟩
+
+  ----------------------------------------------------------------------
+  -- Second outer Pasch.
+  --
+  -- First prove that B, P and Q are noncollinear.
+  ----------------------------------------------------------------------
+
+  have hBAPcol : PrimCollinear Geo B A P :=
+    (HilbertOrder.between_incidence
+      B A P hBAP).2.2.2.1
+
+  have hBP : B ≠ P :=
+    (HilbertOrder.between_incidence
+      B A P hBAP).2.2.1
+
+  have hBQ : B ≠ Q :=
+    (HilbertOrder.between_incidence
+      B C Q hBCQ).2.2.1
+
+  have hBPA : PrimCollinear Geo B P A := by
+    rcases bookZero_22_collinearOrder
+        Geo B A P hBAPcol with
+      ⟨_, _, _, hBPA, _⟩
+
+    exact hBPA
+
+  have hBPB : PrimCollinear Geo B P B := by
+    rcases hBPA with
+      ⟨l, hBl, hPl, hAl⟩
+
+    exact ⟨l, hBl, hPl, hBl⟩
+
+  have hBQC : PrimCollinear Geo B Q C := by
+    rcases bookZero_22_collinearOrder
+        Geo B C Q hBCQcol with
+      ⟨_, _, _, hBQC, _⟩
+
+    exact hBQC
+
+  have hBQB : PrimCollinear Geo B Q B := by
+    rcases hBQC with
+      ⟨l, hBl, hQl, hCl⟩
+
+    exact ⟨l, hBl, hQl, hBl⟩
+
+  have hNCBPQ : ¬ PrimCollinear Geo B P Q := by
+    intro hBPQ
+
+    have hABQ : PrimCollinear Geo A B Q :=
+      bookZero_25_collinear5
+        Geo
+        B P A B Q
+        hBP
+        hBPA
+        hBPB
+        hBPQ
+
+    have hBQA : PrimCollinear Geo B Q A := by
+      rcases bookZero_22_collinearOrder
+          Geo A B Q hABQ with
+        ⟨_, hBQA, _, _, _⟩
+
+      exact hBQA
+
+    have hABCcol : PrimCollinear Geo A B C :=
+      bookZero_25_collinear5
+        Geo
+        B Q A B C
+        hBQ
+        hBQA
+        hBQB
+        hBQC
+
+    exact hTriangle hABCcol
+
+  ----------------------------------------------------------------------
+  -- Hence Q, P and A are noncollinear.
+  ----------------------------------------------------------------------
+
+  have hAP : A ≠ P :=
+    (HilbertOrder.between_incidence
+      B A P hBAP).2.1
+
+  have hAPB : PrimCollinear Geo A P B := by
+    rcases bookZero_22_collinearOrder
+        Geo B A P hBAPcol with
+      ⟨_, hAPB, _, _, _⟩
+
+    exact hAPB
+
+  have hNCQPA : ¬ PrimCollinear Geo Q P A := by
+    intro hQPA
+
+    have hAPQ : PrimCollinear Geo A P Q := by
+      rcases bookZero_22_collinearOrder
+          Geo Q P A hQPA with
+        ⟨_, _, _, _, hAPQ⟩
+
+      exact hAPQ
+
+    have hPBQ : PrimCollinear Geo P B Q :=
+      bookZero_24_collinear4
+        Geo
+        A P B Q
+        hAPB
+        hAPQ
+        hAP
+
+    have hBPQ : PrimCollinear Geo B P Q :=
+      bookZero_20_collinear1
+        Geo P B Q hPBQ
+
+    exact hNCBPQ hBPQ
+
+  ----------------------------------------------------------------------
+  -- Reverse the two betweenness hypotheses into the orientation
+  -- required by outer Pasch.
+  ----------------------------------------------------------------------
+
+  have hPAB : Geo.Between P A B :=
+    (HilbertOrder.between_incidence
+      B A P hBAP).2.2.2.2
+
+  have hQFA : Geo.Between Q F A :=
+    (HilbertOrder.between_incidence
+      A F Q hAFQ).2.2.2.2
+
+  ----------------------------------------------------------------------
+  -- Second outer Pasch:
+  --
+  -- triangle QPA, with P-A-B and Q-F-A,
+  -- produces W such that B-F-W and Q-W-P.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_outer_pasch_strong
+        Geo
+        Q P A
+        B F
+        hNCQPA
+        hPAB
+        hQFA with
+    ⟨W, hBFW, hQWP⟩
+
+  ----------------------------------------------------------------------
+  -- Locate U between B and P.
+  ----------------------------------------------------------------------
+
+  have hBUAP : Geo.Congruent B U A P :=
+    hilbert_congruent_symmetry
+      Geo A P B U hAPBU
+
+  have hBUPA : Geo.Congruent B U P A :=
+    (bookZero_congruenceFlip
+      Geo B U A P hBUAP).2.2
+
+  have hBUPB : HilbertSegmentLess Geo B U P B :=
+    ⟨A, hPAB, hBUPA⟩
+
+  have hPBBP : Geo.Congruent P B B P :=
+    (bookZero_congruenceFlip
+      Geo P B P B
+      (hilbert_congruent_reflexive Geo P B)).2.2
+
+  have hBUBP : HilbertSegmentLess Geo B U B P :=
+    bookZero_30_lessThanCongruence
+      Geo
+      B U P B B P
+      hBUPB
+      hPBBP
+
+  have hBAPRay : HilbertSameRay Geo B A P :=
     hilbert_sameRay_of_between
-      Geo A B E
-      (bookZero_3_6b Geo A B C E hABC hACE)
+      Geo B A P hBAP
 
-  have hAEBRay : HilbertSameRay Geo A E B :=
-    bookZero_39_ray5
-      Geo A B E hABERay
-
-  have hADERay : HilbertSameRay Geo A D E :=
-    hilbert_sameRay_of_between
-      Geo A D E hADE
-
-  have hAEDRay : HilbertSameRay Geo A E D :=
-    bookZero_39_ray5
-      Geo A D E hADERay
-
-  have hABDRay : HilbertSameRay Geo A B D :=
+  have hBPU : HilbertSameRay Geo B P U :=
     bookZero_36_ray3
       Geo
-      A E B D
-      hAEBRay
-      hAEDRay
+      B A P U
+      hBAPRay
+      hBAU
+
+  have hBUP_ray : HilbertSameRay Geo B U P :=
+    bookZero_39_ray5
+      Geo B P U hBPU
+
+  have hBUP : Geo.Between B U P :=
+    bookZero_51_lessThanBetween
+      Geo
+      B U P
+      hBUBP
+      hBUP_ray
 
   ----------------------------------------------------------------------
-  -- Compare D with B on ray AB.
+  -- Locate V between B and Q.
   ----------------------------------------------------------------------
 
-  rcases bookZero_35_ray1 Geo A B D hABDRay with
-    hADB | hBD | hABD
+  have hBVCQ : Geo.Congruent B V C Q :=
+    hilbert_congruent_symmetry
+      Geo C Q B V hCQBV
+
+  have hBVQC : Geo.Congruent B V Q C :=
+    (bookZero_congruenceFlip
+      Geo B V C Q hBVCQ).2.2
+
+  have hBVQB : HilbertSegmentLess Geo B V Q B :=
+    ⟨C, hQCB, hBVQC⟩
+
+  have hQBBQ : Geo.Congruent Q B B Q :=
+    (bookZero_congruenceFlip
+      Geo Q B Q B
+      (hilbert_congruent_reflexive Geo Q B)).2.2
+
+  have hBVBQ : HilbertSegmentLess Geo B V B Q :=
+    bookZero_30_lessThanCongruence
+      Geo
+      B V Q B B Q
+      hBVQB
+      hQBBQ
+
+  have hBCQRay : HilbertSameRay Geo B C Q :=
+    hilbert_sameRay_of_between
+      Geo B C Q hBCQ
+
+  have hBQV : HilbertSameRay Geo B Q V :=
+    bookZero_36_ray3
+      Geo
+      B C Q V
+      hBCQRay
+      hBCV
+
+  have hBVQ_ray : HilbertSameRay Geo B V Q :=
+    bookZero_39_ray5
+      Geo B Q V hBQV
+
+  have hBVQ : Geo.Between B V Q :=
+    bookZero_51_lessThanBetween
+      Geo
+      B V Q
+      hBVBQ
+      hBVQ_ray
 
   ----------------------------------------------------------------------
-  -- Case A-D-B leads to AE < AC, while A-C-E gives AC < AE.
+  -- We now have the two missing order relations from the BNW proof:
+  --
+  -- B-U-P
+  -- B-V-Q
+  --
+  -- Next: first inner Pasch -> M,
+  --       second inner Pasch -> H,
+  --       then H lies on ray BE.
   ----------------------------------------------------------------------
 
-  · have hADAB : HilbertSegmentLess Geo A D A B :=
-      ⟨D,
-       hADB,
-       hilbert_congruent_reflexive Geo A D⟩
+  ----------------------------------------------------------------------
+  -- First inner Pasch.
+  --
+  -- From P-U-B and Q-W-P obtain M with
+  -- B-M-W and Q-M-U.
+  ----------------------------------------------------------------------
 
-    have hDEBC : Geo.Congruent D E B C :=
-      hilbert_congruent_symmetry
-        Geo B C D E hBCDE
+  have hUP : U ≠ P :=
+    (HilbertOrder.between_incidence
+      B U P hBUP).2.1
 
-    have hAEAC : HilbertSegmentLess Geo A E A C :=
-      bookZero_53_lessThanAdditive
+  have hUPB : PrimCollinear Geo U P B := by
+    rcases bookZero_22_collinearOrder
+        Geo B U P
+        (HilbertOrder.between_incidence
+          B U P hBUP).2.2.2.1 with
+      ⟨_, hUPB, _, _, _⟩
+
+    exact hUPB
+
+  have hNCQPU : ¬ PrimCollinear Geo Q P U := by
+    intro hQPU
+
+    have hUPQ : PrimCollinear Geo U P Q := by
+      rcases bookZero_22_collinearOrder
+          Geo Q P U hQPU with
+        ⟨_, _, _, _, hUPQ⟩
+
+      exact hUPQ
+
+    have hPBQ : PrimCollinear Geo P B Q :=
+      bookZero_24_collinear4
         Geo
-        A D
-        A B
-        E C
-        hADAB
-        hADE
-        hABC
-        hDEBC
+        U P B Q
+        hUPB
+        hUPQ
+        hUP
 
-    have hACAE : HilbertSegmentLess Geo A C A E :=
-      ⟨C,
-       hACE,
-       hilbert_congruent_reflexive Geo A C⟩
+    have hBPQ : PrimCollinear Geo B P Q :=
+      bookZero_20_collinear1
+        Geo P B Q hPBQ
 
-    exact
-      False.elim
-        ((bookZero_47_trichotomy2
-            Geo A E A C hAEAC)
-          hACAE)
+    exact hNCBPQ hBPQ
 
-  ----------------------------------------------------------------------
-  -- Case B = D would give BC congruent to BE,
-  -- impossible because B-C-E.
-  ----------------------------------------------------------------------
+  have hPUB : Geo.Between P U B :=
+    (HilbertOrder.between_incidence
+      B U P hBUP).2.2.2.2
 
-  · subst D
-
-    have hBCE : Geo.Between B C E :=
-      bookZero_3_6a
-        Geo A B C E
-        hABC
-        hACE
-
-    have hBCBE : Geo.Congruent B C B E := by
-      simpa using hBCDE
-
-    exact
-      False.elim
-        (bookZero_45_partNotEqualWhole
-          Geo B C E hBCE hBCBE)
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        Q P U
+        B W
+        hNCQPU
+        hPUB
+        hQWP with
+    ⟨M, hBMW, hQMU⟩
 
   ----------------------------------------------------------------------
-  -- Remaining case is the desired A-B-D.
+  -- Prepare noncollinearity B-Q-M for the second inner Pasch.
   ----------------------------------------------------------------------
 
-  · exact hABD
+  have hBU : B ≠ U :=
+    (HilbertOrder.between_incidence
+      B U P hBUP).1
+
+  have hBPUcol : PrimCollinear Geo B P U := by
+    rcases bookZero_22_collinearOrder
+        Geo B U P
+        (HilbertOrder.between_incidence
+          B U P hBUP).2.2.2.1 with
+      ⟨_, _, _, hBPUcol, _⟩
+
+    exact hBPUcol
+
+  have hNCBUQ : ¬ PrimCollinear Geo B U Q :=
+    bookZero_27_NChelper
+      Geo
+      B P Q
+      B U
+      hNCBPQ
+      hBPB
+      hBPUcol
+      hBU
+
+  have hNCUQB : ¬ PrimCollinear Geo U Q B := by
+    rcases bookZero_23_NCorder
+        Geo B U Q hNCBUQ with
+      ⟨_, hNCUQB, _, _, _⟩
+
+    exact hNCUQB
+
+  have hQMUcol : PrimCollinear Geo Q M U :=
+    (HilbertOrder.between_incidence
+      Q M U hQMU).2.2.2.1
+
+  have hUQMcol : PrimCollinear Geo U Q M := by
+    rcases bookZero_22_collinearOrder
+        Geo Q M U hQMUcol with
+      ⟨_, _, hUQMcol, _, _⟩
+
+    exact hUQMcol
+
+  have hUQQcol : PrimCollinear Geo U Q Q := by
+    rcases hUQMcol with
+      ⟨l, hUl, hQl, hMl⟩
+
+    exact ⟨l, hUl, hQl, hQl⟩
+
+  have hMQ : M ≠ Q := by
+    have hQM : Q ≠ M :=
+      (HilbertOrder.between_incidence
+        Q M U hQMU).1
+
+    exact hQM.symm
+
+  have hNCMQB : ¬ PrimCollinear Geo M Q B :=
+    bookZero_27_NChelper
+      Geo
+      U Q B
+      M Q
+      hNCUQB
+      hUQMcol
+      hUQQcol
+      hMQ
+
+  have hNCBQM : ¬ PrimCollinear Geo B Q M := by
+    rcases bookZero_23_NCorder
+        Geo M Q B hNCMQB with
+      ⟨_, _, _, _, hNCBQM⟩
+
+    exact hNCBQM
+
+  ----------------------------------------------------------------------
+  -- Second inner Pasch.
+  --
+  -- From Q-M-U and B-V-Q obtain H with
+  -- U-H-V and B-H-M.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        B Q M
+        U V
+        hNCBQM
+        hQMU
+        hBVQ with
+    ⟨H, hUHV, hBHM⟩
+
+  ----------------------------------------------------------------------
+  -- Show that H lies on ray BE.
+  ----------------------------------------------------------------------
+
+  have hBEW : Geo.Between B E W :=
+    bookZero_3_6b
+      Geo
+      B E F W
+      hBEF
+      hBFW
+
+  have hBHW : Geo.Between B H W :=
+    bookZero_3_6b
+      Geo
+      B H M W
+      hBHM
+      hBMW
+
+  have hBEWray : HilbertSameRay Geo B E W :=
+    hilbert_sameRay_of_between
+      Geo B E W hBEW
+
+  have hBWE : HilbertSameRay Geo B W E :=
+    bookZero_39_ray5
+      Geo B E W hBEWray
+
+  have hBHWray : HilbertSameRay Geo B H W :=
+    hilbert_sameRay_of_between
+      Geo B H W hBHW
+
+  have hBWH : HilbertSameRay Geo B W H :=
+    bookZero_39_ray5
+      Geo B H W hBHWray
+
+  have hBEH : HilbertSameRay Geo B E H :=
+    bookZero_36_ray3
+      Geo
+      B W E H
+      hBWE
+      hBWH
+
+  exact ⟨H, hBEH, hUHV⟩
+
 
 end Geometry
