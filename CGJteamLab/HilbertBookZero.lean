@@ -498,55 +498,7 @@ theorem bookZero_differenceOfParts
       hABC habc hABab hACac
 
 
-/--
-Hilbert Theorem 11.
 
-If AB is congruent to AC in a noncollinear triangle ABC,
-then the base angles at B and C are congruent.
--/
-theorem hilbert_isosceles_base_angles
-    [HilbertIncidence Geo]
-    [HilbertCongruence Geo]
-    (A B C : Geo.Point)
-    (hNC : ¬ Collinear Geo A B C)
-    (hABAC : Geo.Congruent A B A C) :
-    Geo.AngleCongruent A B C A C B := by
-
-  have hNC' : ¬ Collinear Geo A C B := by
-    intro hACB
-    exact hNC (PrimCollinearRotate Geo A C B hACB)
-
-  have hBAC : ¬ PrimCollinear Geo B A C := by
-    intro hBAC
-    apply hNC
-    exact PrimCollinearSwap Geo B A C hBAC
-
-  have hAngleA :
-      Geo.AngleCongruent B A C C A B := by
-    have hRefl :
-        Geo.AngleCongruent B A C B A C :=
-      HilbertCongruence.angle_congruence_reflexive
-        (Geo := Geo) B A C hBAC
-
-    exact
-      (Geo.angle_congruent_reverse_second
-        B A C B A C).mp hRefl
-
-  have hACAB : Geo.Congruent A C A B :=
-    hilbert_congruent_symmetry Geo A B A C hABAC
-
-  have hTriangles :=
-    SAS
-      Geo
-      A B C
-      A C B
-      hNC
-      hNC'
-      hABAC
-      hAngleA
-      hACAB
-
-  exact hTriangles.angleB
 
 /--
 If A-B-D and C is not on line AD, then A and B lie on the same
@@ -1864,12 +1816,7 @@ theorem bookZero_collinearTriple_transfer
             PrimCollinearRotate
               Geo a d b hadbCol
 
-/--
-All null segments are congruent.
--/
-axiom bookZero_nullSegment2
-    (A B : Geo.Point) :
-    Geo.Congruent A A B B
+
 
 
 /--

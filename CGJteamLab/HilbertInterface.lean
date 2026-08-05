@@ -2258,6 +2258,49 @@ theorem hilbert_isosceles_base_angles
   exact hTriangles.angleB
 -/
 
+
+/-
+Temporary Hilbert Theorem 15: addition of adjacent congruent angles.
+
+The outer rays OA and OC lie on opposite sides of the line OB,
+and analogously OA' and OC' lie on opposite sides of O'B'.
+Thus OB and O'B' are the interior dividing rays of the two angles.
+-/
+
+/--
+Temporary Hilbert Theorem 15.
+
+Let OA, OB, OC and O'A', O'B', O'C' determine two angle
+configurations. The outer rays OA, OC and O'A', O'C' have the
+same relative side configuration with respect to the lines OB
+and O'B': in both configurations they lie on the same side, or
+in both configurations they lie on different sides.
+
+If the two component angles are pairwise congruent, then the
+angles formed by the outer rays are congruent.
+
+This is retained temporarily while the remaining Hilbert SSS
+construction is verified.
+-/
+axiom hilbert_angle_addition
+    [HilbertCongruence Geo]
+    (A O B C A' O' B' C' : Geo.Point)
+    (l l' : Geo.Line)
+    (hOl : HilbertIncidence.OnLine O l)
+    (hBl : HilbertIncidence.OnLine B l)
+    (hO'l' : HilbertIncidence.OnLine O' l')
+    (hB'l' : HilbertIncidence.OnLine B' l')
+    (hAoff : ¬ HilbertIncidence.OnLine A l)
+    (hCoff : ¬ HilbertIncidence.OnLine C l)
+    (hA'off : ¬ HilbertIncidence.OnLine A' l')
+    (hC'off : ¬ HilbertIncidence.OnLine C' l')
+    (hSideConfiguration :
+      HilbertSameSide Geo A C l ↔
+      HilbertSameSide Geo A' C' l')
+    (hAB : Geo.AngleCongruent A O B A' O' B')
+    (hBC : Geo.AngleCongruent B O C B' O' C') :
+    Geo.AngleCongruent A O C A' O' C'
+
 /--
 Temporary Hilbert SSS interface.
 
@@ -2273,5 +2316,734 @@ axiom HilbertSSS
     (hAC : Geo.Congruent A C D F) :
     (¬ Collinear Geo D E F) ∧
     TriangleCongruenceResult Geo A B C D E F
+
+/--
+All null segments are congruent.
+-/
+axiom bookZero_nullSegment2
+    (A B : Geo.Point) :
+    Geo.Congruent A A B B
+
+/-
+Hilbert Theorem 11.
+
+If AB is congruent to AC in a noncollinear triangle ABC,
+then the base angles at B and C are congruent.
+-/
+
+theorem hilbert_isosceles_base_angles
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hNC : ¬ Collinear Geo A B C)
+    (hABAC : Geo.Congruent A B A C) :
+    Geo.AngleCongruent A B C A C B := by
+
+  have hNC' : ¬ Collinear Geo A C B := by
+    intro hACB
+    exact hNC (PrimCollinearRotate Geo A C B hACB)
+
+  have hBAC : ¬ PrimCollinear Geo B A C := by
+    intro hBAC
+    apply hNC
+    exact PrimCollinearSwap Geo B A C hBAC
+
+  have hAngleA :
+      Geo.AngleCongruent B A C C A B := by
+    have hRefl :
+        Geo.AngleCongruent B A C B A C :=
+      HilbertCongruence.angle_congruence_reflexive
+        (Geo := Geo) B A C hBAC
+
+    exact
+      (Geo.angle_congruent_reverse_second
+        B A C B A C).mp hRefl
+
+  have hACAB : Geo.Congruent A C A B :=
+    hilbert_congruent_symmetry Geo A B A C hABAC
+
+  have hTriangles :=
+    SAS
+      Geo
+      A B C
+      A C B
+      hNC
+      hNC'
+      hABAC
+      hAngleA
+      hACAB
+
+  exact hTriangles.angleB
+
+/--
+If A, M, B are three distinct collinear points and M is
+equidistant from A and B, then M lies between A and B.
+
+The two other possible orders would place A and B on the same
+ray from M. Uniqueness of segment construction would then force
+A = B.
+-/
+theorem hilbert_between_of_collinear_equidistant
+    [HilbertCongruence Geo]
+    (A M B : Geo.Point)
+    (hMA : M ≠ A)
+    (hMB : M ≠ B)
+    (hAB : A ≠ B)
+    (hCol : Collinear Geo A M B)
+    (hCong : Geo.Congruent M A M B) :
+    Geo.Between A M B := by
+
+  rcases
+      hilbert_between_trichotomy
+        Geo A M B
+        hMA.symm
+        hMB
+        hAB
+        hCol with
+    hAMB | hMAB | hABM
+
+  · exact hAMB
+
+  ·
+    -- M-A-B: A and B lie on the same ray from M.
+    have hRayAB : HilbertSameRay Geo M A B :=
+      hilbert_sameRay_of_between
+        Geo M A B hMAB
+
+    have hRayAA : HilbertSameRay Geo M A A :=
+      hilbert_sameRay_refl
+        Geo M A hMA.symm
+
+    have hMB_MA : Geo.Congruent M B M A :=
+      hilbert_congruent_symmetry
+        Geo M A M B hCong
+
+    have hEq : A = B :=
+      hilbert_segment_construction_unique
+        Geo
+        M A
+        M A
+        A B
+        hRayAA
+        hRayAB
+        (hilbert_congruent_reflexive Geo M A)
+        hMB_MA
+
+    exact False.elim (hAB hEq)
+
+  ·
+    -- A-B-M, hence M-B-A: B and A lie on the same ray from M.
+    have hMBA : Geo.Between M B A :=
+      (HilbertOrder.between_incidence
+        A B M hABM).2.2.2.2
+
+    have hRayBA : HilbertSameRay Geo M B A :=
+      hilbert_sameRay_of_between
+        Geo M B A hMBA
+
+    have hRayBB : HilbertSameRay Geo M B B :=
+      hilbert_sameRay_refl
+        Geo M B hMB.symm
+
+    have hEq : B = A :=
+      hilbert_segment_construction_unique
+        Geo
+        M B
+        M B
+        B A
+        hRayBB
+        hRayBA
+        (hilbert_congruent_reflexive Geo M B)
+        hCong
+
+    exact False.elim (hAB hEq.symm)
+
+/--
+Hilbert Theorem 17, nondegenerate case.
+
+This provisional proof isolates the remaining mismatch in the current
+temporary formulation of Hilbert Theorem 15.
+-/
+theorem hilbert_theorem_17_nondegenerate
+    [HilbertCongruence Geo]
+    (X Y Z1 Z2 : Geo.Point)
+    (lineXY lineZ : Geo.Line)
+    (hXY : X ≠ Y)
+    (hXxy : HilbertIncidence.OnLine X lineXY)
+    (hYxy : HilbertIncidence.OnLine Y lineXY)
+    (hOpp : HilbertOppositeSide Geo Z1 Z2 lineXY)
+    (hZ1z : HilbertIncidence.OnLine Z1 lineZ)
+    (hZ2z : HilbertIncidence.OnLine Z2 lineZ)
+    (hXnotz : ¬ HilbertIncidence.OnLine X lineZ)
+    (hYnotz : ¬ HilbertIncidence.OnLine Y lineZ)
+    (hXZ : Geo.Congruent X Z1 X Z2)
+    (hYZ : Geo.Congruent Y Z1 Y Z2) :
+    Geo.AngleCongruent X Y Z1 X Y Z2 := by
+
+  have hZ1Z2 : Z1 ≠ Z2 := by
+    intro hEq
+    subst Z2
+    rcases hOpp.2.2 with ⟨P, hZ1PZ1, _⟩
+    exact
+      (HilbertOrder.between_incidence
+        Z1 P Z1 hZ1PZ1).2.2.1 rfl
+
+  have hXZ1Z2 : ¬ Collinear Geo X Z1 Z2 := by
+    rintro ⟨line, hXline, hZ1line, hZ2line⟩
+    have hLineEq : line = lineZ :=
+      HilbertPlaneIncidence.line_unique
+        Z1 Z2 hZ1Z2
+        line lineZ
+        hZ1line hZ2line hZ1z hZ2z
+    exact hXnotz (hLineEq ▸ hXline)
+
+  have hYZ1Z2 : ¬ Collinear Geo Y Z1 Z2 := by
+    rintro ⟨line, hYline, hZ1line, hZ2line⟩
+    have hLineEq : line = lineZ :=
+      HilbertPlaneIncidence.line_unique
+        Z1 Z2 hZ1Z2
+        line lineZ
+        hZ1line hZ2line hZ1z hZ2z
+    exact hYnotz (hLineEq ▸ hYline)
+
+  have hZ1XY : ¬ Collinear Geo Z1 X Y := by
+    rintro ⟨line, hZ1line, hXline, hYline⟩
+    have hLineEq : line = lineXY :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        line lineXY
+        hXline hYline hXxy hYxy
+    exact hOpp.1 (hLineEq ▸ hZ1line)
+
+  have hZ2XY : ¬ Collinear Geo Z2 X Y := by
+    rintro ⟨line, hZ2line, hXline, hYline⟩
+    have hLineEq : line = lineXY :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        line lineXY
+        hXline hYline hXxy hYxy
+    exact hOpp.2.1 (hLineEq ▸ hZ2line)
+
+  have hAngleX :
+      Geo.AngleCongruent X Z1 Z2 X Z2 Z1 :=
+    hilbert_isosceles_base_angles
+      Geo X Z1 Z2 hXZ1Z2 hXZ
+
+  have hAngleYraw :
+      Geo.AngleCongruent Y Z1 Z2 Y Z2 Z1 :=
+    hilbert_isosceles_base_angles
+      Geo Y Z1 Z2 hYZ1Z2 hYZ
+
+  have hAngleY :
+      Geo.AngleCongruent Z2 Z1 Y Z1 Z2 Y := by
+    exact
+      (Geo.angle_congruent_reverse_second
+        Z2 Z1 Y Y Z2 Z1).mp
+        ((Geo.angle_congruent_reverse_first
+          Y Z1 Z2 Y Z2 Z1).mp hAngleYraw)
+
+  -- This does not follow from the hypotheses of Hilbert Theorem 17.
+  -- Its appearance shows that the current temporary Theorem 15
+  -- interface is too restrictive.
+
+
+  have hAngleZ :
+      Geo.AngleCongruent X Z1 Y X Z2 Y :=
+    hilbert_angle_addition
+      Geo
+      X Z1 Z2 Y
+      X Z2 Z1 Y
+      lineZ lineZ
+      hZ1z hZ2z
+      hZ2z hZ1z
+      hXnotz hYnotz
+      hXnotz hYnotz
+      Iff.rfl
+      hAngleX hAngleY
+
+  have hZ1X_Z2X :
+      Geo.Congruent Z1 X Z2 X :=
+    CongruentReverseBoth
+      Geo X Z1 X Z2 hXZ
+
+  have hZ1Y_Z2Y :
+      Geo.Congruent Z1 Y Z2 Y :=
+    CongruentReverseBoth
+      Geo Y Z1 Y Z2 hYZ
+
+  have hTriangles :=
+    SAS
+      Geo
+      Z1 X Y
+      Z2 X Y
+      hZ1XY
+      hZ2XY
+      hZ1X_Z2X
+      hAngleZ
+      hZ1Y_Z2Y
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      X Y Z1 Z2 Y X).mp
+      ((Geo.angle_congruent_reverse_first
+        Z1 Y X Z2 Y X).mp hTriangles.angleC)
+
+
+/--
+Hilbert Theorem 17, special case X on Z1Z2.
+
+If X lies on Z1Z2, the equality YZ1 = YZ2 makes triangle
+YZ1Z2 isosceles. Its base-angle congruence, transported from
+the rays Z1Z2 and Z2Z1 to the rays Z1X and Z2X, supplies the
+included angle needed for SAS.
+-/
+theorem hilbert_theorem_17_case_X_on_Z
+    [HilbertCongruence Geo]
+    (X Y Z1 Z2 : Geo.Point)
+    (lineXY lineZ : Geo.Line)
+    (hXY : X ≠ Y)
+    (hXxy : HilbertIncidence.OnLine X lineXY)
+    (hYxy : HilbertIncidence.OnLine Y lineXY)
+    (hOpp : HilbertOppositeSide Geo Z1 Z2 lineXY)
+    (hZ1z : HilbertIncidence.OnLine Z1 lineZ)
+    (hZ2z : HilbertIncidence.OnLine Z2 lineZ)
+    (hXz : HilbertIncidence.OnLine X lineZ)
+    (hXZ : Geo.Congruent X Z1 X Z2)
+    (hYZ : Geo.Congruent Y Z1 Y Z2) :
+    Geo.AngleCongruent X Y Z1 X Y Z2 := by
+
+  have hZ1notXY :
+      ¬ HilbertIncidence.OnLine Z1 lineXY :=
+    hOpp.1
+
+  have hZ2notXY :
+      ¬ HilbertIncidence.OnLine Z2 lineXY :=
+    hOpp.2.1
+
+  have hXZ1 : X ≠ Z1 := by
+    intro hEq
+    subst Z1
+    exact hZ1notXY hXxy
+
+  have hXZ2 : X ≠ Z2 := by
+    intro hEq
+    subst Z2
+    exact hZ2notXY hXxy
+
+  have hZ1Z2 : Z1 ≠ Z2 := by
+    intro hEq
+    subst Z2
+    rcases hOpp.2.2 with ⟨P, hZ1PZ1, _⟩
+    exact
+      (HilbertOrder.between_incidence
+        Z1 P Z1 hZ1PZ1).2.2.1 rfl
+
+  have hColZ1XZ2 :
+      Collinear Geo Z1 X Z2 :=
+    ⟨lineZ, hZ1z, hXz, hZ2z⟩
+
+  have hBetween :
+      Geo.Between Z1 X Z2 :=
+    hilbert_between_of_collinear_equidistant
+      Geo
+      Z1 X Z2
+      hXZ1
+      hXZ2
+      hZ1Z2
+      hColZ1XZ2
+      hXZ
+
+  have hBetweenRev :
+      Geo.Between Z2 X Z1 :=
+    (HilbertOrder.between_incidence
+      Z1 X Z2 hBetween).2.2.2.2
+
+  have hRayZ1 :
+      HilbertSameRay Geo Z1 X Z2 :=
+    hilbert_sameRay_of_between
+      Geo Z1 X Z2 hBetween
+
+  have hRayZ2 :
+      HilbertSameRay Geo Z2 X Z1 :=
+    hilbert_sameRay_of_between
+      Geo Z2 X Z1 hBetweenRev
+
+  have hYnotz :
+      ¬ HilbertIncidence.OnLine Y lineZ := by
+    intro hYz
+
+    have hLinesEqual : lineXY = lineZ :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        lineXY lineZ
+        hXxy hYxy
+        hXz hYz
+
+    have hZ1xy :
+        HilbertIncidence.OnLine Z1 lineXY := by
+      rw [hLinesEqual]
+      exact hZ1z
+
+    exact hZ1notXY hZ1xy
+
+  have hYZ1Z2 :
+      ¬ Collinear Geo Y Z1 Z2 := by
+    rintro ⟨line, hYline, hZ1line, hZ2line⟩
+
+    have hLineEq : line = lineZ :=
+      HilbertPlaneIncidence.line_unique
+        Z1 Z2 hZ1Z2
+        line lineZ
+        hZ1line hZ2line
+        hZ1z hZ2z
+
+    exact hYnotz (hLineEq ▸ hYline)
+
+  have hBaseRaw :
+      Geo.AngleCongruent Y Z1 Z2 Y Z2 Z1 :=
+    hilbert_isosceles_base_angles
+      Geo Y Z1 Z2 hYZ1Z2 hYZ
+
+  have hAngleAtZ :
+      Geo.AngleCongruent X Z1 Y X Z2 Y := by
+
+    have hLeft :
+        Geo.Angle X Z1 Y =
+        Geo.Angle Z2 Z1 Y :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo Z1 X Z2 Y hRayZ1
+
+    have hRight :
+        Geo.Angle X Z2 Y =
+        Geo.Angle Z1 Z2 Y :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo Z2 X Z1 Y hRayZ2
+
+    have hBase :
+        Geo.AngleCongruent Z2 Z1 Y Z1 Z2 Y := by
+      exact
+        (Geo.angle_congruent_reverse_second
+          Z2 Z1 Y Y Z2 Z1).mp
+          ((Geo.angle_congruent_reverse_first
+            Y Z1 Z2 Y Z2 Z1).mp hBaseRaw)
+
+    unfold Geometry.Geo.AngleCongruent at hBase ⊢
+    rw [hLeft, hRight]
+    exact hBase
+
+  have hZ1XY :
+      ¬ Collinear Geo Z1 X Y := by
+    rintro ⟨line, hZ1line, hXline, hYline⟩
+
+    have hLineEq : line = lineXY :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        line lineXY
+        hXline hYline
+        hXxy hYxy
+
+    exact hZ1notXY (hLineEq ▸ hZ1line)
+
+  have hZ2XY :
+      ¬ Collinear Geo Z2 X Y := by
+    rintro ⟨line, hZ2line, hXline, hYline⟩
+
+    have hLineEq : line = lineXY :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        line lineXY
+        hXline hYline
+        hXxy hYxy
+
+    exact hZ2notXY (hLineEq ▸ hZ2line)
+
+  have hZ1X_Z2X :
+      Geo.Congruent Z1 X Z2 X :=
+    CongruentReverseBoth
+      Geo X Z1 X Z2 hXZ
+
+  have hZ1Y_Z2Y :
+      Geo.Congruent Z1 Y Z2 Y :=
+    CongruentReverseBoth
+      Geo Y Z1 Y Z2 hYZ
+
+  have hTriangles :=
+    SAS
+      Geo
+      Z1 X Y
+      Z2 X Y
+      hZ1XY
+      hZ2XY
+      hZ1X_Z2X
+      hAngleAtZ
+      hZ1Y_Z2Y
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      X Y Z1 Z2 Y X).mp
+      ((Geo.angle_congruent_reverse_first
+        Z1 Y X Z2 Y X).mp hTriangles.angleC)
+
+/--
+Hilbert Theorem 17, special case Y on Z1Z2.
+
+If Y lies on Z1Z2, equidistance YZ1 = YZ2 forces Y to lie
+between Z1 and Z2. The equality XZ1 = XZ2 makes triangle
+XZ1Z2 isosceles. Transporting its base angles to the rays
+Z1Y and Z2Y supplies the included angles for SAS.
+-/
+theorem hilbert_theorem_17_case_Y_on_Z
+    [HilbertCongruence Geo]
+    (X Y Z1 Z2 : Geo.Point)
+    (lineXY lineZ : Geo.Line)
+    (hXY : X ≠ Y)
+    (hXxy : HilbertIncidence.OnLine X lineXY)
+    (hYxy : HilbertIncidence.OnLine Y lineXY)
+    (hOpp : HilbertOppositeSide Geo Z1 Z2 lineXY)
+    (hZ1z : HilbertIncidence.OnLine Z1 lineZ)
+    (hZ2z : HilbertIncidence.OnLine Z2 lineZ)
+    (hYz : HilbertIncidence.OnLine Y lineZ)
+    (hXZ : Geo.Congruent X Z1 X Z2)
+    (hYZ : Geo.Congruent Y Z1 Y Z2) :
+    Geo.AngleCongruent X Y Z1 X Y Z2 := by
+
+  have hZ1notXY :
+      ¬ HilbertIncidence.OnLine Z1 lineXY :=
+    hOpp.1
+
+  have hZ2notXY :
+      ¬ HilbertIncidence.OnLine Z2 lineXY :=
+    hOpp.2.1
+
+  have hYZ1 : Y ≠ Z1 := by
+    intro hEq
+    subst Z1
+    exact hZ1notXY hYxy
+
+  have hYZ2 : Y ≠ Z2 := by
+    intro hEq
+    subst Z2
+    exact hZ2notXY hYxy
+
+  have hZ1Z2 : Z1 ≠ Z2 := by
+    intro hEq
+    subst Z2
+    rcases hOpp.2.2 with ⟨P, hZ1PZ1, _⟩
+    exact
+      (HilbertOrder.between_incidence
+        Z1 P Z1 hZ1PZ1).2.2.1 rfl
+
+  have hColZ1YZ2 :
+      Collinear Geo Z1 Y Z2 :=
+    ⟨lineZ, hZ1z, hYz, hZ2z⟩
+
+  have hBetween :
+      Geo.Between Z1 Y Z2 :=
+    hilbert_between_of_collinear_equidistant
+      Geo
+      Z1 Y Z2
+      hYZ1
+      hYZ2
+      hZ1Z2
+      hColZ1YZ2
+      hYZ
+
+  have hBetweenRev :
+      Geo.Between Z2 Y Z1 :=
+    (HilbertOrder.between_incidence
+      Z1 Y Z2 hBetween).2.2.2.2
+
+  have hRayZ1 :
+      HilbertSameRay Geo Z1 Y Z2 :=
+    hilbert_sameRay_of_between
+      Geo Z1 Y Z2 hBetween
+
+  have hRayZ2 :
+      HilbertSameRay Geo Z2 Y Z1 :=
+    hilbert_sameRay_of_between
+      Geo Z2 Y Z1 hBetweenRev
+
+  have hXnotz :
+      ¬ HilbertIncidence.OnLine X lineZ := by
+    intro hXz
+
+    have hLinesEqual : lineXY = lineZ :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        lineXY lineZ
+        hXxy hYxy
+        hXz hYz
+
+    have hZ1xy :
+        HilbertIncidence.OnLine Z1 lineXY := by
+      rw [hLinesEqual]
+      exact hZ1z
+
+    exact hZ1notXY hZ1xy
+
+  have hXZ1Z2 :
+      ¬ Collinear Geo X Z1 Z2 := by
+    rintro ⟨line, hXline, hZ1line, hZ2line⟩
+
+    have hLineEq : line = lineZ :=
+      HilbertPlaneIncidence.line_unique
+        Z1 Z2 hZ1Z2
+        line lineZ
+        hZ1line hZ2line
+        hZ1z hZ2z
+
+    exact hXnotz (hLineEq ▸ hXline)
+
+  have hBaseRaw :
+      Geo.AngleCongruent X Z1 Z2 X Z2 Z1 :=
+    hilbert_isosceles_base_angles
+      Geo X Z1 Z2 hXZ1Z2 hXZ
+
+  have hBase :
+      Geo.AngleCongruent Z2 Z1 X Z1 Z2 X := by
+    exact
+      (Geo.angle_congruent_reverse_second
+        Z2 Z1 X X Z2 Z1).mp
+        ((Geo.angle_congruent_reverse_first
+          X Z1 Z2 X Z2 Z1).mp hBaseRaw)
+
+  have hAngleAtZ :
+      Geo.AngleCongruent Y Z1 X Y Z2 X := by
+
+    have hLeft :
+        Geo.Angle Y Z1 X =
+        Geo.Angle Z2 Z1 X :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo Z1 Y Z2 X hRayZ1
+
+    have hRight :
+        Geo.Angle Y Z2 X =
+        Geo.Angle Z1 Z2 X :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo Z2 Y Z1 X hRayZ2
+
+    unfold Geometry.Geo.AngleCongruent at hBase ⊢
+    rw [hLeft, hRight]
+    exact hBase
+
+  have hZ1YX :
+      ¬ Collinear Geo Z1 Y X := by
+    rintro ⟨line, hZ1line, hYline, hXline⟩
+
+    have hLineEq : line = lineXY :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        line lineXY
+        hXline hYline
+        hXxy hYxy
+
+    exact hZ1notXY (hLineEq ▸ hZ1line)
+
+  have hZ2YX :
+      ¬ Collinear Geo Z2 Y X := by
+    rintro ⟨line, hZ2line, hYline, hXline⟩
+
+    have hLineEq : line = lineXY :=
+      HilbertPlaneIncidence.line_unique
+        X Y hXY
+        line lineXY
+        hXline hYline
+        hXxy hYxy
+
+    exact hZ2notXY (hLineEq ▸ hZ2line)
+
+  have hZ1Y_Z2Y :
+      Geo.Congruent Z1 Y Z2 Y :=
+    CongruentReverseBoth
+      Geo Y Z1 Y Z2 hYZ
+
+  have hZ1X_Z2X :
+      Geo.Congruent Z1 X Z2 X :=
+    CongruentReverseBoth
+      Geo X Z1 X Z2 hXZ
+
+  have hTriangles :=
+    SAS
+      Geo
+      Z1 Y X
+      Z2 Y X
+      hZ1YX
+      hZ2YX
+      hZ1Y_Z2Y
+      hAngleAtZ
+      hZ1X_Z2X
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      X Y Z1 Z2 Y X).mp
+      ((Geo.angle_congruent_reverse_first
+        Z1 Y X Z2 Y X).mp hTriangles.angleB)
+
+/--
+Hilbert Theorem 17.
+
+Let Z1 and Z2 lie on opposite sides of the line XY.
+If XZ1 is congruent to XZ2 and YZ1 is congruent to YZ2,
+then the angles XYZ1 and XYZ2 are congruent.
+
+The proof splits according to whether X or Y lies on the
+line Z1Z2. The two special cases and the general case have
+already been established separately.
+-/
+theorem hilbert_theorem_17
+    [HilbertCongruence Geo]
+    (X Y Z1 Z2 : Geo.Point)
+    (lineXY lineZ : Geo.Line)
+    (hXY : X ≠ Y)
+    (hXxy : HilbertIncidence.OnLine X lineXY)
+    (hYxy : HilbertIncidence.OnLine Y lineXY)
+    (hOpp : HilbertOppositeSide Geo Z1 Z2 lineXY)
+    (hZ1z : HilbertIncidence.OnLine Z1 lineZ)
+    (hZ2z : HilbertIncidence.OnLine Z2 lineZ)
+    (hXZ : Geo.Congruent X Z1 X Z2)
+    (hYZ : Geo.Congruent Y Z1 Y Z2) :
+    Geo.AngleCongruent X Y Z1 X Y Z2 := by
+
+  by_cases hXz : HilbertIncidence.OnLine X lineZ
+
+  · exact
+      hilbert_theorem_17_case_X_on_Z
+        Geo
+        X Y Z1 Z2
+        lineXY lineZ
+        hXY
+        hXxy hYxy
+        hOpp
+        hZ1z hZ2z
+        hXz
+        hXZ hYZ
+
+  · by_cases hYz : HilbertIncidence.OnLine Y lineZ
+
+    · exact
+        hilbert_theorem_17_case_Y_on_Z
+          Geo
+          X Y Z1 Z2
+          lineXY lineZ
+          hXY
+          hXxy hYxy
+          hOpp
+          hZ1z hZ2z
+          hYz
+          hXZ hYZ
+
+    · exact
+        hilbert_theorem_17_nondegenerate
+          Geo
+          X Y Z1 Z2
+          lineXY lineZ
+          hXY
+          hXxy hYxy
+          hOpp
+          hZ1z hZ2z
+          hXz hYz
+          hXZ hYZ
+
+
+
 
 end Geometry
