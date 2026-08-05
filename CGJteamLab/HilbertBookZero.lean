@@ -4342,5 +4342,1135 @@ theorem bookZero_55_crossbar
 
   exact ⟨H, hBEH, hUHV⟩
 
+/--
+Book Zero #56: ABCequalsCBA.
+
+An angle is congruent to the angle obtained by reversing its two rays.
+-/
+theorem bookZero_56_ABCequalsCBA
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hABC : ¬ PrimCollinear Geo A B C) :
+    Geo.AngleCongruent A B C C B A := by
+
+  have hRefl :
+      Geo.AngleCongruent A B C A B C :=
+    HilbertCongruence.angle_congruence_reflexive
+      (Geo := Geo) A B C hABC
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      A B C A B C).mp hRefl
+
+/--
+Book Zero #57: equalanglessymmetric.
+
+Angle congruence is symmetric.
+-/
+theorem bookZero_57_equalAnglesSymmetric
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D E F : Geo.Point)
+    (hAngle : Geo.AngleCongruent A B C D E F) :
+    Geo.AngleCongruent D E F A B C := by
+
+  exact
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      A B C
+      D E F
+      hAngle
+
+/--
+Book Zero #58: angledistinct.
+
+The endpoints of two nondegenerate congruent angles
+are pairwise distinct.
+-/
+theorem bookZero_58_angleDistinct
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C a b c : Geo.Point)
+    (_hAngle : Geo.AngleCongruent A B C a b c)
+    (hABC : ¬ PrimCollinear Geo A B C)
+    (habc : ¬ PrimCollinear Geo a b c) :
+    A ≠ B ∧
+    B ≠ C ∧
+    A ≠ C ∧
+    a ≠ b ∧
+    b ≠ c ∧
+    a ≠ c := by
+
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hABC
+
+  rcases bookZero_23_NCorder Geo A B C hABC with
+    ⟨_, hBCA, _, hACB, _⟩
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hBCA
+
+  have hAC : A ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo A C B hACB
+
+  have hab : a ≠ b :=
+    hilbert_noncollinear_ne_first
+      Geo a b c habc
+
+  rcases bookZero_23_NCorder Geo a b c habc with
+    ⟨_, hbca, _, hacb, _⟩
+
+  have hbc : b ≠ c :=
+    hilbert_noncollinear_ne_first
+      Geo b c a hbca
+
+  have hac : a ≠ c :=
+    hilbert_noncollinear_ne_first
+      Geo a c b hacb
+
+  exact ⟨hAB, hBC, hAC, hab, hbc, hac⟩
+
+/--
+Book Zero #59: 4.19.
+
+If A-D-B, AC is congruent to AD, and BD is congruent to BC,
+then C = D.
+-/
+theorem bookZero_59_4_19
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point)
+    (hADB : Geo.Between A D B)
+    (hACAD : Geo.Congruent A C A D)
+    (hBDBC : Geo.Congruent B D B C) :
+    C = D := by
+
+  have hADAD : Geo.Congruent A D A D :=
+    hilbert_congruent_reflexive Geo A D
+
+  have hDBDB : Geo.Congruent D B D B :=
+    hilbert_congruent_reflexive Geo D B
+
+  have hBCBD : Geo.Congruent B C B D :=
+    hilbert_congruent_symmetry
+      Geo B D B C hBDBC
+
+  have hDCDD : Geo.Congruent D C D D :=
+    bookZero_19_interior5
+      Geo
+      A D B
+      A D B
+      C D
+      hADB
+      hADB
+      hADAD
+      hDBDB
+      hACAD
+      hBCBD
+
+  have hDC : D = C :=
+    bookZero_nullSegment1
+      Geo D C D hDCDD
+
+  exact hDC.symm
+
+/--
+Book Zero #60: collinearbetween.
+
+Let A,E,B lie on one line and C,F,D on a disjoint line.
+If H lies between A and D and E,F,H are collinear,
+then H lies between E and F.
+-/
+theorem bookZero_60_collinearBetween
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C D E F H : Geo.Point)
+    (l m : Geo.Line)
+    (hAl : HilbertIncidence.OnLine A l)
+    (_hBl : HilbertIncidence.OnLine B l)
+    (hEl : HilbertIncidence.OnLine E l)
+    (_hCm : HilbertIncidence.OnLine C m)
+    (hDm : HilbertIncidence.OnLine D m)
+    (hFm : HilbertIncidence.OnLine F m)
+    (_hAB : A ≠ B)
+    (_hCD : C ≠ D)
+    (hAE : A ≠ E)
+    (hFD : F ≠ D)
+    (hDisjoint : HilbertLinesDisjoint Geo l m)
+    (hAHD : Geo.Between A H D)
+    (hEFHcol : PrimCollinear Geo E F H) :
+    Geo.Between E H F := by
+
+  ----------------------------------------------------------------------
+  -- The three points E, F, H are pairwise distinct.
+  ----------------------------------------------------------------------
+
+  have hEF : E ≠ F := by
+    intro hEq
+    subst F
+
+    exact hDisjoint ⟨E, hEl, hFm⟩
+
+  have hAH : A ≠ H :=
+    (HilbertOrder.between_incidence
+      A H D hAHD).1
+
+  have hHD : H ≠ D :=
+    (HilbertOrder.between_incidence
+      A H D hAHD).2.1
+
+  have hAHDcol : PrimCollinear Geo A H D :=
+    (HilbertOrder.between_incidence
+      A H D hAHD).2.2.2.1
+
+  have hEH : E ≠ H := by
+    intro hEq
+    subst H
+
+    have hAEDcol : PrimCollinear Geo A E D := by
+      simpa using hAHDcol
+
+    have hDl : HilbertIncidence.OnLine D l :=
+      hilbert_collinear_on_line
+        Geo
+        A E D
+        l
+        hAE
+        hAl
+        hEl
+        hAEDcol
+
+    exact hDisjoint ⟨D, hDl, hDm⟩
+
+  have hFH : F ≠ H := by
+    intro hEq
+    subst H
+
+    have hAFDcol : PrimCollinear Geo A F D := by
+      simpa using hAHDcol
+
+    have hFDAcol : PrimCollinear Geo F D A := by
+      rcases bookZero_22_collinearOrder
+          Geo A F D hAFDcol with
+        ⟨_, hFDAcol, _, _, _⟩
+
+      exact hFDAcol
+
+    have hAm : HilbertIncidence.OnLine A m :=
+      hilbert_collinear_on_line
+        Geo
+        F D A
+        m
+        hFD
+        hFm
+        hDm
+        hFDAcol
+
+    exact hDisjoint ⟨A, hAl, hAm⟩
+
+  ----------------------------------------------------------------------
+  -- Order trichotomy on the collinear triple E,F,H.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        E F H
+        hEF
+        hFH
+        hEH
+        hEFHcol with
+    hEFH | hFEH | hEHF
+
+  ----------------------------------------------------------------------
+  -- Case E-F-H.
+  --
+  -- Outer Pasch produces a common point of l and m.
+  ----------------------------------------------------------------------
+
+  · have hNCEAH : ¬ PrimCollinear Geo E A H := by
+      intro hEAH
+
+      have hHl : HilbertIncidence.OnLine H l :=
+        hilbert_collinear_on_line
+          Geo
+          E A H
+          l
+          hAE.symm
+          hEl
+          hAl
+          hEAH
+
+      have hDl : HilbertIncidence.OnLine D l :=
+        hilbert_collinear_on_line
+          Geo
+          A H D
+          l
+          hAH
+          hAl
+          hHl
+          hAHDcol
+
+      exact hDisjoint ⟨D, hDl, hDm⟩
+
+    rcases
+        hilbert_outer_pasch_strong
+          Geo
+          E A H
+          D F
+          hNCEAH
+          hAHD
+          hEFH with
+      ⟨Q, hDFQ, hEQA⟩
+
+    have hDFQcol : PrimCollinear Geo D F Q :=
+      (HilbertOrder.between_incidence
+        D F Q hDFQ).2.2.2.1
+
+    have hQm : HilbertIncidence.OnLine Q m :=
+      hilbert_collinear_on_line
+        Geo
+        D F Q
+        m
+        hFD.symm
+        hDm
+        hFm
+        hDFQcol
+
+    have hEQAcol : PrimCollinear Geo E Q A :=
+      (HilbertOrder.between_incidence
+        E Q A hEQA).2.2.2.1
+
+    have hEAQcol : PrimCollinear Geo E A Q := by
+      rcases bookZero_22_collinearOrder
+          Geo E Q A hEQAcol with
+        ⟨_, _, _, hEAQcol, _⟩
+
+      exact hEAQcol
+
+    have hQl : HilbertIncidence.OnLine Q l :=
+      hilbert_collinear_on_line
+        Geo
+        E A Q
+        l
+        hAE.symm
+        hEl
+        hAl
+        hEAQcol
+
+    exact False.elim (hDisjoint ⟨Q, hQl, hQm⟩)
+
+  ----------------------------------------------------------------------
+  -- Case F-E-H.
+  --
+  -- The other orientation of outer Pasch again produces
+  -- a common point of l and m.
+  ----------------------------------------------------------------------
+
+  · have hNCFDH : ¬ PrimCollinear Geo F D H := by
+      intro hFDH
+
+      have hHm : HilbertIncidence.OnLine H m :=
+        hilbert_collinear_on_line
+          Geo
+          F D H
+          m
+          hFD
+          hFm
+          hDm
+          hFDH
+
+      have hDHAcol : PrimCollinear Geo D H A := by
+        rcases bookZero_22_collinearOrder
+            Geo A H D hAHDcol with
+          ⟨_, _, _, _, hDHAcol⟩
+
+        exact hDHAcol
+
+      have hAm : HilbertIncidence.OnLine A m :=
+        hilbert_collinear_on_line
+          Geo
+          D H A
+          m
+          hHD.symm
+          hDm
+          hHm
+          hDHAcol
+
+      exact hDisjoint ⟨A, hAl, hAm⟩
+
+    have hDHA : Geo.Between D H A :=
+      (HilbertOrder.between_incidence
+        A H D hAHD).2.2.2.2
+
+    rcases
+        hilbert_outer_pasch_strong
+          Geo
+          F D H
+          A E
+          hNCFDH
+          hDHA
+          hFEH with
+      ⟨R, hAER, hFRD⟩
+
+    have hAERcol : PrimCollinear Geo A E R :=
+      (HilbertOrder.between_incidence
+        A E R hAER).2.2.2.1
+
+    have hRl : HilbertIncidence.OnLine R l :=
+      hilbert_collinear_on_line
+        Geo
+        A E R
+        l
+        hAE
+        hAl
+        hEl
+        hAERcol
+
+    have hFRDcol : PrimCollinear Geo F R D :=
+      (HilbertOrder.between_incidence
+        F R D hFRD).2.2.2.1
+
+    have hFDRcol : PrimCollinear Geo F D R := by
+      rcases bookZero_22_collinearOrder
+          Geo F R D hFRDcol with
+        ⟨_, _, _, hFDRcol, _⟩
+
+      exact hFDRcol
+
+    have hRm : HilbertIncidence.OnLine R m :=
+      hilbert_collinear_on_line
+        Geo
+        F D R
+        m
+        hFD
+        hFm
+        hDm
+        hFDRcol
+
+    exact False.elim (hDisjoint ⟨R, hRl, hRm⟩)
+
+  ----------------------------------------------------------------------
+  -- The only remaining order is E-H-F.
+  ----------------------------------------------------------------------
+
+  · exact hEHF
+
+/--
+Book Zero #61: 9.5a.
+
+If P and C are on opposite sides of line l,
+R lies on l, P lies between R and Q, and R,Q,C
+are noncollinear, then Q and C are on opposite sides of l.
+-/
+theorem bookZero_61_9_5a
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P C R Q : Geo.Point)
+    (l : Geo.Line)
+    (hOppPC : HilbertOppositeSide Geo P C l)
+    (hRPQ : Geo.Between R P Q)
+    (hRQC : ¬ PrimCollinear Geo R Q C)
+    (hRl : HilbertIncidence.OnLine R l) :
+    HilbertOppositeSide Geo Q C l := by
+
+  ----------------------------------------------------------------------
+  -- Unpack P and C being on opposite sides of l.
+  --
+  -- There is S on l with P-S-C.
+  ----------------------------------------------------------------------
+
+  rcases hOppPC with
+    ⟨hPnotl, hCnotl, S, hPSC, hSl⟩
+
+  ----------------------------------------------------------------------
+  -- Q does not lie on l.
+  --
+  -- Otherwise R,Q lie on l, and R-P-Q puts P on l.
+  ----------------------------------------------------------------------
+
+  have hRQ : R ≠ Q :=
+    (HilbertOrder.between_incidence
+      R P Q hRPQ).2.2.1
+
+  have hRPQcol : PrimCollinear Geo R P Q :=
+    (HilbertOrder.between_incidence
+      R P Q hRPQ).2.2.2.1
+
+  have hRQPcol : PrimCollinear Geo R Q P := by
+    rcases bookZero_22_collinearOrder
+        Geo R P Q hRPQcol with
+      ⟨_, _, _, hRQPcol, _⟩
+
+    exact hRQPcol
+
+  have hQnotl : ¬ HilbertIncidence.OnLine Q l := by
+    intro hQl
+
+    have hPl : HilbertIncidence.OnLine P l :=
+      hilbert_collinear_on_line
+        Geo
+        R Q P
+        l
+        hRQ
+        hRl
+        hQl
+        hRQPcol
+
+    exact hPnotl hPl
+
+  ----------------------------------------------------------------------
+  -- Derive noncollinearity C,Q,P from noncollinearity R,Q,C.
+  --
+  -- The points R,P,Q are collinear and P != Q.
+  ----------------------------------------------------------------------
+
+  have hPQ : P ≠ Q :=
+    (HilbertOrder.between_incidence
+      R P Q hRPQ).2.1
+
+  have hRQQcol : PrimCollinear Geo R Q Q := by
+    rcases hRQPcol with
+      ⟨g, hRg, hQg, hPg⟩
+
+    exact ⟨g, hRg, hQg, hQg⟩
+
+  have hNPQC : ¬ PrimCollinear Geo P Q C :=
+    bookZero_27_NChelper
+      Geo
+      R Q C
+      P Q
+      hRQC
+      hRQPcol
+      hRQQcol
+      hPQ
+
+  have hNCQPC : ¬ PrimCollinear Geo C Q P := by
+    rcases bookZero_23_NCorder
+        Geo P Q C hNPQC with
+      ⟨_, _, _, _, hCQPNC⟩
+
+    exact hCQPNC
+
+  ----------------------------------------------------------------------
+  -- Put the betweenness hypotheses in the orientation required by
+  -- hilbert_outer_pasch_strong.
+  ----------------------------------------------------------------------
+
+  have hQPR : Geo.Between Q P R :=
+    (HilbertOrder.between_incidence
+      R P Q hRPQ).2.2.2.2
+
+  have hCSP : Geo.Between C S P :=
+    (HilbertOrder.between_incidence
+      P S C hPSC).2.2.2.2
+
+  ----------------------------------------------------------------------
+  -- Outer Pasch in triangle C-Q-P:
+  --
+  -- Q-P-R
+  -- C-S-P
+  --
+  -- produces F with
+  --
+  -- R-S-F
+  -- C-F-Q.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_outer_pasch_strong
+        Geo
+        C Q P
+        R S
+        hNCQPC
+        hQPR
+        hCSP with
+    ⟨F, hRSF, hCFQ⟩
+
+  ----------------------------------------------------------------------
+  -- Since R and S are distinct points of l and R-S-F,
+  -- the point F lies on l.
+  ----------------------------------------------------------------------
+
+  have hRS : R ≠ S :=
+    (HilbertOrder.between_incidence
+      R S F hRSF).1
+
+  have hRSFcol : PrimCollinear Geo R S F :=
+    (HilbertOrder.between_incidence
+      R S F hRSF).2.2.2.1
+
+  have hFl : HilbertIncidence.OnLine F l :=
+    hilbert_collinear_on_line
+      Geo
+      R S F
+      l
+      hRS
+      hRl
+      hSl
+      hRSFcol
+
+  ----------------------------------------------------------------------
+  -- Reverse C-F-Q to Q-F-C and use F as the crossing point.
+  ----------------------------------------------------------------------
+
+  have hQFC : Geo.Between Q F C :=
+    (HilbertOrder.between_incidence
+      C F Q hCFQ).2.2.2.2
+
+  exact
+    ⟨hQnotl,
+     hCnotl,
+     F,
+     hQFC,
+     hFl⟩
+
+/--
+Book Zero #62: 9.5b.
+
+If P and C are on opposite sides of line l,
+R lies on l, Q lies between R and P, and C,P,R
+are noncollinear, then Q and C are on opposite sides of l.
+-/
+theorem bookZero_62_9_5b
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P C R Q : Geo.Point)
+    (l : Geo.Line)
+    (hOppPC : HilbertOppositeSide Geo P C l)
+    (hRQP : Geo.Between R Q P)
+    (hCPR : ¬ PrimCollinear Geo C P R)
+    (hRl : HilbertIncidence.OnLine R l) :
+    HilbertOppositeSide Geo Q C l := by
+
+  ----------------------------------------------------------------------
+  -- Unpack the original opposite-side relation:
+  -- P-S-C with S on l.
+  ----------------------------------------------------------------------
+
+  rcases hOppPC with
+    ⟨hPnotl, hCnotl, S, hPSC, hSl⟩
+
+  have hCSP : Geo.Between C S P :=
+    (HilbertOrder.between_incidence
+      P S C hPSC).2.2.2.2
+
+  ----------------------------------------------------------------------
+  -- Q does not lie on l.
+  --
+  -- Otherwise R,Q lie on l and R-Q-P forces P onto l.
+  ----------------------------------------------------------------------
+
+  have hRQ : R ≠ Q :=
+    (HilbertOrder.between_incidence
+      R Q P hRQP).1
+
+  have hRQPcol : PrimCollinear Geo R Q P :=
+    (HilbertOrder.between_incidence
+      R Q P hRQP).2.2.2.1
+
+  have hQnotl : ¬ HilbertIncidence.OnLine Q l := by
+    intro hQl
+
+    have hPl : HilbertIncidence.OnLine P l :=
+      hilbert_collinear_on_line
+        Geo
+        R Q P
+        l
+        hRQ
+        hRl
+        hQl
+        hRQPcol
+
+    exact hPnotl hPl
+
+  ----------------------------------------------------------------------
+  -- Derive noncollinearity C,P,Q.
+  --
+  -- If C,P,Q were collinear, then the two distinct points P,Q
+  -- would force R onto the same line, contradicting NC C P R.
+  ----------------------------------------------------------------------
+
+  have hQP : Q ≠ P :=
+    (HilbertOrder.between_incidence
+      R Q P hRQP).2.1
+
+  have hPQR : PrimCollinear Geo P Q R := by
+    rcases bookZero_22_collinearOrder
+        Geo R Q P hRQPcol with
+      ⟨_, _, _, _, hPQR⟩
+
+    exact hPQR
+
+  have hNCCPQ : ¬ PrimCollinear Geo C P Q := by
+    intro hCPQ
+
+    rcases hCPQ with
+      ⟨g, hCg, hPg, hQg⟩
+
+    rcases hPQR with
+      ⟨k, hPk, hQk, hRk⟩
+
+    have hgk : g = k :=
+      HilbertPlaneIncidence.line_unique
+        P Q
+        hQP.symm
+        g k
+        hPg hQg
+        hPk hQk
+
+    subst k
+
+    exact hCPR ⟨g, hCg, hPg, hRk⟩
+
+  ----------------------------------------------------------------------
+  -- Reverse R-Q-P to P-Q-R.
+  ----------------------------------------------------------------------
+
+  have hPQRbet : Geo.Between P Q R :=
+    (HilbertOrder.between_incidence
+      R Q P hRQP).2.2.2.2
+
+  ----------------------------------------------------------------------
+  -- Inner Pasch in triangle C-P-Q:
+  --
+  -- P-Q-R
+  -- C-S-P
+  --
+  -- produces F with
+  --
+  -- R-F-S
+  -- C-F-Q.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        C P Q
+        R S
+        hNCCPQ
+        hPQRbet
+        hCSP with
+    ⟨F, hRFS, hCFQ⟩
+
+  ----------------------------------------------------------------------
+  -- R and S are distinct points of l; hence F also lies on l.
+  ----------------------------------------------------------------------
+
+  have hRS : R ≠ S :=
+    (HilbertOrder.between_incidence
+      R F S hRFS).2.2.1
+
+  have hRFScol : PrimCollinear Geo R F S :=
+    (HilbertOrder.between_incidence
+      R F S hRFS).2.2.2.1
+
+  have hRSFcol : PrimCollinear Geo R S F := by
+    rcases bookZero_22_collinearOrder
+        Geo R F S hRFScol with
+      ⟨_, _, _, hRSFcol, _⟩
+
+    exact hRSFcol
+
+  have hFl : HilbertIncidence.OnLine F l :=
+    hilbert_collinear_on_line
+      Geo
+      R S F
+      l
+      hRS
+      hRl
+      hSl
+      hRSFcol
+
+  ----------------------------------------------------------------------
+  -- Reverse C-F-Q to Q-F-C.
+  ----------------------------------------------------------------------
+
+  have hQFC : Geo.Between Q F C :=
+    (HilbertOrder.between_incidence
+      C F Q hCFQ).2.2.2.2
+
+  exact
+    ⟨hQnotl,
+     hCnotl,
+     F,
+     hQFC,
+     hFl⟩
+
+/--
+Book Zero #63: 9.5.
+
+If P and C are on opposite sides of line l,
+R lies on l, and P lies on ray RQ,
+then Q and C are on opposite sides of l.
+-/
+theorem bookZero_63_9_5
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (P C R Q : Geo.Point)
+    (l : Geo.Line)
+    (hOppPC : HilbertOppositeSide Geo P C l)
+    (hRQP : HilbertSameRay Geo R Q P)
+    (hRl : HilbertIncidence.OnLine R l) :
+    HilbertOppositeSide Geo Q C l := by
+
+  have hOppPC0 : HilbertOppositeSide Geo P C l :=
+    hOppPC
+
+  rcases hOppPC with
+    ⟨hPnotl, hCnotl, S, hPSC, hSl⟩
+
+  ----------------------------------------------------------------------
+  -- Q does not lie on l.
+  ----------------------------------------------------------------------
+
+  have hRQ : R ≠ Q :=
+    hRQP.1.symm
+
+  have hRQPcol : PrimCollinear Geo R Q P :=
+    bookZero_40_rayImpliesCollinear
+      Geo R Q P hRQP
+
+  have hQnotl : ¬ HilbertIncidence.OnLine Q l := by
+    intro hQl
+
+    have hPl : HilbertIncidence.OnLine P l :=
+      hilbert_collinear_on_line
+        Geo
+        R Q P
+        l
+        hRQ
+        hRl
+        hQl
+        hRQPcol
+
+    exact hPnotl hPl
+
+  ----------------------------------------------------------------------
+  -- Split according to whether C,P,R are collinear.
+  ----------------------------------------------------------------------
+
+  by_cases hCPR : PrimCollinear Geo C P R
+
+  ----------------------------------------------------------------------
+  -- Collinear case.
+  --
+  -- The crossing point S from OppositeSide must equal R.
+  ----------------------------------------------------------------------
+
+  · have hPSCcol : PrimCollinear Geo P S C :=
+      (HilbertOrder.between_incidence
+        P S C hPSC).2.2.2.1
+
+    have hPC : P ≠ C :=
+      (HilbertOrder.between_incidence
+        P S C hPSC).2.2.1
+
+    have hPCS : PrimCollinear Geo P C S := by
+      rcases bookZero_22_collinearOrder
+          Geo P S C hPSCcol with
+        ⟨_, _, _, hPCS, _⟩
+
+      exact hPCS
+
+    have hPCR : PrimCollinear Geo P C R := by
+      rcases bookZero_22_collinearOrder
+          Geo C P R hCPR with
+        ⟨hPCR, _, _, _, _⟩
+
+      exact hPCR
+
+    have hCSR : PrimCollinear Geo C S R :=
+      bookZero_24_collinear4
+        Geo
+        P C S R
+        hPCS
+        hPCR
+        hPC
+
+    have hSR : S = R := by
+      by_contra hSRne
+
+      have hSRC : PrimCollinear Geo S R C := by
+        rcases bookZero_22_collinearOrder
+            Geo C S R hCSR with
+          ⟨_, hSRC, _, _, _⟩
+
+        exact hSRC
+
+      have hCl : HilbertIncidence.OnLine C l :=
+        hilbert_collinear_on_line
+          Geo
+          S R C
+          l
+          hSRne
+          hSl
+          hRl
+          hSRC
+
+      exact hCnotl hCl
+
+    subst S
+
+    have hPRC : Geo.Between P R C :=
+      hPSC
+
+    have hCRP : Geo.Between C R P :=
+      (HilbertOrder.between_incidence
+        P R C hPRC).2.2.2.2
+
+    rcases bookZero_35_ray1 Geo R Q P hRQP with
+      hRPQ | hQP | hRQPbet
+
+    --------------------------------------------------------------------
+    -- R-P-Q: C-R-P-Q, hence Q-R-C.
+    --------------------------------------------------------------------
+
+    · have hCRQ : Geo.Between C R Q :=
+        (hilbert_between_outer_trans
+          Geo
+          C R P Q
+          hCRP
+          hRPQ).2
+
+      have hQRC : Geo.Between Q R C :=
+        (HilbertOrder.between_incidence
+          C R Q hCRQ).2.2.2.2
+
+      exact
+        ⟨hQnotl,
+         hCnotl,
+         R,
+         hQRC,
+         hRl⟩
+
+    --------------------------------------------------------------------
+    -- Q = P.
+    --------------------------------------------------------------------
+
+    · subst Q
+
+      exact hOppPC0
+
+    --------------------------------------------------------------------
+    -- R-Q-P: C-R-Q-P, hence Q-R-C.
+    --------------------------------------------------------------------
+
+    · have hPQR : Geo.Between P Q R :=
+        (HilbertOrder.between_incidence
+          R Q P hRQPbet).2.2.2.2
+
+      have hQRC : Geo.Between Q R C :=
+        (hilbert_between_inner_trans
+          Geo
+          P Q R C
+          hPQR
+          hPRC).1
+
+      exact
+        ⟨hQnotl,
+         hCnotl,
+         R,
+         hQRC,
+         hRl⟩
+
+  ----------------------------------------------------------------------
+  -- Noncollinear case.
+  --
+  -- Split the ray and apply 9.5a or 9.5b.
+  ----------------------------------------------------------------------
+
+  · rcases bookZero_35_ray1 Geo R Q P hRQP with
+      hRPQ | hQP | hRQPbet
+
+    --------------------------------------------------------------------
+    -- R-P-Q: apply 9.5a.
+    --------------------------------------------------------------------
+
+    · have hRPQcol : PrimCollinear Geo R P Q :=
+        (HilbertOrder.between_incidence
+          R P Q hRPQ).2.2.2.1
+
+      have hNRPC : ¬ PrimCollinear Geo R P C := by
+        rcases bookZero_23_NCorder
+            Geo C P R hCPR with
+          ⟨_, _, _, _, hNRPC⟩
+
+        exact hNRPC
+
+      have hRPR : PrimCollinear Geo R P R := by
+        rcases hRPQcol with
+          ⟨g, hRg, hPg, hQg⟩
+
+        exact ⟨g, hRg, hPg, hRg⟩
+
+      have hNRQC : ¬ PrimCollinear Geo R Q C :=
+        bookZero_27_NChelper
+          Geo
+          R P C
+          R Q
+          hNRPC
+          hRPR
+          hRPQcol
+          hRQ
+
+      exact
+        bookZero_61_9_5a
+          Geo
+          P C R Q
+          l
+          hOppPC0
+          hRPQ
+          hNRQC
+          hRl
+
+    --------------------------------------------------------------------
+    -- Q = P.
+    --------------------------------------------------------------------
+
+    · subst Q
+
+      exact hOppPC0
+
+    --------------------------------------------------------------------
+    -- R-Q-P: apply 9.5b.
+    --------------------------------------------------------------------
+
+    · exact
+        bookZero_62_9_5b
+          Geo
+          P C R Q
+          l
+          hOppPC0
+          hRQPbet
+          hCPR
+          hRl
+
+/--
+Book Zero #64: samesidereflexive.
+
+A point not lying on a line is on the same side of that line
+as itself.
+-/
+theorem bookZero_64_sameSideReflexive
+    [HilbertIncidence Geo]
+    (A B P : Geo.Point)
+    (l : Geo.Line)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hBl : HilbertIncidence.OnLine B l)
+    (hABP : ¬ PrimCollinear Geo A B P) :
+    HilbertSameSide Geo P P l := by
+
+  have hPnotl : ¬ HilbertIncidence.OnLine P l := by
+    intro hPl
+
+    exact hABP ⟨l, hAl, hBl, hPl⟩
+
+  exact
+    hilbert_sameSide_refl
+      Geo P l hPnotl
+
+/--
+Book Zero #65: samesidesymmetric.
+
+If P and Q lie on the same side of a line,
+then Q and P lie on the same side of that line.
+-/
+theorem bookZero_65_sameSideSymmetric
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line)
+    (hSame : HilbertSameSide Geo P Q l) :
+    HilbertSameSide Geo Q P l := by
+
+  exact
+    hilbert_sameSide_symm
+      Geo P Q l hSame
+
+/--
+Book Zero #66: oppositesidesymmetric.
+
+If P and Q lie on opposite sides of a line,
+then Q and P lie on opposite sides of that line.
+-/
+theorem bookZero_66_oppositeSideSymmetric
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line)
+    (hOpp : HilbertOppositeSide Geo P Q l) :
+    HilbertOppositeSide Geo Q P l := by
+
+  exact
+    hilbert_oppositeSide_symm
+      Geo P Q l hOpp
+
+/--
+Book Zero #67: oppositesideflip.
+
+Reversing the two points used to describe the reference line
+does not change the opposite-side relation.
+
+In the present line-based representation this is definitional:
+the reference line is the same object `l`.
+-/
+theorem bookZero_67_oppositeSideFlip
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line)
+    (hOpp : HilbertOppositeSide Geo P Q l) :
+    HilbertOppositeSide Geo P Q l := by
+
+  exact hOpp
+
+/--
+Book Zero #68: samesidecollinear.
+
+Replacing one pair of points describing the reference line
+by another pair of distinct collinear points does not change
+the same-side relation.
+
+In the present line-based representation the reference line
+is already the same object `l`.
+-/
+theorem bookZero_68_sameSideCollinear
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (P Q A B C : Geo.Point)
+    (l : Geo.Line)
+    (hSame : HilbertSameSide Geo P Q l)
+    (_hAl : HilbertIncidence.OnLine A l)
+    (_hBl : HilbertIncidence.OnLine B l)
+    (_hCl : HilbertIncidence.OnLine C l)
+    (_hAC : A ≠ C) :
+    HilbertSameSide Geo P Q l := by
+
+  exact hSame
+
+/--
+Book Zero #69: equalanglesNC.
+
+In BNW, noncollinearity of both angle triples is encoded in the
+definition of equal angles.  In the present Hilbert representation,
+AngleCongruent does not itself carry nondegeneracy, so the
+noncollinearity of the second angle is explicit.
+-/
+theorem bookZero_69_equalAnglesNC
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C a b c : Geo.Point)
+    (_hAngle : Geo.AngleCongruent A B C a b c)
+    (_hABC : ¬ PrimCollinear Geo A B C)
+    (habc : ¬ PrimCollinear Geo a b c) :
+    ¬ PrimCollinear Geo a b c := by
+
+  exact habc
+
 
 end Geometry
