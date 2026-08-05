@@ -59,21 +59,7 @@ theorem bookZero_congruenceSymmetric
     Geo.Congruent C D A B := by
   exact CongruentSymmetry Geo A B C D h
 
-/--
-BNW auxiliary axiom: nullsegment1
 
-A segment congruent to a null segment is itself null.
-
-This principle is not included explicitly in the historical Hilbert
-axioms used by the project. It is added locally in Book Zero because
-the BNW language permits degenerate segments.
--/
-axiom bookZero_nullSegment1
-    [HilbertIncidence Geo]
-    [HilbertCongruence Geo]
-    (A B C : Geo.Point)
-    (h : Geo.Congruent A B C C) :
-    A = B
 
 
 /--
@@ -500,12 +486,13 @@ theorem bookZero_differenceOfParts
 
 
 
-/--
+/-
 If A-B-D and C is not on line AD, then A and B lie on the same
 side of line CD.
 
 This is a pure incidence/order fact.
 -/
+/-
 theorem hilbert_between_points_sameSide_transversal
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
@@ -597,14 +584,24 @@ theorem hilbert_between_points_sameSide_transversal
          ⟨hAnotcross, hBnotcross, hNoMeet⟩⟩
 
   exact ⟨cross, hCcross, hDcross, hSame⟩
-
-/--
-If a-b-d, ad is congruent to ac, and bd is congruent to bc,
-then a, b, c are collinear.
-
-The proof uses Hilbert's Theorem 11 twice and the uniqueness clause
-of angle construction III.4.
 -/
+/-
+------------------------------------------------------------------------
+ZAKOMENTOWANE NA ŻYCZENIE UŻYTKOWNIKA:
+- hilbert_two_centers_equal_distances_collinear
+- hilbert_congruent_triple_collinear
+- hilbert_part_not_congruent_whole
+- HilbertSegmentLess
+- hilbert_segmentLess_congruent_left
+- hilbert_segmentLess_not_congruent
+- hilbert_segmentLess_of_between
+- hilbert_segmentLess_asymm
+- hilbert_congruent_collinear_triple_preserves_between
+- hilbert_theorem27_three_points
+------------------------------------------------------------------------
+-/
+
+/-
 theorem hilbert_two_centers_equal_distances_collinear
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -765,15 +762,6 @@ theorem hilbert_two_centers_equal_distances_collinear
   exact habc (PrimCollinearRotate Geo a c b hACB)
 
 
-/--
-If A-B-C, the three corresponding segments of the triples
-(A,B,C) and (a,b,c) are congruent, and a != b, then a,b,c
-are collinear.
-
-The explicit nondegeneracy assumption `a != b` belongs to the
-Hilbert formulation: segment construction is performed on a genuine
-ray. The BNW formulation derives it using its null-segment theory.
--/
 theorem hilbert_congruent_triple_collinear
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -785,14 +773,12 @@ theorem hilbert_congruent_triple_collinear
     (hBCbc : Geo.Congruent B C b c) :
     Collinear Geo a b c := by
 
-  -- Choose a reference point R beyond b on the line ab.
   rcases HilbertOrder.between_extension a b hab with
     ⟨R, habR⟩
 
   have hbR : b ≠ R :=
     (HilbertOrder.between_incidence a b R habR).2.1
 
-  -- Lay off a copy of BC from b on the ray bR.
   rcases HilbertCongruence.segment_construction
       (Geo := Geo)
       B C
@@ -800,11 +786,9 @@ theorem hilbert_congruent_triple_collinear
       hbR with
     ⟨d, hRayd, hbdBC⟩
 
-  -- The point a is the reference point on the opposite ray from b.
   have hRayA : HilbertSameRay Geo b a a :=
     hilbert_sameRay_refl Geo b a hab
 
-  -- Transport the order a-b-R to the constructed point d.
   have habd : Geo.Between a b d :=
     hilbert_between_transport_sameRays
       Geo
@@ -814,12 +798,10 @@ theorem hilbert_congruent_triple_collinear
       hRayA
       hRayd
 
-  -- Reverse the second congruence so that III.3 has the right orientation.
   have hBCbd : Geo.Congruent B C b d :=
     hilbert_congruent_symmetry
       Geo b d B C hbdBC
 
-  -- Hilbert III.3: AB + BC = AC and ab + bd = ad.
   have hACad : Geo.Congruent A C a d :=
     HilbertCongruence.segment_additivity
       (Geo := Geo)
@@ -830,7 +812,6 @@ theorem hilbert_congruent_triple_collinear
       hABab
       hBCbd
 
-  -- Hence ad is congruent to ac.
   have hadAC : Geo.Congruent a d A C :=
     hilbert_congruent_symmetry
       Geo A C a d hACad
@@ -844,7 +825,6 @@ theorem hilbert_congruent_triple_collinear
       hadAC
       hACac
 
-  -- We also have bd congruent to bc.
   have hbdbc : Geo.Congruent b d b c :=
     hilbert_congruent_transitivity
       Geo
@@ -863,11 +843,6 @@ theorem hilbert_congruent_triple_collinear
       hbdbc
 
 
-/--
-A proper part of a segment is not congruent to the whole segment.
-
-If B lies between A and C, then AB is not congruent to AC.
--/
 theorem hilbert_part_not_congruent_whole
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -905,16 +880,6 @@ theorem hilbert_part_not_congruent_whole
   exact hBneC hBC
 
 
-------------------------------------------------------------------------
--- Order of segments
-------------------------------------------------------------------------
-
-/--
-Hilbert's strict comparison of segments.
-
-`HilbertSegmentLess Geo A B C D` means that the segment AB is
-congruent to a proper initial part CP of the segment CD.
--/
 def HilbertSegmentLess
     (Geo : Geometry.Geo)
     [HilbertIncidence Geo]
@@ -924,12 +889,7 @@ def HilbertSegmentLess
     Geo.Between C P D ∧
     Geo.Congruent A B C P
 
-/--
-Hilbert segment order is preserved under congruence of the
-smaller segment.
 
-Hilbert Theorem 24, left transport.
--/
 theorem hilbert_segmentLess_congruent_left
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -951,13 +911,7 @@ theorem hilbert_segmentLess_congruent_left
 
   exact ⟨P, hCPD, hA'B'CP⟩
 
-/--
-A segment strictly smaller than another segment cannot be congruent
-to it.
 
-This follows directly from Hilbert's definition of segment order and
-the fact that a proper part is not congruent to the whole segment.
--/
 theorem hilbert_segmentLess_not_congruent
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -985,12 +939,8 @@ theorem hilbert_segmentLess_not_congruent
   exact
     hilbert_part_not_congruent_whole
       Geo C P D hCPD hCPCD
-/--
-A proper initial part of a segment is strictly smaller than
-the whole segment.
 
-If C-P-D, then CP < CD.
--/
+
 theorem hilbert_segmentLess_of_between
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1003,14 +953,7 @@ theorem hilbert_segmentLess_of_between
      hCPD,
      hilbert_congruent_reflexive Geo C P⟩
 
-/--
-Hilbert Theorem 25(I): asymmetry of strict segment comparison.
 
-If AB < CD, then CD is not smaller than AB.
-
-The proof uses only segment additivity, construction on a ray,
-the order calculus, and uniqueness of segment construction.
--/
 theorem hilbert_segmentLess_asymm
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1026,14 +969,12 @@ theorem hilbert_segmentLess_asymm
   have hAB : A ≠ B :=
     (HilbertOrder.between_incidence A Q B hAQB).2.2.1
 
-  -- Choose a point S beyond B on line AB.
   rcases HilbertOrder.between_extension A B hAB with
     ⟨S, hABS⟩
 
   have hBS : B ≠ S :=
     (HilbertOrder.between_incidence A B S hABS).2.1
 
-  -- On ray BS lay off a copy of PD.
   rcases HilbertCongruence.segment_construction
       (Geo := Geo)
       P D
@@ -1044,7 +985,6 @@ theorem hilbert_segmentLess_asymm
   have hRayA : HilbertSameRay Geo B A A :=
     hilbert_sameRay_refl Geo B A hAB
 
-  -- Since R lies on ray BS and A-B-S, we have A-B-R.
   have hABR : Geo.Between A B R :=
     hilbert_between_transport_sameRays
       Geo
@@ -1062,7 +1002,6 @@ theorem hilbert_segmentLess_asymm
     hilbert_congruent_symmetry
       Geo B R P D hBRPD
 
-  -- CD = CP + PD and AR = AB + BR.
   have hCDAR : Geo.Congruent C D A R :=
     HilbertCongruence.segment_additivity
       (Geo := Geo)
@@ -1090,8 +1029,6 @@ theorem hilbert_segmentLess_asymm
   have hRayR' : HilbertSameRay Geo A B R :=
     hilbert_sameRay_of_between Geo A B R hABR
 
-  -- R and Q lie on the same ray from A and determine segments
-  -- congruent to the same segment CD.
   have hRQ : R = Q :=
     hilbert_segment_construction_unique
       Geo
@@ -1114,13 +1051,7 @@ theorem hilbert_segmentLess_asymm
 
   exact hNotABQ hABR
 
-/--
-Collinear part of the three-point case of Hilbert's Theorem 27.
 
-If A-B-C, the triples (A,B,C) and (a,b,c) have congruent
-corresponding segments, and a,b,c are distinct and collinear,
-then a-b-c.
--/
 theorem hilbert_congruent_collinear_triple_preserves_between
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1142,18 +1073,7 @@ theorem hilbert_congruent_collinear_triple_preserves_between
 
   · exact habcOrder
 
-  · -- Case b-a-c.
-    --
-    -- Reversal gives c-a-b, hence ca < cb.
-    -- Reversal of A-B-C gives C-B-A, hence CB < CA.
-    --
-    -- By congruence transport:
-    --   CA < cb
-    --   cb < CA
-    --
-    -- contradicting asymmetry.
-
-    exfalso
+  · exfalso
 
     have hcabOrder : Geo.Between c a b :=
       (HilbertOrder.between_incidence
@@ -1208,17 +1128,7 @@ theorem hilbert_congruent_collinear_triple_preserves_between
         Geo C A c b hCAltcb)
         hcbltCA
 
-  · -- Case a-c-b.
-    --
-    -- Here ac < ab, while A-B-C gives AB < AC.
-    --
-    -- By congruence transport:
-    --   AC < ab
-    --   ab < AC
-    --
-    -- contradicting asymmetry.
-
-    exfalso
+  · exfalso
 
     have hacltab :
         HilbertSegmentLess Geo a c a b :=
@@ -1258,13 +1168,8 @@ theorem hilbert_congruent_collinear_triple_preserves_between
       (hilbert_segmentLess_asymm
         Geo A C a b hACltab)
         habltAC
-/--
-Three-point case of Hilbert's Theorem 27.
 
-Congruent triples preserve betweenness, provided the corresponding
-Hilbert segments are genuine, i.e. the points a, b, c are pairwise
-distinct.
--/
+
 theorem hilbert_theorem27_three_points
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1302,6 +1207,7 @@ theorem hilbert_theorem27_three_points
       hABab
       hACac
       hBCbc
+-/
 
 /--
 Book Zero #17 / Hilbert Theorem 27 (three points).
@@ -4740,8 +4646,8 @@ theorem bookZero_55_crossbar
       B A P hBAP).2.2.1
 
   have hBQ : B ≠ Q :=
-    (HilbertOrder.between_incidence
-      B C Q hBCQ).2.2.1
+  (HilbertOrder.between_incidence
+    B C Q hBCQ).2.2.1
 
   have hBPA : PrimCollinear Geo B P A := by
     rcases bookZero_22_collinearOrder
