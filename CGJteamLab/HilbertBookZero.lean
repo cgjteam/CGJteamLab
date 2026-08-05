@@ -2688,5 +2688,317 @@ theorem bookZero_32_lessThanCongruence2
       hLess
       (hilbert_congruent_symmetry Geo A B E F hCong)
 
+/--
+Book Zero #33: ray2.
+
+If C lies on the ray AB, then A and B are distinct.
+-/
+theorem bookZero_33_ray2
+    [HilbertIncidence Geo]
+    (A B C : Geo.Point)
+    (hRay : HilbertSameRay Geo A B C) :
+    A ≠ B := by
+  exact hRay.1.symm
+
+/--
+Book Zero #34: ray.
+
+If P lies on ray AB, P is distinct from B, and P is not
+between A and B, then B lies between A and P.
+-/
+theorem bookZero_34_ray
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B P : Geo.Point)
+    (hRay : HilbertSameRay Geo A B P)
+    (hPB : P ≠ B)
+    (hNotAPB : ¬ Geo.Between A P B) :
+    Geo.Between A B P := by
+
+  rcases hilbert_sameRay_cases Geo A B P hRay with
+    hBP | hABP | hAPB
+
+  · exact False.elim (hPB hBP.symm)
+
+  · exact hABP
+
+  · exact False.elim (hNotAPB hAPB)
+
+/--
+Book Zero #35: ray1.
+
+A point P on ray AB either lies between A and B,
+coincides with B, or lies beyond B.
+-/
+theorem bookZero_35_ray1
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B P : Geo.Point)
+    (hRay : HilbertSameRay Geo A B P) :
+    Geo.Between A P B ∨
+    B = P ∨
+    Geo.Between A B P := by
+
+  rcases hilbert_sameRay_cases Geo A B P hRay with
+    hBP | hABP | hAPB
+
+  · exact Or.inr (Or.inl hBP)
+
+  · exact Or.inr (Or.inr hABP)
+
+  · exact Or.inl hAPB
+
+/--
+Book Zero #36: ray3.
+
+If D and V lie on ray BC, then V lies on ray BD.
+-/
+theorem bookZero_36_ray3
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (B C D V : Geo.Point)
+    (hBCD : HilbertSameRay Geo B C D)
+    (hBCV : HilbertSameRay Geo B C V) :
+    HilbertSameRay Geo B D V := by
+
+  have hDB : D ≠ B :=
+    hBCD.2.1
+
+  have hVB : V ≠ B :=
+    hBCV.2.1
+
+  have hBC : B ≠ C := by
+    intro hBCeq
+    exact hBCD.1 hBCeq.symm
+
+  have hBDV : PrimCollinear Geo B D V := by
+    rcases hBCD.2.2.1 with
+      ⟨l, hBl, hCl, hDl⟩
+
+    rcases hBCV.2.2.1 with
+      ⟨m, hBm, hCm, hVm⟩
+
+    have hlm : l = m :=
+      HilbertPlaneIncidence.line_unique
+        B C hBC
+        l m
+        hBl hCl
+        hBm hCm
+
+    subst m
+    exact ⟨l, hBl, hDl, hVm⟩
+
+  have hNotDBV : ¬ Geo.Between D B V := by
+    intro hDBV
+
+    have hBDC : HilbertSameRay Geo B D C :=
+      hilbert_sameRay_symm Geo B C D hBCD
+
+    have hBVC : HilbertSameRay Geo B V C :=
+      hilbert_sameRay_symm Geo B C V hBCV
+
+    have hCBC : Geo.Between C B C :=
+      hilbert_between_transport_sameRays
+        Geo
+        D B V
+        C C
+        hDBV
+        hBDC
+        hBVC
+
+    exact
+      (HilbertOrder.between_incidence C B C hCBC).2.2.1 rfl
+
+  exact
+    ⟨hDB, hVB, hBDV, hNotDBV⟩
+
+/--
+Book Zero #37: raystrict.
+
+If C lies on ray AB, then A and C are distinct.
+-/
+theorem bookZero_37_raystrict
+    [HilbertIncidence Geo]
+    (A B C : Geo.Point)
+    (hRay : HilbertSameRay Geo A B C) :
+    A ≠ C := by
+  exact hRay.2.1.symm
+
+/--
+Book Zero #38: ray4.
+
+If E lies between A and B, coincides with B,
+or lies beyond B, and A != B, then E lies on ray AB.
+-/
+theorem bookZero_38_ray4
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B E : Geo.Point)
+    (hPos :
+      Geo.Between A E B ∨
+      E = B ∨
+      Geo.Between A B E)
+    (hAB : A ≠ B) :
+    HilbertSameRay Geo A B E := by
+
+  rcases hPos with hAEB | hEB | hABE
+
+  · have hAEBRay : HilbertSameRay Geo A E B :=
+      hilbert_sameRay_of_between Geo A E B hAEB
+
+    exact
+      hilbert_sameRay_symm Geo A E B hAEBRay
+
+  · subst E
+    exact
+      hilbert_sameRay_refl Geo A B hAB.symm
+
+  · exact
+      hilbert_sameRay_of_between Geo A B E hABE
+
+/--
+Book Zero #39: ray5.
+
+If C lies on ray AB, then B lies on ray AC.
+-/
+theorem bookZero_39_ray5
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C : Geo.Point)
+    (hRay : HilbertSameRay Geo A B C) :
+    HilbertSameRay Geo A C B := by
+  exact
+    hilbert_sameRay_symm Geo A B C hRay
+
+/--
+Book Zero #40: rayimpliescollinear.
+
+If C lies on ray AB, then A, B and C are collinear.
+-/
+theorem bookZero_40_rayImpliesCollinear
+    [HilbertIncidence Geo]
+    (A B C : Geo.Point)
+    (hRay : HilbertSameRay Geo A B C) :
+    PrimCollinear Geo A B C := by
+  exact hRay.2.2.1
+
+/--
+Book Zero #41: tworays.
+
+If C lies on ray AB and also on ray BA,
+then C lies between A and B.
+-/
+theorem bookZero_41_twoRays
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hABC : HilbertSameRay Geo A B C)
+    (hBAC : HilbertSameRay Geo B A C) :
+    Geo.Between A C B := by
+
+  have hBC : B ≠ C :=
+    bookZero_37_raystrict Geo B A C hBAC
+
+  have hAC : A ≠ C :=
+    bookZero_37_raystrict Geo A B C hABC
+
+  rcases bookZero_35_ray1 Geo A B C hABC with
+    hACB | hBCeq | hABCbet
+
+  · exact hACB
+
+  · exact (hBC hBCeq).elim
+
+  · rcases bookZero_35_ray1 Geo B A C hBAC with
+      hBCA | hACeq | hBACbet
+
+    · exact
+        (HilbertOrder.between_incidence
+          B C A hBCA).2.2.2.2
+
+    · exact (hAC hACeq).elim
+
+    ·
+      have hColABC : PrimCollinear Geo A B C :=
+        (HilbertOrder.between_incidence
+          A B C hABCbet).2.2.2.1
+
+      have hNotBAC : ¬ Geo.Between B A C :=
+        (HilbertOrder.between_unique
+          A B C
+          hColABC
+          hABCbet).1
+
+      exact (hNotBAC hBACbet).elim
+
+/--
+Book Zero #42: twolines2.
+
+If P and Q both lie on two distinct lines AB and CD,
+then P = Q.
+-/
+theorem bookZero_42_twoLines2
+    [HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    (A B C D P Q : Geo.Point)
+    (hAB : A ≠ B)
+    (hCD : C ≠ D)
+    (hPAB : PrimCollinear Geo P A B)
+    (hPCD : PrimCollinear Geo P C D)
+    (hQAB : PrimCollinear Geo Q A B)
+    (hQCD : PrimCollinear Geo Q C D)
+    (hDistinct :
+      ¬ (PrimCollinear Geo A C D ∧
+         PrimCollinear Geo B C D)) :
+    P = Q := by
+
+  by_contra hPQ
+
+  rcases hPAB with
+    ⟨l, hPl, hAl, hBl⟩
+
+  rcases hQAB with
+    ⟨l', hQl', hAl', hBl'⟩
+
+  have hll' : l = l' :=
+    HilbertPlaneIncidence.line_unique
+      A B hAB
+      l l'
+      hAl hBl
+      hAl' hBl'
+
+  subst l'
+
+  rcases hPCD with
+    ⟨m, hPm, hCm, hDm⟩
+
+  rcases hQCD with
+    ⟨m', hQm', hCm', hDm'⟩
+
+  have hmm' : m = m' :=
+    HilbertPlaneIncidence.line_unique
+      C D hCD
+      m m'
+      hCm hDm
+      hCm' hDm'
+
+  subst m'
+
+  have hlm : l = m :=
+    HilbertPlaneIncidence.line_unique
+      P Q hPQ
+      l m
+      hPl hQl'
+      hPm hQm'
+
+  subst m
+
+  have hACD : PrimCollinear Geo A C D :=
+    ⟨l, hAl, hCm, hDm⟩
+
+  have hBCD : PrimCollinear Geo B C D :=
+    ⟨l, hBl, hCm, hDm⟩
+
+  exact hDistinct ⟨hACD, hBCD⟩
 
 end Geometry
