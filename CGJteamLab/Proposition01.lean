@@ -7,13 +7,26 @@ universe u
 variable (Geo : Geometry.Geo)
 
 /--
-Temporary existence principle for Euclid I.1.
+Temporary existence principle for Euclid Book I, Proposition 1.
 
-It will later be derived from the Hilbert continuity theory.
+For every nondegenerate segment `AB` there exists a point `C`
+equidistant from both endpoints:
+
+* `AC ≅ AB`
+* `BC ≅ AB`
+
+This axiom provides only the existence of such a point.
+The proof that `A`, `B` and `C` are not collinear is a theorem
+of Book Zero and is proved in `euclid_proposition_1`.
+
+The axiom is introduced only to unblock the reconstruction of
+Euclid Book I. It is intended to be replaced by a theorem after
+developing the Hilbert continuity layer (for example via a
+circle-intersection theorem derived from an appropriate
+continuity principle).
 -/
-axiom hilbert_equilateral_vertex
+axiom hilbert_equidistant_point_exists
     [HilbertIncidence Geo]
-    [HilbertOrder Geo]
     [HilbertCongruence Geo]
     (A B : Geo.Point)
     (hAB : A ≠ B) :
@@ -33,7 +46,7 @@ theorem euclid_proposition_1
       Geo.Congruent B C A B := by
 
   obtain ⟨C, hAC, hBC⟩ :=
-    hilbert_equilateral_vertex Geo A B hAB
+    hilbert_equidistant_point_exists Geo A B hAB
 
   have hACne : A ≠ C := by
     intro hEq
