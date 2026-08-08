@@ -6876,5 +6876,146 @@ theorem HilbertSSS
 
   exact ⟨hDEF, hTriangles⟩
 
+/-
+Existence of an angle bisector in Hilbert geometry.
+
+For every nondegenerate angle BAC there exists a point M such that
+the angles BAM and CAM are congruent.
+-/
+
+theorem hilbert_angle_bisector_exists
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hABC : ¬ Collinear Geo A B C) :
+    ∃ M : Geo.Point,
+      Geo.AngleCongruent B A M C A M := by
+
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hABC
+
+  rcases
+      HilbertCongruence.segment_construction
+        (Geo := Geo)
+        A C
+        A B
+        hAB with
+    ⟨D, hRayBD, hAD_AC⟩
+
+  have hAD : A ≠ D :=
+    hRayBD.2.1.symm
+
+  have hABD :
+      Collinear Geo A B D :=
+    hRayBD.2.2.1
+
+  have hADC :
+      ¬ Collinear Geo A D C := by
+
+    intro hADC
+
+    have hBAD :
+        Collinear Geo B A D :=
+      PrimCollinearSwap Geo A B D hABD
+
+    have hBAC :
+        Collinear Geo B A C :=
+      hilbert_primCollinear_trans
+        Geo
+        B A D C
+        hAD
+        hBAD
+        hADC
+
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C hBAC)
+
+  have hDC : D ≠ C := by
+    intro hDC
+    subst D
+    exact hABC hABD
+
+  rcases
+      HilbertMidpointExists
+        Geo D C hDC with
+    ⟨M, hMid⟩
+
+  have hDMC :
+      Geo.Between D M C :=
+    hMid.1
+
+  have hDM_MC :
+      Geo.Congruent D M M C :=
+    hMid.2
+
+  have hDM : D ≠ M :=
+    (HilbertOrder.between_incidence
+      D M C hDMC).1
+
+  have hDMCcol :
+      Collinear Geo D M C :=
+    (HilbertOrder.between_incidence
+      D M C hDMC).2.2.2.1
+
+  have hADM :
+      ¬ Collinear Geo A D M := by
+
+    intro hADM
+
+    have hADC' :
+        Collinear Geo A D C :=
+      hilbert_primCollinear_trans
+        Geo
+        A D M C
+        hDM
+        hADM
+        hDMCcol
+
+    exact hADC hADC'
+
+  have hDM_CM :
+      Geo.Congruent D M C M :=
+    (Geo.congruent_reverse_second
+      D M M C).mp hDM_MC
+
+  have hAM :
+      Geo.Congruent A M A M :=
+    hilbert_congruent_reflexive
+      Geo A M
+
+  have hSSS :=
+    HilbertSSS
+      Geo
+      A D M
+      A C M
+      hADM
+      hAD_AC
+      hDM_CM
+      hAM
+
+  have hAngle :
+      Geo.AngleCongruent D A M C A M :=
+    hSSS.2.angleA
+
+  have hRayDB :
+      HilbertSameRay Geo A D B :=
+    hilbert_sameRay_symm
+      Geo A B D hRayBD
+
+  have hEq :
+      Geo.Angle D A M =
+      Geo.Angle B A M :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo A D B M hRayDB
+
+  refine ⟨M, ?_⟩
+
+  unfold Geometry.Geo.AngleCongruent at hAngle ⊢
+  rw [← hEq]
+  exact hAngle
+
+
+
 
 end Geometry
