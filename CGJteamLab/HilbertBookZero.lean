@@ -7580,5 +7580,391 @@ theorem hilbert_right_angle_exists
       refine ⟨B, hACB, ?_⟩
       exact hACX_XCB
 
+/--
+Transport an angle congruence when the first ray is replaced by
+another nonvertex point of the same supporting line.
 
+If A, B, H are distinct and collinear, then from
+
+    angle ABP ~= angle ABQ
+
+we obtain
+
+    angle HBP ~= angle HBQ.
+
+If A and H lie on the same ray from B, this is direct ray transport.
+If B lies between A and H, both target angles are supplements of the
+original congruent angles.
+-/
+theorem hilbert_collinear_angle_transport
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B H P Q : Geo.Point)
+    (hAB : A ≠ B)
+    (hAH : A ≠ H)
+    (hBH : B ≠ H)
+    (hBP : B ≠ P)
+    (hBQ : B ≠ Q)
+    (hABH : PrimCollinear Geo A B H)
+    (hABP : ¬ PrimCollinear Geo A B P)
+    (hABQ : ¬ PrimCollinear Geo A B Q)
+    (hAngle : Geo.AngleCongruent A B P A B Q) :
+    Geo.AngleCongruent H B P H B Q := by
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        A B H
+        hAB
+        hBH
+        hAH
+        hABH with
+    hABHbet | hBAHbet | hAHBbet
+
+  ----------------------------------------------------------------------
+  -- Case A-B-H.
+  --
+  -- BH is opposite to BA, so both target angles are supplements
+  -- of the original congruent angles.
+  ----------------------------------------------------------------------
+
+  · have hRayBP :
+        HilbertSameRay Geo B P P :=
+      hilbert_sameRay_refl
+        Geo B P hBP.symm
+
+    have hRayBQ :
+        HilbertSameRay Geo B Q Q :=
+      hilbert_sameRay_refl
+        Geo B Q hBQ.symm
+
+    have hSuppP :
+        BookZeroSupplement Geo
+          A B P
+          P H :=
+      ⟨hRayBP, hABHbet⟩
+
+    have hSuppQ :
+        BookZeroSupplement Geo
+          A B Q
+          Q H :=
+      ⟨hRayBQ, hABHbet⟩
+
+    have hPBH_QBH :
+        Geo.AngleCongruent P B H Q B H :=
+      bookZero_43_supplements
+        Geo
+        A B P P H
+        A B Q Q H
+        hAngle
+        hSuppP
+        hSuppQ
+        hABP
+        hABQ
+
+    exact
+      (Geo.angle_congruent_reverse_second
+        H B P Q B H).mp
+        ((Geo.angle_congruent_reverse_first
+          P B H Q B H).mp hPBH_QBH)
+
+  ----------------------------------------------------------------------
+  -- Case B-A-H.
+  --
+  -- A and H lie on the same ray from B.
+  ----------------------------------------------------------------------
+
+  · have hRayBAH :
+        HilbertSameRay Geo B A H :=
+      hilbert_sameRay_of_between
+        Geo B A H hBAHbet
+
+    have hLeft :
+        Geo.Angle A B P =
+        Geo.Angle H B P :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H P hRayBAH
+
+    have hRight :
+        Geo.Angle A B Q =
+        Geo.Angle H B Q :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H Q hRayBAH
+
+    unfold Geometry.Geo.AngleCongruent at hAngle ⊢
+    rw [← hLeft, ← hRight]
+    exact hAngle
+
+  ----------------------------------------------------------------------
+  -- Case A-H-B.
+  --
+  -- Again A and H lie on the same ray from B.
+  ----------------------------------------------------------------------
+
+  · have hBHA :
+        Geo.Between B H A :=
+      (HilbertOrder.between_incidence
+        A H B hAHBbet).2.2.2.2
+
+    have hRayBHA :
+        HilbertSameRay Geo B H A :=
+      hilbert_sameRay_of_between
+        Geo B H A hBHA
+
+    have hRayBAH :
+        HilbertSameRay Geo B A H :=
+      hilbert_sameRay_symm
+        Geo B H A hRayBHA
+
+    have hLeft :
+        Geo.Angle A B P =
+        Geo.Angle H B P :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H P hRayBAH
+
+    have hRight :
+        Geo.Angle A B Q =
+        Geo.Angle H B Q :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H Q hRayBAH
+
+    unfold Geometry.Geo.AngleCongruent at hAngle ⊢
+    rw [← hLeft, ← hRight]
+    exact hAngle
+
+/--
+If two distinct points A and B are equidistant from P and Q,
+then the line AB bisects PQ at every point H where PQ meets AB.
+
+This is the perpendicular-bisector property needed in the
+Hilbert reconstruction of Euclid I.12.
+-/
+theorem hilbert_equidistant_line_bisects_segment
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B P Q H : Geo.Point)
+    (base : Geo.Line)
+    (hAB : A ≠ B)
+    (hAbase : HilbertIncidence.OnLine A base)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hHbase : HilbertIncidence.OnLine H base)
+    (hOppPQ : HilbertOppositeSide Geo P Q base)
+    (hAP_AQ : Geo.Congruent A P A Q)
+    (hBP_BQ : Geo.Congruent B P B Q)
+    (hPHQ : Geo.Between P H Q) :
+    Geo.Congruent P H H Q := by
+
+  ----------------------------------------------------------------------
+  -- Basic incidence data for P-H-Q.
+  ----------------------------------------------------------------------
+
+  have hPHQData :=
+    HilbertOrder.between_incidence
+      P H Q hPHQ
+
+  have hPH : P ≠ H :=
+    hPHQData.1
+
+  have hHQ : H ≠ Q :=
+    hPHQData.2.1
+
+  have hPQ : P ≠ Q :=
+    hPHQData.2.2.1
+
+  ----------------------------------------------------------------------
+  -- Construct the line PQ.
+  ----------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        P Q hPQ with
+    ⟨linePQ, hPlinePQ, hQlinePQ⟩
+
+  ----------------------------------------------------------------------
+  -- A and B are both equidistant from P and Q.
+  -- Hilbert Theorem 17 therefore gives the symmetry of the
+  -- two rays BP and BQ with respect to BA.
+  ----------------------------------------------------------------------
+
+  have hAngleABP_ABQ :
+      Geo.AngleCongruent A B P A B Q :=
+    hilbert_theorem_17
+      Geo
+      A B P Q
+      base linePQ
+      hAB
+      hAbase
+      hBbase
+      hOppPQ
+      hPlinePQ
+      hQlinePQ
+      hAP_AQ
+      hBP_BQ
+
+  ----------------------------------------------------------------------
+  -- From this point we exploit H ∈ AB and P-H-Q.
+  --
+  -- If H = A or H = B, the midpoint congruence follows immediately
+  -- from the corresponding equidistance hypothesis.
+  -- Otherwise we transport the angle congruence from BA to BH.
+  ----------------------------------------------------------------------
+
+  by_cases hHA : H = A
+
+  · subst H
+
+    exact
+      CongruentReverseFirst
+        Geo A P A Q hAP_AQ
+
+  · by_cases hHB : H = B
+
+    · subst H
+
+      exact
+        CongruentReverseFirst
+          Geo B P B Q hBP_BQ
+
+    ·
+      have hAH : A ≠ H := by
+        intro h
+        exact hHA h.symm
+
+      have hBH : B ≠ H := by
+        intro h
+        exact hHB h.symm
+
+      have hBP : B ≠ P := by
+        intro h
+        subst P
+        exact hOppPQ.1 hBbase
+
+      have hBQ : B ≠ Q := by
+        intro h
+        subst Q
+        exact hOppPQ.2.1 hBbase
+
+      have hABH :
+          PrimCollinear Geo A B H :=
+        ⟨base,
+         hAbase,
+         hBbase,
+         hHbase⟩
+
+      --------------------------------------------------------------------
+      -- P and Q do not lie on base.
+      --------------------------------------------------------------------
+
+      have hABP :
+          ¬ PrimCollinear Geo A B P := by
+        intro h
+
+        rcases h with
+          ⟨l, hAl, hBl, hPl⟩
+
+        have hEq :
+            l = base :=
+          HilbertPlaneIncidence.line_unique
+            A B hAB
+            l base
+            hAl hBl
+            hAbase hBbase
+
+        have hPbase :
+            HilbertIncidence.OnLine P base := by
+          rw [← hEq]
+          exact hPl
+
+        exact hOppPQ.1 hPbase
+
+      have hABQ :
+          ¬ PrimCollinear Geo A B Q := by
+        intro h
+
+        rcases h with
+          ⟨l, hAl, hBl, hQl⟩
+
+        have hEq :
+            l = base :=
+          HilbertPlaneIncidence.line_unique
+            A B hAB
+            l base
+            hAl hBl
+            hAbase hBbase
+
+        have hQbase :
+            HilbertIncidence.OnLine Q base := by
+          rw [← hEq]
+          exact hQl
+
+        exact hOppPQ.2.1 hQbase
+
+      --------------------------------------------------------------------
+      -- Transport the congruent angles from ray BA to ray BH.
+      --------------------------------------------------------------------
+
+      have hAngleHBP_HBQ :
+          Geo.AngleCongruent H B P H B Q :=
+        hilbert_collinear_angle_transport
+          Geo
+          A B H P Q
+          hAB
+          hAH
+          hBH
+          hBP
+          hBQ
+          hABH
+          hABP
+          hABQ
+          hAngleABP_ABQ
+
+      --------------------------------------------------------------------
+      -- SAS for triangles BHP and BHQ.
+      --------------------------------------------------------------------
+
+      have hBHP :
+          ¬ Collinear Geo B H P :=
+        hilbert_not_collinear_of_off_line
+          Geo
+          B H P
+          base
+          hBH
+          hBbase
+          hHbase
+          hOppPQ.1
+
+      have hBHQ :
+          ¬ Collinear Geo B H Q :=
+        hilbert_not_collinear_of_off_line
+          Geo
+          B H Q
+          base
+          hBH
+          hBbase
+          hHbase
+          hOppPQ.2.1
+
+      have hBH_BH :
+          Geo.Congruent B H B H :=
+        hilbert_congruent_reflexive
+          Geo B H
+
+      have hSAS_BHP_BHQ :=
+        SAS
+          Geo
+          B H P
+          B H Q
+          hBHP
+          hBHQ
+          hBH_BH
+          hAngleHBP_HBQ
+          hBP_BQ
+
+      have hHP_HQ :
+          Geo.Congruent H P H Q :=
+        hSAS_BHP_BHQ.sideBC
+
+      exact
+        CongruentReverseFirst
+          Geo H P H Q hHP_HQ
 end Geometry

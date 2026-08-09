@@ -7016,6 +7016,4 @@ theorem hilbert_angle_bisector_exists
   exact hAngle
 
 
-
-
 end Geometry
