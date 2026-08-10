@@ -10,9 +10,10 @@ variable (Geo : Geometry.Geo)
 -- Definicje bazowe i relacje pomocnicze
 ------------------------------------------------------------------------
 
-/--
+/-
 Definicja relacji mniejszości odcinków: AB < CD.
 -/
+/-
 def HilbertSegmentLess
     (Geo : Geometry.Geo)
     [HilbertIncidence Geo]
@@ -21,7 +22,7 @@ def HilbertSegmentLess
   ∃ P : Geo.Point,
     Geo.Between C P D ∧
     Geo.Congruent A B C P
-
+-/
 /--
 Relacja przecięcia odcinków `CU A B C D E`.
 Odcinki AB i CD przecinają się w punkcie E.
