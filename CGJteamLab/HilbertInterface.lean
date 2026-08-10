@@ -2134,6 +2134,7 @@ def HilbertRayMeetsSegment
     HilbertSameRay Geo O R X
 
 
+
 /--
 If A-B-D and C is not on line AD, then A and B lie on the same
 side of line CD.
@@ -2286,6 +2287,9 @@ theorem hilbert_sameSide_rays_order_case_eq
 Two points lying on the same ray as a common reference point
 lie on the same ray with each other.
 -/
+
+
+
 theorem hilbert_sameRay_of_common
     [HilbertOrder Geo]
     (O X P Q : Geo.Point)
@@ -3388,6 +3392,10 @@ theorem hilbert_sameSide_rays_order
           hAOD
           hCPD
           hOPB)
+
+
+
+
 
 
 /-
@@ -4829,6 +4837,11 @@ does not itself encode angle nondegeneracy in this project.
 
 
 
+
+
+
+
+
 /-
 Hilbert Theorem 11.
 
@@ -4878,6 +4891,10 @@ theorem hilbert_isosceles_base_angles
       hACAB
 
   exact hTriangles.angleB
+
+
+
+
 
 /--
 If A, M, B are three distinct collinear points and M is
