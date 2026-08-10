@@ -52,6 +52,7 @@ theorem euclid_proposition_7
         hAbase
         hBbase
         hDbase
+
     have hABAB :
         Geo.Congruent A B A B :=
       hilbert_congruent_reflexive Geo A B
@@ -98,7 +99,5 @@ theorem euclid_proposition_7
         hRayXD
         (hilbert_congruent_reflexive Geo B C)
         hBD_BC
-
-
 
 end Geometry

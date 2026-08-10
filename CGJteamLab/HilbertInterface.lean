@@ -1382,8 +1382,8 @@ theorem ParallelogramOppositeSidesCongruent
   have hRotated :
       IsParallelogram Geo B C D A :=
     ⟨hParallelogram.2,
-      ParallelSymmetry
-        Geo A B C D hParallelogram.1⟩
+     ParallelSymmetry
+       Geo A B C D hParallelogram.1⟩
   have hCD_AB :
       Geo.Congruent C D A B :=
     parallelogram_second_pair_congruent
@@ -1732,8 +1732,8 @@ theorem ParallelogramDiagonals
       hABM hCDM hSides.1 hAngleA hAngleB
   exact
     ⟨hAMC,
-      (Geo.congruent_reverse_second
-        A M C M).mp hASA.1⟩
+     (Geo.congruent_reverse_second
+       A M C M).mp hASA.1⟩
 
 
 /--
@@ -2310,9 +2310,9 @@ theorem hilbert_sameRay_of_common
 
   refine
     ⟨hXP.2.1,
-      hXQ.2.1,
-      ⟨l, hOl, hPl, hQm⟩,
-      ?_⟩
+     hXQ.2.1,
+     ⟨l, hOl, hPl, hQm⟩,
+     ?_⟩
 
   intro hPOQ
 
@@ -3650,8 +3650,8 @@ theorem hilbert_angle_addition_sameSide_case1
   -- The component-angle congruences now have the exact forms needed
   -- for the two applications of SAS:
   --
-  --   angle HOB congruent angle H'O'L'
-  --   angle BOC congruent angle L'O'K'.
+  --    angle HOB congruent angle H'O'L'
+  --    angle BOC congruent angle L'O'K'.
   --------------------------------------------------------------------
     --------------------------------------------------------------------
   -- The constructed points L', H', K' lie respectively on or off l'.
@@ -3903,7 +3903,7 @@ theorem hilbert_angle_addition_sameSide_case1
   --------------------------------------------------------------------
   -- Therefore the two angles at L' are congruent:
   --
-  --   angle O'L'H' congruent angle O'L'K'.
+  --    angle O'L'H' congruent angle O'L'K'.
   --------------------------------------------------------------------
 
   have hAngleL'H'_L'K' :
@@ -4353,7 +4353,7 @@ The outer rays OA and OC lie on the same side of the reference
 line OB, and likewise O'A' and O'C' lie on the same side of O'B'.
 
 If the two component angles with the reference rays are pairwise
-congruent, then the angles formed by the two outer rays are congruent.
+congruent, then the angles formed by the outer rays are congruent.
 -/
 
 theorem hilbert_angle_addition_sameSide
@@ -6427,8 +6427,8 @@ theorem hilbert_collinearity_preserved_by_three_congruences
       exact ⟨l, hXl, hXl, hXl⟩
 
     · rcases
-          HilbertPlaneIncidence.line_through
-            X Z hXZ with
+        HilbertPlaneIncidence.line_through
+          X Z hXZ with
         ⟨l, hXl, hZl⟩
 
       exact ⟨l, hXl, hXl, hZl⟩
@@ -6484,8 +6484,8 @@ theorem hilbert_collinearity_preserved_by_three_congruences
           exact ⟨l, hal, hal, hal⟩
 
         · rcases
-              HilbertPlaneIncidence.line_through
-                a b hab with
+            HilbertPlaneIncidence.line_through
+              a b hab with
             ⟨l, hal, hbl⟩
 
           exact ⟨l, hal, hbl, hbl⟩
@@ -6696,8 +6696,8 @@ theorem HilbertSSS
       exact hABC ⟨l, hAl, hAl, hAl⟩
 
     · rcases
-          HilbertPlaneIncidence.line_through
-            A C hACeq with
+        HilbertPlaneIncidence.line_through
+          A C hACeq with
         ⟨l, hAl, hCl⟩
 
       exact hABC ⟨l, hAl, hAl, hCl⟩
