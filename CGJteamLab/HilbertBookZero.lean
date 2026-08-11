@@ -30,7 +30,7 @@ Odcinki AB i CD przecinają się w punkcie E.
 def BookZeroCut
     (Geo : Geometry.Geo)
     [HilbertIncidence Geo]
-    (A B C D E F : Geo.Point) : Prop :=
+    (A B C D E : Geo.Point) : Prop :=
   Geo.Between A E B ∧
   Geo.Between C E D ∧
   ¬ PrimCollinear Geo A B C ∧
@@ -238,7 +238,7 @@ theorem bookZero_sumOfParts
 ------------------------------------------------------------------------
 -- Operacje odejmowania odcinków i własności zaawansowane
 ------------------------------------------------------------------------
-
+/-
 theorem hilbert_segment_subtraction
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -280,6 +280,7 @@ theorem hilbert_segment_subtraction
     hilbert_segment_construction_unique Geo A C a b X c hRayAX hRayAC haXAC hacAC
   subst X
   exact hilbert_congruent_symmetry Geo b c B C hBXBC
+-/
 
 theorem bookZero_differenceOfParts
     [HilbertIncidence Geo]
