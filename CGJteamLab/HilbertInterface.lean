@@ -9689,6 +9689,230 @@ theorem hilbert_angleLess_transport_right
         hInsideTarget,
         hFinal⟩⟩
 
+/--
+An interior ray determines a proper subangle of the whole angle.
+
+If ray OD meets the open segment XC, then angle XOD is strictly
+smaller than angle XOC.
+-/
+theorem hilbert_interior_angle_less
+    [HilbertCongruence Geo]
+    (O D X C : Geo.Point)
+    (hXOC : ¬ PrimCollinear Geo X O C)
+    (hInside : HilbertRayMeetsSegment Geo O D X C) :
+    HilbertAngleLess Geo X O D X O C := by
+
+  rcases hInside with
+    ⟨H, hXHC, hRayODH⟩
+
+  have hXOD :
+      ¬ PrimCollinear Geo X O D := by
+    intro hCol
+
+    rcases hCol with
+      ⟨lineXOD, hXline, hOline, hDline⟩
+
+    rcases hRayODH.2.2.1 with
+      ⟨lineODH, hOline', hDline', hHline'⟩
+
+    have hOD : O ≠ D :=
+      hRayODH.1.symm
+
+    have hLines :
+        lineXOD = lineODH :=
+      HilbertPlaneIncidence.line_unique
+        O D hOD
+        lineXOD lineODH
+        hOline hDline
+        hOline' hDline'
+
+    have hHline :
+        HilbertIncidence.OnLine H lineXOD := by
+      rw [hLines]
+      exact hHline'
+
+    have hXH : X ≠ H :=
+      (HilbertOrder.between_incidence
+        X H C hXHC).1
+
+    have hXHCcol :
+        PrimCollinear Geo X H C :=
+      (HilbertOrder.between_incidence
+        X H C hXHC).2.2.2.1
+
+    have hCline :
+        HilbertIncidence.OnLine C lineXOD :=
+      hilbert_collinear_on_line
+        Geo
+        X H C
+        lineXOD
+        hXH
+        hXline
+        hHline
+        hXHCcol
+
+    exact hXOC
+      ⟨lineXOD, hXline, hOline, hCline⟩
+
+  have hRefl :
+      Geo.AngleCongruent X O D X O D :=
+    HilbertCongruence.angle_congruence_reflexive
+      (Geo := Geo)
+      X O D hXOD
+
+  exact
+    hilbert_angleLess_intro
+      Geo
+      X O D
+      X O C
+      D
+      hXOD
+      hXOC
+      ⟨H, hXHC, hRayODH⟩
+      hRefl
+
+/--
+Strict angle comparison is transitive.
+-/
+theorem hilbert_angleLess_trans
+    [HilbertCongruence Geo]
+    (A O B C P D E Q F : Geo.Point)
+    (h₁ :
+      HilbertAngleLess Geo A O B C P D)
+    (h₂ :
+      HilbertAngleLess Geo C P D E Q F) :
+    HilbertAngleLess Geo A O B E Q F := by
+
+  rcases h₂ with
+    ⟨hCPD, hEQF, Y, hInsideY, hCPD_EQY⟩
+
+  ----------------------------------------------------------------------
+  -- Since QY is an interior ray of angle EQF,
+  -- the subangle EQY is nondegenerate.
+  ----------------------------------------------------------------------
+
+  have hEQYLess :
+      HilbertAngleLess Geo E Q Y E Q F :=
+    hilbert_interior_angle_less
+      Geo Q Y E F hEQF hInsideY
+
+  have hEQY :
+      ¬ PrimCollinear Geo E Q Y :=
+    hEQYLess.1
+
+  ----------------------------------------------------------------------
+  -- Transport h₁ from the whole angle CPD to the congruent
+  -- interior angle EQY.
+  ----------------------------------------------------------------------
+
+  have h₁' :
+      HilbertAngleLess Geo A O B E Q Y :=
+    hilbert_angleLess_transport_right
+      Geo
+      A O B
+      C P D
+      E Q Y
+      h₁
+      hEQY
+      hCPD_EQY
+
+  rcases h₁' with
+    ⟨hAOB, hEQY', Z, hInsideZ, hAngle⟩
+
+  ----------------------------------------------------------------------
+  -- The ray QY meets EF at H.
+  ----------------------------------------------------------------------
+
+  rcases hInsideY with
+    ⟨H, hEHF, hRayQYH⟩
+
+  ----------------------------------------------------------------------
+  -- E,Q,H is noncollinear because H lies on the same ray as Y.
+  ----------------------------------------------------------------------
+
+  have hEQH :
+      ¬ PrimCollinear Geo E Q H := by
+    intro hCol
+
+    have hQH : Q ≠ H :=
+      hRayQYH.2.1.symm
+
+    have hQHY :
+        PrimCollinear Geo Q H Y := by
+      rcases hRayQYH.2.2.1 with
+        ⟨l, hQl, hYl, hHl⟩
+      exact ⟨l, hQl, hHl, hYl⟩
+
+    have hEQYcol :
+        PrimCollinear Geo E Q Y :=
+      hilbert_primCollinear_trans
+        Geo
+        E Q H Y
+        hQH
+        hCol
+        hQHY
+
+    exact hEQY hEQYcol
+
+  ----------------------------------------------------------------------
+  -- Move the second endpoint of segment EY from Y to H.
+  -- Since Y and H lie on the same ray from Q, ray QZ still
+  -- meets the corresponding segment EH.
+  ----------------------------------------------------------------------
+
+  have hEQ : E ≠ Q :=
+    hilbert_noncollinear_ne_first
+      Geo E Q F hEQF
+
+  have hRayQEE :
+      HilbertSameRay Geo Q E E :=
+    hilbert_sameRay_refl
+      Geo Q E hEQ
+
+  have hInsideEH :
+      HilbertRayMeetsSegment Geo Q Z E H :=
+    hilbert_ray_meets_segment_sameRays
+      Geo
+      Q Z
+      E Y
+      E H
+      hInsideZ
+      hRayQEE
+      hRayQYH
+      hEQY'
+      hEQH
+
+  ----------------------------------------------------------------------
+  -- If K lies between E and H, and H lies between E and F,
+  -- then K lies between E and F.
+  ----------------------------------------------------------------------
+
+  rcases hInsideEH with
+    ⟨K, hEKH, hRayQZK⟩
+
+  have hEKF :
+      Geo.Between E K F :=
+    (hilbert_between_inner_trans
+      Geo E K H F hEKH hEHF).2
+
+  have hInsideFinal :
+      HilbertRayMeetsSegment Geo Q Z E F :=
+    ⟨K, hEKF, hRayQZK⟩
+
+  ----------------------------------------------------------------------
+  -- The same witness angle now lies inside the whole angle EQF.
+  ----------------------------------------------------------------------
+
+  exact
+    hilbert_angleLess_intro
+      Geo
+      A O B
+      E Q F
+      Z
+      hAOB
+      hEQF
+      hInsideFinal
+      hAngle
 
 
 end Geometry
