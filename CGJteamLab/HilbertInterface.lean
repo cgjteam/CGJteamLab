@@ -9689,6 +9689,7 @@ theorem hilbert_angleLess_transport_right
         hInsideTarget,
         hFinal⟩⟩
 
+
 /--
 An interior ray determines a proper subangle of the whole angle.
 
@@ -9913,6 +9914,147 @@ theorem hilbert_angleLess_trans
       hEQF
       hInsideFinal
       hAngle
+
+theorem hilbert_segment_trichotomy
+    [HilbertCongruence Geo]
+    (A B C D : Geo.Point)
+    (hCD : C ≠ D) :
+    Geo.Congruent A B C D ∨
+    HilbertSegmentLess Geo A B C D ∨
+    HilbertSegmentLess Geo C D A B := by
+
+  rcases
+      HilbertCongruence.segment_construction
+        (Geo := Geo)
+        A B
+        C D
+        hCD with
+    ⟨X, hRayCDX, hCX_AB⟩
+
+  have hCX : C ≠ X :=
+    hRayCDX.2.1.symm
+
+  have hCDX :
+      Collinear Geo C D X :=
+    hRayCDX.2.2.1
+
+  by_cases hDX : D = X
+
+  · subst X
+
+    left
+
+    exact
+      hilbert_congruent_symmetry
+        Geo C D A B hCX_AB
+
+  · rcases
+        hilbert_between_trichotomy
+          Geo C D X
+          hCD
+          hDX
+          hCX
+          hCDX with
+      hCDXbetween | hDCX | hCXD
+
+    ·
+      -- C-D-X, so CD < CX, and CX ≅ AB.
+      right
+      right
+
+      have hCD_CX :
+          HilbertSegmentLess Geo C D C X :=
+        hilbert_segmentLess_of_between
+          Geo C D X hCDXbetween
+
+      exact
+        hilbert_segmentLess_congruent_right
+          Geo
+          C D
+          C X
+          A B
+          hCD_CX
+          hCX_AB
+
+    ·
+      -- D-C-X contradicts X lying on ray CD.
+      exfalso
+      exact hRayCDX.2.2.2 hDCX
+
+    ·
+      -- C-X-D, so CX < CD, and AB ≅ CX.
+      right
+      left
+
+      have hCX_CD :
+          HilbertSegmentLess Geo C X C D :=
+        hilbert_segmentLess_of_between
+          Geo C X D hCXD
+
+      have hAB_CX :
+          Geo.Congruent A B C X :=
+        hilbert_congruent_symmetry
+          Geo C X A B hCX_AB
+
+      exact
+        hilbert_segmentLess_congruent_left
+          Geo
+          C X
+          A B
+          C D
+          hCX_CD
+          hAB_CX
+
+theorem hilbert_angleLess_irrefl
+    [HilbertCongruence Geo]
+    (A O B : Geo.Point) :
+    ¬ HilbertAngleLess Geo A O B A O B := by
+
+  intro hLess
+
+  rcases hLess with
+    ⟨hAOB, _, X, hInside, hAngle⟩
+
+  rcases hInside with
+    ⟨H, hAHB, hRayOXH⟩
+
+  have hBHA :
+      Geo.Between B H A :=
+    (HilbertOrder.between_incidence
+      A H B hAHB).2.2.2.2
+
+  have hInsideRev :
+      HilbertRayMeetsSegment Geo O X B A :=
+    ⟨H, hBHA, hRayOXH⟩
+
+  have hBOA :
+      ¬ PrimCollinear Geo B O A := by
+    intro h
+    exact hAOB
+      (PrimCollinearSymm Geo B O A h)
+
+  have hNot :
+      ¬ Geo.AngleCongruent A O X B O A :=
+    hilbert_interior_subangle_not_congruent_whole
+      Geo
+      O X
+      B A
+      hBOA
+      hInsideRev
+
+  have hSubWhole :
+      Geo.AngleCongruent A O X B O A :=
+    (Geo.angle_congruent_reverse_second
+      A O X
+      A O B).mp
+      (Geometry.Geo.angle_congruent_symmetry
+        Geo
+        A O B
+        A O X
+        hAngle)
+
+  exact hNot hSubWhole
+
 
 
 end Geometry
