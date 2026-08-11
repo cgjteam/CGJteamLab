@@ -10055,6 +10055,36 @@ theorem hilbert_angleLess_irrefl
 
   exact hNot hSubWhole
 
+theorem hilbert_angleLess_transport_left
+    [HilbertCongruence Geo]
+    (A O B A' O' B' C P D : Geo.Point)
+    (hLess :
+      HilbertAngleLess Geo A O B C P D)
+    (hSource :
+      ¬ PrimCollinear Geo A' O' B')
+    (hCong :
+      Geo.AngleCongruent A' O' B' A O B) :
+    HilbertAngleLess Geo A' O' B' C P D := by
+
+  rcases hLess with
+    ⟨hAOB, hCPD, X, hInside, hAngle⟩
+
+  have hAngle' :
+      Geo.AngleCongruent A' O' B' C P X :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      A' O' B'
+      A O B
+      C P X
+      hCong
+      hAngle
+
+  exact
+    ⟨hSource,
+      hCPD,
+      X,
+      hInside,
+      hAngle'⟩
 
 
 end Geometry
