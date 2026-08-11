@@ -1,4 +1,4 @@
-import CGJteamLab.HilbertAngleComparison
+import CGJteamLab.HilbertInterface
 
 namespace Geometry
 
