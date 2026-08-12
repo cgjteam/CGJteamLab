@@ -6,15 +6,6 @@ namespace Geometry
 
 variable (Geo : Geometry.Geo)
 
-def HilbertSegmentSum
-    (Geo : Geometry.Geo)
-    [HilbertIncidence Geo]
-    [HilbertCongruence Geo]
-    (A B C D P Q R : Geo.Point) : Prop :=
-  Geo.Between P Q R ∧
-  Geo.Congruent P Q A B ∧
-  Geo.Congruent Q R C D
-
 theorem euclid_proposition_21_segment_helper
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
