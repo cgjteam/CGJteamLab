@@ -363,7 +363,7 @@ theorem bookZero_sumOfParts
 -- Hilbert working layer: subtraction of congruent segment parts
 ------------------------------------------------------------------------
 
-/--
+/-
 Hilbert segment subtraction.
 
 If B lies between A and C, b lies between a and c,
@@ -372,6 +372,7 @@ then BC is congruent to bc.
 
 This is the cancellation counterpart of Hilbert III.3.
 -/
+/-
 theorem hilbert_segment_subtraction
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -460,6 +461,7 @@ theorem hilbert_segment_subtraction
 
   exact
     hilbert_congruent_symmetry Geo b c B C hBXBC
+-/
 
 /--
 Book Zero 16: differenceofparts
@@ -469,6 +471,7 @@ then the remaining parts are congruent.
 
 This is an immediate instance of Hilbert segment subtraction.
 -/
+
 theorem bookZero_differenceOfParts
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -486,12 +489,13 @@ theorem bookZero_differenceOfParts
 
 
 
-/--
+/-
 If A-B-D and C is not on line AD, then A and B lie on the same
 side of line CD.
 
 This is a pure incidence/order fact.
 -/
+/-
 theorem hilbert_between_points_sameSide_transversal
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
@@ -749,9 +753,9 @@ theorem hilbert_two_centers_equal_distances_collinear
       hCXB
 
   exact habc (PrimCollinearRotate Geo a c b hACB)
+-/
 
-
-/--
+/-
 If A-B-C, the three corresponding segments of the triples
 (A,B,C) and (a,b,c) are congruent, and a != b, then a,b,c
 are collinear.
@@ -760,6 +764,7 @@ The explicit nondegeneracy assumption `a != b` belongs to the
 Hilbert formulation: segment construction is performed on a genuine
 ray. The BNW formulation derives it using its null-segment theory.
 -/
+/-
 theorem hilbert_congruent_triple_collinear
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -847,13 +852,15 @@ theorem hilbert_congruent_triple_collinear
       habd
       hadac
       hbdbc
+-/
 
-
-/--
+/-
 A proper part of a segment is not congruent to the whole segment.
 
 If B lies between A and C, then AB is not congruent to AC.
 -/
+
+/-
 theorem hilbert_part_not_congruent_whole
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -889,18 +896,19 @@ theorem hilbert_part_not_congruent_whole
     (HilbertOrder.between_incidence A B C hABC).2.1
 
   exact hBneC hBC
-
+-/
 
 ------------------------------------------------------------------------
 -- Order of segments
 ------------------------------------------------------------------------
 
-/--
+/-
 Hilbert's strict comparison of segments.
 
 `HilbertSegmentLess Geo A B C D` means that the segment AB is
 congruent to a proper initial part CP of the segment CD.
 -/
+/-
 def HilbertSegmentLess
     (Geo : Geometry.Geo)
     [HilbertIncidence Geo]
@@ -909,13 +917,15 @@ def HilbertSegmentLess
   ∃ P : Geo.Point,
     Geo.Between C P D ∧
     Geo.Congruent A B C P
+-/
 
-/--
+/-
 Hilbert segment order is preserved under congruence of the
 smaller segment.
 
 Hilbert Theorem 24, left transport.
 -/
+/-
 theorem hilbert_segmentLess_congruent_left
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -936,14 +946,15 @@ theorem hilbert_segmentLess_congruent_left
       hABCP
 
   exact ⟨P, hCPD, hA'B'CP⟩
-
-/--
+-/
+/-
 A segment strictly smaller than another segment cannot be congruent
 to it.
 
 This follows directly from Hilbert's definition of segment order and
 the fact that a proper part is not congruent to the whole segment.
 -/
+/-
 theorem hilbert_segmentLess_not_congruent
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -971,12 +982,14 @@ theorem hilbert_segmentLess_not_congruent
   exact
     hilbert_part_not_congruent_whole
       Geo C P D hCPD hCPCD
-/--
+-/
+/-
 A proper initial part of a segment is strictly smaller than
 the whole segment.
 
 If C-P-D, then CP < CD.
 -/
+/-
 theorem hilbert_segmentLess_of_between
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -988,8 +1001,9 @@ theorem hilbert_segmentLess_of_between
     ⟨P,
      hCPD,
      hilbert_congruent_reflexive Geo C P⟩
+-/
 
-/--
+/-
 Hilbert Theorem 25(I): asymmetry of strict segment comparison.
 
 If AB < CD, then CD is not smaller than AB.
@@ -997,6 +1011,7 @@ If AB < CD, then CD is not smaller than AB.
 The proof uses only segment additivity, construction on a ray,
 the order calculus, and uniqueness of segment construction.
 -/
+/-
 theorem hilbert_segmentLess_asymm
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1099,14 +1114,16 @@ theorem hilbert_segmentLess_asymm
       A Q B hAQBcol hAQB).2
 
   exact hNotABQ hABR
+-/
 
-/--
+/-
 Collinear part of the three-point case of Hilbert's Theorem 27.
 
 If A-B-C, the triples (A,B,C) and (a,b,c) have congruent
 corresponding segments, and a,b,c are distinct and collinear,
 then a-b-c.
 -/
+/-
 theorem hilbert_congruent_collinear_triple_preserves_between
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1244,13 +1261,15 @@ theorem hilbert_congruent_collinear_triple_preserves_between
       (hilbert_segmentLess_asymm
         Geo A C a b hACltab)
         habltAC
-/--
+-/
+/-
 Three-point case of Hilbert's Theorem 27.
 
 Congruent triples preserve betweenness, provided the corresponding
 Hilbert segments are genuine, i.e. the points a, b, c are pairwise
 distinct.
 -/
+/-
 theorem hilbert_theorem27_three_points
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
@@ -1288,6 +1307,8 @@ theorem hilbert_theorem27_three_points
       hABab
       hACac
       hBCbc
+
+-/
 
 /--
 Book Zero #17 / Hilbert Theorem 27 (three points).
@@ -6383,5 +6404,1669 @@ theorem bookZero_segmentSplitTransfer
      hCBcb⟩
 
 
+/--
+A right angle in Hilbert geometry.
+
+The angle AOB is right if it is congruent to an adjacent angle
+formed by extending OA through O.
+-/
+def HilbertRightAngle
+    (Geo : Geometry.Geo)
+    (A O B : Geo.Point) : Prop :=
+  ∃ C : Geo.Point,
+    Geo.Between A O C ∧
+    Geo.AngleCongruent A O B B O C
+
+
+theorem hilbert_right_angle_exists
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A C B : Geo.Point)
+    (hACB : Geo.Between A C B) :
+    ∃ X : Geo.Point,
+      HilbertRightAngle Geo A C X := by
+
+  have hACBData :=
+    HilbertOrder.between_incidence A C B hACB
+
+  have hAC : A ≠ C :=
+    hACBData.1
+
+  have hCB : C ≠ B :=
+    hACBData.2.1
+
+  have hAB : A ≠ B :=
+    hACBData.2.2.1
+
+  ----------------------------------------------------------------------
+  -- The given line AB.
+  ----------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A B hAB with
+    ⟨base, hAbase, hBbase⟩
+
+  have hCbase :
+      HilbertIncidence.OnLine C base :=
+    hilbert_between_on_line
+      Geo A C B base
+      hAbase hBbase hACB
+
+  ----------------------------------------------------------------------
+  -- Choose an arbitrary point D off AB.
+  ----------------------------------------------------------------------
+
+  rcases
+      hilbert_point_off_line Geo base with
+    ⟨D, hDbase⟩
+
+  have hACD :
+      ¬ Collinear Geo A C D :=
+    hilbert_not_collinear_of_off_line
+      Geo A C D base
+      hAC
+      hAbase
+      hCbase
+      hDbase
+
+  have hBC : B ≠ C :=
+    hCB.symm
+
+  ----------------------------------------------------------------------
+  -- Copy angle ACD onto ray CB, on the side selected by D.
+  --
+  -- This produces E with
+  --
+  --     angle ACD congruent angle BCE.
+  ----------------------------------------------------------------------
+
+  rcases
+      HilbertCongruence.angle_construction
+        (Geo := Geo)
+        A C D
+        B C D
+        hACD
+        hBC
+        base
+        hBbase
+        hCbase
+        hDbase with
+    ⟨E, hEDSame, hAngleE, hUniqueE⟩
+  ----------------------------------------------------------------------
+  -- If C, E, D are collinear, then E and D determine the same ray
+  -- from C, because they lie on the same side of the base line.
+  -- In this case D already determines the required right angle.
+  ----------------------------------------------------------------------
+
+  by_cases hCED :
+      Collinear Geo C E D
+
+  · have hEC : E ≠ C := by
+      intro h
+      subst E
+      exact hEDSame.1 hCbase
+
+    have hDC : D ≠ C := by
+      intro h
+      subst D
+      exact hDbase hCbase
+
+    have hNotECD :
+        ¬ Geo.Between E C D := by
+
+      intro hECD
+
+      have hOppED :
+          HilbertOppositeSide Geo E D base :=
+        ⟨hEDSame.1,
+         hEDSame.2.1,
+         ⟨C, hECD, hCbase⟩⟩
+
+      exact
+        (hilbert_oppositeSide_not_sameSide
+          Geo E D base hOppED)
+          hEDSame
+
+    have hRayED :
+        HilbertSameRay Geo C E D :=
+      ⟨hEC, hDC, hCED, hNotECD⟩
+
+    have hAngleBED :
+        Geo.Angle B C E =
+        Geo.Angle B C D :=
+      hilbert_angle_eq_of_sameRay_second
+        Geo C B E D hRayED
+
+    have hAngleACD_BCD :
+        Geo.AngleCongruent A C D B C D := by
+
+      unfold Geometry.Geo.AngleCongruent
+        at hAngleE ⊢
+
+      rw [← hAngleBED]
+      exact hAngleE
+
+    have hAngleACD_DCB :
+        Geo.AngleCongruent A C D D C B := by
+
+      unfold Geometry.Geo.AngleCongruent
+        at hAngleACD_BCD ⊢
+
+      rw [Geometry.Geo.angle_swap Geo B C D]
+        at hAngleACD_BCD
+
+      exact hAngleACD_BCD
+
+    refine ⟨D, ?_⟩
+    refine ⟨B, hACB, ?_⟩
+    exact hAngleACD_DCB
+
+  · -- hCED : not Collinear Geo C E D
+
+    have hCD : C ≠ D := by
+      intro h
+      subst D
+      exact hDbase hCbase
+
+    have hCE : C ≠ E := by
+      intro h
+      subst E
+      exact hEDSame.1 hCbase
+
+    ----------------------------------------------------------------------
+    -- On ray CD choose F with CF congruent CE.
+    ----------------------------------------------------------------------
+
+    rcases
+        HilbertCongruence.segment_construction
+          (Geo := Geo)
+          C E
+          C D
+          hCD with
+      ⟨F, hRayDF, hCF_CE⟩
+
+    have hCF : C ≠ F :=
+      hRayDF.2.1.symm
+
+    have hCDF :
+        Collinear Geo C D F :=
+      hRayDF.2.2.1
+
+    ----------------------------------------------------------------------
+    -- F, C, E are noncollinear.
+    ----------------------------------------------------------------------
+
+    have hFCE :
+        ¬ Collinear Geo F C E := by
+
+      intro hFCE
+
+      have hDCF :
+          Collinear Geo D C F :=
+        PrimCollinearSwap
+          Geo C D F hCDF
+
+      have hCFE :
+          Collinear Geo C F E :=
+        PrimCollinearSwap
+          Geo F C E hFCE
+
+      have hDCE :
+          Collinear Geo D C E :=
+        hilbert_primCollinear_trans
+          Geo
+          D C F E
+          hCF
+          hDCF
+          hCFE
+
+      have hCED' :
+          Collinear Geo C E D :=
+        PrimCollinearCycle
+          Geo D C E hDCE
+
+      exact hCED hCED'
+
+    have hFE : F ≠ E := by
+      intro hFE
+      subst F
+
+      have hCED' :
+          Collinear Geo C E D :=
+        PrimCollinearRotate
+          Geo C D E hCDF
+
+      exact hCED hCED'
+    ----------------------------------------------------------------------
+    -- Let X be the midpoint of FE.
+    ----------------------------------------------------------------------
+
+    rcases
+        HilbertMidpointExists
+          Geo F E hFE with
+      ⟨X, hMidX⟩
+
+    have hFXE :
+        Geo.Between F X E :=
+      hMidX.1
+
+    have hFX_XE :
+        Geo.Congruent F X X E :=
+      hMidX.2
+
+    have hFX : F ≠ X :=
+      (HilbertOrder.between_incidence
+        F X E hFXE).1
+
+    have hFXEcol :
+        Collinear Geo F X E :=
+      (HilbertOrder.between_incidence
+        F X E hFXE).2.2.2.1
+
+    ----------------------------------------------------------------------
+    -- Triangle CFX is nondegenerate.
+    ----------------------------------------------------------------------
+
+    have hCFX :
+        ¬ Collinear Geo C F X := by
+
+      intro hCFX
+
+      have hCFE' :
+          Collinear Geo C F E :=
+        hilbert_primCollinear_trans
+          Geo
+          C F X E
+          hFX
+          hCFX
+          hFXEcol
+
+      exact
+        hFCE
+          (PrimCollinearSwap Geo C F E hCFE')
+
+    ----------------------------------------------------------------------
+    -- SSS for triangles CFX and CEX.
+    ----------------------------------------------------------------------
+
+    have hFX_EX :
+        Geo.Congruent F X E X :=
+      (Geo.congruent_reverse_second
+        F X X E).mp hFX_XE
+
+    have hCX_CX :
+        Geo.Congruent C X C X :=
+      hilbert_congruent_reflexive
+        Geo C X
+
+    have hSSS :=
+      HilbertSSS
+        Geo
+        C F X
+        C E X
+        hCFX
+        hCF_CE
+        hFX_EX
+        hCX_CX
+
+    have hFCX_ECX :
+        Geo.AngleCongruent F C X E C X :=
+      hSSS.2.angleA
+
+    ----------------------------------------------------------------------
+    -- Replace ray CF by the original ray CD.
+    ----------------------------------------------------------------------
+
+    have hRayFD :
+        HilbertSameRay Geo C F D :=
+      hilbert_sameRay_symm
+        Geo C D F hRayDF
+
+    have hAngleFCX_DCX :
+        Geo.Angle F C X =
+        Geo.Angle D C X :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo C F D X hRayFD
+
+    have hDCX_ECX :
+        Geo.AngleCongruent D C X E C X := by
+
+      unfold Geometry.Geo.AngleCongruent
+        at hFCX_ECX ⊢
+
+      rw [← hAngleFCX_DCX]
+
+      exact hFCX_ECX
+    ----------------------------------------------------------------------
+    -- Reference lines CD and CE.
+    ----------------------------------------------------------------------
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          C D hCD with
+      ⟨lineCD, hClineCD, hDlineCD⟩
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          C E hCE with
+      ⟨lineCE, hClineCE, hElineCE⟩
+
+    ----------------------------------------------------------------------
+    -- F lies on line CD.
+    ----------------------------------------------------------------------
+
+    have hFlineCD :
+        HilbertIncidence.OnLine F lineCD :=
+      hilbert_collinear_on_line
+        Geo C D F lineCD
+        hCD
+        hClineCD
+        hDlineCD
+        hCDF
+
+    ----------------------------------------------------------------------
+    -- A is not on line CD.
+    ----------------------------------------------------------------------
+
+    have hAoffCD :
+        ¬ HilbertIncidence.OnLine A lineCD := by
+
+      intro hAlineCD
+
+      exact hACD
+        ⟨lineCD,
+         hAlineCD,
+         hClineCD,
+         hDlineCD⟩
+
+    ----------------------------------------------------------------------
+    -- X is not on line CD.
+    ----------------------------------------------------------------------
+
+    have hXoffCD :
+        ¬ HilbertIncidence.OnLine X lineCD := by
+
+      intro hXlineCD
+
+      exact hCFX
+        ⟨lineCD,
+         hClineCD,
+         hFlineCD,
+         hXlineCD⟩
+
+    ----------------------------------------------------------------------
+    -- B is not on line CE.
+    ----------------------------------------------------------------------
+
+    have hBoffCE :
+        ¬ HilbertIncidence.OnLine B lineCE := by
+
+      intro hBlineCE
+
+      have hBaseEq :
+          base = lineCE :=
+        HilbertPlaneIncidence.line_unique
+          B C hBC
+          base lineCE
+          hBbase hCbase
+          hBlineCE hClineCE
+
+      have hEbase :
+          HilbertIncidence.OnLine E base := by
+        rw [hBaseEq]
+        exact hElineCE
+
+      exact hEDSame.1 hEbase
+
+    ----------------------------------------------------------------------
+    -- X is not on line CE.
+    ----------------------------------------------------------------------
+
+    have hCEX :
+        ¬ Collinear Geo C E X :=
+      hSSS.1
+
+    have hXoffCE :
+        ¬ HilbertIncidence.OnLine X lineCE := by
+
+      intro hXlineCE
+
+      exact hCEX
+        ⟨lineCE,
+         hClineCE,
+         hElineCE,
+         hXlineCE⟩
+
+    ----------------------------------------------------------------------
+    -- E and X lie on the same side of line CD.
+    ----------------------------------------------------------------------
+
+    have hEXF :
+        Geo.Between E X F :=
+      (HilbertOrder.between_incidence
+        F X E hFXE).2.2.2.2
+
+    have hEFC :
+        ¬ Collinear Geo E F C := by
+      intro hEFC
+
+      have hFCE' :
+          Collinear Geo F C E :=
+        PrimCollinearCycle
+          Geo E F C hEFC
+
+      exact hFCE hFCE'
+
+    rcases
+        hilbert_between_points_sameSide_transversal
+          Geo E X C F hEXF hEFC with
+      ⟨lineCF, hClineCF, hFlineCF, hSameEX_CF⟩
+
+    have hLineCF_CD :
+        lineCF = lineCD :=
+      HilbertPlaneIncidence.line_unique
+        C F hCF
+        lineCF lineCD
+        hClineCF hFlineCF
+        hClineCD hFlineCD
+
+    have hSameEX_CD :
+        HilbertSameSide Geo E X lineCD := by
+      rw [← hLineCF_CD]
+      exact hSameEX_CF
+
+    ----------------------------------------------------------------------
+    -- F and X lie on the same side of line CE.
+    ----------------------------------------------------------------------
+
+    have hFEC :
+        ¬ Collinear Geo F E C := by
+      intro hFEC
+
+      have hFCE' :
+          Collinear Geo F C E :=
+        PrimCollinearRotate
+          Geo F E C hFEC
+
+      exact hFCE hFCE'
+
+    rcases
+        hilbert_between_points_sameSide_transversal
+          Geo F X C E hFXE hFEC with
+      ⟨lineCE', hClineCE', hElineCE', hSameFX_CE⟩
+
+    have hLineCE'_CE :
+        lineCE' = lineCE :=
+      HilbertPlaneIncidence.line_unique
+        C E hCE
+        lineCE' lineCE
+        hClineCE' hElineCE'
+        hClineCE hElineCE
+
+    have hSameFX_CE' :
+        HilbertSameSide Geo F X lineCE := by
+      rw [← hLineCE'_CE]
+      exact hSameFX_CE
+    ----------------------------------------------------------------------
+    -- Determine the order of the rays CD and CE in the half-plane
+    -- bounded by the original line AB.
+    ----------------------------------------------------------------------
+
+    have hDCE :
+        ¬ Collinear Geo D C E := by
+      intro hDCE'
+      exact
+        hCED
+          (PrimCollinearCycle
+            Geo D C E hDCE')
+
+    have hSameDE :
+        HilbertSameSide Geo D E base :=
+      hilbert_sameSide_symm
+        Geo E D base hEDSame
+
+    have hRayOrder :
+        HilbertRayMeetsSegment Geo C D E A ∨
+        HilbertRayMeetsSegment Geo C E D A :=
+      hilbert_sameSide_rays_order
+        Geo
+        C D A E
+        base
+        hAC.symm
+        hCbase
+        hAbase
+        hDbase
+        hEDSame.1
+        hSameDE
+        hDCE
+    rcases hRayOrder with hCaseD | hCaseE
+
+    ----------------------------------------------------------------------
+    -- Case 1: ray CD meets the open segment EA.
+    ----------------------------------------------------------------------
+
+        ----------------------------------------------------------------------
+    -- Case 1: ray CD meets the open segment EA.
+    ----------------------------------------------------------------------
+
+    · rcases hCaseD with
+        ⟨Y, hEYA, hRayDY⟩
+
+      have hCY : C ≠ Y :=
+        hRayDY.2.1.symm
+
+      have hYlineCD :
+          HilbertIncidence.OnLine Y lineCD := by
+
+        rcases hRayDY.2.2.1 with
+          ⟨m, hCm, hDm, hYm⟩
+
+        have hm :
+            m = lineCD :=
+          HilbertPlaneIncidence.line_unique
+            C D hCD
+            m lineCD
+            hCm hDm
+            hClineCD hDlineCD
+
+        rw [← hm]
+        exact hYm
+
+      --------------------------------------------------------------------
+      -- E and A are on opposite sides of CD.
+      --------------------------------------------------------------------
+
+      have hOppEA_CD :
+          HilbertOppositeSide Geo E A lineCD :=
+        ⟨hSameEX_CD.1,
+         hAoffCD,
+         ⟨Y, hEYA, hYlineCD⟩⟩
+
+      have hOppAE_CD :
+          HilbertOppositeSide Geo A E lineCD :=
+        hilbert_oppositeSide_symm
+          Geo E A lineCD hOppEA_CD
+
+      have hOppAX_CD :
+          HilbertOppositeSide Geo A X lineCD :=
+        hilbert_oppositeSide_transport_right
+          Geo A E X lineCD
+          hOppAE_CD
+          hSameEX_CD
+
+      have hNotSameAX_CD :
+          ¬ HilbertSameSide Geo A X lineCD := by
+        intro hSameAX
+
+        exact
+          (hilbert_oppositeSide_not_sameSide
+            Geo A X lineCD hOppAX_CD)
+            hSameAX
+
+      --------------------------------------------------------------------
+      -- F and Y are on the same side of CE because both lie
+      -- on the same ray CD.
+      --------------------------------------------------------------------
+
+      have hSameFY_CE :
+          HilbertSameSide Geo F Y lineCE := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := C)
+            (R := D)
+            (X := F)
+            (Y := Y)
+            (C := E)
+            (base := lineCD)
+            (cross := lineCE)
+            hClineCD
+            hDlineCD
+            hClineCE
+            hElineCE
+            hSameEX_CD.1
+            hRayDF
+            hRayDY
+
+      --------------------------------------------------------------------
+      -- Y and A are on the same side of CE.
+      --------------------------------------------------------------------
+
+      have hEYAData :=
+        HilbertOrder.between_incidence
+          E Y A hEYA
+
+      rcases hEYAData.2.2.2.1 with
+        ⟨lineEA, hElineEA, hYlineEA, hAlineEA⟩
+
+      have hCoffEA :
+          ¬ HilbertIncidence.OnLine C lineEA := by
+        intro hClineEA
+
+        have hEq :
+            lineEA = base :=
+          HilbertPlaneIncidence.line_unique
+            A C hAC
+            lineEA base
+            hAlineEA hClineEA
+            hAbase hCbase
+
+        have hEbase :
+            HilbertIncidence.OnLine E base := by
+          rw [← hEq]
+          exact hElineEA
+
+        exact hEDSame.1 hEbase
+
+      have hRayEAY :
+          HilbertSameRay Geo E A Y :=
+        hilbert_sameRay_symm
+          Geo E Y A
+          (hilbert_sameRay_of_between
+            Geo E Y A hEYA)
+
+
+      have hAE : A ≠ E :=
+        hEYAData.2.2.1.symm
+
+      have hRayEAA :
+          HilbertSameRay Geo E A A :=
+        hilbert_sameRay_refl
+          Geo E A hAE
+
+      have hSameYA_CE :
+          HilbertSameSide Geo Y A lineCE := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := E)
+            (R := A)
+            (X := Y)
+            (Y := A)
+            (C := C)
+            (base := lineEA)
+            (cross := lineCE)
+            hElineEA
+            hAlineEA
+            hElineCE
+            hClineCE
+            hCoffEA
+            hRayEAY
+            hRayEAA
+
+      have hSameFA_CE :
+          HilbertSameSide Geo F A lineCE :=
+        hilbert_sameSide_trans
+          Geo F Y A lineCE
+          hSameFY_CE
+          hSameYA_CE
+
+      have hSameAF_CE :
+          HilbertSameSide Geo A F lineCE :=
+        hilbert_sameSide_symm
+          Geo F A lineCE hSameFA_CE
+
+      --------------------------------------------------------------------
+      -- A and B are on opposite sides of CE because A-C-B.
+      --------------------------------------------------------------------
+
+      have hAoffCE :
+          ¬ HilbertIncidence.OnLine A lineCE := by
+        intro hAlineCE
+
+        have hEq :
+            base = lineCE :=
+          HilbertPlaneIncidence.line_unique
+            A C hAC
+            base lineCE
+            hAbase hCbase
+            hAlineCE hClineCE
+
+        have hEbase :
+            HilbertIncidence.OnLine E base := by
+          rw [hEq]
+          exact hElineCE
+
+        exact hEDSame.1 hEbase
+
+      have hOppAB_CE :
+          HilbertOppositeSide Geo A B lineCE :=
+        ⟨hAoffCE,
+         hBoffCE,
+         ⟨C, hACB, hClineCE⟩⟩
+
+      have hOppBA_CE :
+          HilbertOppositeSide Geo B A lineCE :=
+        hilbert_oppositeSide_symm
+          Geo A B lineCE hOppAB_CE
+
+      have hOppBF_CE :
+          HilbertOppositeSide Geo B F lineCE :=
+        hilbert_oppositeSide_transport_right
+          Geo B A F lineCE
+          hOppBA_CE
+          hSameAF_CE
+
+      have hOppBX_CE :
+          HilbertOppositeSide Geo B X lineCE :=
+        hilbert_oppositeSide_transport_right
+          Geo B F X lineCE
+          hOppBF_CE
+          hSameFX_CE'
+
+      have hNotSameBX_CE :
+          ¬ HilbertSameSide Geo B X lineCE := by
+        intro hSameBX
+
+        exact
+          (hilbert_oppositeSide_not_sameSide
+            Geo B X lineCE hOppBX_CE)
+            hSameBX
+
+      --------------------------------------------------------------------
+      -- The two angle configurations have the same side pattern.
+      --------------------------------------------------------------------
+
+      have hSideConfiguration :
+          HilbertSameSide Geo A X lineCD ↔
+          HilbertSameSide Geo B X lineCE := by
+        constructor
+        · intro hAX
+          exact False.elim (hNotSameAX_CD hAX)
+        · intro hBX
+          exact False.elim (hNotSameBX_CE hBX)
+
+            --------------------------------------------------------------------
+      -- F and D lie on the same side of the original base.
+      --------------------------------------------------------------------
+
+      have hRayCDD :
+          HilbertSameRay Geo C D D :=
+        hilbert_sameRay_refl
+          Geo C D hCD.symm
+
+      have hSameFD_base :
+          HilbertSameSide Geo F D base := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := C)
+            (R := D)
+            (X := F)
+            (Y := D)
+            (C := A)
+            (base := lineCD)
+            (cross := base)
+            hClineCD
+            hDlineCD
+            hCbase
+            hAbase
+            hAoffCD
+            hRayDF
+            hRayCDD
+
+      have hSameFE_base :
+          HilbertSameSide Geo F E base :=
+        hilbert_sameSide_trans
+          Geo F D E base
+          hSameFD_base
+          hSameDE
+
+      --------------------------------------------------------------------
+      -- Since X lies between F and E, and F,E are on the same side
+      -- of base, X cannot lie on base.
+      --------------------------------------------------------------------
+
+      have hXoffBase :
+          ¬ HilbertIncidence.OnLine X base := by
+        intro hXbase
+
+        have hOppFE_base :
+            HilbertOppositeSide Geo F E base :=
+          ⟨hSameFE_base.1,
+           hSameFE_base.2.1,
+           ⟨X, hFXE, hXbase⟩⟩
+
+        exact
+          (hilbert_oppositeSide_not_sameSide
+            Geo F E base hOppFE_base)
+            hSameFE_base
+
+      --------------------------------------------------------------------
+      -- Hence ACX and BCX are genuine angles.
+      --------------------------------------------------------------------
+
+      have hACX :
+          ¬ Collinear Geo A C X :=
+        hilbert_not_collinear_of_off_line
+          Geo A C X base
+          hAC
+          hAbase
+          hCbase
+          hXoffBase
+
+      have hBCX :
+          ¬ Collinear Geo B C X :=
+        hilbert_not_collinear_of_off_line
+          Geo B C X base
+          hBC
+          hBbase
+          hCbase
+          hXoffBase
+
+      --------------------------------------------------------------------
+      -- Add the two congruent component angles:
+      --
+      --   ACD ~= BCE
+      --   DCX ~= ECX
+      --
+      -- therefore ACX ~= BCX.
+      --------------------------------------------------------------------
+
+      have hACX_BCX :
+          Geo.AngleCongruent A C X B C X :=
+        hilbert_angle_addition
+          Geo
+          A C D X
+          B C E X
+          lineCD lineCE
+          hCD
+          hCE
+          hClineCD
+          hDlineCD
+          hClineCE
+          hElineCE
+          hAoffCD
+          hXoffCD
+          hBoffCE
+          hXoffCE
+          hSideConfiguration
+          hACX
+          hBCX
+          hAngleE
+          hDCX_ECX
+
+      have hACX_XCB :
+          Geo.AngleCongruent A C X X C B :=
+        (Geo.angle_congruent_reverse_second
+          A C X B C X).mp hACX_BCX
+
+      --------------------------------------------------------------------
+      -- This is precisely a right angle at C.
+      --------------------------------------------------------------------
+
+      refine ⟨X, ?_⟩
+      refine ⟨B, hACB, ?_⟩
+      exact hACX_XCB
+
+
+    ----------------------------------------------------------------------
+    -- Case 2: ray CE meets the open segment DA.
+    ----------------------------------------------------------------------
+
+    · rcases hCaseE with
+        ⟨Y, hDYA, hRayEY⟩
+
+      have hCY : C ≠ Y :=
+        hRayEY.2.1.symm
+
+      have hYlineCE :
+          HilbertIncidence.OnLine Y lineCE := by
+
+        rcases hRayEY.2.2.1 with
+          ⟨m, hCm, hEm, hYm⟩
+
+        have hm :
+            m = lineCE :=
+          HilbertPlaneIncidence.line_unique
+            C E hCE
+            m lineCE
+            hCm hEm
+            hClineCE hElineCE
+
+        rw [← hm]
+        exact hYm
+
+      --------------------------------------------------------------------
+      -- Since Y lies between D and A and Y lies on line CE,
+      -- D and A are on opposite sides of line CE.
+      --------------------------------------------------------------------
+      have hDoffCE :
+          ¬ HilbertIncidence.OnLine D lineCE := by
+        intro hDlineCE
+
+        exact hCED
+          ⟨lineCE,
+           hClineCE,
+           hElineCE,
+           hDlineCE⟩
+      have hAoffCE :
+          ¬ HilbertIncidence.OnLine A lineCE := by
+        intro hAlineCE
+
+        have hBaseEq :
+            base = lineCE :=
+          HilbertPlaneIncidence.line_unique
+            A C hAC
+            base lineCE
+            hAbase hCbase
+            hAlineCE hClineCE
+
+        have hEbase :
+            HilbertIncidence.OnLine E base := by
+          rw [hBaseEq]
+          exact hElineCE
+
+        exact hEDSame.1 hEbase
+
+      have hOppDA_CE :
+          HilbertOppositeSide Geo D A lineCE :=
+        ⟨hDoffCE,
+         hAoffCE,
+         ⟨Y, hDYA, hYlineCE⟩⟩
+
+            --------------------------------------------------------------------
+      -- Y and A lie on the same side of CD.
+      --------------------------------------------------------------------
+
+      have hDYAData :=
+        HilbertOrder.between_incidence
+          D Y A hDYA
+
+      rcases hDYAData.2.2.2.1 with
+        ⟨lineDA, hDlineDA, hYlineDA, hAlineDA⟩
+
+      have hCoffDA :
+          ¬ HilbertIncidence.OnLine C lineDA := by
+        intro hClineDA
+
+        have hEq :
+            lineDA = base :=
+          HilbertPlaneIncidence.line_unique
+            A C hAC
+            lineDA base
+            hAlineDA hClineDA
+            hAbase hCbase
+
+        have hDbase' :
+            HilbertIncidence.OnLine D base := by
+          rw [← hEq]
+          exact hDlineDA
+
+        exact hDbase hDbase'
+
+      have hRayDAY :
+          HilbertSameRay Geo D A Y :=
+        hilbert_sameRay_symm
+          Geo D Y A
+          (hilbert_sameRay_of_between
+            Geo D Y A hDYA)
+
+      have hDA : A ≠ D :=
+        hDYAData.2.2.1.symm
+
+      have hRayDAA :
+          HilbertSameRay Geo D A A :=
+        hilbert_sameRay_refl
+          Geo D A hDA
+
+      have hSameYA_CD :
+          HilbertSameSide Geo Y A lineCD := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := D)
+            (R := A)
+            (X := Y)
+            (Y := A)
+            (C := C)
+            (base := lineDA)
+            (cross := lineCD)
+            hDlineDA
+            hAlineDA
+            hDlineCD
+            hClineCD
+            hCoffDA
+            hRayDAY
+            hRayDAA
+
+      --------------------------------------------------------------------
+      -- E and Y lie on the same side of CD because both lie
+      -- on ray CE.
+      --------------------------------------------------------------------
+
+      have hRayCEE :
+          HilbertSameRay Geo C E E :=
+        hilbert_sameRay_refl
+          Geo C E hCE.symm
+
+      have hSameEY_CD :
+          HilbertSameSide Geo E Y lineCD := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := C)
+            (R := E)
+            (X := E)
+            (Y := Y)
+            (C := D)
+            (base := lineCE)
+            (cross := lineCD)
+            hClineCE
+            hElineCE
+            hClineCD
+            hDlineCD
+            hDoffCE
+            hRayCEE
+            hRayEY
+
+      have hSameEA_CD :
+          HilbertSameSide Geo E A lineCD :=
+        hilbert_sameSide_trans
+          Geo E Y A lineCD
+          hSameEY_CD
+          hSameYA_CD
+
+      have hSameAE_CD :
+          HilbertSameSide Geo A E lineCD :=
+        hilbert_sameSide_symm
+          Geo E A lineCD hSameEA_CD
+
+      have hSameAX_CD :
+          HilbertSameSide Geo A X lineCD :=
+        hilbert_sameSide_trans
+          Geo A E X lineCD
+          hSameAE_CD
+          hSameEX_CD
+
+      --------------------------------------------------------------------
+      -- D and B lie on the same side of CE.
+      --
+      -- CE cuts sides AD and AB of triangle ADB at Y and C.
+      --------------------------------------------------------------------
+
+      have hAYD :
+          Geo.Between A Y D :=
+        hDYAData.2.2.2.2
+
+      have hADB :
+          ¬ PrimCollinear Geo A D B := by
+        rintro ⟨l, hAl, hDl, hBl⟩
+
+        have hEq :
+            l = base :=
+          HilbertPlaneIncidence.line_unique
+            A B hAB
+            l base
+            hAl hBl
+            hAbase hBbase
+
+        have hDbase' :
+            HilbertIncidence.OnLine D base := by
+          rw [← hEq]
+          exact hDl
+
+        exact hDbase hDbase'
+
+      have hSameDB_CE :
+          HilbertSameSide Geo D B lineCE :=
+        hilbert_third_side_endpoints_sameSide
+          Geo
+          A D B
+          Y C
+          lineCE
+          hADB
+          hAYD
+          hACB
+          hYlineCE
+          hClineCE
+
+      --------------------------------------------------------------------
+      -- D and F are on the same side of CE because both lie
+      -- on ray CD.
+      --------------------------------------------------------------------
+
+      have hRayCDD :
+          HilbertSameRay Geo C D D :=
+        hilbert_sameRay_refl
+          Geo C D hCD.symm
+
+      have hSameDF_CE :
+          HilbertSameSide Geo D F lineCE := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := C)
+            (R := D)
+            (X := D)
+            (Y := F)
+            (C := E)
+            (base := lineCD)
+            (cross := lineCE)
+            hClineCD
+            hDlineCD
+            hClineCE
+            hElineCE
+            hSameEX_CD.1
+            hRayCDD
+            hRayDF
+
+      have hSameBD_CE :
+          HilbertSameSide Geo B D lineCE :=
+        hilbert_sameSide_symm
+          Geo D B lineCE hSameDB_CE
+
+      have hSameBF_CE :
+          HilbertSameSide Geo B F lineCE :=
+        hilbert_sameSide_trans
+          Geo B D F lineCE
+          hSameBD_CE
+          hSameDF_CE
+
+      have hSameBX_CE :
+          HilbertSameSide Geo B X lineCE :=
+        hilbert_sameSide_trans
+          Geo B F X lineCE
+          hSameBF_CE
+          hSameFX_CE'
+
+      --------------------------------------------------------------------
+      -- Both component configurations are same-side configurations.
+      --------------------------------------------------------------------
+
+      have hSideConfiguration :
+          HilbertSameSide Geo A X lineCD ↔
+          HilbertSameSide Geo B X lineCE :=
+        ⟨fun _ => hSameBX_CE,
+         fun _ => hSameAX_CD⟩
+
+      --------------------------------------------------------------------
+      -- X is off the original base AB.
+      --------------------------------------------------------------------
+
+      have hSameFD_base :
+          HilbertSameSide Geo F D base := by
+        exact
+          hilbert_sameRay_points_sameSide
+            (Geo := Geo)
+            (O := C)
+            (R := D)
+            (X := F)
+            (Y := D)
+            (C := A)
+            (base := lineCD)
+            (cross := base)
+            hClineCD
+            hDlineCD
+            hCbase
+            hAbase
+            hAoffCD
+            hRayDF
+            hRayCDD
+
+      have hSameFE_base :
+          HilbertSameSide Geo F E base :=
+        hilbert_sameSide_trans
+          Geo F D E base
+          hSameFD_base
+          hSameDE
+
+      have hXoffBase :
+          ¬ HilbertIncidence.OnLine X base := by
+        intro hXbase
+
+        have hOppFE_base :
+            HilbertOppositeSide Geo F E base :=
+          ⟨hSameFE_base.1,
+           hSameFE_base.2.1,
+           ⟨X, hFXE, hXbase⟩⟩
+
+        exact
+          (hilbert_oppositeSide_not_sameSide
+            Geo F E base hOppFE_base)
+            hSameFE_base
+
+      have hACX :
+          ¬ Collinear Geo A C X :=
+        hilbert_not_collinear_of_off_line
+          Geo A C X base
+          hAC
+          hAbase
+          hCbase
+          hXoffBase
+
+      have hBCX :
+          ¬ Collinear Geo B C X :=
+        hilbert_not_collinear_of_off_line
+          Geo B C X base
+          hBC
+          hBbase
+          hCbase
+          hXoffBase
+
+      --------------------------------------------------------------------
+      -- Angle addition.
+      --------------------------------------------------------------------
+
+      have hACX_BCX :
+          Geo.AngleCongruent A C X B C X :=
+        hilbert_angle_addition
+          Geo
+          A C D X
+          B C E X
+          lineCD lineCE
+          hCD
+          hCE
+          hClineCD
+          hDlineCD
+          hClineCE
+          hElineCE
+          hAoffCD
+          hXoffCD
+          hBoffCE
+          hXoffCE
+          hSideConfiguration
+          hACX
+          hBCX
+          hAngleE
+          hDCX_ECX
+
+      have hACX_XCB :
+          Geo.AngleCongruent A C X X C B :=
+        (Geo.angle_congruent_reverse_second
+          A C X B C X).mp hACX_BCX
+
+      refine ⟨X, ?_⟩
+      refine ⟨B, hACB, ?_⟩
+      exact hACX_XCB
+
+/--
+Transport an angle congruence when the first ray is replaced by
+another nonvertex point of the same supporting line.
+
+If A, B, H are distinct and collinear, then from
+
+    angle ABP ~= angle ABQ
+
+we obtain
+
+    angle HBP ~= angle HBQ.
+
+If A and H lie on the same ray from B, this is direct ray transport.
+If B lies between A and H, both target angles are supplements of the
+original congruent angles.
+-/
+theorem hilbert_collinear_angle_transport
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B H P Q : Geo.Point)
+    (hAB : A ≠ B)
+    (hAH : A ≠ H)
+    (hBH : B ≠ H)
+    (hBP : B ≠ P)
+    (hBQ : B ≠ Q)
+    (hABH : PrimCollinear Geo A B H)
+    (hABP : ¬ PrimCollinear Geo A B P)
+    (hABQ : ¬ PrimCollinear Geo A B Q)
+    (hAngle : Geo.AngleCongruent A B P A B Q) :
+    Geo.AngleCongruent H B P H B Q := by
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        A B H
+        hAB
+        hBH
+        hAH
+        hABH with
+    hABHbet | hBAHbet | hAHBbet
+
+  ----------------------------------------------------------------------
+  -- Case A-B-H.
+  --
+  -- BH is opposite to BA, so both target angles are supplements
+  -- of the original congruent angles.
+  ----------------------------------------------------------------------
+
+  · have hRayBP :
+        HilbertSameRay Geo B P P :=
+      hilbert_sameRay_refl
+        Geo B P hBP.symm
+
+    have hRayBQ :
+        HilbertSameRay Geo B Q Q :=
+      hilbert_sameRay_refl
+        Geo B Q hBQ.symm
+
+    have hSuppP :
+        BookZeroSupplement Geo
+          A B P
+          P H :=
+      ⟨hRayBP, hABHbet⟩
+
+    have hSuppQ :
+        BookZeroSupplement Geo
+          A B Q
+          Q H :=
+      ⟨hRayBQ, hABHbet⟩
+
+    have hPBH_QBH :
+        Geo.AngleCongruent P B H Q B H :=
+      bookZero_43_supplements
+        Geo
+        A B P P H
+        A B Q Q H
+        hAngle
+        hSuppP
+        hSuppQ
+        hABP
+        hABQ
+
+    exact
+      (Geo.angle_congruent_reverse_second
+        H B P Q B H).mp
+        ((Geo.angle_congruent_reverse_first
+          P B H Q B H).mp hPBH_QBH)
+
+  ----------------------------------------------------------------------
+  -- Case B-A-H.
+  --
+  -- A and H lie on the same ray from B.
+  ----------------------------------------------------------------------
+
+  · have hRayBAH :
+        HilbertSameRay Geo B A H :=
+      hilbert_sameRay_of_between
+        Geo B A H hBAHbet
+
+    have hLeft :
+        Geo.Angle A B P =
+        Geo.Angle H B P :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H P hRayBAH
+
+    have hRight :
+        Geo.Angle A B Q =
+        Geo.Angle H B Q :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H Q hRayBAH
+
+    unfold Geometry.Geo.AngleCongruent at hAngle ⊢
+    rw [← hLeft, ← hRight]
+    exact hAngle
+
+  ----------------------------------------------------------------------
+  -- Case A-H-B.
+  --
+  -- Again A and H lie on the same ray from B.
+  ----------------------------------------------------------------------
+
+  · have hBHA :
+        Geo.Between B H A :=
+      (HilbertOrder.between_incidence
+        A H B hAHBbet).2.2.2.2
+
+    have hRayBHA :
+        HilbertSameRay Geo B H A :=
+      hilbert_sameRay_of_between
+        Geo B H A hBHA
+
+    have hRayBAH :
+        HilbertSameRay Geo B A H :=
+      hilbert_sameRay_symm
+        Geo B H A hRayBHA
+
+    have hLeft :
+        Geo.Angle A B P =
+        Geo.Angle H B P :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H P hRayBAH
+
+    have hRight :
+        Geo.Angle A B Q =
+        Geo.Angle H B Q :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo B A H Q hRayBAH
+
+    unfold Geometry.Geo.AngleCongruent at hAngle ⊢
+    rw [← hLeft, ← hRight]
+    exact hAngle
+
+/--
+If two distinct points A and B are equidistant from P and Q,
+then the line AB bisects PQ at every point H where PQ meets AB.
+
+This is the perpendicular-bisector property needed in the
+Hilbert reconstruction of Euclid I.12.
+-/
+theorem hilbert_equidistant_line_bisects_segment
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B P Q H : Geo.Point)
+    (base : Geo.Line)
+    (hAB : A ≠ B)
+    (hAbase : HilbertIncidence.OnLine A base)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hHbase : HilbertIncidence.OnLine H base)
+    (hOppPQ : HilbertOppositeSide Geo P Q base)
+    (hAP_AQ : Geo.Congruent A P A Q)
+    (hBP_BQ : Geo.Congruent B P B Q)
+    (hPHQ : Geo.Between P H Q) :
+    Geo.Congruent P H H Q := by
+
+  ----------------------------------------------------------------------
+  -- Basic incidence data for P-H-Q.
+  ----------------------------------------------------------------------
+
+  have hPHQData :=
+    HilbertOrder.between_incidence
+      P H Q hPHQ
+
+  have hPH : P ≠ H :=
+    hPHQData.1
+
+  have hHQ : H ≠ Q :=
+    hPHQData.2.1
+
+  have hPQ : P ≠ Q :=
+    hPHQData.2.2.1
+
+  ----------------------------------------------------------------------
+  -- Construct the line PQ.
+  ----------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        P Q hPQ with
+    ⟨linePQ, hPlinePQ, hQlinePQ⟩
+
+  ----------------------------------------------------------------------
+  -- A and B are both equidistant from P and Q.
+  -- Hilbert Theorem 17 therefore gives the symmetry of the
+  -- two rays BP and BQ with respect to BA.
+  ----------------------------------------------------------------------
+
+  have hAngleABP_ABQ :
+      Geo.AngleCongruent A B P A B Q :=
+    hilbert_theorem_17
+      Geo
+      A B P Q
+      base linePQ
+      hAB
+      hAbase
+      hBbase
+      hOppPQ
+      hPlinePQ
+      hQlinePQ
+      hAP_AQ
+      hBP_BQ
+
+  ----------------------------------------------------------------------
+  -- From this point we exploit H ∈ AB and P-H-Q.
+  --
+  -- If H = A or H = B, the midpoint congruence follows immediately
+  -- from the corresponding equidistance hypothesis.
+  -- Otherwise we transport the angle congruence from BA to BH.
+  ----------------------------------------------------------------------
+
+  by_cases hHA : H = A
+
+  · subst H
+
+    exact
+      CongruentReverseFirst
+        Geo A P A Q hAP_AQ
+
+  · by_cases hHB : H = B
+
+    · subst H
+
+      exact
+        CongruentReverseFirst
+          Geo B P B Q hBP_BQ
+
+    ·
+      have hAH : A ≠ H := by
+        intro h
+        exact hHA h.symm
+
+      have hBH : B ≠ H := by
+        intro h
+        exact hHB h.symm
+
+      have hBP : B ≠ P := by
+        intro h
+        subst P
+        exact hOppPQ.1 hBbase
+
+      have hBQ : B ≠ Q := by
+        intro h
+        subst Q
+        exact hOppPQ.2.1 hBbase
+
+      have hABH :
+          PrimCollinear Geo A B H :=
+        ⟨base,
+         hAbase,
+         hBbase,
+         hHbase⟩
+
+      --------------------------------------------------------------------
+      -- P and Q do not lie on base.
+      --------------------------------------------------------------------
+
+      have hABP :
+          ¬ PrimCollinear Geo A B P := by
+        intro h
+
+        rcases h with
+          ⟨l, hAl, hBl, hPl⟩
+
+        have hEq :
+            l = base :=
+          HilbertPlaneIncidence.line_unique
+            A B hAB
+            l base
+            hAl hBl
+            hAbase hBbase
+
+        have hPbase :
+            HilbertIncidence.OnLine P base := by
+          rw [← hEq]
+          exact hPl
+
+        exact hOppPQ.1 hPbase
+
+      have hABQ :
+          ¬ PrimCollinear Geo A B Q := by
+        intro h
+
+        rcases h with
+          ⟨l, hAl, hBl, hQl⟩
+
+        have hEq :
+            l = base :=
+          HilbertPlaneIncidence.line_unique
+            A B hAB
+            l base
+            hAl hBl
+            hAbase hBbase
+
+        have hQbase :
+            HilbertIncidence.OnLine Q base := by
+          rw [← hEq]
+          exact hQl
+
+        exact hOppPQ.2.1 hQbase
+
+      --------------------------------------------------------------------
+      -- Transport the congruent angles from ray BA to ray BH.
+      --------------------------------------------------------------------
+
+      have hAngleHBP_HBQ :
+          Geo.AngleCongruent H B P H B Q :=
+        hilbert_collinear_angle_transport
+          Geo
+          A B H P Q
+          hAB
+          hAH
+          hBH
+          hBP
+          hBQ
+          hABH
+          hABP
+          hABQ
+          hAngleABP_ABQ
+
+      --------------------------------------------------------------------
+      -- SAS for triangles BHP and BHQ.
+      --------------------------------------------------------------------
+
+      have hBHP :
+          ¬ Collinear Geo B H P :=
+        hilbert_not_collinear_of_off_line
+          Geo
+          B H P
+          base
+          hBH
+          hBbase
+          hHbase
+          hOppPQ.1
+
+      have hBHQ :
+          ¬ Collinear Geo B H Q :=
+        hilbert_not_collinear_of_off_line
+          Geo
+          B H Q
+          base
+          hBH
+          hBbase
+          hHbase
+          hOppPQ.2.1
+
+      have hBH_BH :
+          Geo.Congruent B H B H :=
+        hilbert_congruent_reflexive
+          Geo B H
+
+      have hSAS_BHP_BHQ :=
+        SAS
+          Geo
+          B H P
+          B H Q
+          hBHP
+          hBHQ
+          hBH_BH
+          hAngleHBP_HBQ
+          hBP_BQ
+
+      have hHP_HQ :
+          Geo.Congruent H P H Q :=
+        hSAS_BHP_BHQ.sideBC
+
+      exact
+        CongruentReverseFirst
+          Geo H P H Q hHP_HQ
 
 end Geometry

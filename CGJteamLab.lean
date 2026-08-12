@@ -7,6 +7,29 @@ import CGJteamLab.HilbertAxioms
 import CGJteamLab.HilbertInterface
 import CGJteamLab.MidsegmentParallel
 import CGJteamLab.FinlayProof
+import CGJteamLab.HilbertBookZero
+-- Euclid Book I
+import CGJteamLab.Proposition01
+import CGJteamLab.Proposition02
+import CGJteamLab.Proposition03
+import CGJteamLab.Proposition04
+import CGJteamLab.Proposition05
+import CGJteamLab.Proposition06
+import CGJteamLab.Proposition07
+import CGJteamLab.Proposition08
+import CGJteamLab.Proposition09
+import CGJteamLab.Proposition10
+import CGJteamLab.Proposition11
+import CGJteamLab.Proposition12
+import CGJteamLab.Proposition13
+import CGJteamLab.Proposition14
+import CGJteamLab.Proposition15
+import CGJteamLab.Proposition16
+import CGJteamLab.Proposition17
+import CGJteamLab.Proposition18
+import CGJteamLab.Proposition19
+import CGJteamLab.Proposition20
+import CGJteamLab.Proposition21
 
 -- Suppes route
 import CGJteamLab.SuppesCore
