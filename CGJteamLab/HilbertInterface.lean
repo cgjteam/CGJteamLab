@@ -10086,5 +10086,143 @@ theorem hilbert_angleLess_transport_left
       hInside,
       hAngle'⟩
 
+/-
+General circle-circle continuity.
+
+The circle with center `O2` and radius `O2R2` contains two points
+`X` and `Y`.  The point `X` is inside the circle with center `O1`
+and radius `O1R1`, while `Y` is outside it.  Then the two circles
+have a common point.
+-/
+omit [HilbertIncidence Geo] in
+axiom hilbert_circle_circle_intersection
+    [HilbertCongruence Geo]
+    (O1 R1 O2 R2 X Y : Geo.Point)
+    (hO1R1 : O1 ≠ R1)
+    (hO2R2 : O2 ≠ R2)
+    (hXon2 : Geo.Congruent O2 X O2 R2)
+    (hYon2 : Geo.Congruent O2 Y O2 R2)
+    (hXinside1 :
+      X = O1 ∨
+      HilbertSegmentLess Geo O1 X O1 R1)
+    (hYoutside1 :
+      HilbertSegmentLess Geo O1 R1 O1 Y) :
+    ∃ P : Geo.Point,
+      Geo.Congruent O1 P O1 R1 ∧
+      Geo.Congruent O2 P O2 R2
+
+/-
+Existence principle for Euclid Book I, Proposition 1,
+derived from general circle-circle continuity.
+
+For every nondegenerate segment `AB` there exists a point `C`
+equidistant from both endpoints:
+
+* `AC ≅ AB`
+* `BC ≅ AB`
+
+The noncollinearity of `A`, `B`, and `C` is proved separately
+in `euclid_proposition_1`.
+-/
+omit [HilbertIncidence Geo] in
+theorem hilbert_equidistant_point_exists
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B : Geo.Point)
+    (hAB : A ≠ B) :
+    ∃ C : Geo.Point,
+      Geo.Congruent A C A B ∧
+      Geo.Congruent B C A B := by
+
+  rcases
+      HilbertOrder.between_extension
+        A B hAB with
+    ⟨R, hABR⟩
+
+  have hBR : B ≠ R :=
+    (HilbertOrder.between_incidence
+      A B R hABR).2.1
+
+  rcases
+      HilbertCongruence.segment_construction
+        (Geo := Geo)
+        B A
+        B R
+        hBR with
+    ⟨Y, hRayBRY, hBY_BA⟩
+
+  have hRayBAA :
+      HilbertSameRay Geo B A A :=
+    hilbert_sameRay_refl
+      Geo B A hAB
+
+  have hABY :
+      Geo.Between A B Y :=
+    hilbert_between_transport_sameRays
+      Geo
+      A B R
+      A Y
+      hABR
+      hRayBAA
+      hRayBRY
+
+  have hAon2 :
+      Geo.Congruent B A B A :=
+    hilbert_congruent_reflexive
+      Geo B A
+
+  have hYon2 :
+      Geo.Congruent B Y B A :=
+    hBY_BA
+
+  have hAinside1 :
+      A = A ∨
+      HilbertSegmentLess Geo A A A B := by
+    left
+    rfl
+
+  have hYoutside1 :
+      HilbertSegmentLess Geo A B A Y := by
+    exact
+      ⟨B,
+       hABY,
+       hilbert_congruent_reflexive Geo A B⟩
+
+  rcases
+      hilbert_circle_circle_intersection
+        Geo
+        A B
+        B A
+        A Y
+        hAB
+        hAB.symm
+        hAon2
+        hYon2
+        hAinside1
+        hYoutside1 with
+    ⟨C, hAC_AB, hBC_BA⟩
+
+  have hBC_AB :
+      Geo.Congruent B C A B :=
+    (Geometry.Geo.congruent_reverse_second
+      Geo B C B A).mp hBC_BA
+
+  exact
+    ⟨C, hAC_AB, hBC_AB⟩
+
+/--
+The sum of two segments AB and CD is strictly greater than EF.
+
+The point P realizes the sum on the ray from A through B:
+A-B-P and BP ~= CD, so AP represents AB + CD.
+The final condition says EF < AP.
+-/
+def HilbertSegmentSumGreater
+    [HilbertCongruence Geo]
+    (A B C D E F : Geo.Point) : Prop :=
+  ∃ P : Geo.Point,
+    Geo.Between A B P ∧
+    Geo.Congruent B P C D ∧
+    HilbertSegmentLess Geo E F A P
 
 end Geometry
