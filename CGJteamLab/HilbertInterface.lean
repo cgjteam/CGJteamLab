@@ -10225,4 +10225,351 @@ def HilbertSegmentSumGreater
     Geo.Congruent B P C D ∧
     HilbertSegmentLess Geo E F A P
 
+/-!
+Test infrastructure for angle trichotomy.
+
+First target:
+
+If B and X are collinear with O and lie on the same side of a line
+through O, then they determine the same ray from O.
+-/
+theorem sameRay_of_collinear_sameSide
+    [HilbertOrder Geo]
+    (O B X : Geo.Point)
+    (base : Geo.Line)
+    (hObase : HilbertIncidence.OnLine O base)
+    (hBoff : ¬ HilbertIncidence.OnLine B base)
+    (hXoff : ¬ HilbertIncidence.OnLine X base)
+    (hSame : HilbertSameSide Geo B X base)
+    (hBOX : PrimCollinear Geo B O X) :
+    HilbertSameRay Geo O B X := by
+
+  have hBO : B ≠ O := by
+    intro h
+    subst B
+    exact hBoff hObase
+
+  have hOX : O ≠ X := by
+    intro h
+    subst X
+    exact hXoff hObase
+
+  by_cases hBX : B = X
+
+  · subst X
+    exact
+      hilbert_sameRay_refl
+        Geo O B hBO
+
+  ·
+    have hBXne : B ≠ X :=
+      hBX
+
+    rcases
+        hilbert_between_trichotomy
+          Geo
+          B O X
+          hBO
+          hOX
+          hBXne
+          hBOX with
+      hBOXbet | hOBX | hBXO
+
+    ·
+      -- B-O-X is impossible:
+      -- segment BX crosses the base line at O.
+      have hOpp :
+          HilbertOppositeSide Geo B X base :=
+        ⟨hBoff,
+          hXoff,
+          ⟨O, hBOXbet, hObase⟩⟩
+
+      exact
+        False.elim
+          ((hilbert_oppositeSide_not_sameSide
+              Geo B X base hOpp)
+            hSame)
+
+    ·
+      -- O-B-X: X lies farther along ray OB.
+      exact
+        hilbert_sameRay_of_between
+          Geo O B X hOBX
+
+    ·
+      -- B-X-O, hence O-X-B.
+      have hOXB :
+          Geo.Between O X B :=
+        (HilbertOrder.between_incidence
+          B X O hBXO).2.2.2.2
+
+      have hRayOXB :
+          HilbertSameRay Geo O X B :=
+        hilbert_sameRay_of_between
+          Geo O X B hOXB
+
+      exact
+        hilbert_sameRay_symm
+          Geo O X B hRayOXB
+
+
+theorem angle_trichotomy
+    [HilbertCongruence Geo]
+    (A O B C P D : Geo.Point)
+    (hAOB : ¬ PrimCollinear Geo A O B)
+    (hCPD : ¬ PrimCollinear Geo C P D) :
+    Geo.AngleCongruent A O B C P D ∨
+    HilbertAngleLess Geo A O B C P D ∨
+    HilbertAngleLess Geo C P D A O B := by
+
+  --------------------------------------------------------------------
+  -- Base line OA.
+  --------------------------------------------------------------------
+
+  have hAO : A ≠ O :=
+    hilbert_noncollinear_ne_first
+      Geo A O B hAOB
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        O A hAO.symm with
+    ⟨base, hObase, hAbase⟩
+
+  have hBoff :
+      ¬ HilbertIncidence.OnLine B base := by
+    intro hBbase
+    apply hAOB
+    exact
+      PrimCollinear.mk
+        (Geo := Geo)
+        hAbase hObase hBbase
+
+  --------------------------------------------------------------------
+  -- Copy angle CPD at O, with OA as first ray,
+  -- on the side of OA containing B.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertCongruence.angle_construction
+        (Geo := Geo)
+        C P D
+        A O B
+        hCPD
+        hAO
+        base
+        hAbase hObase hBoff with
+    ⟨X, hXBSame, hAngleX, _hUnique⟩
+
+  -- angle CPD is congruent to angle AOX
+  --
+  -- hAngleX :
+  --   AngleCongruent C P D A O X
+
+  have hBXSame :
+      HilbertSameSide Geo B X base :=
+    hilbert_sameSide_symm
+      Geo X B base hXBSame
+
+  have hXoff :
+      ¬ HilbertIncidence.OnLine X base :=
+    hBXSame.2.1
+
+  have hAOX :
+      ¬ PrimCollinear Geo A O X :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      A O X
+      base
+      hAO
+      hAbase hObase hXoff
+
+  --------------------------------------------------------------------
+  -- Compare the two second rays OB and OX.
+  --------------------------------------------------------------------
+
+  by_cases hBOX :
+      PrimCollinear Geo B O X
+
+  ·
+    ------------------------------------------------------------------
+    -- Collinear case:
+    -- B and X lie on the same side of OA, hence on the same ray.
+    ------------------------------------------------------------------
+
+    have hRayBX :
+        HilbertSameRay Geo O B X :=
+      sameRay_of_collinear_sameSide
+        (Geo := Geo)
+        (O := O)
+        (B := B)
+        (X := X)
+        (base := base)
+        hObase
+        hBoff
+        hXoff
+        hBXSame
+        hBOX
+
+    have hAngleEq :
+        Geo.Angle A O B =
+        Geo.Angle A O X :=
+      hilbert_angle_eq_of_sameRay_second
+        Geo O A B X hRayBX
+
+
+    have hAOB_AOX :
+        Geo.AngleCongruent A O B A O X := by
+      unfold Geometry.Geo.AngleCongruent
+      rw [hAngleEq]
+
+      exact
+        HilbertCongruence.angle_congruence_reflexive
+          (Geo := Geo)
+          A O X
+          hAOX
+
+    have hAOX_CPD :
+        Geo.AngleCongruent A O X C P D :=
+      Geometry.Geo.angle_congruent_symmetry
+        Geo
+        C P D
+        A O X
+        hAngleX
+
+    have hAOB_CPD :
+        Geo.AngleCongruent A O B C P D :=
+      Geometry.Geo.angle_congruent_transitivity
+        Geo
+        A O B
+        A O X
+        C P D
+        hAOB_AOX
+        hAOX_CPD
+
+    exact Or.inl hAOB_CPD
+
+  ·
+    ------------------------------------------------------------------
+    -- Noncollinear case:
+    -- compare rays OB and OX in the same half-plane bounded by OA.
+    ------------------------------------------------------------------
+
+    have hOA : O ≠ A :=
+      hAO.symm
+
+    rcases
+        hilbert_sameSide_rays_order
+          Geo
+          O B A X
+          base
+          hOA
+          hObase
+          hAbase
+          hBoff
+          hXoff
+          hBXSame
+          hBOX with
+      hRayBInside | hRayXInside
+
+    ·
+      ----------------------------------------------------------------
+      -- ray OB meets segment XA:
+      -- angle AOB < angle AOX.
+      ----------------------------------------------------------------
+
+      rcases hRayBInside with
+        ⟨H, hXHA, hRayOBH⟩
+
+      have hAHX :
+          Geo.Between A H X :=
+        (HilbertOrder.between_incidence
+          X H A hXHA).2.2.2.2
+
+      have hInside :
+          HilbertRayMeetsSegment Geo O B A X :=
+        ⟨H, hAHX, hRayOBH⟩
+
+      have hAOB_AOX :
+          HilbertAngleLess Geo A O B A O X :=
+        hilbert_angleLess_intro
+          Geo
+          A O B
+          A O X
+          B
+          hAOB
+          hAOX
+          hInside
+          (HilbertCongruence.angle_congruence_reflexive
+            (Geo := Geo)
+            A O B
+            hAOB)
+
+      have hAOX_CPD :
+          Geo.AngleCongruent A O X C P D :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          C P D
+          A O X
+          hAngleX
+
+      have hAOB_CPD :
+          HilbertAngleLess Geo A O B C P D :=
+        hilbert_angleLess_transport_right
+          Geo
+          A O B
+          A O X
+          C P D
+          hAOB_AOX
+          hCPD
+          hAOX_CPD
+
+      exact Or.inr (Or.inl hAOB_CPD)
+
+    ·
+      ----------------------------------------------------------------
+      -- ray OX meets segment BA:
+      -- angle AOX < angle AOB.
+      ----------------------------------------------------------------
+
+      rcases hRayXInside with
+        ⟨H, hBHA, hRayOXH⟩
+
+      have hAHB :
+          Geo.Between A H B :=
+        (HilbertOrder.between_incidence
+          B H A hBHA).2.2.2.2
+
+      have hInside :
+          HilbertRayMeetsSegment Geo O X A B :=
+        ⟨H, hAHB, hRayOXH⟩
+
+      have hAOX_AOB :
+          HilbertAngleLess Geo A O X A O B :=
+        hilbert_angleLess_intro
+          Geo
+          A O X
+          A O B
+          X
+          hAOX
+          hAOB
+          hInside
+          (HilbertCongruence.angle_congruence_reflexive
+            (Geo := Geo)
+            A O X
+            hAOX)
+
+      have hCPD_AOB :
+          HilbertAngleLess Geo C P D A O B :=
+        hilbert_angleLess_transport_left
+          Geo
+          A O X
+          C P D
+          A O B
+          hAOX_AOB
+          hCPD
+          hAngleX
+
+      exact Or.inr (Or.inr hCPD_AOB)
+
+
 end Geometry
