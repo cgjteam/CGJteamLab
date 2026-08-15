@@ -33,6 +33,7 @@ import CGJteamLab.Proposition21
 import CGJteamLab.Proposition22
 import CGJteamLab.Proposition23
 import CGJteamLab.Proposition24
+import CGJteamLab.Proposition25
 
 -- Suppes route
 import CGJteamLab.SuppesCore
