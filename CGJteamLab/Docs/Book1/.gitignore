@@ -16,6 +16,11 @@
 *.xdv
 *.tex
 
+*.tex
+
+# Asymptote generated figures
+Docs/Book1/figures/*.pdf
+
 # Editors
 *.bak
 *~
