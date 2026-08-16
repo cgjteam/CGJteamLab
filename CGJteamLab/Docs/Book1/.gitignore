@@ -19,7 +19,7 @@
 *.tex
 
 # Asymptote generated figures
-Docs/Book1/figures/*.pdf
+figures/*.pdf
 
 # Editors
 *.bak
