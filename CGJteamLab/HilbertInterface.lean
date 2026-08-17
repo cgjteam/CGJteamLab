@@ -10699,4 +10699,149 @@ theorem hilbert_parallel_transitive_distinct
 
   exact hDistinct hPointLineEq
 
+theorem hilbert_parallel_through_point_exists
+    [HilbertCongruence Geo]
+    (A B P : Geo.Point)
+    (hAB : A ≠ B)
+    (hABP : ¬ Collinear Geo A B P) :
+    ∃ Q : Geo.Point,
+      P ≠ Q ∧
+      Geo.Parallel A B P Q := by
+
+  -- The given line AB.
+  rcases HilbertPlaneIncidence.line_through A B hAB with
+    ⟨base, hAbase, hBbase⟩
+
+  have hPbase :
+      ¬ HilbertIncidence.OnLine P base := by
+    intro hPbase
+    exact hABP
+      ⟨base, hAbase, hBbase, hPbase⟩
+
+  have hAP : A ≠ P := by
+    intro h
+    subst P
+    exact hPbase hAbase
+
+  -- AP will be the transversal.
+  rcases HilbertPlaneIncidence.line_through A P hAP with
+    ⟨trans, hAtrans, hPtrans⟩
+
+  have hBtrans :
+      ¬ HilbertIncidence.OnLine B trans := by
+    intro hBtrans
+    exact hABP
+      ⟨trans, hAtrans, hBtrans, hPtrans⟩
+
+  -- Choose an interior point E of AP.
+  rcases hilbert_between_exists Geo A P hAP with
+    ⟨E, hAEP⟩
+
+  have hAEPData :=
+    HilbertOrder.between_incidence A E P hAEP
+
+  have hEA : E ≠ A :=
+    hAEPData.1.symm
+
+  have hEP : E ≠ P :=
+    hAEPData.2.1
+
+  have hEtrans :
+      HilbertIncidence.OnLine E trans :=
+    hilbert_between_on_line
+      Geo A E P trans
+      hAtrans hPtrans hAEP
+
+  -- EAB is a genuine angle because B is outside AP.
+  have hEAB :
+      ¬ Collinear Geo E A B :=
+    hilbert_not_collinear_of_off_line
+      Geo E A B trans
+      hEA
+      hEtrans
+      hAtrans
+      hBtrans
+
+  -- Select a point S on the opposite side of AP from B.
+  rcases HilbertOrder.between_extension B A hAB.symm with
+    ⟨S, hBAS⟩
+
+  have hBASData :=
+    HilbertOrder.between_incidence B A S hBAS
+
+  have hSA : S ≠ A :=
+    hBASData.2.1.symm
+
+  have hStrans :
+      ¬ HilbertIncidence.OnLine S trans := by
+    intro hStrans
+
+    have hSAB :
+        Collinear Geo S A B :=
+      PrimCollinearSymm Geo B A S
+        hBASData.2.2.2.1
+
+    have hBtrans' :
+        HilbertIncidence.OnLine B trans :=
+      hilbert_collinear_on_line
+        Geo S A B trans
+        hSA
+        hStrans
+        hAtrans
+        hSAB
+
+    exact hBtrans hBtrans'
+
+  have hOppositeBS :
+      HilbertOppositeSide Geo B S trans :=
+    ⟨hBtrans, hStrans,
+      ⟨A, hBAS, hAtrans⟩⟩
+
+  -- Copy angle EAB at P, with PE as the first ray,
+  -- on the side opposite B.
+  rcases HilbertCongruence.angle_construction
+      (Geo := Geo)
+      E A B
+      E P S
+      hEAB
+      hEP
+      trans
+      hEtrans
+      hPtrans
+      hStrans with
+    ⟨Q, hQSSame, hAngle, _⟩
+
+  have hSQSame :
+      HilbertSameSide Geo S Q trans :=
+    hilbert_sameSide_symm
+      Geo Q S trans hQSSame
+
+  have hOppositeBQ :
+      HilbertOppositeSide Geo B Q trans :=
+    hilbert_oppositeSide_transport_right
+      Geo B S Q trans
+      hOppositeBS
+      hSQSame
+
+  have hPQ : P ≠ Q := by
+    intro h
+    subst Q
+    exact hOppositeBQ.2.1 hPtrans
+
+  -- EAB and EPQ are alternate angles.
+  have hParallel :
+      Geo.Parallel A B P Q :=
+    hilbert_parallel_of_alternate_angles_oppositeSide_lines
+      Geo
+      A B
+      P E Q
+      trans
+      hAEP
+      hAtrans
+      hPtrans
+      hOppositeBQ
+      hAngle
+
+  exact ⟨Q, hPQ, hParallel⟩
+
 end Geometry
