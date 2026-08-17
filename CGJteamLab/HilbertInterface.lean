@@ -10571,5 +10571,132 @@ theorem angle_trichotomy
 
       exact Or.inr (Or.inr hCPD_AOB)
 
+def HilbertAnglesEqualTwoRightAnglesWithSupplement
+    [HilbertOrder Geo]
+    (A O B C P D E : Geo.Point) : Prop :=
+  Geo.Between D P E /\
+  Geo.AngleCongruent A O B C P E
+
+theorem hilbert_parallel_transitive_distinct
+    [HilbertEuclideanPlane Geo]
+    (A B C D E F : Geo.Point)
+    (hAB_EF : Geo.Parallel A B E F)
+    (hCD_EF : Geo.Parallel C D E F)
+    (hDistinct :
+      Geo.PointLine A B ≠ Geo.PointLine C D) :
+    Geo.Parallel A B C D := by
+
+  have hAB : A ≠ B :=
+    hAB_EF.1
+
+  have hCD : C ≠ D :=
+    hCD_EF.1
+
+  have hEF : E ≠ F :=
+    hAB_EF.2.1
+
+  rcases HilbertPlaneIncidence.line_through A B hAB with
+    ⟨lineAB, hAab, hBab⟩
+
+  rcases HilbertPlaneIncidence.line_through C D hCD with
+    ⟨lineCD, hCcd, hDcd⟩
+
+  rcases HilbertPlaneIncidence.line_through E F hEF with
+    ⟨lineEF, hEef, hFef⟩
+
+  have hLinesAB_EF :
+      HilbertLinesDisjoint Geo lineAB lineEF := by
+    rintro ⟨P, hPab, hPef⟩
+
+    have hPAB :
+        P ∈ Geo.PointLine A B :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A B P lineAB
+        hAB hAab hBab).mpr hPab
+
+    have hPEF :
+        P ∈ Geo.PointLine E F :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo E F P lineEF
+        hEF hEef hFef).mpr hPef
+
+    exact
+      Set.disjoint_left.mp hAB_EF.2.2
+        hPAB hPEF
+
+  have hLinesCD_EF :
+      HilbertLinesDisjoint Geo lineCD lineEF := by
+    rintro ⟨P, hPcd, hPef⟩
+
+    have hPCD :
+        P ∈ Geo.PointLine C D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C D P lineCD
+        hCD hCcd hDcd).mpr hPcd
+
+    have hPEF :
+        P ∈ Geo.PointLine E F :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo E F P lineEF
+        hEF hEef hFef).mpr hPef
+
+    exact
+      Set.disjoint_left.mp hCD_EF.2.2
+        hPCD hPEF
+
+  refine ⟨hAB, hCD, ?_⟩
+
+  apply Set.disjoint_left.mpr
+  intro P hPAB hPCD
+
+  have hPab :
+      HilbertIncidence.OnLine P lineAB :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo A B P lineAB
+      hAB hAab hBab).mp hPAB
+
+  have hPcd :
+      HilbertIncidence.OnLine P lineCD :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo C D P lineCD
+      hCD hCcd hDcd).mp hPCD
+
+  have hPef :
+      ¬ HilbertIncidence.OnLine P lineEF := by
+    intro hPef
+
+    exact
+      hLinesAB_EF ⟨P, hPab, hPef⟩
+
+  have hLineEq :
+      lineAB = lineCD :=
+    HilbertEuclideanPlane.parallel_unique
+      (Geo := Geo)
+      lineEF P hPef
+      lineAB lineCD
+      hPab hLinesAB_EF
+      hPcd hLinesCD_EF
+
+  have hC_ab :
+      HilbertIncidence.OnLine C lineAB := by
+    rw [hLineEq]
+    exact hCcd
+
+  have hD_ab :
+      HilbertIncidence.OnLine D lineAB := by
+    rw [hLineEq]
+    exact hDcd
+
+  have hPointLineEq :
+      Geo.PointLine A B = Geo.PointLine C D :=
+    hilbert_pointLine_eq_of_points_on_line
+      Geo
+      A B C D
+      lineAB
+      hAB hCD
+      hAab hBab
+      hC_ab hD_ab
+
+  exact hDistinct hPointLineEq
 
 end Geometry
