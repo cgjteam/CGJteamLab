@@ -10996,5 +10996,521 @@ theorem ParallelogramOppositeAnglesCongruent
   exact
     ⟨hAngleA_C, hAngleB_D⟩
 
+------------------------------------------------------------------------
+-- Part X. Equidecomposability and Equicomplementability
+------------------------------------------------------------------------
+-- Reference: Hilbert, Grundlagen der Geometrie,
+-- Chapter IV, sec. 18.
+--
+
+structure HilbertTriangle
+    (Geo : Geometry.Geo) where
+  A : Geo.Point
+  B : Geo.Point
+  C : Geo.Point
+
+
+def HilbertTriangleCongruent
+    [HilbertCongruence Geo]
+    (T U : HilbertTriangle Geo) : Prop :=
+  TriangleCongruenceResult
+    Geo
+    T.A T.B T.C
+    U.A U.B U.C
+
+
+abbrev HilbertTriangulatedFigure
+    (Geo : Geometry.Geo) :=
+  List (HilbertTriangle Geo)
+
+
+inductive HilbertTriangleListCongruent
+    [HilbertCongruence Geo] :
+    HilbertTriangulatedFigure Geo →
+    HilbertTriangulatedFigure Geo →
+    Prop
+  | nil :
+      HilbertTriangleListCongruent [] []
+  | cons
+      {T U : HilbertTriangle Geo}
+      {P Q : HilbertTriangulatedFigure Geo}
+      (hTU : HilbertTriangleCongruent Geo T U)
+      (hPQ : HilbertTriangleListCongruent P Q) :
+      HilbertTriangleListCongruent (T :: P) (U :: Q)
+
+def HilbertEquidecomposable
+    [HilbertCongruence Geo]
+    (P Q : HilbertTriangulatedFigure Geo) : Prop :=
+  ∃ Q' : HilbertTriangulatedFigure Geo,
+    Q'.Perm Q ∧
+    HilbertTriangleListCongruent Geo P Q'
+
+theorem hilbert_singleton_equidecomposable
+    [HilbertCongruence Geo]
+    (T U : HilbertTriangle Geo)
+    (hTU : HilbertTriangleCongruent Geo T U) :
+    HilbertEquidecomposable Geo [T] [U] := by
+
+  refine ⟨[U], ?_, ?_⟩
+
+  · exact List.Perm.refl [U]
+
+  · exact
+      HilbertTriangleListCongruent.cons
+        hTU
+        HilbertTriangleListCongruent.nil
+
+theorem hilbert_triangleListCongruent_append
+    [HilbertCongruence Geo]
+    {P₁ P₂ Q₁ Q₂ : HilbertTriangulatedFigure Geo}
+    (h₁ : HilbertTriangleListCongruent Geo P₁ Q₁)
+    (h₂ : HilbertTriangleListCongruent Geo P₂ Q₂) :
+    HilbertTriangleListCongruent Geo
+      (P₁ ++ P₂) (Q₁ ++ Q₂) := by
+
+  induction h₁ with
+  | nil =>
+      simpa using h₂
+
+  | cons hTU hPQ ih =>
+      exact
+        HilbertTriangleListCongruent.cons
+          hTU
+          ih
+
+theorem hilbert_equidecomposable_append
+    [HilbertCongruence Geo]
+    {P₁ P₂ Q₁ Q₂ : HilbertTriangulatedFigure Geo}
+    (h₁ : HilbertEquidecomposable Geo P₁ Q₁)
+    (h₂ : HilbertEquidecomposable Geo P₂ Q₂) :
+    HilbertEquidecomposable Geo
+      (P₁ ++ P₂) (Q₁ ++ Q₂) := by
+
+  rcases h₁ with ⟨Q₁', hPerm₁, hCong₁⟩
+  rcases h₂ with ⟨Q₂', hPerm₂, hCong₂⟩
+
+  refine ⟨Q₁' ++ Q₂', ?_, ?_⟩
+
+  · exact hPerm₁.append hPerm₂
+
+  · exact
+      hilbert_triangleListCongruent_append
+        Geo hCong₁ hCong₂
+
+theorem hilbert_triangleCongruent_symm
+    [HilbertCongruence Geo]
+    {T U : HilbertTriangle Geo}
+    (hTU : HilbertTriangleCongruent Geo T U) :
+    HilbertTriangleCongruent Geo U T := by
+
+  rcases hTU with
+    ⟨hAB, hBC, hAC, hA, hB, hC⟩
+
+  exact
+    {
+      sideAB := CongruentSymmetry Geo _ _ _ _ hAB
+      sideBC := CongruentSymmetry Geo _ _ _ _ hBC
+      sideAC := CongruentSymmetry Geo _ _ _ _ hAC
+      angleA :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo _ _ _ _ _ _ hA
+      angleB :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo _ _ _ _ _ _ hB
+      angleC :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo _ _ _ _ _ _ hC
+    }
+
+theorem hilbert_triangleListCongruent_symm
+    [HilbertCongruence Geo]
+    {P Q : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertTriangleListCongruent Geo P Q) :
+    HilbertTriangleListCongruent Geo Q P := by
+
+  induction hPQ with
+  | nil =>
+      exact HilbertTriangleListCongruent.nil
+
+  | cons hTU hPQ ih =>
+      exact
+        HilbertTriangleListCongruent.cons
+          (hilbert_triangleCongruent_symm Geo hTU)
+          ih
+
+theorem hilbert_triangleListCongruent_perm_right
+    [HilbertCongruence Geo]
+    {P Q Q' : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertTriangleListCongruent Geo P Q)
+    (hPerm : Q.Perm Q') :
+    ∃ P' : HilbertTriangulatedFigure Geo,
+      P'.Perm P ∧
+      HilbertTriangleListCongruent Geo P' Q' := by
+
+  induction hPerm generalizing P with
+  | nil =>
+      cases hPQ
+      exact ⟨[], List.Perm.refl [], HilbertTriangleListCongruent.nil⟩
+
+  | cons x hPerm ih =>
+      cases hPQ with
+      | cons hTU hTail =>
+          rcases ih hTail with ⟨P', hPperm, hCong⟩
+          exact
+            ⟨_ :: P',
+              List.Perm.cons _ hPperm,
+              HilbertTriangleListCongruent.cons hTU hCong⟩
+
+  | swap x y l =>
+      cases hPQ with
+      | cons hx hRest =>
+          cases hRest with
+          | cons hy hTail =>
+              exact
+                ⟨_ :: _ :: _,
+                  List.Perm.swap _ _ _,
+                  HilbertTriangleListCongruent.cons
+                    hy
+                    (HilbertTriangleListCongruent.cons hx hTail)⟩
+  | trans h₁ h₂ ih₁ ih₂ =>
+      rcases ih₁ hPQ with ⟨P₁, hPerm₁, hCong₁⟩
+      rcases ih₂ hCong₁ with ⟨P₂, hPerm₂, hCong₂⟩
+      exact
+        ⟨P₂,
+          hPerm₂.trans hPerm₁,
+          hCong₂⟩
+
+theorem hilbert_equidecomposable_symm
+    [HilbertCongruence Geo]
+    {P Q : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertEquidecomposable Geo P Q) :
+    HilbertEquidecomposable Geo Q P := by
+
+  rcases hPQ with ⟨Q', hPerm, hCong⟩
+
+  rcases
+      hilbert_triangleListCongruent_perm_right
+        Geo hCong hPerm
+    with ⟨P', hPperm, hCong'⟩
+
+  exact
+    ⟨P',
+      hPperm,
+      hilbert_triangleListCongruent_symm Geo hCong'⟩
+
+theorem hilbert_triangleCongruent_trans
+    [HilbertCongruence Geo]
+    {T U V : HilbertTriangle Geo}
+    (hTU : HilbertTriangleCongruent Geo T U)
+    (hUV : HilbertTriangleCongruent Geo U V) :
+    HilbertTriangleCongruent Geo T V := by
+
+  rcases hTU with
+    ⟨hAB₁, hBC₁, hAC₁, hA₁, hB₁, hC₁⟩
+
+  rcases hUV with
+    ⟨hAB₂, hBC₂, hAC₂, hA₂, hB₂, hC₂⟩
+
+  exact
+    {
+      sideAB :=
+        hilbert_congruent_transitivity
+          Geo _ _ _ _ _ _ hAB₁ hAB₂
+
+      sideBC :=
+        hilbert_congruent_transitivity
+          Geo _ _ _ _ _ _ hBC₁ hBC₂
+
+      sideAC :=
+        hilbert_congruent_transitivity
+          Geo _ _ _ _ _ _ hAC₁ hAC₂
+
+      angleA :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo _ _ _ _ _ _ _ _ _
+          hA₁ hA₂
+
+      angleB :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo _ _ _ _ _ _ _ _ _
+          hB₁ hB₂
+
+      angleC :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo _ _ _ _ _ _ _ _ _
+          hC₁ hC₂
+    }
+
+theorem hilbert_triangleListCongruent_trans
+    [HilbertCongruence Geo]
+    {P Q R : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertTriangleListCongruent Geo P Q)
+    (hQR : HilbertTriangleListCongruent Geo Q R) :
+    HilbertTriangleListCongruent Geo P R := by
+
+  induction hPQ generalizing R with
+  | nil =>
+      cases hQR
+      exact HilbertTriangleListCongruent.nil
+
+  | cons hTU hPQ ih =>
+      cases hQR with
+      | cons hUV hQR =>
+          exact
+            HilbertTriangleListCongruent.cons
+              (hilbert_triangleCongruent_trans
+                Geo hTU hUV)
+              (ih hQR)
+
+theorem hilbert_equidecomposable_trans
+    [HilbertCongruence Geo]
+    {P Q R : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertEquidecomposable Geo P Q)
+    (hQR : HilbertEquidecomposable Geo Q R) :
+    HilbertEquidecomposable Geo P R := by
+
+  rcases hPQ with
+    ⟨Q', hQperm, hPQcong⟩
+
+  rcases hQR with
+    ⟨R', hRperm, hQRcong⟩
+
+  have hRQcong :
+      HilbertTriangleListCongruent Geo R' Q :=
+    hilbert_triangleListCongruent_symm
+      Geo hQRcong
+
+  rcases
+      hilbert_triangleListCongruent_perm_right
+        Geo
+        hRQcong
+        hQperm.symm
+    with
+    ⟨R'', hR''perm, hR''Q'cong⟩
+
+  have hQ'R''cong :
+      HilbertTriangleListCongruent Geo Q' R'' :=
+    hilbert_triangleListCongruent_symm
+      Geo hR''Q'cong
+
+  have hPR''cong :
+      HilbertTriangleListCongruent Geo P R'' :=
+    hilbert_triangleListCongruent_trans
+      Geo
+      hPQcong
+      hQ'R''cong
+
+  have hR''R :
+      R''.Perm R :=
+    hR''perm.trans hRperm
+
+  exact
+    ⟨R'', hR''R, hPR''cong⟩
+
+
+theorem hilbert_triangleCongruent_refl
+    [HilbertCongruence Geo]
+    (T : HilbertTriangle Geo) :
+    HilbertTriangleCongruent Geo T T := by
+
+  exact
+    {
+      sideAB := hilbert_congruent_reflexive Geo T.A T.B
+      sideBC := hilbert_congruent_reflexive Geo T.B T.C
+      sideAC := hilbert_congruent_reflexive Geo T.A T.C
+      angleA := Geometry.Geo.angle_congruent_reflexive Geo T.B T.A T.C
+      angleB := Geometry.Geo.angle_congruent_reflexive Geo T.A T.B T.C
+      angleC := Geometry.Geo.angle_congruent_reflexive Geo T.A T.C T.B
+    }
+
+def HilbertEquicomplementable
+    [HilbertCongruence Geo]
+    (P Q : HilbertTriangulatedFigure Geo) : Prop :=
+  ∃ P' Q' : HilbertTriangulatedFigure Geo,
+    HilbertEquidecomposable Geo P' Q' ∧
+    HilbertEquidecomposable Geo
+      (P ++ P')
+      (Q ++ Q')
+
+theorem hilbert_equidecomposable_implies_equicomplementable
+    [HilbertCongruence Geo]
+    {P Q : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertEquidecomposable Geo P Q) :
+    HilbertEquicomplementable Geo P Q := by
+
+  refine ⟨[], [], ?_, ?_⟩
+
+  · exact
+      ⟨[],
+        List.Perm.refl [],
+        HilbertTriangleListCongruent.nil⟩
+
+  · simpa using hPQ
+
+theorem hilbert_equicomplementable_symm
+    [HilbertCongruence Geo]
+    {P Q : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertEquicomplementable Geo P Q) :
+    HilbertEquicomplementable Geo Q P := by
+
+  rcases hPQ with
+    ⟨P', Q', hComp, hWhole⟩
+
+  refine ⟨Q', P', ?_, ?_⟩
+
+  · exact
+      hilbert_equidecomposable_symm
+        Geo hComp
+
+  · exact
+      hilbert_equidecomposable_symm
+        Geo hWhole
+
+theorem hilbert_equidecomposable_of_perm
+    [HilbertCongruence Geo]
+    {P Q : HilbertTriangulatedFigure Geo}
+    (hPerm : P.Perm Q) :
+    HilbertEquidecomposable Geo P Q := by
+
+  have hRefl :
+      HilbertTriangleListCongruent Geo P P := by
+    clear hPerm
+    induction P with
+    | nil =>
+        exact HilbertTriangleListCongruent.nil
+    | cons T P ih =>
+        exact
+          HilbertTriangleListCongruent.cons
+            (hilbert_triangleCongruent_refl Geo T)
+            ih
+
+  exact
+    ⟨P, hPerm, hRefl⟩
+
+theorem hilbert_equidecomposable_append_comm
+    [HilbertCongruence Geo]
+    (P Q : HilbertTriangulatedFigure Geo) :
+    HilbertEquidecomposable Geo
+      (P ++ Q)
+      (Q ++ P) := by
+
+  exact
+    hilbert_equidecomposable_of_perm
+      Geo
+      (List.perm_append_comm)
+
+theorem hilbert_equicomplementable_trans
+    [HilbertCongruence Geo]
+    {P Q R : HilbertTriangulatedFigure Geo}
+    (hPQ : HilbertEquicomplementable Geo P Q)
+    (hQR : HilbertEquicomplementable Geo Q R) :
+    HilbertEquicomplementable Geo P R := by
+
+  rcases hPQ with
+    ⟨P1, Q1, hP1Q1, hPQwhole⟩
+
+  rcases hQR with
+    ⟨Q2, R2, hQ2R2, hQRwhole⟩
+
+  refine ⟨P1 ++ Q2, R2 ++ Q1, ?_, ?_⟩
+
+  ·
+    have hComp :
+        HilbertEquidecomposable Geo
+          (P1 ++ Q2)
+          (Q1 ++ R2) :=
+      hilbert_equidecomposable_append
+        Geo hP1Q1 hQ2R2
+
+    have hSwap :
+        HilbertEquidecomposable Geo
+          (Q1 ++ R2)
+          (R2 ++ Q1) :=
+      hilbert_equidecomposable_append_comm
+        Geo Q1 R2
+
+    exact
+      hilbert_equidecomposable_trans
+        Geo hComp hSwap
+
+  ·
+    have hQ2Refl :
+        HilbertEquidecomposable Geo Q2 Q2 :=
+      hilbert_equidecomposable_of_perm
+        Geo
+        (List.Perm.refl Q2)
+
+    have hStep1 :
+        HilbertEquidecomposable Geo
+          ((P ++ P1) ++ Q2)
+          ((Q ++ Q1) ++ Q2) :=
+      hilbert_equidecomposable_append
+        Geo hPQwhole hQ2Refl
+
+    have hSwap12 :
+        HilbertEquidecomposable Geo
+          (Q1 ++ Q2)
+          (Q2 ++ Q1) :=
+      hilbert_equidecomposable_append_comm
+        Geo Q1 Q2
+
+    have hQRefl :
+        HilbertEquidecomposable Geo Q Q :=
+      hilbert_equidecomposable_of_perm
+        Geo
+        (List.Perm.refl Q)
+
+    have hStep2 :
+        HilbertEquidecomposable Geo
+          (Q ++ (Q1 ++ Q2))
+          (Q ++ (Q2 ++ Q1)) :=
+      hilbert_equidecomposable_append
+        Geo hQRefl hSwap12
+
+    have hQ1Refl :
+        HilbertEquidecomposable Geo Q1 Q1 :=
+      hilbert_equidecomposable_of_perm
+        Geo
+        (List.Perm.refl Q1)
+
+    have hStep3 :
+        HilbertEquidecomposable Geo
+          ((Q ++ Q2) ++ Q1)
+          ((R ++ R2) ++ Q1) :=
+      hilbert_equidecomposable_append
+        Geo hQRwhole hQ1Refl
+
+    have hStep1' :
+        HilbertEquidecomposable Geo
+          (P ++ (P1 ++ Q2))
+          (Q ++ (Q1 ++ Q2)) := by
+      simpa [List.append_assoc] using hStep1
+
+    have hStep3' :
+        HilbertEquidecomposable Geo
+          (Q ++ (Q2 ++ Q1))
+          (R ++ (R2 ++ Q1)) := by
+      simpa [List.append_assoc] using hStep3
+
+    exact
+      hilbert_equidecomposable_trans
+        Geo
+        hStep1'
+        (hilbert_equidecomposable_trans
+          Geo
+          hStep2
+          hStep3')
+
+def HilbertParallelogramFigure
+    (A B C D : Geo.Point) :
+    HilbertTriangulatedFigure Geo :=
+  [
+    ⟨A, B, C⟩,
+    ⟨A, C, D⟩
+  ]
+
+
+
+
 
 end Geometry
