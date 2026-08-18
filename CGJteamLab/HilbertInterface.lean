@@ -10844,4 +10844,157 @@ theorem hilbert_parallel_through_point_exists
 
   exact ⟨Q, hPQ, hParallel⟩
 
+/--
+Opposite angles of a Euclidean parallelogram are congruent.
+
+For the parallelogram `ABCD`, the triangles `ABC` and `CDA`
+have three corresponding congruent sides:
+
+  AB ~= CD,
+  BC ~= DA,
+  AC ~= CA.
+
+Hence SSS gives the congruence of the opposite angles at `B` and `D`.
+-/
+theorem ParallelogramOppositeAngleCongruent
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    Geo.AngleCongruent A B C C D A := by
+
+  have hParallel :
+      Geo.Parallel A B C D :=
+    hParallelogram.1
+
+  have hAB : A ≠ B :=
+    hParallel.1
+
+  have hCD : C ≠ D :=
+    hParallel.2.1
+
+  ------------------------------------------------------------
+  -- ABC is a genuine triangle.
+  ------------------------------------------------------------
+
+  have hABC :
+      ¬ Collinear Geo A B C := by
+    intro hCol
+
+    rcases hCol with
+      ⟨lineAB, hAab, hBab, hCab⟩
+
+    rcases HilbertPlaneIncidence.line_through
+        C D hCD with
+      ⟨lineCD, hCcd, hDcd⟩
+
+    have hC_AB :
+        C ∈ Geo.PointLine A B :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A B C lineAB
+        hAB hAab hBab).mpr hCab
+
+    have hC_CD :
+        C ∈ Geo.PointLine C D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C D C lineCD
+        hCD hCcd hDcd).mpr hCcd
+
+    exact
+      Set.disjoint_left.mp hParallel.2.2
+        hC_AB hC_CD
+
+  ------------------------------------------------------------
+  -- Opposite sides are congruent.
+  ------------------------------------------------------------
+
+  have hSides :
+      OppositeSidesCongruent Geo A B C D :=
+    ParallelogramOppositeSidesCongruent
+      Geo A B C D hParallelogram
+
+  have hAB_CD :
+      Geo.Congruent A B C D :=
+    hSides.1
+
+  have hBC_DA :
+      Geo.Congruent B C D A :=
+    hSides.2
+
+  ------------------------------------------------------------
+  -- The diagonal AC is common to the two triangles.
+  ------------------------------------------------------------
+
+  have hAC_CA :
+      Geo.Congruent A C C A :=
+    CongruentSwapSecond
+      Geo A C A C
+      (hilbert_congruent_reflexive Geo A C)
+
+  ------------------------------------------------------------
+  -- SSS for ABC and CDA.
+  ------------------------------------------------------------
+
+  have hSSS :=
+    HilbertSSS
+      Geo
+      A B C
+      C D A
+      hABC
+      hAB_CD
+      hBC_DA
+      hAC_CA
+
+  exact hSSS.2.angleB
+
+def OppositeAnglesCongruent
+    (A B C D : Geo.Point) : Prop :=
+  Geo.AngleCongruent D A B B C D ∧
+  Geo.AngleCongruent A B C C D A
+
+
+/--
+Both pairs of opposite angles of a Euclidean parallelogram
+are congruent.
+-/
+theorem ParallelogramOppositeAnglesCongruent
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    OppositeAnglesCongruent Geo A B C D := by
+
+  have hAngleB_D :
+      Geo.AngleCongruent A B C C D A :=
+    ParallelogramOppositeAngleCongruent
+      Geo A B C D hParallelogram
+
+  have hBC_DA :
+      Geo.Parallel B C D A :=
+    hParallelogram.2
+
+  have hCD_AB :
+      Geo.Parallel C D A B :=
+    ParallelSymmetry
+      Geo A B C D hParallelogram.1
+
+  have hRotated :
+      IsParallelogram Geo B C D A :=
+    ⟨hBC_DA, hCD_AB⟩
+
+  have hAngleC_A :
+      Geo.AngleCongruent B C D D A B :=
+    ParallelogramOppositeAngleCongruent
+      Geo B C D A hRotated
+
+  have hAngleA_C :
+      Geo.AngleCongruent D A B B C D :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      B C D
+      D A B
+      hAngleC_A
+
+  exact
+    ⟨hAngleA_C, hAngleB_D⟩
+
+
 end Geometry
