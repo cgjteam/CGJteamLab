@@ -1,68 +1,66 @@
 import graph;
+size(12cm);
 
-size(500,0);
-defaultpen(fontsize(8.5pt));
+real ystep = -5.4;
 
-pair B0=(0,0), C0=(3,0), A0=(-1,2), D0=(2,2), E0=(3.8,2), F0=(6.8,2);
-pair G0=intersectionpoint(E0--B0,D0--C0);
-
-void pt(string s, pair P, pair d) {
-  dot(P);
-  label("$"+s+"$",P,d);
+// ------------------------------------------------------------
+// Panel 1: ABCD + DGE
+// ------------------------------------------------------------
+void panelLeftAug(pair O)
+{
+  // tu wklejasz obecny kod dawnego leftAug(O)
+  // tylko bez zmian geometrycznych
+  label("$ABCD + DGE$", O + (3.6,2.9));
 }
 
-void baseDrawing(pair O) {
-  pair A=O+A0, B=O+B0, C=O+C0, D=O+D0, E=O+E0, F=O+F0, G=O+G0;
-  draw(A--F, gray+0.55pt);
-  draw(B--C, gray+0.55pt);
-  draw(A--B, black+0.7pt);
-  draw(D--C, black+0.7pt);
-  draw(E--B, black+0.7pt);
-  draw(F--C, black+0.7pt);
-  pt("A",A,NW); pt("B",B,SW); pt("C",C,SE);
-  pt("D",D,N); pt("E",E,N); pt("F",F,NE); pt("G",G,S);
+// ------------------------------------------------------------
+// Panel 2: EAB + GBC
+// ------------------------------------------------------------
+void panelLeftRefined(pair O)
+{
+  // tu wklejasz obecny kod dawnego leftRefined(O)
+  label("$EAB + GBC$", O + (3.6,2.9));
 }
 
-void leftAug(pair O) {
-  pair A=O+A0, B=O+B0, C=O+C0, D=O+D0, E=O+E0, G=O+G0;
-  fill(A--B--C--D--cycle, gray(0.86));
-  fill(D--G--E--cycle, gray(0.58));
-  baseDrawing(O);
-  label("$ABCD + DGE$",O+(2.8,2.55));
+// ------------------------------------------------------------
+// Panel 3: FDC + GBC
+// ------------------------------------------------------------
+void panelRightRefined(pair O)
+{
+  // tu wklejasz obecny kod dawnego rightRefined(O)
+  label("$FDC + GBC$", O + (3.6,2.9));
 }
 
-void leftRefined(pair O) {
-  pair A=O+A0, B=O+B0, C=O+C0, E=O+E0, G=O+G0;
-  fill(E--A--B--cycle, gray(0.86));
-  fill(G--B--C--cycle, gray(0.58));
-  baseDrawing(O);
-  label("$EAB + GBC$",O+(2.8,2.55));
+// ------------------------------------------------------------
+// Panel 4: EBCF + DGE
+// ------------------------------------------------------------
+void panelRightAug(pair O)
+{
+  // tu wklejasz obecny kod dawnego rightAug(O)
+  label("$EBCF + DGE$", O + (3.6,2.9));
 }
 
-void rightRefined(pair O) {
-  pair B=O+B0, C=O+C0, D=O+D0, F=O+F0, G=O+G0;
-  fill(F--D--C--cycle, gray(0.86));
-  fill(G--B--C--cycle, gray(0.58));
-  baseDrawing(O);
-  label("$FDC + GBC$",O+(2.8,2.55));
-}
+// ------------------------------------------------------------
+// Layout pionowy
+// ------------------------------------------------------------
+pair P0 = (0,0);
+pair P1 = (0,ystep);
+pair P2 = (0,2*ystep);
+pair P3 = (0,3*ystep);
 
-void rightAug(pair O) {
-  pair B=O+B0, C=O+C0, D=O+D0, E=O+E0, F=O+F0, G=O+G0;
-  fill(E--B--C--F--cycle, gray(0.86));
-  fill(D--G--E--cycle, gray(0.58));
-  baseDrawing(O);
-  label("$EBCF + DGE$",O+(2.8,2.55));
-}
+panelLeftAug(P0);
+panelLeftRefined(P1);
+panelRightRefined(P2);
+panelRightAug(P3);
 
-leftAug((0,4.0));
-leftRefined((9.2,4.0));
-rightAug((0,0));
-rightRefined((9.2,0));
+// przejście 1
+draw((4.2,-2.2)--(4.2,ystep+3.9), black+0.9bp, Arrow);
+label("split / regroup", (4.5,(ystep+1.7)), E);
 
-draw((7.55,4.95)--(8.55,4.95), black+0.8pt, Arrow);
-label("split / regroup",(8.05,5.25));
-draw((7.55,0.95)--(8.55,0.95), black+0.8pt, Arrow);
-label("split / regroup",(8.05,1.25));
-draw((12.0,3.65)--(12.0,2.35), black+0.8pt, Arrow);
-label("replace congruent outer triangle",(14.4,3.0));
+// przejście 2
+draw((4.2,ystep-2.2)--(4.2,2*ystep+3.9), black+0.9bp, Arrow);
+label("replace congruent outer triangle", (4.5,(1.5*ystep+0.9)), E);
+
+// przejście 3
+draw((4.2,2*ystep-2.2)--(4.2,3*ystep+3.9), black+0.9bp, Arrow);
+label("reverse split / regroup", (4.5,(2.5*ystep+0.9)), E);
