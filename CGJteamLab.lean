@@ -4,6 +4,7 @@ import CGJteamLab.Basic
 import CGJteamLab.Common
 import CGJteamLab.HilbertCore
 import CGJteamLab.HilbertAxioms
+import CGJteamLab.HilbertGrundlagen
 import CGJteamLab.HilbertInterface
 import CGJteamLab.MidsegmentParallel
 import CGJteamLab.FinlayProof
