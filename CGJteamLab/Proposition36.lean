@@ -1,4 +1,3 @@
-import CGJteamLab.Proposition28
 import CGJteamLab.Proposition35
 
 namespace Geometry
@@ -742,21 +741,6 @@ theorem i36_cross_triangles_congruent
       hFB_GC
 
   exact hTriangles
-
-theorem i36_cross_side_congruent
-    [HilbertIncidence Geo]
-    [HilbertEuclideanPlane Geo]
-    (B C E F G H : Geo.Point)
-    (hEFGH : IsParallelogram Geo E F G H)
-    (hBCF : Geo.Between B C F)
-    (hCFG : Geo.Between C F G)
-    (hBCFG : Geo.Congruent B C F G) :
-    Geo.Congruent E B H C := by
-
-  exact
-    (i36_cross_triangles_congruent
-      Geo B C E F G H
-      hEFGH hBCF hCFG hBCFG).sideBC
 
 theorem i36_cross_parallel
     [HilbertIncidence Geo]
