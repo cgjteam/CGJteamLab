@@ -179,6 +179,89 @@ theorem equicomplementable_symm
       HilbertScissorsEq.symm
         (Geo := Geo) hPQ⟩
 
+theorem equicomplementable_trans
+    {P Q T : HilbertScissorsTerm Geo}
+    (hPQ :
+      HilbertScissorsEquicomplementable Geo P Q)
+    (hQT :
+      HilbertScissorsEquicomplementable Geo Q T) :
+    HilbertScissorsEquicomplementable Geo P T := by
+
+  rcases hPQ with
+    ⟨R1, S1, hR1S1, hPQS⟩
+
+  rcases hQT with
+    ⟨R2, S2, hR2S2, hQTS⟩
+
+  refine
+    ⟨R1 + R2, S1 + S2, ?_, ?_⟩
+
+  · exact
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        hR1S1
+        hR2S2
+
+  · have hStep1 :
+        HilbertScissorsEq Geo
+          ((P + R1) + R2)
+          ((Q + S1) + R2) :=
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        hPQS
+        (HilbertScissorsEq.refl
+          (Geo := Geo) R2)
+
+    have hStep2 :
+        HilbertScissorsEq Geo
+          ((Q + R2) + S1)
+          ((T + S2) + S1) :=
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        hQTS
+        (HilbertScissorsEq.refl
+          (Geo := Geo) S1)
+
+    have hStep1' :
+        HilbertScissorsEq Geo
+          (P + (R1 + R2))
+          (Q + (S1 + R2)) := by
+      simpa only [Multiset.add_assoc] using hStep1
+
+    have hStep2' :
+        HilbertScissorsEq Geo
+          (Q + (S1 + R2))
+          (T + (S1 + S2)) := by
+      simpa only
+        [Multiset.add_assoc,
+         Multiset.add_comm R2 S1,
+         Multiset.add_comm S2 S1]
+        using hStep2
+
+    exact
+      HilbertScissorsEq.trans
+        (Geo := Geo)
+        hStep1'
+        hStep2'
+
+theorem equicomplementable_of_scissorsEq
+    {P Q : HilbertScissorsTerm Geo}
+    (hPQ : HilbertScissorsEq Geo P Q) :
+    HilbertScissorsEquicomplementable Geo P Q := by
+
+  refine ⟨0, 0, ?_, ?_⟩
+
+  · exact
+      HilbertScissorsEq.refl
+        (Geo := Geo) 0
+
+  · exact
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        hPQ
+        (HilbertScissorsEq.refl
+          (Geo := Geo) 0)
+
 theorem triangle_swap23
     (A B C : Geo.Point) :
     hilbertTriangleTerm Geo A B C =
@@ -403,6 +486,25 @@ theorem parallelogram_two_triangulations
       (HilbertScissorsEq.symm
         (Geo := Geo) hDiagonalBD)
 
+theorem parallelogram_term_reverse
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    HilbertScissorsEq Geo
+      (hilbertParallelogramTerm Geo A B C D)
+      (hilbertParallelogramTerm Geo B A D C) := by
+
+  unfold hilbertParallelogramTerm
+
+  have h :=
+    parallelogram_two_triangulations
+      Geo A B C D hParallelogram
+
+  rw [scissors_triangle_swap12 Geo A B D] at h
+  rw [scissors_triangle_swap23 Geo B C D] at h
+
+  exact h
 
 theorem crossing_quadrilateral_two_triangulations
     (A B C D M : Geo.Point)
@@ -627,5 +729,24 @@ theorem crossing_quadrilateral_two_triangulations
       (HilbertScissorsEq.symm
         (Geo := Geo) hRight)
 
+theorem parallelogram_term_rotateTwo
+    (A B C D : Geo.Point) :
+    HilbertScissorsEq Geo
+      (hilbertParallelogramTerm Geo A B C D)
+      (hilbertParallelogramTerm Geo C D A B) := by
+
+  unfold hilbertParallelogramTerm
+
+  rw [scissors_triangle_cycle Geo C D A]
+  rw [scissors_triangle_cycle Geo D A C]
+  rw [scissors_triangle_cycle Geo C A B]
+
+  rw [Multiset.add_comm
+    (hilbertScissorsTriangle Geo A C D)
+    (hilbertScissorsTriangle Geo A B C)]
+
+  exact
+    HilbertScissorsEq.refl
+      (Geo := Geo) _
 
 end Geometry

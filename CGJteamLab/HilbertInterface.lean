@@ -13268,6 +13268,46 @@ theorem quadrilateral_diagonal_flip
           (HilbertFigureEquidecomposable.symm
             hRightToLright)))
 
+omit [HilbertIncidence Geo] in
+theorem ParallelogramReverse
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    IsParallelogram Geo B A D C := by
 
+  constructor
+
+  · exact
+      ParallelSwapSecondLine
+        Geo B A C D
+        (ParallelSwapFirstLine
+          Geo A B C D
+          hParallelogram.1)
+
+  · exact
+      ParallelSwapSecondLine
+        Geo A D B C
+        (ParallelSwapFirstLine
+          Geo D A B C
+          (ParallelSymmetry
+            Geo B C D A
+            hParallelogram.2))
+
+omit [HilbertIncidence Geo] in
+theorem ParallelogramRotateTwo
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    IsParallelogram Geo C D A B := by
+
+  constructor
+
+  · exact
+      ParallelSymmetry
+        Geo A B C D
+        hParallelogram.1
+
+  · exact
+      ParallelSymmetry
+        Geo B C D A
+        hParallelogram.2
 
 end Geometry
