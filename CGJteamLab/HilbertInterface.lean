@@ -11217,4 +11217,250 @@ theorem ParallelogramRotateOne
     ⟨ParallelSymmetry Geo B C D A h.2,
      h.1⟩
 
+/--
+A parallelogram is uniquely determined by three consecutive vertices.
+
+If `ABCD` and `ABCE` are parallelograms, then `D = E`.
+-/
+theorem ParallelogramFourthVertexUnique
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (hABCD : IsParallelogram Geo A B C D)
+    (hABCE : IsParallelogram Geo A B C E) :
+    D = E := by
+
+  --------------------------------------------------------------------
+  -- The upper sides AD and AE are both parallel to BC.
+  --------------------------------------------------------------------
+
+  have hAD_BC :
+      Geo.Parallel A D B C :=
+    ParallelSwapFirstLine
+      Geo D A B C
+      (ParallelSymmetry
+        Geo B C D A hABCD.2)
+
+  have hAE_BC :
+      Geo.Parallel A E B C :=
+    ParallelSwapFirstLine
+      Geo E A B C
+      (ParallelSymmetry
+        Geo B C E A hABCE.2)
+
+  have hBC :
+      B ≠ C :=
+    hAD_BC.2.1
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        B C hBC
+    with
+    ⟨lineBC, hBbc, hCbc⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A D hAD_BC.1
+    with
+    ⟨lineAD, hAad, hDad⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A E hAE_BC.1
+    with
+    ⟨lineAE, hAae, hEae⟩
+
+  have hLinesAD_BC :
+      HilbertLinesDisjoint Geo lineAD lineBC := by
+    rintro ⟨X, hXad, hXbc⟩
+
+    have hXAD :
+        X ∈ Geo.PointLine A D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A D X lineAD
+        hAD_BC.1 hAad hDad).mpr hXad
+
+    have hXBC :
+        X ∈ Geo.PointLine B C :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo B C X lineBC
+        hBC hBbc hCbc).mpr hXbc
+
+    exact
+      Set.disjoint_left.mp
+        hAD_BC.2.2
+        hXAD hXBC
+
+  have hLinesAE_BC :
+      HilbertLinesDisjoint Geo lineAE lineBC := by
+    rintro ⟨X, hXae, hXbc⟩
+
+    have hXAE :
+        X ∈ Geo.PointLine A E :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A E X lineAE
+        hAE_BC.1 hAae hEae).mpr hXae
+
+    have hXBC :
+        X ∈ Geo.PointLine B C :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo B C X lineBC
+        hBC hBbc hCbc).mpr hXbc
+
+    exact
+      Set.disjoint_left.mp
+        hAE_BC.2.2
+        hXAE hXBC
+
+  have hAoffBC :
+      ¬ HilbertIncidence.OnLine A lineBC := by
+    intro hAbc
+    exact
+      hLinesAD_BC
+        ⟨A, hAad, hAbc⟩
+
+  have hUpper :
+      lineAD = lineAE :=
+    HilbertEuclideanPlane.parallel_unique
+      (Geo := Geo)
+      lineBC A hAoffBC
+      lineAD lineAE
+      hAad hLinesAD_BC
+      hAae hLinesAE_BC
+
+  --------------------------------------------------------------------
+  -- Likewise CD and CE are the unique parallels to AB through C.
+  --------------------------------------------------------------------
+
+  have hAB_CD :
+      Geo.Parallel A B C D :=
+    hABCD.1
+
+  have hAB_CE :
+      Geo.Parallel A B C E :=
+    hABCE.1
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A B hAB_CD.1
+    with
+    ⟨lineAB, hAab, hBab⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        C D hAB_CD.2.1
+    with
+    ⟨lineCD, hCcd, hDcd⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        C E hAB_CE.2.1
+    with
+    ⟨lineCE, hCce, hEce⟩
+
+  have hLinesAB_CD :
+      HilbertLinesDisjoint Geo lineAB lineCD := by
+    rintro ⟨X, hXab, hXcd⟩
+
+    have hXAB :
+        X ∈ Geo.PointLine A B :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A B X lineAB
+        hAB_CD.1 hAab hBab).mpr hXab
+
+    have hXCD :
+        X ∈ Geo.PointLine C D :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C D X lineCD
+        hAB_CD.2.1 hCcd hDcd).mpr hXcd
+
+    exact
+      Set.disjoint_left.mp
+        hAB_CD.2.2
+        hXAB hXCD
+
+  have hLinesAB_CE :
+      HilbertLinesDisjoint Geo lineAB lineCE := by
+    rintro ⟨X, hXab, hXce⟩
+
+    have hXAB :
+        X ∈ Geo.PointLine A B :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo A B X lineAB
+        hAB_CE.1 hAab hBab).mpr hXab
+
+    have hXCE :
+        X ∈ Geo.PointLine C E :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo C E X lineCE
+        hAB_CE.2.1 hCce hEce).mpr hXce
+
+    exact
+      Set.disjoint_left.mp
+        hAB_CE.2.2
+        hXAB hXCE
+
+  have hCoffAB :
+      ¬ HilbertIncidence.OnLine C lineAB := by
+    intro hCab
+    exact
+      hLinesAB_CD
+        ⟨C, hCab, hCcd⟩
+
+  have hLinesCD_AB :
+      HilbertLinesDisjoint Geo lineCD lineAB := by
+    rintro ⟨X, hXcd, hXab⟩
+    exact
+      hLinesAB_CD
+        ⟨X, hXab, hXcd⟩
+
+  have hLinesCE_AB :
+      HilbertLinesDisjoint Geo lineCE lineAB := by
+    rintro ⟨X, hXce, hXab⟩
+    exact
+      hLinesAB_CE
+        ⟨X, hXab, hXce⟩
+
+  have hRight :
+      lineCD = lineCE :=
+    HilbertEuclideanPlane.parallel_unique
+      (Geo := Geo)
+      lineAB C hCoffAB
+      lineCD lineCE
+      hCcd hLinesCD_AB
+      hCce hLinesCE_AB
+
+
+  --------------------------------------------------------------------
+  -- D and E are intersections of the same two distinct lines.
+  --------------------------------------------------------------------
+
+  by_contra hDE
+
+  have hEad :
+      HilbertIncidence.OnLine E lineAD := by
+    rw [hUpper]
+    exact hEae
+
+  have hEcd :
+      HilbertIncidence.OnLine E lineCD := by
+    rw [hRight]
+    exact hEce
+
+  have hAD_CD :
+      lineAD = lineCD :=
+    HilbertPlaneIncidence.line_unique
+      D E hDE
+      lineAD lineCD
+      hDad hEad
+      hDcd hEcd
+
+  have hCad :
+      HilbertIncidence.OnLine C lineAD := by
+    rw [hAD_CD]
+    exact hCcd
+
+  exact
+    hLinesAD_BC
+      ⟨C, hCad, hCbc⟩
+
 end Geometry
