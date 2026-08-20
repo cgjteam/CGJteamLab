@@ -10916,4 +10916,305 @@ theorem ParallelogramRotateTwo
         Geo B C D A
         hParallelogram.2
 
+/--
+Hilbert Theorem 45: geometric construction behind the
+triangle-to-parallelogram equidecomposition.
+
+D is the midpoint of AC and E is the midpoint of BC.
+Extend DE beyond E to F with DE congruent EF.
+
+Then triangles EDC and EFB are congruent and ABFD
+is a parallelogram.
+
+The scissors-equivalence statement is proved separately
+in HilbertScissors.
+-/
+theorem hilbert_triangle_parallelogram_data
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (hD : HilbertIsMidpoint Geo D A C)
+    (hE : HilbertIsMidpoint Geo E B C)
+    (hTri : Not (Collinear Geo E D C)) :
+    exists F : Geo.Point,
+      Geo.Between D E F /\
+      TriangleCongruenceResult Geo E D C E F B /\
+      IsParallelogram Geo A B F D := by
+
+  --------------------------------------------------------------------
+  -- Step 1. Extend DE beyond E.
+  --------------------------------------------------------------------
+
+  have hED : Not (E = D) :=
+    hilbert_noncollinear_ne_first
+      Geo E D C hTri
+
+  have hDE : Not (D = E) := by
+    intro h
+    exact hED h.symm
+
+  rcases
+    ExtendSegmentBeyond
+      Geo D E hDE with
+  ⟨F, hDEF, hDEEF⟩
+
+  have hDEFData :=
+    HilbertOrder.between_incidence
+      D E F hDEF
+
+  have hDEFcol :
+      Collinear Geo D E F :=
+    hDEFData.2.2.2.1
+
+  have hEF : Not (E = F) :=
+    hDEFData.2.1
+
+  --------------------------------------------------------------------
+  -- Step 2. Midpoint data.
+  --------------------------------------------------------------------
+
+  have hDGeometry :
+      IsMidpoint Geo D A C :=
+    midpoint_of_hilbert
+      Geo D A C hD
+
+  have hEGeometry :
+      IsMidpoint Geo E B C :=
+    midpoint_of_hilbert
+      Geo E B C hE
+
+  have hCEB :
+      Geo.Between C E B :=
+    (HilbertOrder.between_incidence
+      B E C hE.left).2.2.2.2
+
+  have hCEBcol :
+      Collinear Geo C E B :=
+    CollinearSymmetry
+      Geo B E C hEGeometry.left
+
+  have hBE : Not (B = E) :=
+    (HilbertOrder.between_incidence
+      B E C hE.left).1
+
+  have hEB : Not (E = B) := by
+    intro h
+    exact hBE h.symm
+
+  --------------------------------------------------------------------
+  -- Step 3. EFB is noncollinear.
+  --------------------------------------------------------------------
+
+  have hTri2 :
+      Not (Collinear Geo E F B) := by
+
+    intro hEFB
+
+    have hDEB :
+        Collinear Geo D E B :=
+      hilbert_primCollinear_trans
+        Geo D E F B
+        hEF
+        hDEFcol
+        hEFB
+
+    have hEBC :
+        Collinear Geo E B C :=
+      PrimCollinearCycle
+        Geo C E B hCEBcol
+
+    have hDEC :
+        Collinear Geo D E C :=
+      hilbert_primCollinear_trans
+        Geo D E B C
+        hEB
+        hDEB
+        hEBC
+
+    exact
+      hTri
+        (PrimCollinearSwap
+          Geo D E C hDEC)
+
+  --------------------------------------------------------------------
+  -- Step 4. Vertical angles at E.
+  --------------------------------------------------------------------
+
+  have hVert :=
+    VerticalAngles
+      Geo C E D B F
+      hCEB
+      hDEF
+      (fun h =>
+        hTri
+          (PrimCollinearCycle
+            Geo C E D h))
+
+  have hVert' :=
+    AngleCongruentReverse
+      Geo C E D B E F hVert
+
+  --------------------------------------------------------------------
+  -- Step 5. SAS: EDC congruent EFB.
+  --------------------------------------------------------------------
+
+  have hSideED_EF :=
+    CongruentReverseFirst
+      Geo D E E F hDEEF
+
+  have hSideEB_CE :=
+    CongruentReverseBoth
+      Geo B E E C hEGeometry.right
+
+  have hSideEC_EB :=
+    CongruentReverseFirst
+      Geo C E E B
+      (CongruentSymmetry
+        Geo E B C E hSideEB_CE)
+
+  have hCong :=
+    TriangleCongruentFromSAS
+      Geo E D C E F B
+      hTri
+      hTri2
+      hSideED_EF
+      hVert'
+      hSideEC_EB
+
+  --------------------------------------------------------------------
+  -- Step 6. AD parallel BF.
+  --------------------------------------------------------------------
+
+  have hAD_BF :=
+    parallel_from_equal_angles
+      Geo A C D B E F
+      hD.left
+      hCEB
+      hDEF
+      (fun h =>
+        hTri
+          (PrimCollinearCycle
+            Geo C E D h))
+      hCong.angleC
+
+  --------------------------------------------------------------------
+  -- Step 7. AD congruent BF.
+  --
+  -- AD ~= DC from the midpoint.
+  -- CD ~= BF from the SAS result.
+  --------------------------------------------------------------------
+
+  have hSideCD_BF :=
+    CongruentReverseFirstSwapSecond
+      Geo
+      D C F B
+      hCong.sideBC
+
+  have hSideAD_BF :=
+    congruent_transitivity
+      Geo A D C B F
+      hDGeometry.right
+      hSideCD_BF
+
+  --------------------------------------------------------------------
+  -- Step 8. Recognize ABFD as a parallelogram.
+  --------------------------------------------------------------------
+
+  have hOnePair :
+      OnePairParallelCongruent Geo A B F D :=
+    onePairParallelCongruent_of_crossing
+      Geo A B F D C E
+      hD.left
+      hCEB
+      hDEF
+      hTri
+      hAD_BF
+      hSideAD_BF
+
+  have hParallelogram :
+      IsParallelogram Geo A B F D :=
+    OnePairParallelCongruentCriterion
+      Geo A B F D hOnePair
+
+  exact
+  ⟨F, hDEF, hCong, hParallelogram⟩
+
+/--
+The midpoints of two sides of a nondegenerate triangle do not lie
+with their common vertex on one line.
+
+If M is the midpoint of AB and N is the midpoint of AC, then
+N, M, A are noncollinear whenever A, B, C are noncollinear.
+-/
+theorem hilbert_midpoints_noncollinear
+    [HilbertOrder Geo]
+    (A B C M N : Geo.Point)
+    (hM : HilbertIsMidpoint Geo M A B)
+    (hN : HilbertIsMidpoint Geo N A C)
+    (hABC : Not (Collinear Geo A B C)) :
+    Not (Collinear Geo N M A) := by
+
+  intro hNMA
+
+  have hAM :
+      Not (A = M) :=
+    (HilbertOrder.between_incidence
+      A M B hM.left).1
+
+  have hAN :
+      Not (A = N) :=
+    (HilbertOrder.between_incidence
+      A N C hN.left).1
+
+  have hAMB :
+      Collinear Geo A M B :=
+    (HilbertOrder.between_incidence
+      A M B hM.left).2.2.2.1
+
+  have hANC :
+      Collinear Geo A N C :=
+    (HilbertOrder.between_incidence
+      A N C hN.left).2.2.2.1
+
+  have hBAM :
+      Collinear Geo B A M :=
+    PrimCollinearCycle
+      Geo M B A
+      (PrimCollinearCycle
+        Geo A M B hAMB)
+
+  have hAMN :
+      Collinear Geo A M N :=
+    PrimCollinearSymm
+      Geo N M A hNMA
+
+  have hBAN :
+      Collinear Geo B A N :=
+    hilbert_primCollinear_trans
+      Geo B A M N
+      hAM
+      hBAM
+      hAMN
+
+  have hBAC :
+      Collinear Geo B A C :=
+    hilbert_primCollinear_trans
+      Geo B A N C
+      hAN
+      hBAN
+      hANC
+
+  exact
+    hABC
+      (PrimCollinearSwap
+        Geo B A C hBAC)
+
+omit [HilbertIncidence Geo] in
+theorem ParallelogramRotateOne
+    (A B C D : Geo.Point)
+    (h : IsParallelogram Geo A B C D) :
+    IsParallelogram Geo D A B C := by
+  exact
+    ⟨ParallelSymmetry Geo B C D A h.2,
+     h.1⟩
+
 end Geometry

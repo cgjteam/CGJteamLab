@@ -749,4 +749,294 @@ theorem parallelogram_term_rotateTwo
     HilbertScissorsEq.refl
       (Geo := Geo) _
 
+/--
+Hilbert Theorem 45 in the scissors calculus.
+
+A triangle is equidecomposable with the parallelogram obtained
+from the midpoint construction of `hilbert_triangle_parallelogram_data`.
+-/
+theorem hilbert_triangle_to_parallelogram
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (hD : HilbertIsMidpoint Geo D A C)
+    (hE : HilbertIsMidpoint Geo E B C)
+    (hTri : Not (Collinear Geo E D C)) :
+    exists F : Geo.Point,
+      IsParallelogram Geo A B F D /\
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B C)
+        (hilbertParallelogramTerm Geo A B F D) := by
+
+  rcases
+      hilbert_triangle_parallelogram_data
+        Geo A B C D E hD hE hTri
+    with
+    ⟨F, hDEF, hCong, hParallelogram⟩
+
+  --------------------------------------------------------------------
+  -- Triangle ABC:
+  --
+  -- ABC = ABD + DBC
+  --------------------------------------------------------------------
+
+  have hABC0 :=
+    HilbertScissorsEq.split
+      (Geo := Geo)
+      B A C D hD.left
+
+  have hABC :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B C)
+        (hilbertScissorsTriangle Geo A B D +
+         hilbertScissorsTriangle Geo D B C) := by
+
+    rw [scissors_triangle_swap12 Geo B A C] at hABC0
+    rw [scissors_triangle_swap12 Geo B A D] at hABC0
+    rw [scissors_triangle_swap12 Geo B D C] at hABC0
+
+    exact hABC0
+
+  --------------------------------------------------------------------
+  -- DBC = DBE + DEC
+  --------------------------------------------------------------------
+
+  have hDBC :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo D B C)
+        (hilbertScissorsTriangle Geo D B E +
+         hilbertScissorsTriangle Geo D E C) :=
+    HilbertScissorsEq.split
+      (Geo := Geo)
+      D B C E hE.left
+
+  have hABCrefined :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B C)
+        (hilbertScissorsTriangle Geo A B D +
+         (hilbertScissorsTriangle Geo D B E +
+          hilbertScissorsTriangle Geo D E C)) := by
+
+    have hStep :
+        HilbertScissorsEq Geo
+          (hilbertScissorsTriangle Geo A B D +
+           hilbertScissorsTriangle Geo D B C)
+          (hilbertScissorsTriangle Geo A B D +
+           (hilbertScissorsTriangle Geo D B E +
+            hilbertScissorsTriangle Geo D E C)) :=
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        (HilbertScissorsEq.refl
+          (Geo := Geo)
+          (hilbertScissorsTriangle Geo A B D))
+        hDBC
+
+    exact
+      HilbertScissorsEq.trans
+        (Geo := Geo)
+        hABC
+        hStep
+
+  --------------------------------------------------------------------
+  -- DEC is congruent to BEF.
+  --
+  -- The geometric theorem gives EDC congruent EFB;
+  -- triangle terms are unordered.
+  --------------------------------------------------------------------
+
+  have hSmall0 :=
+    scissors_congruent
+      Geo E D C E F B hCong
+
+  have hDEC_BEF :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo D E C)
+        (hilbertScissorsTriangle Geo B E F) := by
+
+    rw [scissors_triangle_swap12 Geo E D C] at hSmall0
+    rw [scissors_triangle_cycle Geo E F B] at hSmall0
+    rw [scissors_triangle_cycle Geo F B E] at hSmall0
+
+    exact hSmall0
+
+  --------------------------------------------------------------------
+  -- Hence ABC has the common refinement
+  --
+  -- ABD + DBE + BEF.
+  --------------------------------------------------------------------
+
+  have hInner :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo D B E +
+         hilbertScissorsTriangle Geo D E C)
+        (hilbertScissorsTriangle Geo D B E +
+         hilbertScissorsTriangle Geo B E F) :=
+    HilbertScissorsEq.add
+      (Geo := Geo)
+      (HilbertScissorsEq.refl
+        (Geo := Geo)
+        (hilbertScissorsTriangle Geo D B E))
+      hDEC_BEF
+
+  have hTriangleStep :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B D +
+         (hilbertScissorsTriangle Geo D B E +
+          hilbertScissorsTriangle Geo D E C))
+        (hilbertScissorsTriangle Geo A B D +
+         (hilbertScissorsTriangle Geo D B E +
+          hilbertScissorsTriangle Geo B E F)) :=
+    HilbertScissorsEq.add
+      (Geo := Geo)
+      (HilbertScissorsEq.refl
+        (Geo := Geo)
+        (hilbertScissorsTriangle Geo A B D))
+      hInner
+
+  have hTriangleCommon :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B C)
+        (hilbertScissorsTriangle Geo A B D +
+         (hilbertScissorsTriangle Geo D B E +
+          hilbertScissorsTriangle Geo B E F)) :=
+    HilbertScissorsEq.trans
+      (Geo := Geo)
+      hABCrefined
+      hTriangleStep
+
+  --------------------------------------------------------------------
+  -- Parallelogram ABFD:
+  --
+  -- switch from diagonal AF to diagonal BD:
+  --
+  -- ABFD = ABD + BFD
+  --------------------------------------------------------------------
+
+  have hPar0 :=
+    parallelogram_two_triangulations
+      Geo A B F D hParallelogram
+
+  have hParDiagonal :
+      HilbertScissorsEq Geo
+        (hilbertParallelogramTerm Geo A B F D)
+        (hilbertScissorsTriangle Geo A B D +
+         hilbertScissorsTriangle Geo B F D) := by
+
+    simpa [hilbertParallelogramTerm] using hPar0
+
+  --------------------------------------------------------------------
+  -- BFD = DBE + BEF because E lies between D and F.
+  --------------------------------------------------------------------
+
+  have hBFD0 :=
+    HilbertScissorsEq.split
+      (Geo := Geo)
+      B D F E hDEF
+
+  have hBFD :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo B F D)
+        (hilbertScissorsTriangle Geo D B E +
+         hilbertScissorsTriangle Geo B E F) := by
+
+    rw [scissors_triangle_swap23 Geo B D F] at hBFD0
+    rw [scissors_triangle_swap12 Geo B D E] at hBFD0
+
+    exact hBFD0
+
+  have hParStep :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B D +
+         hilbertScissorsTriangle Geo B F D)
+        (hilbertScissorsTriangle Geo A B D +
+         (hilbertScissorsTriangle Geo D B E +
+          hilbertScissorsTriangle Geo B E F)) :=
+    HilbertScissorsEq.add
+      (Geo := Geo)
+      (HilbertScissorsEq.refl
+        (Geo := Geo)
+        (hilbertScissorsTriangle Geo A B D))
+      hBFD
+
+  have hParCommon :
+      HilbertScissorsEq Geo
+        (hilbertParallelogramTerm Geo A B F D)
+        (hilbertScissorsTriangle Geo A B D +
+         (hilbertScissorsTriangle Geo D B E +
+          hilbertScissorsTriangle Geo B E F)) :=
+    HilbertScissorsEq.trans
+      (Geo := Geo)
+      hParDiagonal
+      hParStep
+
+  --------------------------------------------------------------------
+  -- Both figures have the same refinement.
+  --------------------------------------------------------------------
+
+  have hResult :
+      HilbertScissorsEq Geo
+        (hilbertScissorsTriangle Geo A B C)
+        (hilbertParallelogramTerm Geo A B F D) :=
+    HilbertScissorsEq.trans
+      (Geo := Geo)
+      hTriangleCommon
+      (HilbertScissorsEq.symm
+        (Geo := Geo)
+        hParCommon)
+
+  exact
+    ⟨F, hParallelogram, hResult⟩
+
+/--
+Equicomplementability is invariant under scissors-equivalent
+replacement of both arguments.
+-/
+theorem equicomplementable_transport
+    {P P' Q Q' : HilbertScissorsTerm Geo}
+    (hP : HilbertScissorsEq Geo P P')
+    (hQ : HilbertScissorsEq Geo Q Q')
+    (hPQ :
+      HilbertScissorsEquicomplementable Geo P' Q') :
+    HilbertScissorsEquicomplementable Geo P Q := by
+
+  have hPP' :
+      HilbertScissorsEquicomplementable Geo P P' :=
+    equicomplementable_of_scissorsEq
+      Geo hP
+
+  have hQ'Q :
+      HilbertScissorsEquicomplementable Geo Q' Q :=
+    equicomplementable_of_scissorsEq
+      Geo
+      (HilbertScissorsEq.symm
+        (Geo := Geo) hQ)
+
+  exact
+    equicomplementable_trans
+      Geo
+      (equicomplementable_trans
+        Geo hPP' hPQ)
+      hQ'Q
+
+theorem parallelogram_term_rotateOne
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    HilbertScissorsEq Geo
+      (hilbertParallelogramTerm Geo A B C D)
+      (hilbertParallelogramTerm Geo D A B C) := by
+
+  have h :=
+    parallelogram_two_triangulations
+      Geo A B C D hParallelogram
+
+  rw [scissors_triangle_cycle Geo A B D] at h
+  rw [scissors_triangle_cycle Geo B D A] at h
+
+  rw [scissors_triangle_cycle Geo B C D] at h
+  rw [scissors_triangle_cycle Geo C D B] at h
+
+  simpa [hilbertParallelogramTerm] using h
+
 end Geometry
