@@ -2085,7 +2085,7 @@ and analogously OA' and OC' lie on opposite sides of O'B'.
 Thus OB and O'B' are the interior dividing rays of the two angles.
 -/
 
-/--
+/-
 Temporary Hilbert Theorem 15.
 
 Let OA, OB, OC and O'A', O'B', O'C' determine two angle
@@ -2100,17 +2100,6 @@ angles formed by the outer rays are congruent.
 This is retained temporarily while the remaining Hilbert SSS
 construction is verified.
 -/
-
-/-
-The ray from O through R meets the open segment AB.
-
-The witness X lies inside AB and on the ray OR.
--/
-def HilbertRayMeetsSegment
-    (O R A B : Geo.Point) : Prop :=
-  ∃ X : Geo.Point,
-    Geo.Between A X B ∧
-    HilbertSameRay Geo O R X
 
 
 
