@@ -6404,20 +6404,6 @@ theorem bookZero_segmentSplitTransfer
      hCBcb⟩
 
 
-/--
-A right angle in Hilbert geometry.
-
-The angle AOB is right if it is congruent to an adjacent angle
-formed by extending OA through O.
--/
-def HilbertRightAngle
-    (Geo : Geometry.Geo)
-    (A O B : Geo.Point) : Prop :=
-  ∃ C : Geo.Point,
-    Geo.Between A O C ∧
-    Geo.AngleCongruent A O B B O C
-
-
 theorem hilbert_right_angle_exists
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]

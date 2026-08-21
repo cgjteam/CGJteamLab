@@ -245,6 +245,19 @@ inductive HilbertTriangleListCongruent
       (hPQ : HilbertTriangleListCongruent P Q) :
       HilbertTriangleListCongruent (T :: P) (U :: Q)
 
+/--
+A right angle in Hilbert geometry.
+
+The angle AOB is right if it is congruent to an adjacent angle
+formed by extending OA through O.
+-/
+def HilbertRightAngle
+    (Geo : Geometry.Geo)
+    (A O B : Geo.Point) : Prop :=
+  ∃ C : Geo.Point,
+    Geo.Between A O C ∧
+    Geo.AngleCongruent A O B B O C
+
 def HilbertEquidecomposable
     [HilbertCongruence Geo]
     (P Q : HilbertTriangulatedFigure Geo) : Prop :=
@@ -6523,5 +6536,1209 @@ theorem hilbert_concyclic4_reverse
      hAD,
      hAC,
      hAB⟩
+
+------------------------------------------------------------------------
+-- Hilbert Grundlagen transfer: ray-order core
+--
+-- Paste INSIDE namespace Geometry in HilbertGrundlagen.lean.
+--
+-- This is the minimal ray-order block needed to continue toward
+-- Hilbert's angle comparison / Theorem 21 without importing the
+-- full HilbertAngleLess machinery from HilbertInterface.
+--
+-- hilbert_sameRay_of_common is intentionally NOT copied; all references
+-- are redirected to the already permanent
+-- hilbert_sameRay_common_reference.
+------------------------------------------------------------------------
+
+theorem hilbert_sameSide_rays_order_case_eq
+    [HilbertOrder Geo]
+    (O A B C D : Geo.Point)
+    (hADB : ¬ Collinear Geo A D B)
+    (hAOD : Geo.Between A O D)
+    (hCBD : Geo.Between C B D) :
+    HilbertRayMeetsSegment Geo O C A B := by
+
+  have hDBC :
+      Geo.Between D B C :=
+    (HilbertOrder.between_incidence
+      C B D hCBD).2.2.2.2
+
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        A D B C O
+        hADB
+        hDBC
+        hAOD with
+    ⟨F, hCFO, hAFB⟩
+
+  have hOFC :
+      Geo.Between O F C :=
+    (HilbertOrder.between_incidence
+      C F O hCFO).2.2.2.2
+
+  have hRayOFC :
+      HilbertSameRay Geo O F C :=
+    hilbert_sameRay_of_between
+      Geo O F C hOFC
+
+  have hRayOCF :
+      HilbertSameRay Geo O C F :=
+    hilbert_sameRay_symm
+      Geo O F C hRayOFC
+
+  exact ⟨F, hAFB, hRayOCF⟩
+
+/--
+Two points lying on the same ray as a common reference point
+lie on the same ray with each other.
+-/
+
+
+
+
+
+theorem hilbert_sameSide_rays_order_case_OBP
+    [HilbertOrder Geo]
+    (O A B C D P : Geo.Point)
+    (hADP : ¬ Collinear Geo A D P)
+    (hAPB : ¬ Collinear Geo A P B)
+    (hAOD : Geo.Between A O D)
+    (hCPD : Geo.Between C P D)
+    (hOBP : Geo.Between O B P) :
+    HilbertRayMeetsSegment Geo O C A B := by
+
+  --------------------------------------------------------------------
+  -- First inner Pasch in triangle A-D-P:
+  --
+  -- D-P-C
+  -- A-O-D
+  --
+  -- gives F with C-F-O and A-F-P.
+  --------------------------------------------------------------------
+
+  have hDPC :
+      Geo.Between D P C :=
+    (HilbertOrder.between_incidence
+      C P D hCPD).2.2.2.2
+
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        A D P
+        C O
+        hADP
+        hDPC
+        hAOD with
+    ⟨F, hCFO, hAFP⟩
+
+  --------------------------------------------------------------------
+  -- Since O-B-P, also P-B-O.
+  --
+  -- A second inner Pasch in triangle A-P-B:
+  --
+  -- P-B-O
+  -- A-F-P
+  --
+  -- gives G with O-G-F and A-G-B.
+  --------------------------------------------------------------------
+
+  have hPBO :
+      Geo.Between P B O :=
+    (HilbertOrder.between_incidence
+      O B P hOBP).2.2.2.2
+
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        A P B
+        O F
+        hAPB
+        hPBO
+        hAFP with
+    ⟨G, hOGF, hAGB⟩
+
+  --------------------------------------------------------------------
+  -- F lies on ray OC.
+  --------------------------------------------------------------------
+
+  have hOFC :
+      Geo.Between O F C :=
+    (HilbertOrder.between_incidence
+      C F O hCFO).2.2.2.2
+
+  have hRayOFC :
+      HilbertSameRay Geo O F C :=
+    hilbert_sameRay_of_between
+      Geo O F C hOFC
+
+  --------------------------------------------------------------------
+  -- G lies on the same ray as F, hence on ray OC.
+  --------------------------------------------------------------------
+
+  have hRayOGF :
+      HilbertSameRay Geo O G F :=
+    hilbert_sameRay_of_between
+      Geo O G F hOGF
+
+  have hRayOFG :
+      HilbertSameRay Geo O F G :=
+    hilbert_sameRay_symm
+      Geo O G F hRayOGF
+
+  have hRayOCG :
+      HilbertSameRay Geo O C G :=
+    hilbert_sameRay_common_reference
+      Geo
+      O F C G
+      hRayOFC
+      hRayOFG
+
+  exact ⟨G, hAGB, hRayOCG⟩
+
+/--
+The intersection point P lies beyond O on the ray BO.
+
+If A-O-D, C-P-D and B-O-P, then ray OA meets the open
+segment CB.
+-/
+
+
+theorem hilbert_sameSide_rays_order_case_BOP
+    [HilbertOrder Geo]
+    (O A B C D P : Geo.Point)
+    (base : Geo.Line)
+    (hOB : O ≠ B)
+    (hObase : HilbertIncidence.OnLine O base)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hPbase : HilbertIncidence.OnLine P base)
+    (hAoff : ¬ HilbertIncidence.OnLine A base)
+    (hCoff : ¬ HilbertIncidence.OnLine C base)
+    (hSame : HilbertSameSide Geo A C base)
+    (hAOC : ¬ Collinear Geo A O C)
+    (hAOD : Geo.Between A O D)
+    (hCPD : Geo.Between C P D)
+    (hBOP : Geo.Between B O P) :
+    HilbertRayMeetsSegment Geo O A C B := by
+
+  have hAO : A ≠ O :=
+    (HilbertOrder.between_incidence
+      A O D hAOD).1
+
+  have hOD : O ≠ D :=
+    (HilbertOrder.between_incidence
+      A O D hAOD).2.1
+
+  have hOP : O ≠ P :=
+    (HilbertOrder.between_incidence
+      B O P hBOP).2.1
+
+  have hPC : P ≠ C :=
+    (HilbertOrder.between_incidence
+      C P D hCPD).1.symm
+
+  have hPD : P ≠ D :=
+    (HilbertOrder.between_incidence
+      C P D hCPD).2.1
+
+  rcases
+      (HilbertOrder.between_incidence
+        A O D hAOD).2.2.2.1 with
+    ⟨lineAD, hAlineAD, hOlineAD, hDlineAD⟩
+
+  rcases
+      (HilbertOrder.between_incidence
+        C P D hCPD).2.2.2.1 with
+    ⟨linePC, hClinePC, hPlinePC, hDlinePC⟩
+
+  have hLines : linePC ≠ lineAD := by
+    intro hEq
+
+    have hClineAD :
+        HilbertIncidence.OnLine C lineAD := by
+      rw [← hEq]
+      exact hClinePC
+
+    exact hAOC
+      ⟨lineAD, hAlineAD, hOlineAD, hClineAD⟩
+
+  have hBoffAD :
+      ¬ HilbertIncidence.OnLine B lineAD := by
+    intro hBlineAD
+
+    have hEq : lineAD = base :=
+      HilbertPlaneIncidence.line_unique
+        O B hOB
+        lineAD base
+        hOlineAD hBlineAD
+        hObase hBbase
+
+    have hAbase :
+        HilbertIncidence.OnLine A base := by
+      rw [← hEq]
+      exact hAlineAD
+
+    exact hAoff hAbase
+
+  have hPoffAD :
+      ¬ HilbertIncidence.OnLine P lineAD := by
+    intro hPlineAD
+
+    have hEq : lineAD = base :=
+      HilbertPlaneIncidence.line_unique
+        O P hOP
+        lineAD base
+        hOlineAD hPlineAD
+        hObase hPbase
+
+    have hAbase :
+        HilbertIncidence.OnLine A base := by
+      rw [← hEq]
+      exact hAlineAD
+
+    exact hAoff hAbase
+
+  have hCoffAD :
+      ¬ HilbertIncidence.OnLine C lineAD := by
+    intro hClineAD
+    exact hAOC
+      ⟨lineAD, hAlineAD, hOlineAD, hClineAD⟩
+
+  have hMeetsBP :
+      HilbertSegmentMeetsLine Geo B P lineAD :=
+    ⟨O, hBOP, hOlineAD⟩
+
+  have hCPDcol :
+      PrimCollinear Geo C P D :=
+    (HilbertOrder.between_incidence
+      C P D hCPD).2.2.2.1
+
+  have hNotPDC :
+      ¬ Geo.Between P D C := by
+    intro hPDC
+
+    have hCDP :
+        Geo.Between C D P :=
+      (HilbertOrder.between_incidence
+        P D C hPDC).2.2.2.2
+
+    exact
+      (HilbertOrder.between_unique
+        C P D hCPDcol hCPD).2
+        hCDP
+
+  have hNotMeetsPC :
+      ¬ HilbertSegmentMeetsLine Geo P C lineAD :=
+    hilbert_segment_not_meets_crossing_line
+      Geo
+      P C D
+      linePC lineAD
+      hLines
+      hPlinePC
+      hClinePC
+      hDlinePC
+      hDlineAD
+      hNotPDC
+
+  have hBPC :
+      ¬ PrimCollinear Geo B P C := by
+    rintro ⟨m, hBm, hPm, hCm⟩
+
+    have hBP : B ≠ P :=
+      (HilbertOrder.between_incidence
+        B O P hBOP).2.2.1
+
+    have hEq : m = base :=
+      HilbertPlaneIncidence.line_unique
+        B P hBP
+        m base
+        hBm hPm
+        hBbase hPbase
+
+    have hCbase :
+        HilbertIncidence.OnLine C base := by
+      rw [← hEq]
+      exact hCm
+
+    exact hCoff hCbase
+
+  rcases
+      hilbert_pasch_forced
+        Geo
+        B P C
+        lineAD
+        hBPC
+        hBoffAD
+        hPoffAD
+        hCoffAD
+        hMeetsBP
+        hNotMeetsPC with
+    ⟨F, hBFC, hFlineAD⟩
+
+  have hCFB :
+      Geo.Between C F B :=
+    (HilbertOrder.between_incidence
+      B F C hBFC).2.2.2.2
+
+  have hCBO :
+      ¬ PrimCollinear Geo C B O := by
+    rintro ⟨m, hCm, hBm, hOm⟩
+
+    have hEq : m = base :=
+      HilbertPlaneIncidence.line_unique
+        O B hOB
+        m base
+        hOm hBm
+        hObase hBbase
+
+    have hCbase :
+        HilbertIncidence.OnLine C base := by
+      rw [← hEq]
+      exact hCm
+
+    exact hCoff hCbase
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        C F O B
+        hCFB
+        hCBO with
+    ⟨lineOB, hOlineOB, hBlineOB, hSameCFlineOB⟩
+
+  have hEqOB : lineOB = base :=
+    HilbertPlaneIncidence.line_unique
+      O B hOB
+      lineOB base
+      hOlineOB hBlineOB
+      hObase hBbase
+
+  have hSameCF :
+      HilbertSameSide Geo C F base := by
+    rw [← hEqOB]
+    exact hSameCFlineOB
+
+  have hSameAF :
+      HilbertSameSide Geo A F base :=
+    hilbert_sameSide_trans
+      Geo A C F base
+      hSame hSameCF
+
+  have hFO : F ≠ O := by
+    intro hFO
+    subst F
+    exact hSameAF.2.1 hObase
+
+  have hAOFcol :
+      PrimCollinear Geo O A F :=
+    ⟨lineAD, hOlineAD, hAlineAD, hFlineAD⟩
+
+  have hNotAOF :
+      ¬ Geo.Between A O F := by
+    intro hAOF
+
+    have hOppAF :
+        HilbertOppositeSide Geo A F base :=
+      ⟨hSameAF.1,
+       hSameAF.2.1,
+       ⟨O, hAOF, hObase⟩⟩
+
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo A F base hOppAF)
+        hSameAF
+
+  have hRayOAF :
+      HilbertSameRay Geo O A F :=
+    ⟨hAO, hFO, hAOFcol, hNotAOF⟩
+
+  exact ⟨F, hCFB, hRayOAF⟩
+
+/--
+The intersection point P lies between O and B.
+
+If A-O-D, C-P-D and O-P-B, then ray OC meets the open
+segment AB.
+-/
+
+
+theorem hilbert_sameSide_rays_order_case_OPB
+    [HilbertOrder Geo]
+    (O A B C D P : Geo.Point)
+    (base : Geo.Line)
+    (hOB : O ≠ B)
+    (hObase : HilbertIncidence.OnLine O base)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hPbase : HilbertIncidence.OnLine P base)
+    (hAoff : ¬ HilbertIncidence.OnLine A base)
+    (hCoff : ¬ HilbertIncidence.OnLine C base)
+    (hSame : HilbertSameSide Geo A C base)
+    (hAOC : ¬ PrimCollinear Geo A O C)
+    (hADP : ¬ PrimCollinear Geo A D P)
+    (hAPB : ¬ PrimCollinear Geo A P B)
+    (hAOD : Geo.Between A O D)
+    (hCPD : Geo.Between C P D)
+    (hOPB : Geo.Between O P B) :
+    HilbertRayMeetsSegment Geo O C A B := by
+
+  --------------------------------------------------------------------
+  -- First inner Pasch in triangle A-D-P:
+  --
+  -- D-P-C
+  -- A-O-D
+  --
+  -- gives F with C-F-O and A-F-P.
+  --------------------------------------------------------------------
+
+  have hDPC :
+      Geo.Between D P C :=
+    (HilbertOrder.between_incidence
+      C P D hCPD).2.2.2.2
+
+  rcases
+      hilbert_inner_pasch_strong
+        Geo
+        A D P
+        C O
+        hADP
+        hDPC
+        hAOD with
+    ⟨F, hCFO, hAFP⟩
+
+  have hOFC :
+      Geo.Between O F C :=
+    (HilbertOrder.between_incidence
+      C F O hCFO).2.2.2.2
+
+  --------------------------------------------------------------------
+  -- Let lineOC be the line through O, F and C.
+  --------------------------------------------------------------------
+
+  rcases
+      (HilbertOrder.between_incidence
+        O F C hOFC).2.2.2.1 with
+    ⟨lineOC, hOlineOC, hFlineOC, hClineOC⟩
+
+  have hOP : O ≠ P :=
+    (HilbertOrder.between_incidence
+      O P B hOPB).1
+
+  --------------------------------------------------------------------
+  -- lineOC differs from base because C lies off base.
+  --------------------------------------------------------------------
+
+  have hLines :
+      base ≠ lineOC := by
+    intro hEq
+
+    have hCbase :
+        HilbertIncidence.OnLine C base := by
+      rw [hEq]
+      exact hClineOC
+
+    exact hCoff hCbase
+
+  --------------------------------------------------------------------
+  -- The vertices A, P and B are outside lineOC.
+  --------------------------------------------------------------------
+
+  have hAoffOC :
+      ¬ HilbertIncidence.OnLine A lineOC := by
+    intro hAlineOC
+
+    exact hAOC
+      ⟨lineOC,
+       hAlineOC,
+       hOlineOC,
+       hClineOC⟩
+
+  have hPoffOC :
+      ¬ HilbertIncidence.OnLine P lineOC := by
+    intro hPlineOC
+
+    have hEq : base = lineOC :=
+      HilbertPlaneIncidence.line_unique
+        O P hOP
+        base lineOC
+        hObase hPbase
+        hOlineOC hPlineOC
+
+    have hCbase :
+        HilbertIncidence.OnLine C base := by
+      rw [hEq]
+      exact hClineOC
+
+    exact hCoff hCbase
+
+  have hBoffOC :
+      ¬ HilbertIncidence.OnLine B lineOC := by
+    intro hBlineOC
+
+    have hEq : base = lineOC :=
+      HilbertPlaneIncidence.line_unique
+        O B hOB
+        base lineOC
+        hObase hBbase
+        hOlineOC hBlineOC
+
+    have hCbase :
+        HilbertIncidence.OnLine C base := by
+      rw [hEq]
+      exact hClineOC
+
+    exact hCoff hCbase
+
+  --------------------------------------------------------------------
+  -- lineOC meets AP at F.
+  --------------------------------------------------------------------
+
+  have hMeetsAP :
+      HilbertSegmentMeetsLine Geo A P lineOC :=
+    ⟨F, hAFP, hFlineOC⟩
+
+  --------------------------------------------------------------------
+  -- lineOC cannot meet the open segment PB:
+  -- its only intersection with base is O, and O lies outside PB.
+  --------------------------------------------------------------------
+
+  have hOPBcol :
+      PrimCollinear Geo O P B :=
+    (HilbertOrder.between_incidence
+      O P B hOPB).2.2.2.1
+
+  have hNotPOB :
+      ¬ Geo.Between P O B :=
+    (HilbertOrder.between_unique
+      O P B hOPBcol hOPB).1
+
+  have hNotMeetsPB :
+      ¬ HilbertSegmentMeetsLine Geo P B lineOC :=
+    hilbert_segment_not_meets_crossing_line
+      Geo
+      P B O
+      base lineOC
+      hLines
+      hPbase
+      hBbase
+      hObase
+      hOlineOC
+      hNotPOB
+
+  --------------------------------------------------------------------
+  -- Forced Pasch now gives G on AB and on lineOC.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_pasch_forced
+        Geo
+        A P B
+        lineOC
+        hAPB
+        hAoffOC
+        hPoffOC
+        hBoffOC
+        hMeetsAP
+        hNotMeetsPB with
+    ⟨G, hAGB, hGlineOC⟩
+
+  --------------------------------------------------------------------
+  -- A and G lie on the same side of base.
+  --------------------------------------------------------------------
+
+  have hABO :
+      ¬ PrimCollinear Geo A B O := by
+    rintro ⟨m, hAm, hBm, hOm⟩
+
+    have hEq : m = base :=
+      HilbertPlaneIncidence.line_unique
+        O B hOB
+        m base
+        hOm hBm
+        hObase hBbase
+
+    have hAbase :
+        HilbertIncidence.OnLine A base := by
+      rw [← hEq]
+      exact hAm
+
+    exact hAoff hAbase
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        A G O B
+        hAGB
+        hABO with
+    ⟨lineOB, hOlineOB, hBlineOB, hSameAGlineOB⟩
+
+  have hEqOB : lineOB = base :=
+    HilbertPlaneIncidence.line_unique
+      O B hOB
+      lineOB base
+      hOlineOB hBlineOB
+      hObase hBbase
+
+  have hSameAG :
+      HilbertSameSide Geo A G base := by
+    rw [← hEqOB]
+    exact hSameAGlineOB
+
+  have hSameCA :
+      HilbertSameSide Geo C A base :=
+    hilbert_sameSide_symm
+      Geo A C base hSame
+
+  have hSameCG :
+      HilbertSameSide Geo C G base :=
+    hilbert_sameSide_trans
+      Geo C A G base
+      hSameCA hSameAG
+
+  --------------------------------------------------------------------
+  -- Since C and G are collinear with O and lie on the same side of
+  -- base, they determine the same ray from O.
+  --------------------------------------------------------------------
+
+  have hCO : C ≠ O := by
+    intro h
+    subst C
+    exact hCoff hObase
+
+  have hGO : G ≠ O := by
+    intro h
+    subst G
+    exact hSameCG.2.1 hObase
+
+  have hOCGcol :
+      PrimCollinear Geo O C G :=
+    ⟨lineOC, hOlineOC, hClineOC, hGlineOC⟩
+
+  have hNotCOG :
+      ¬ Geo.Between C O G := by
+    intro hCOG
+
+    have hOppCG :
+        HilbertOppositeSide Geo C G base :=
+      ⟨hSameCG.1,
+       hSameCG.2.1,
+       ⟨O, hCOG, hObase⟩⟩
+
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo C G base hOppCG)
+        hSameCG
+
+  have hRayOCG :
+      HilbertSameRay Geo O C G :=
+    ⟨hCO, hGO, hOCGcol, hNotCOG⟩
+
+  exact ⟨G, hAGB, hRayOCG⟩
+
+/--
+Ray ordering in one half-plane.
+
+If A and C lie in the same half-plane bounded by the line OB,
+and A, O, C are noncollinear, then one of the rays OA and OC
+meets the open segment joining the other point to B.
+-/
+
+
+theorem hilbert_sameSide_rays_order
+    [HilbertOrder Geo]
+    (O A B C : Geo.Point)
+    (base : Geo.Line)
+    (hOB : O ≠ B)
+    (hObase : HilbertIncidence.OnLine O base)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hAoff : ¬ HilbertIncidence.OnLine A base)
+    (hCoff : ¬ HilbertIncidence.OnLine C base)
+    (hSame : HilbertSameSide Geo A C base)
+    (hAOC : ¬ Collinear Geo A O C) :
+    HilbertRayMeetsSegment Geo O A C B ∨
+    HilbertRayMeetsSegment Geo O C A B := by
+
+  --------------------------------------------------------------------
+  -- Extend AO beyond O:
+  --
+  --   A - O - D.
+  --------------------------------------------------------------------
+
+  have hAO : A ≠ O := by
+    intro h
+    subst A
+    exact hAoff hObase
+
+  rcases
+      HilbertOrder.between_extension
+        A O hAO with
+    ⟨D, hAOD⟩
+
+  have hAODData :=
+    HilbertOrder.between_incidence
+      A O D hAOD
+
+  have hOD : O ≠ D :=
+    hAODData.2.1
+
+  --------------------------------------------------------------------
+  -- D is outside base.
+  --------------------------------------------------------------------
+
+  have hDoff :
+      ¬ HilbertIncidence.OnLine D base := by
+    intro hDbase
+
+    rcases hAODData.2.2.2.1 with
+      ⟨lineAD, hAlineAD, hOlineAD, hDlineAD⟩
+
+    have hEq : lineAD = base :=
+      HilbertPlaneIncidence.line_unique
+        O D hOD
+        lineAD base
+        hOlineAD hDlineAD
+        hObase hDbase
+
+    have hAbase :
+        HilbertIncidence.OnLine A base := by
+      rw [← hEq]
+      exact hAlineAD
+
+    exact hAoff hAbase
+
+  --------------------------------------------------------------------
+  -- A and D lie on opposite sides of base because segment AD
+  -- meets base at O.
+  --------------------------------------------------------------------
+
+  have hOppAD :
+      HilbertOppositeSide Geo A D base :=
+    ⟨hAoff, hDoff, ⟨O, hAOD, hObase⟩⟩
+
+  have hOppDA :
+      HilbertOppositeSide Geo D A base :=
+    hilbert_oppositeSide_symm
+      Geo A D base hOppAD
+
+  --------------------------------------------------------------------
+  -- Transport the opposite-side relation from A to C.
+  --------------------------------------------------------------------
+
+  have hOppDC :
+      HilbertOppositeSide Geo D C base :=
+    hilbert_oppositeSide_transport_right
+      Geo D A C base hOppDA hSame
+
+  have hOppCD :
+      HilbertOppositeSide Geo C D base :=
+    hilbert_oppositeSide_symm
+      Geo D C base hOppDC
+
+  --------------------------------------------------------------------
+  -- Let P be the intersection of the open segment CD with base.
+  --------------------------------------------------------------------
+
+  rcases hOppCD.2.2 with
+    ⟨P, hCPD, hPbase⟩
+
+  --------------------------------------------------------------------
+  -- P cannot equal O. Otherwise A, O, C would be collinear.
+  --------------------------------------------------------------------
+
+  have hPO : P ≠ O := by
+    intro hPOeq
+    subst P
+
+    have hAODcol :
+        Collinear Geo A O D :=
+      hAODData.2.2.2.1
+
+    have hCODcol :
+        Collinear Geo C O D :=
+      (HilbertOrder.between_incidence
+        C O D hCPD).2.2.2.1
+
+    have hODCcol :
+        Collinear Geo O D C :=
+      PrimCollinearCycle
+        Geo C O D hCODcol
+
+    have hAOCcol :
+        Collinear Geo A O C :=
+      hilbert_primCollinear_trans
+        Geo
+        A O D C
+        hOD
+        hAODcol
+        hODCcol
+
+    exact hAOC hAOCcol
+
+  --------------------------------------------------------------------
+  -- O, B and P lie on base.
+  --------------------------------------------------------------------
+
+  have hOBP :
+      Collinear Geo O B P :=
+    ⟨base, hObase, hBbase, hPbase⟩
+
+  --------------------------------------------------------------------
+  -- Remaining step:
+  -- analyze the order of O, B and P and apply Pasch to obtain
+  -- one of the two required ray-segment intersections.
+  --------------------------------------------------------------------
+
+  have hPposition :
+      P = B ∨
+      Geo.Between O B P ∨
+      Geo.Between B O P ∨
+      Geo.Between O P B := by
+    by_cases hPB : P = B
+    · exact Or.inl hPB
+    ·
+      have hBP : B ≠ P := by
+        intro hBP
+        exact hPB hBP.symm
+
+      have hOP : O ≠ P :=
+        hPO.symm
+
+      rcases
+          hilbert_between_trichotomy
+            Geo
+            O B P
+            hOB
+            hBP
+            hOP
+            hOBP with
+        hOBPbetween | hBOP | hOPB
+
+      · exact Or.inr (Or.inl hOBPbetween)
+      · exact Or.inr (Or.inr (Or.inl hBOP))
+      · exact Or.inr (Or.inr (Or.inr hOPB))
+
+  --------------------------------------------------------------------
+  -- P is either B itself or occupies one of the three possible
+  -- positions on the line OB.
+  --------------------------------------------------------------------
+
+  rcases hPposition with
+    hPB | hOBPbetween | hBOP | hOPB
+
+  ·
+    subst P
+
+    have hADB :
+        ¬ Collinear Geo A D B := by
+      rintro ⟨m, hAm, hDm, hBm⟩
+
+      rcases hAODData.2.2.2.1 with
+        ⟨n, hAn, hOn, hDn⟩
+
+      have hAD : A ≠ D :=
+        hAODData.2.2.1
+
+      have hmn : m = n :=
+        HilbertPlaneIncidence.line_unique
+          A D hAD
+          m n
+          hAm hDm
+          hAn hDn
+
+      have hBOn :
+          HilbertIncidence.OnLine B n := by
+        rw [← hmn]
+        exact hBm
+
+      have hEq : n = base :=
+        HilbertPlaneIncidence.line_unique
+          O B hOB
+          n base
+          hOn hBOn
+          hObase hBbase
+
+      have hAbase :
+          HilbertIncidence.OnLine A base := by
+        rw [← hEq]
+        exact hAn
+
+      exact hAoff hAbase
+
+    exact
+      Or.inr
+        (hilbert_sameSide_rays_order_case_eq
+          Geo O A B C D
+          hADB
+          hAOD
+          hCPD)
+
+  ·
+    have hADP :
+        ¬ Collinear Geo A D P := by
+      rintro ⟨m, hAm, hDm, hPm⟩
+
+      rcases hAODData.2.2.2.1 with
+        ⟨n, hAn, hOn, hDn⟩
+
+      have hAD : A ≠ D :=
+        hAODData.2.2.1
+
+      have hmn : m = n :=
+        HilbertPlaneIncidence.line_unique
+          A D hAD
+          m n
+          hAm hDm
+          hAn hDn
+
+      have hPn :
+          HilbertIncidence.OnLine P n := by
+        rw [← hmn]
+        exact hPm
+
+      have hOP : O ≠ P :=
+        (HilbertOrder.between_incidence
+          O B P hOBPbetween).2.2.1
+
+      have hEq : n = base :=
+        HilbertPlaneIncidence.line_unique
+          O P hOP
+          n base
+          hOn hPn
+          hObase hPbase
+
+      have hAbase :
+          HilbertIncidence.OnLine A base := by
+        rw [← hEq]
+        exact hAn
+
+      exact hAoff hAbase
+
+    have hAPB :
+        ¬ Collinear Geo A P B := by
+      rintro ⟨m, hAm, hPm, hBm⟩
+
+      have hBP : B ≠ P :=
+        (HilbertOrder.between_incidence
+          O B P hOBPbetween).2.1
+
+      have hEq : m = base :=
+        HilbertPlaneIncidence.line_unique
+          B P hBP
+          m base
+          hBm hPm
+          hBbase hPbase
+
+      have hAbase :
+          HilbertIncidence.OnLine A base := by
+        rw [← hEq]
+        exact hAm
+
+      exact hAoff hAbase
+
+    exact
+      Or.inr
+        (hilbert_sameSide_rays_order_case_OBP
+          Geo
+          O A B C D P
+          hADP
+          hAPB
+          hAOD
+          hCPD
+          hOBPbetween)
+
+  ·
+    exact
+      Or.inl
+        (hilbert_sameSide_rays_order_case_BOP
+          Geo
+          O A B C D P
+          base
+          hOB
+          hObase
+          hBbase
+          hPbase
+          hAoff
+          hCoff
+          hSame
+          hAOC
+          hAOD
+          hCPD
+          hBOP)
+
+  ·
+    have hADP :
+        ¬ PrimCollinear Geo A D P := by
+      rintro ⟨m, hAm, hDm, hPm⟩
+
+      rcases hAODData.2.2.2.1 with
+        ⟨n, hAn, hOn, hDn⟩
+
+      have hAD : A ≠ D :=
+        hAODData.2.2.1
+
+      have hmn : m = n :=
+        HilbertPlaneIncidence.line_unique
+          A D hAD
+          m n
+          hAm hDm
+          hAn hDn
+
+      have hPn :
+          HilbertIncidence.OnLine P n := by
+        rw [← hmn]
+        exact hPm
+
+      have hOP : O ≠ P :=
+        (HilbertOrder.between_incidence
+          O P B hOPB).1
+
+      have hEq : n = base :=
+        HilbertPlaneIncidence.line_unique
+          O P hOP
+          n base
+          hOn hPn
+          hObase hPbase
+
+      have hAbase :
+          HilbertIncidence.OnLine A base := by
+        rw [← hEq]
+        exact hAn
+
+      exact hAoff hAbase
+
+    have hAPB :
+        ¬ PrimCollinear Geo A P B := by
+      rintro ⟨m, hAm, hPm, hBm⟩
+
+      have hPB : P ≠ B :=
+        (HilbertOrder.between_incidence
+          O P B hOPB).2.1
+
+      have hEq : m = base :=
+        HilbertPlaneIncidence.line_unique
+          P B hPB
+          m base
+          hPm hBm
+          hPbase hBbase
+
+      have hAbase :
+          HilbertIncidence.OnLine A base := by
+        rw [← hEq]
+        exact hAm
+
+      exact hAoff hAbase
+
+    exact
+      Or.inr
+        (hilbert_sameSide_rays_order_case_OPB
+          Geo
+          O A B C D P
+          base
+          hOB
+          hObase
+          hBbase
+          hPbase
+          hAoff
+          hCoff
+          hSame
+          hAOC
+          hADP
+          hAPB
+          hAOD
+          hCPD
+          hOPB)
+
+
+
+
+
+
+/-
+Uniqueness of angle construction on a prescribed side.
+
+If H and K lie on the same side of the reference line OL and
+the angles OLH and OLK are congruent, then both rays LH and LK
+coincide with the unique ray obtained from Hilbert III.4.
+-/
+
+
+theorem sameRay_of_collinear_sameSide
+    [HilbertOrder Geo]
+    (O B X : Geo.Point)
+    (base : Geo.Line)
+    (hObase : HilbertIncidence.OnLine O base)
+    (hBoff : ¬ HilbertIncidence.OnLine B base)
+    (hXoff : ¬ HilbertIncidence.OnLine X base)
+    (hSame : HilbertSameSide Geo B X base)
+    (hBOX : PrimCollinear Geo B O X) :
+    HilbertSameRay Geo O B X := by
+
+  have hBO : B ≠ O := by
+    intro h
+    subst B
+    exact hBoff hObase
+
+  have hOX : O ≠ X := by
+    intro h
+    subst X
+    exact hXoff hObase
+
+  by_cases hBX : B = X
+
+  · subst X
+    exact
+      hilbert_sameRay_refl
+        Geo O B hBO
+
+  ·
+    have hBXne : B ≠ X :=
+      hBX
+
+    rcases
+        hilbert_between_trichotomy
+          Geo
+          B O X
+          hBO
+          hOX
+          hBXne
+          hBOX with
+      hBOXbet | hOBX | hBXO
+
+    ·
+      -- B-O-X is impossible:
+      -- segment BX crosses the base line at O.
+      have hOpp :
+          HilbertOppositeSide Geo B X base :=
+        ⟨hBoff,
+          hXoff,
+          ⟨O, hBOXbet, hObase⟩⟩
+
+      exact
+        False.elim
+          ((hilbert_oppositeSide_not_sameSide
+              Geo B X base hOpp)
+            hSame)
+
+    ·
+      -- O-B-X: X lies farther along ray OB.
+      exact
+        hilbert_sameRay_of_between
+          Geo O B X hOBX
+
+    ·
+      -- B-X-O, hence O-X-B.
+      have hOXB :
+          Geo.Between O X B :=
+        (HilbertOrder.between_incidence
+          B X O hBXO).2.2.2.2
+
+      have hRayOXB :
+          HilbertSameRay Geo O X B :=
+        hilbert_sameRay_of_between
+          Geo O X B hOXB
+
+      exact
+        hilbert_sameRay_symm
+          Geo O X B hRayOXB
 
 end Geometry
