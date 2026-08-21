@@ -8264,26 +8264,315 @@ theorem hilbert_angle_addition
           C O A
           C' O' A').mp hCOA_C'O'A')
 
-/-
-Temporary Hilbert SSS interface.
 
-The target noncollinearity is included because `AngleCongruent`
-does not itself encode angle nondegeneracy in this project.
--/
+------------------------------------------------------------------------
+-- Hilbert Grundlagen: proper interior subangle is not congruent
+-- to the whole angle.
+--
+-- Paste INSIDE namespace Geometry in HilbertGrundlagen.lean.
+--
+-- Dependencies:
+--   Groups I-III only
+--   hilbert_theorem_15_angle_unique_common_ray
+--   hilbert_sameRay_common_reference
+--
+-- No T16/T17/T18, no SSS, no Pascal.
+------------------------------------------------------------------------
 
+theorem hilbert_interior_subangle_not_congruent_whole
+    [HilbertCongruence Geo]
+    (O D X C : Geo.Point)
+    (hXOC : ¬ PrimCollinear Geo X O C)
+    (hInside : HilbertRayMeetsSegment Geo O D X C) :
+    ¬ Geo.AngleCongruent C O D X O C := by
 
+  rcases hInside with
+    ⟨H, hXHC, hRayODH⟩
 
+  --------------------------------------------------------------------
+  -- Base line OC.
+  --------------------------------------------------------------------
 
+  have hOC : O ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo O C X
+      (fun h =>
+        hXOC
+          (PrimCollinearRotate Geo X C O
+            (PrimCollinearSymm Geo O C X h)))
 
+  rcases HilbertPlaneIncidence.line_through O C hOC with
+    ⟨base, hObase, hCbase⟩
 
+  --------------------------------------------------------------------
+  -- X and H are on the same side of OC, since X-H-C.
+  --------------------------------------------------------------------
 
+  have hXCO : ¬ PrimCollinear Geo X C O := by
+    intro h
+    exact hXOC
+      (PrimCollinearRotate Geo X C O h)
 
-/-
-Hilbert Theorem 11.
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo X H O C hXHC hXCO with
+    ⟨l, hOl, hCl, hXHsame_l⟩
 
-If AB is congruent to AC in a noncollinear triangle ABC,
-then the base angles at B and C are congruent.
--/
+  have hlbase : l = base :=
+    HilbertPlaneIncidence.line_unique
+      O C hOC
+      l base
+      hOl hCl
+      hObase hCbase
 
+  have hXHsame :
+      HilbertSameSide Geo X H base := by
+    rw [← hlbase]
+    exact hXHsame_l
+
+  --------------------------------------------------------------------
+  -- D and H are on the same ray from O, hence on the same side of OC.
+  --------------------------------------------------------------------
+
+  rcases hRayODH.2.2.1 with
+    ⟨rayLine, hOray, hDray, hHray⟩
+
+  have hHC : H ≠ C :=
+    (HilbertOrder.between_incidence
+      X H C hXHC).2.1
+
+  have hCoff :
+      ¬ HilbertIncidence.OnLine C rayLine := by
+    intro hCray
+
+    have hXHCcol :
+        PrimCollinear Geo X H C :=
+      (HilbertOrder.between_incidence
+        X H C hXHC).2.2.2.1
+
+    have hHCX :
+        PrimCollinear Geo H C X :=
+      PrimCollinearCycle Geo X H C hXHCcol
+
+    have hXray :
+        HilbertIncidence.OnLine X rayLine :=
+      hilbert_collinear_on_line
+        Geo H C X
+        rayLine
+        hHC
+        hHray
+        hCray
+        hHCX
+
+    exact hXOC
+      ⟨rayLine, hXray, hOray, hCray⟩
+
+  have hDD :
+      HilbertSameRay Geo O D D :=
+    hilbert_sameRay_refl
+      Geo O D hRayODH.1
+
+  have hDHsame :
+      HilbertSameSide Geo D H base :=
+    hilbert_sameRay_points_sameSide
+      Geo
+      O D D H C
+      rayLine base
+      hOray hDray
+      hObase hCbase
+      hCoff
+      hDD
+      hRayODH
+
+  have hHXsame :
+      HilbertSameSide Geo H X base :=
+    hilbert_sameSide_symm
+      Geo X H base hXHsame
+
+  have hDXsame :
+      HilbertSameSide Geo D X base :=
+    hilbert_sameSide_trans
+      Geo D H X base
+      hDHsame
+      hHXsame
+
+  --------------------------------------------------------------------
+  -- Assume the proper subangle COD is congruent to the whole angle XOC.
+  --------------------------------------------------------------------
+
+  intro hCong
+
+  have hCong' :
+      Geo.AngleCongruent C O D C O X := by
+    unfold Geometry.Geo.AngleCongruent at hCong ⊢
+    rw [← Geo.angle_swap X O C]
+    exact hCong
+
+  --------------------------------------------------------------------
+  -- Uniqueness of angle construction forces OD and OX to be the same ray.
+  --------------------------------------------------------------------
+
+  have hCO : C ≠ O :=
+    hOC.symm
+
+  rcases
+      hilbert_theorem_15_angle_unique_common_ray
+        Geo
+        C O D X
+        base
+        hCO
+        hCbase
+        hObase
+        hDXsame.1
+        hDXsame
+        hCong' with
+    ⟨Z, hZD, hZX⟩
+
+  have hDX :
+      HilbertSameRay Geo O D X :=
+    hilbert_sameRay_common_reference
+      Geo O Z D X
+      hZD
+      hZX
+
+  --------------------------------------------------------------------
+  -- But OD is an interior ray meeting XC at H.
+  -- If OD = OX, then O,X,H are collinear.
+  -- Together with X-H-C this makes X,O,C collinear: contradiction.
+  --------------------------------------------------------------------
+
+  have hXHray :
+      HilbertSameRay Geo O X H :=
+    hilbert_sameRay_common_reference
+      Geo O D X H
+      hDX
+      hRayODH
+
+  have hOXH :
+      PrimCollinear Geo O X H :=
+    hXHray.2.2.1
+
+  have hXHCcol :
+      PrimCollinear Geo X H C :=
+    (HilbertOrder.between_incidence
+      X H C hXHC).2.2.2.1
+
+  have hXH : X ≠ H :=
+    (HilbertOrder.between_incidence
+      X H C hXHC).1
+
+  have hOXC :
+      PrimCollinear Geo O X C :=
+    hilbert_primCollinear_trans
+      Geo O X H C
+      hXH
+      hOXH
+      hXHCcol
+
+  exact hXOC
+    (PrimCollinearSwap Geo O X C hOXC)
+
+theorem hilbert_right_angle_transport
+    [HilbertCongruence Geo]
+    (A O B A' O' B' : Geo.Point)
+    (hAOB : ¬ PrimCollinear Geo A O B)
+    (hA'OB' : ¬ PrimCollinear Geo A' O' B')
+    (hRight : HilbertRightAngle Geo A O B)
+    (hAngle : Geo.AngleCongruent A O B A' O' B') :
+    HilbertRightAngle Geo A' O' B' := by
+
+  rcases hRight with
+    ⟨C, hAOC, hAOB_BOC⟩
+
+  have hA'O' : A' ≠ O' :=
+    hilbert_noncollinear_ne_first
+      Geo A' O' B' hA'OB'
+
+  rcases
+      HilbertOrder.between_extension
+        A' O' hA'O' with
+    ⟨C', hA'O'C'⟩
+
+  have hBOC_B'O'C' :
+      Geo.AngleCongruent B O C B' O' C' :=
+    hilbert_adjacent_angles_congruent
+      Geo
+      A O B C
+      A' O' B' C'
+      hAOC
+      hA'O'C'
+      hAOB
+      hA'OB'
+      hAngle
+
+  have hA'OB'_AOB :
+      Geo.AngleCongruent A' O' B' A O B :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      A O B
+      A' O' B'
+      hAngle
+
+  have hA'OB'_BOC :
+      Geo.AngleCongruent A' O' B' B O C :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      A' O' B'
+      A O B
+      B O C
+      hA'OB'_AOB
+      hAOB_BOC
+
+  have hA'OB'_B'O'C' :
+      Geo.AngleCongruent A' O' B' B' O' C' :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      A' O' B'
+      B O C
+      B' O' C'
+      hA'OB'_BOC
+      hBOC_B'O'C'
+
+  exact
+    ⟨C', hA'O'C', hA'OB'_B'O'C'⟩
+
+theorem hilbert_right_angle_opposite_extension
+    [HilbertCongruence Geo]
+    (A O B C : Geo.Point)
+    (hAOB : ¬ PrimCollinear Geo A O B)
+    (hRight : HilbertRightAngle Geo A O B)
+    (hAOC : Geo.Between A O C) :
+    Geo.AngleCongruent A O B B O C := by
+
+  rcases hRight with
+    ⟨D, hAOD, hAOB_BOD⟩
+
+  have hRefl :
+      Geo.AngleCongruent A O B A O B :=
+    HilbertCongruence.angle_congruence_reflexive
+      (Geo := Geo)
+      A O B
+      hAOB
+
+  have hBOD_BOC :
+      Geo.AngleCongruent B O D B O C :=
+    hilbert_adjacent_angles_congruent
+      Geo
+      A O B D
+      A O B C
+      hAOD
+      hAOC
+      hAOB
+      hAOB
+      hRefl
+
+  exact
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      A O B
+      B O D
+      B O C
+      hAOB_BOD
+      hBOD_BOC
 
 end Geometry
