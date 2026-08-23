@@ -1,4 +1,5 @@
 import CGJteamLab.Proposition37
+import CGJteamLab.HilbertScissorsPositivity
 
 namespace Geometry
 
@@ -277,7 +278,7 @@ theorem proposition39_auxiliary_order
 
   · exact Or.inr hBDE
 
-/--
+/-
 Specialized De Zolt principle needed for Euclid I.39.
 
 If X lies strictly between B and A, then triangle XBC is a proper
@@ -286,6 +287,7 @@ Hilbert-scissors-equicomplementable with that proper subtriangle.
 
 This is the single temporary content assumption of the De Zolt route.
 -/
+/-
 axiom hilbert_scissors_triangle_proper_part
     [HilbertIncidence Geo]
     (A X B C : Geo.Point)
@@ -295,7 +297,7 @@ axiom hilbert_scissors_triangle_proper_part
     ¬ HilbertScissorsEquicomplementable Geo
         (hilbertScissorsTriangle Geo A B C)
         (hilbertScissorsTriangle Geo X B C)
-
+-/
 /--
 Convert point-line parallelism AD || BC into the line formulation
 used in the statement of I.39, where `base` is the incidence line
