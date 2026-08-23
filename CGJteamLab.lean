@@ -9,6 +9,8 @@ import CGJteamLab.HilbertInterface
 import CGJteamLab.MidsegmentParallel
 import CGJteamLab.FinlayProof
 import CGJteamLab.HilbertBookZero
+import CGJteamLab.HilbertPascal
+import CGJteamLab.HilbertScissors
 -- Euclid Book I
 import CGJteamLab.Proposition01
 import CGJteamLab.Proposition02

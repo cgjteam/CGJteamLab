@@ -2,6 +2,8 @@ import CGJteamLab.HilbertGrundlagen
 import CGJteamLab.HilbertBookZero
 import CGJteamLab.Proposition12
 import CGJteamLab.Proposition32
+import CGJteamLab.MidsegmentParallel
+import CGJteamLab.Proposition19
 
 namespace Geometry
 
@@ -10681,6 +10683,2493 @@ theorem proposition39_test_circle_inscribed_auxiliary_midpoints
       hMidK,
       hMidP,
       hMidQ⟩
+
+theorem proposition39_test_midpoints_KP_parallel
+    [HilbertEuclideanPlane Geo]
+    (A C E K P : Geo.Point)
+    (hK : HilbertIsMidpoint Geo K A E)
+    (hP : HilbertIsMidpoint Geo P C E)
+    (hKCA :
+      Not (PrimCollinear Geo K C A)) :
+    Geo.Parallel K P A C := by
+
+  have hAKE :
+      Geo.Between A K E :=
+    hK.1
+
+  have hCPE :
+      Geo.Between C P E :=
+    hP.1
+
+  have hKE :
+      K ≠ E :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).2.1
+
+  have hPE :
+      P ≠ E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.1
+
+  have hPKE :
+      Not (PrimCollinear Geo P K E) := by
+    intro hPKEcol
+
+    rcases
+        (HilbertOrder.between_incidence
+          C P E hCPE).2.2.2.1
+      with
+      ⟨linePE, hCline, hPline, hEline⟩
+
+    rcases hPKEcol with
+      ⟨linePKE, hPline', hKline', hEline'⟩
+
+    have hLines :
+        linePE = linePKE :=
+      HilbertPlaneIncidence.line_unique
+        P E hPE
+        linePE linePKE
+        hPline hEline
+        hPline' hEline'
+
+    have hKline :
+        HilbertIncidence.OnLine K linePE := by
+      rw [hLines]
+      exact hKline'
+
+    have hCKE :
+        PrimCollinear Geo C K E :=
+      ⟨linePE,
+        hCline,
+        hKline,
+        hEline⟩
+
+    rcases
+        (HilbertOrder.between_incidence
+          A K E hAKE).2.2.2.1
+      with
+      ⟨lineKE, hAline, hKlineKE, hElineKE⟩
+
+    have hLinesKE :
+        linePE = lineKE :=
+      HilbertPlaneIncidence.line_unique
+        K E hKE
+        linePE lineKE
+        hKline hEline
+        hKlineKE hElineKE
+
+    have hAlinePE :
+        HilbertIncidence.OnLine A linePE := by
+      rw [hLinesKE]
+      exact hAline
+
+    exact
+      hKCA
+        ⟨linePE,
+          hKline,
+          hCline,
+          hAlinePE⟩
+
+  have hKEA :
+      HilbertIsMidpoint Geo K E A :=
+    MidpointSymmetry
+      Geo K A E hK
+
+  have hPEC :
+      HilbertIsMidpoint Geo P E C :=
+    MidpointSymmetry
+      Geo P C E hP
+
+  exact
+    MidsegmentTheorem
+      Geo
+      E A C
+      K P
+      hKEA
+      hPEC
+      hPKE
+
+theorem proposition39_test_midpoints_KQ_parallel
+    [HilbertEuclideanPlane Geo]
+    (A B E K Q : Geo.Point)
+    (hK : HilbertIsMidpoint Geo K A E)
+    (hQ : HilbertIsMidpoint Geo Q B E)
+    (hKAB :
+      Not (PrimCollinear Geo K A B)) :
+    Geo.Parallel K Q A B := by
+
+  have hAKE :
+      Geo.Between A K E :=
+    hK.1
+
+  have hBQE :
+      Geo.Between B Q E :=
+    hQ.1
+
+  have hKE :
+      K ≠ E :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).2.1
+
+  have hQE :
+      Q ≠ E :=
+    (HilbertOrder.between_incidence
+      B Q E hBQE).2.1
+
+  have hQKE :
+      Not (PrimCollinear Geo Q K E) := by
+    intro hQKEcol
+
+    rcases
+        (HilbertOrder.between_incidence
+          B Q E hBQE).2.2.2.1
+      with
+      ⟨lineQE, hBline, hQline, hEline⟩
+
+    rcases hQKEcol with
+      ⟨lineQKE, hQline', hKline', hEline'⟩
+
+    have hLines :
+        lineQE = lineQKE :=
+      HilbertPlaneIncidence.line_unique
+        Q E hQE
+        lineQE lineQKE
+        hQline hEline
+        hQline' hEline'
+
+    have hKline :
+        HilbertIncidence.OnLine K lineQE := by
+      rw [hLines]
+      exact hKline'
+
+    rcases
+        (HilbertOrder.between_incidence
+          A K E hAKE).2.2.2.1
+      with
+      ⟨lineKE, hAline, hKlineKE, hElineKE⟩
+
+    have hLinesKE :
+        lineQE = lineKE :=
+      HilbertPlaneIncidence.line_unique
+        K E hKE
+        lineQE lineKE
+        hKline hEline
+        hKlineKE hElineKE
+
+    have hAlineQE :
+        HilbertIncidence.OnLine A lineQE := by
+      rw [hLinesKE]
+      exact hAline
+
+    exact
+      hKAB
+        ⟨lineQE,
+          hKline,
+          hAlineQE,
+          hBline⟩
+
+  have hKEA :
+      HilbertIsMidpoint Geo K E A :=
+    MidpointSymmetry
+      Geo K A E hK
+
+  have hQEB :
+      HilbertIsMidpoint Geo Q E B :=
+    MidpointSymmetry
+      Geo Q B E hQ
+
+  exact
+    MidsegmentTheorem
+      Geo
+      E A B
+      K Q
+      hKEA
+      hQEB
+      hQKE
+
+theorem proposition39_test_midpoints_triangle_nondegenerate
+    [HilbertEuclideanPlane Geo]
+    (A C B K P Q : Geo.Point)
+    (hCAB :
+      Not (PrimCollinear Geo C A B))
+    (hKP :
+      Geo.Parallel K P A C)
+    (hKQ :
+      Geo.Parallel K Q A B) :
+    Not (PrimCollinear Geo P K Q) := by
+
+  intro hPKQ
+
+  have hKPne :
+      K ≠ P :=
+    hKP.1
+
+  have hKQne :
+      K ≠ Q :=
+    hKQ.1
+
+  have hAC :
+      A ≠ C :=
+    hKP.2.1
+
+  have hAB :
+      A ≠ B :=
+    hKQ.2.1
+
+  rcases hPKQ with
+    ⟨lineK, hPlineK, hKlineK, hQlineK⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A C hAC
+    with
+    ⟨lineAC, hAac, hCac⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A B hAB
+    with
+    ⟨lineAB, hAab, hBab⟩
+
+  have hLinesK_AC :
+      HilbertLinesDisjoint Geo lineK lineAC := by
+    rintro ⟨X, hXk, hXac⟩
+
+    have hXKP :
+        X ∈ Geo.PointLine K P :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        K P X
+        lineK
+        hKPne
+        hKlineK
+        hPlineK).mpr
+        hXk
+
+    have hXAC :
+        X ∈ Geo.PointLine A C :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        A C X
+        lineAC
+        hAC
+        hAac
+        hCac).mpr
+        hXac
+
+    exact
+      Set.disjoint_left.mp hKP.2.2
+        hXKP
+        hXAC
+
+  have hLinesK_AB :
+      HilbertLinesDisjoint Geo lineK lineAB := by
+    rintro ⟨X, hXk, hXab⟩
+
+    have hXKQ :
+        X ∈ Geo.PointLine K Q :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        K Q X
+        lineK
+        hKQne
+        hKlineK
+        hQlineK).mpr
+        hXk
+
+    have hXAB :
+        X ∈ Geo.PointLine A B :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        A B X
+        lineAB
+        hAB
+        hAab
+        hBab).mpr
+        hXab
+
+    exact
+      Set.disjoint_left.mp hKQ.2.2
+        hXKQ
+        hXAB
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A lineK) := by
+    intro hAk
+    exact
+      hLinesK_AC
+        ⟨A, hAk, hAac⟩
+
+  have hLinesAC_K :
+      HilbertLinesDisjoint Geo lineAC lineK := by
+    rintro ⟨X, hXac, hXk⟩
+    exact
+      hLinesK_AC
+        ⟨X, hXk, hXac⟩
+
+  have hLinesAB_K :
+      HilbertLinesDisjoint Geo lineAB lineK := by
+    rintro ⟨X, hXab, hXk⟩
+    exact
+      hLinesK_AB
+        ⟨X, hXk, hXab⟩
+
+  have hLineEq :
+      lineAC = lineAB :=
+    HilbertEuclideanPlane.parallel_unique
+      (Geo := Geo)
+      lineK
+      A
+      hAoff
+      lineAC
+      lineAB
+      hAac
+      hLinesAC_K
+      hAab
+      hLinesAB_K
+
+  have hC_ab :
+      HilbertIncidence.OnLine C lineAB := by
+    rw [← hLineEq]
+    exact hCac
+
+  exact
+    hCAB
+      ⟨lineAB,
+        hC_ab,
+        hAab,
+        hBab⟩
+
+theorem proposition39_test_midpoints_side_configuration
+    [HilbertOrder Geo]
+    (A C B E K P Q : Geo.Point)
+    (hK : HilbertIsMidpoint Geo K A E)
+    (hP : HilbertIsMidpoint Geo P C E)
+    (hQ : HilbertIsMidpoint Geo Q B E)
+    (hKCA :
+      Not (PrimCollinear Geo K C A))
+    (hKAB :
+      Not (PrimCollinear Geo K A B)) :
+    ∃ lineAE : Geo.Line,
+      HilbertIncidence.OnLine A lineAE ∧
+      HilbertIncidence.OnLine K lineAE ∧
+      HilbertIncidence.OnLine E lineAE ∧
+      (
+        HilbertSameSide Geo C B lineAE ↔
+        HilbertSameSide Geo P Q lineAE
+      ) := by
+
+  have hAKE :
+      Geo.Between A K E :=
+    hK.1
+
+  have hCPE :
+      Geo.Between C P E :=
+    hP.1
+
+  have hBQE :
+      Geo.Between B Q E :=
+    hQ.1
+
+  have hAKEdata :=
+    HilbertOrder.between_incidence
+      A K E hAKE
+
+  have hAE :
+      A ≠ E :=
+    hAKEdata.2.2.1
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A E hAE
+    with
+    ⟨lineAE, hAline, hEline⟩
+
+  have hKline :
+      HilbertIncidence.OnLine K lineAE :=
+    hilbert_between_on_line
+      Geo
+      A K E
+      lineAE
+      hAline
+      hEline
+      hAKE
+
+  --------------------------------------------------------------------
+  -- C and B are off AE.
+  --------------------------------------------------------------------
+
+  have hCoff :
+      Not (HilbertIncidence.OnLine C lineAE) := by
+    intro hCline
+
+    exact
+      hKCA
+        ⟨lineAE,
+          hKline,
+          hCline,
+          hAline⟩
+
+  have hBoff :
+      Not (HilbertIncidence.OnLine B lineAE) := by
+    intro hBline
+
+    exact
+      hKAB
+        ⟨lineAE,
+          hKline,
+          hAline,
+          hBline⟩
+
+  --------------------------------------------------------------------
+  -- Noncollinearity required by the transversal same-side theorem.
+  --------------------------------------------------------------------
+
+  have hEA :
+      E ≠ A :=
+    hAE.symm
+
+  have hCEA :
+      Not (PrimCollinear Geo C E A) := by
+    intro hCEAcol
+
+    have hEAC :
+        PrimCollinear Geo E A C :=
+      PrimCollinearCycle
+        Geo C E A hCEAcol
+
+    have hCline :
+        HilbertIncidence.OnLine C lineAE :=
+      hilbert_collinear_on_line
+        Geo
+        E A C
+        lineAE
+        hEA
+        hEline
+        hAline
+        hEAC
+
+    exact hCoff hCline
+
+  have hBEA :
+      Not (PrimCollinear Geo B E A) := by
+    intro hBEAcol
+
+    have hEAB :
+        PrimCollinear Geo E A B :=
+      PrimCollinearCycle
+        Geo B E A hBEAcol
+
+    have hBline :
+        HilbertIncidence.OnLine B lineAE :=
+      hilbert_collinear_on_line
+        Geo
+        E A B
+        lineAE
+        hEA
+        hEline
+        hAline
+        hEAB
+
+    exact hBoff hBline
+
+  --------------------------------------------------------------------
+  -- C and P are on the same side of AE.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        C P A E
+        hCPE
+        hCEA
+    with
+    ⟨lineCP,
+      hAcp,
+      hEcp,
+      hCPsame₀⟩
+
+  have hLineCP :
+      lineCP = lineAE :=
+    HilbertPlaneIncidence.line_unique
+      A E hAE
+      lineCP lineAE
+      hAcp hEcp
+      hAline hEline
+
+  have hCPsame :
+      HilbertSameSide Geo C P lineAE := by
+    rw [← hLineCP]
+    exact hCPsame₀
+
+  --------------------------------------------------------------------
+  -- B and Q are on the same side of AE.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        B Q A E
+        hBQE
+        hBEA
+    with
+    ⟨lineBQ,
+      hAbq,
+      hEbq,
+      hBQsame₀⟩
+
+  have hLineBQ :
+      lineBQ = lineAE :=
+    HilbertPlaneIncidence.line_unique
+      A E hAE
+      lineBQ lineAE
+      hAbq hEbq
+      hAline hEline
+
+  have hBQsame :
+      HilbertSameSide Geo B Q lineAE := by
+    rw [← hLineBQ]
+    exact hBQsame₀
+
+  --------------------------------------------------------------------
+  -- Hence C,B and P,Q have the same side configuration.
+  --------------------------------------------------------------------
+
+  have hConfiguration :
+      HilbertSameSide Geo C B lineAE ↔
+      HilbertSameSide Geo P Q lineAE := by
+    constructor
+
+    · intro hCB
+
+      have hPC :
+          HilbertSameSide Geo P C lineAE :=
+        hilbert_sameSide_symm
+          Geo C P lineAE hCPsame
+
+      have hPB :
+          HilbertSameSide Geo P B lineAE :=
+        hilbert_sameSide_trans
+          Geo P C B lineAE
+          hPC
+          hCB
+
+      exact
+        hilbert_sameSide_trans
+          Geo P B Q lineAE
+          hPB
+          hBQsame
+
+    · intro hPQ
+
+      have hQP :
+          HilbertSameSide Geo Q P lineAE :=
+        hilbert_sameSide_symm
+          Geo P Q lineAE hPQ
+
+      have hQB :
+          HilbertSameSide Geo Q B lineAE :=
+        hilbert_sameSide_symm
+          Geo B Q lineAE hBQsame
+
+      have hPB :
+          HilbertSameSide Geo P B lineAE :=
+        hilbert_sameSide_trans
+          Geo P Q B lineAE
+          hPQ
+          hQB
+
+      exact
+        hilbert_sameSide_trans
+          Geo C P B lineAE
+          hCPsame
+          hPB
+
+  exact
+    ⟨lineAE,
+      hAline,
+      hKline,
+      hEline,
+      hConfiguration⟩
+
+theorem proposition39_test_circle_inscribed_to_central_angle
+    [HilbertEuclideanPlane Geo]
+    (A C B E K P Q : Geo.Point)
+    (hK : HilbertIsMidpoint Geo K A E)
+    (hP : HilbertIsMidpoint Geo P C E)
+    (hQ : HilbertIsMidpoint Geo Q B E)
+    (hCAB :
+      Not (PrimCollinear Geo C A B))
+    (hKCA :
+      Not (PrimCollinear Geo K C A))
+    (hKAB :
+      Not (PrimCollinear Geo K A B))
+    (hPKQ :
+      Not (PrimCollinear Geo P K Q))
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    Geo.AngleCongruent
+      C A B
+      P K Q := by
+
+  --------------------------------------------------------------------
+  -- Common carrier AE = KE.
+  --------------------------------------------------------------------
+
+  rcases
+      proposition39_test_midpoints_side_configuration
+        Geo
+        A C B E K P Q
+        hK
+        hP
+        hQ
+        hKCA
+        hKAB
+    with
+    ⟨lineAE,
+      hAline,
+      hKline,
+      hEline,
+      hSideConfiguration⟩
+
+  have hAKE :
+      Geo.Between A K E :=
+    hK.1
+
+  have hAE :
+      A ≠ E :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).2.2.1
+
+  have hAK :
+      A ≠ K :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).1
+
+  have hKE :
+      K ≠ E :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).2.1
+
+  --------------------------------------------------------------------
+  -- C and B are off AE.
+  --------------------------------------------------------------------
+
+  have hCoff :
+      Not (HilbertIncidence.OnLine C lineAE) := by
+    intro hCline
+
+    exact
+      hKCA
+        ⟨lineAE,
+          hKline,
+          hCline,
+          hAline⟩
+
+  have hBoff :
+      Not (HilbertIncidence.OnLine B lineAE) := by
+    intro hBline
+
+    exact
+      hKAB
+        ⟨lineAE,
+          hKline,
+          hAline,
+          hBline⟩
+
+  --------------------------------------------------------------------
+  -- P is off AE.
+  --------------------------------------------------------------------
+
+  have hCPE :
+      Geo.Between C P E :=
+    hP.1
+
+  have hPE :
+      P ≠ E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.1
+
+  have hCPEcol :
+      PrimCollinear Geo C P E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.2.2.1
+
+  have hPoff :
+      Not (HilbertIncidence.OnLine P lineAE) := by
+    intro hPline
+
+    have hCline :
+        HilbertIncidence.OnLine C lineAE :=
+      hilbert_collinear_on_line
+        Geo
+        P E C
+        lineAE
+        hPE
+        hPline
+        hEline
+        (PrimCollinearCycle
+          Geo C P E hCPEcol)
+
+    exact hCoff hCline
+
+  --------------------------------------------------------------------
+  -- Q is off AE.
+  --------------------------------------------------------------------
+
+  have hBQE :
+      Geo.Between B Q E :=
+    hQ.1
+
+  have hQE :
+      Q ≠ E :=
+    (HilbertOrder.between_incidence
+      B Q E hBQE).2.1
+
+  have hBQEcol :
+      PrimCollinear Geo B Q E :=
+    (HilbertOrder.between_incidence
+      B Q E hBQE).2.2.2.1
+
+  have hQoff :
+      Not (HilbertIncidence.OnLine Q lineAE) := by
+    intro hQline
+
+    have hBline :
+        HilbertIncidence.OnLine B lineAE :=
+      hilbert_collinear_on_line
+        Geo
+        Q E B
+        lineAE
+        hQE
+        hQline
+        hEline
+        (PrimCollinearCycle
+          Geo B Q E hBQEcol)
+
+    exact hBoff hBline
+
+  --------------------------------------------------------------------
+  -- First corresponding components:
+  --
+  -- CAK ~= CKP ~= PKE.
+  --------------------------------------------------------------------
+
+  have hCAK_PKE :
+      Geo.AngleCongruent
+        C A K
+        P K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      C K P
+      P K E
+      hCAK_CKP
+      hCKP_PKE
+
+  --------------------------------------------------------------------
+  -- Second corresponding components:
+  --
+  -- KAB ~= BKQ ~= QKE = EKQ.
+  --------------------------------------------------------------------
+
+  have hKAB_QKE :
+      Geo.AngleCongruent
+        K A B
+        Q K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      B K Q
+      Q K E
+      hKAB_BKQ
+      hBKQ_QKE
+
+  have hKAB_EKQ :
+      Geo.AngleCongruent
+        K A B
+        E K Q :=
+    (Geo.angle_congruent_reverse_second
+      K A B
+      Q K E).mp
+      hKAB_QKE
+
+  --------------------------------------------------------------------
+  -- Add the two components on both sides.
+  --------------------------------------------------------------------
+
+  exact
+    hilbert_angle_addition
+      Geo
+      C A K B
+      P K E Q
+      lineAE lineAE
+      hAK
+      hKE
+      hAline
+      hKline
+      hKline
+      hEline
+      hCoff
+      hBoff
+      hPoff
+      hQoff
+      hSideConfiguration
+      hCAB
+      hPKQ
+      hCAK_PKE
+      hKAB_EKQ
+
+theorem proposition39_test_inscribed_sameSide_ray_order_A
+    [HilbertOrder Geo]
+    (A C B E K : Geo.Point)
+    (lineAE : Geo.Line)
+    (hK : HilbertIsMidpoint Geo K A E)
+    (hAline :
+      HilbertIncidence.OnLine A lineAE)
+    (hKline :
+      HilbertIncidence.OnLine K lineAE)
+    (hCoff :
+      Not (HilbertIncidence.OnLine C lineAE))
+    (hBoff :
+      Not (HilbertIncidence.OnLine B lineAE))
+    (hSame :
+      HilbertSameSide Geo C B lineAE)
+    (hCAB :
+      Not (PrimCollinear Geo C A B)) :
+    (
+      HilbertRayMeetsSegment Geo A C B K
+      ∨
+      HilbertRayMeetsSegment Geo A B C K
+    ) := by
+
+  have hAKE :
+      Geo.Between A K E :=
+    hK.1
+
+  have hAK :
+      A ≠ K :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).1
+
+  exact
+    hilbert_sameSide_rays_order
+      Geo
+      A C K B
+      lineAE
+      hAK
+      hAline
+      hKline
+      hCoff
+      hBoff
+      hSame
+      hCAB
+
+theorem proposition39_test_ray_meets_segment_sameRay_direction
+    [HilbertOrder Geo]
+    (O D E A B : Geo.Point)
+    (hMeet :
+      HilbertRayMeetsSegment Geo O D A B)
+    (hSame :
+      HilbertSameRay Geo O D E) :
+    HilbertRayMeetsSegment Geo O E A B := by
+
+  rcases hMeet with
+    ⟨X, hAXB, hRayODX⟩
+
+  have hRayOEX :
+      HilbertSameRay Geo O E X :=
+    hilbert_sameRay_of_common
+      Geo
+      O D E X
+      hSame
+      hRayODX
+
+  exact
+    ⟨X,
+      hAXB,
+      hRayOEX⟩
+
+theorem proposition39_test_inscribed_sameSide_pair_mirror
+    [HilbertCongruence Geo]
+    (A C B E K P Q : Geo.Point)
+    (lineAE : Geo.Line)
+    (hKline :
+      HilbertIncidence.OnLine K lineAE)
+    (hEline :
+      HilbertIncidence.OnLine E lineAE)
+    (hBAK :
+      Not (PrimCollinear Geo B A K))
+    (hQKE :
+      Not (PrimCollinear Geo Q K E))
+    (hPQSame :
+      HilbertSameSide Geo P Q lineAE)
+    (hInsideA :
+      HilbertRayMeetsSegment Geo A C B K)
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    HilbertRayMeetsSegment Geo K P Q E := by
+
+  --------------------------------------------------------------------
+  -- Whole source and target angles are congruent:
+  --
+  -- BAK ~= QKE.
+  --------------------------------------------------------------------
+
+  have hKAB_QKE :
+      Geo.AngleCongruent
+        K A B
+        Q K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      B K Q
+      Q K E
+      hKAB_BKQ
+      hBKQ_QKE
+
+  have hBAK_QKE :
+      Geo.AngleCongruent
+        B A K
+        Q K E :=
+    (Geo.angle_congruent_reverse_first
+      K A B
+      Q K E).mp
+      hKAB_QKE
+
+  --------------------------------------------------------------------
+  -- The required subangle is also congruent:
+  --
+  -- KAC ~= EKP.
+  --------------------------------------------------------------------
+
+  have hCAK_PKE :
+      Geo.AngleCongruent
+        C A K
+        P K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      C K P
+      P K E
+      hCAK_CKP
+      hCKP_PKE
+
+  have hKAC_PKE :
+      Geo.AngleCongruent
+        K A C
+        P K E :=
+    (Geo.angle_congruent_reverse_first
+      C A K
+      P K E).mp
+      hCAK_PKE
+
+  have hKAC_EKP :
+      Geo.AngleCongruent
+        K A C
+        E K P :=
+    (Geo.angle_congruent_reverse_second
+      K A C
+      P K E).mp
+      hKAC_PKE
+
+  --------------------------------------------------------------------
+  -- Transport the interior ray AC from BAK into QKE.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_interior_subangle_transport_both
+        Geo
+        A B K C
+        Q K E
+        hBAK
+        hQKE
+        hInsideA
+        hBAK_QKE
+    with
+    ⟨D',
+      hInsideD',
+      hBoth⟩
+
+  have hKAC_EKD' :
+      Geo.AngleCongruent
+        K A C
+        E K D' :=
+    hBoth.1
+
+  --------------------------------------------------------------------
+  -- Therefore KD' and KP make the same angle with KE.
+  --------------------------------------------------------------------
+
+  have hEKD'_KAC :
+      Geo.AngleCongruent
+        E K D'
+        K A C :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      K A C
+      E K D'
+      hKAC_EKD'
+
+  have hEKD'_EKP :
+      Geo.AngleCongruent
+        E K D'
+        E K P :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      E K D'
+      K A C
+      E K P
+      hEKD'_KAC
+      hKAC_EKP
+
+  --------------------------------------------------------------------
+  -- D' and Q are on the same side of KE because KD' is interior
+  -- to QKE.
+  --------------------------------------------------------------------
+
+  have hD'QSame :
+      HilbertSameSide Geo D' Q lineAE :=
+    proposition39_test_interior_ray_sameSide_first
+      Geo
+      K D' Q E
+      lineAE
+      hKline
+      hEline
+      hQKE
+      hInsideD'
+
+  have hQPSame :
+      HilbertSameSide Geo Q P lineAE :=
+    hilbert_sameSide_symm
+      Geo
+      P Q
+      lineAE
+      hPQSame
+
+  have hD'PSame :
+      HilbertSameSide Geo D' P lineAE :=
+    hilbert_sameSide_trans
+      Geo
+      D' Q P
+      lineAE
+      hD'QSame
+      hQPSame
+
+  --------------------------------------------------------------------
+  -- E and K are distinct.
+  --------------------------------------------------------------------
+
+  have hKE :
+      K ≠ E := by
+    intro h
+    subst E
+
+    apply hQKE
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          Q K
+          (hilbert_noncollinear_ne_first
+            Geo Q K K hQKE)
+      with
+      ⟨l, hQl, hKl⟩
+
+    exact
+      ⟨l,
+        hQl,
+        hKl,
+        hKl⟩
+
+  --------------------------------------------------------------------
+  -- Angle uniqueness on the prescribed side identifies KD' with KP.
+  --------------------------------------------------------------------
+
+  have hRayD'P :
+      HilbertSameRay Geo K D' P :=
+    proposition39_test_angle_unique_same_side_ray
+      Geo
+      E K D' P
+      lineAE
+      hKE.symm
+      hEline
+      hKline
+      hD'QSame.1
+      hD'PSame
+      hEKD'_EKP
+
+  --------------------------------------------------------------------
+  -- Replace the transported ray KD' by the identical ray KP.
+  --------------------------------------------------------------------
+
+  exact
+    proposition39_test_ray_meets_segment_sameRay_direction
+      Geo
+      K D' P
+      Q E
+      hInsideD'
+      hRayD'P
+
+theorem proposition39_test_inscribed_sameSide_pair
+    [HilbertCongruence Geo]
+    (A C B E K P Q : Geo.Point)
+    (lineAE : Geo.Line)
+    (hKline :
+      HilbertIncidence.OnLine K lineAE)
+    (hEline :
+      HilbertIncidence.OnLine E lineAE)
+    (hCAK :
+      Not (PrimCollinear Geo C A K))
+    (hPKE :
+      Not (PrimCollinear Geo P K E))
+    (hPQSame :
+      HilbertSameSide Geo P Q lineAE)
+    (hInsideA :
+      HilbertRayMeetsSegment Geo A B C K)
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    HilbertRayMeetsSegment Geo K Q P E := by
+
+  --------------------------------------------------------------------
+  -- Whole source and target angles:
+  --
+  -- CAK ~= PKE.
+  --------------------------------------------------------------------
+
+  have hCAK_PKE :
+      Geo.AngleCongruent
+        C A K
+        P K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      C K P
+      P K E
+      hCAK_CKP
+      hCKP_PKE
+
+  --------------------------------------------------------------------
+  -- Corresponding subangle:
+  --
+  -- KAB ~= EKQ.
+  --------------------------------------------------------------------
+
+  have hKAB_QKE :
+      Geo.AngleCongruent
+        K A B
+        Q K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      B K Q
+      Q K E
+      hKAB_BKQ
+      hBKQ_QKE
+
+  have hKAB_EKQ :
+      Geo.AngleCongruent
+        K A B
+        E K Q :=
+    (Geo.angle_congruent_reverse_second
+      K A B
+      Q K E).mp
+      hKAB_QKE
+
+  --------------------------------------------------------------------
+  -- Transport the interior ray AB from CAK into PKE.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_interior_subangle_transport_both
+        Geo
+        A C K B
+        P K E
+        hCAK
+        hPKE
+        hInsideA
+        hCAK_PKE
+    with
+    ⟨D',
+      hInsideD',
+      hBoth⟩
+
+  have hKAB_EKD' :
+      Geo.AngleCongruent
+        K A B
+        E K D' :=
+    hBoth.1
+
+  --------------------------------------------------------------------
+  -- Hence KD' and KQ make the same angle with KE.
+  --------------------------------------------------------------------
+
+  have hEKD'_KAB :
+      Geo.AngleCongruent
+        E K D'
+        K A B :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      K A B
+      E K D'
+      hKAB_EKD'
+
+  have hEKD'_EKQ :
+      Geo.AngleCongruent
+        E K D'
+        E K Q :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      E K D'
+      K A B
+      E K Q
+      hEKD'_KAB
+      hKAB_EKQ
+
+  --------------------------------------------------------------------
+  -- D' lies on the P-side of KE.
+  --------------------------------------------------------------------
+
+  have hD'PSame :
+      HilbertSameSide Geo D' P lineAE :=
+    proposition39_test_interior_ray_sameSide_first
+      Geo
+      K D' P E
+      lineAE
+      hKline
+      hEline
+      hPKE
+      hInsideD'
+
+  have hD'QSame :
+      HilbertSameSide Geo D' Q lineAE :=
+    hilbert_sameSide_trans
+      Geo
+      D' P Q
+      lineAE
+      hD'PSame
+      hPQSame
+
+  --------------------------------------------------------------------
+  -- K and E are distinct.
+  --------------------------------------------------------------------
+
+  have hKE :
+      K ≠ E := by
+    intro h
+    subst E
+
+    apply hPKE
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          P K
+          (hilbert_noncollinear_ne_first
+            Geo P K K hPKE)
+      with
+      ⟨l, hPl, hKl⟩
+
+    exact
+      ⟨l,
+        hPl,
+        hKl,
+        hKl⟩
+
+  --------------------------------------------------------------------
+  -- Uniqueness on the prescribed side identifies KD' with KQ.
+  --------------------------------------------------------------------
+
+  have hRayD'Q :
+      HilbertSameRay Geo K D' Q :=
+    proposition39_test_angle_unique_same_side_ray
+      Geo
+      E K D' Q
+      lineAE
+      hKE.symm
+      hEline
+      hKline
+      hD'PSame.1
+      hD'QSame
+      hEKD'_EKQ
+
+  exact
+    proposition39_test_ray_meets_segment_sameRay_direction
+      Geo
+      K D' Q
+      P E
+      hInsideD'
+      hRayD'Q
+
+theorem proposition39_test_inscribed_sameSide_paired_cases
+    [HilbertCongruence Geo]
+    (A C B E K P Q : Geo.Point)
+    (lineAE : Geo.Line)
+    (hK : HilbertIsMidpoint Geo K A E)
+    (hAline :
+      HilbertIncidence.OnLine A lineAE)
+    (hKline :
+      HilbertIncidence.OnLine K lineAE)
+    (hEline :
+      HilbertIncidence.OnLine E lineAE)
+    (hCoff :
+      Not (HilbertIncidence.OnLine C lineAE))
+    (hBoff :
+      Not (HilbertIncidence.OnLine B lineAE))
+    (hCBSame :
+      HilbertSameSide Geo C B lineAE)
+    (hPQSame :
+      HilbertSameSide Geo P Q lineAE)
+    (hCAB :
+      Not (PrimCollinear Geo C A B))
+    (hBAK :
+      Not (PrimCollinear Geo B A K))
+    (hCAK :
+      Not (PrimCollinear Geo C A K))
+    (hQKE :
+      Not (PrimCollinear Geo Q K E))
+    (hPKE :
+      Not (PrimCollinear Geo P K E))
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    (
+      HilbertRayMeetsSegment Geo A B C K
+      ∧
+      HilbertRayMeetsSegment Geo K Q P E
+    )
+    ∨
+    (
+      HilbertRayMeetsSegment Geo A C B K
+      ∧
+      HilbertRayMeetsSegment Geo K P Q E
+    ) := by
+
+  rcases
+      proposition39_test_inscribed_sameSide_ray_order_A
+        Geo
+        A C B E K
+        lineAE
+        hK
+        hAline
+        hKline
+        hCoff
+        hBoff
+        hCBSame
+        hCAB
+    with
+    hMirror | hSub
+
+  ·
+    have hMirrorK :
+        HilbertRayMeetsSegment Geo K P Q E :=
+      proposition39_test_inscribed_sameSide_pair_mirror
+        Geo
+        A C B E K P Q
+        lineAE
+        hKline
+        hEline
+        hBAK
+        hQKE
+        hPQSame
+        hMirror
+        hCAK_CKP
+        hCKP_PKE
+        hKAB_BKQ
+        hBKQ_QKE
+
+    exact
+      Or.inr
+        ⟨hMirror, hMirrorK⟩
+
+  ·
+    have hSubK :
+        HilbertRayMeetsSegment Geo K Q P E :=
+      proposition39_test_inscribed_sameSide_pair
+        Geo
+        A C B E K P Q
+        lineAE
+        hKline
+        hEline
+        hCAK
+        hPKE
+        hPQSame
+        hSub
+        hCAK_CKP
+        hCKP_PKE
+        hKAB_BKQ
+        hBKQ_QKE
+
+    exact
+      Or.inl
+        ⟨hSub, hSubK⟩
+
+theorem proposition39_test_oppositeSide_transport_midpoints
+    [HilbertOrder Geo]
+    (C B P Q : Geo.Point)
+    (lineAE : Geo.Line)
+    (hCPsame :
+      HilbertSameSide Geo C P lineAE)
+    (hBQsame :
+      HilbertSameSide Geo B Q lineAE)
+    (hOppCB :
+      HilbertOppositeSide Geo C B lineAE) :
+    HilbertOppositeSide Geo P Q lineAE := by
+
+  have hOppCQ :
+      HilbertOppositeSide Geo C Q lineAE :=
+    hilbert_oppositeSide_transport_right
+      Geo
+      C B Q
+      lineAE
+      hOppCB
+      hBQsame
+
+  have hOppQC :
+      HilbertOppositeSide Geo Q C lineAE :=
+    hilbert_oppositeSide_symm
+      Geo
+      C Q
+      lineAE
+      hOppCQ
+
+  have hOppQP :
+      HilbertOppositeSide Geo Q P lineAE :=
+    hilbert_oppositeSide_transport_right
+      Geo
+      Q C P
+      lineAE
+      hOppQC
+      hCPsame
+
+  exact
+    hilbert_oppositeSide_symm
+      Geo
+      Q P
+      lineAE
+      hOppQP
+
+theorem proposition39_test_chord_interior_point_lt_radius
+    [HilbertCongruence Geo]
+    (K C B X : Geo.Point)
+    (lineKX : Geo.Line)
+    (hKline :
+      HilbertIncidence.OnLine K lineKX)
+    (hXline :
+      HilbertIncidence.OnLine X lineKX)
+    (hCoff :
+      Not (HilbertIncidence.OnLine C lineKX))
+    (hCXB :
+      Geo.Between C X B)
+    (hKC_KB :
+      Geo.Congruent K C K B)
+    (hKX :
+      K ≠ X) :
+    HilbertSegmentLess Geo K X K B := by
+
+  have hData :=
+    HilbertOrder.between_incidence
+      C X B hCXB
+
+  have hCX :
+      C ≠ X :=
+    hData.1
+
+  have hXB :
+      X ≠ B :=
+    hData.2.1
+
+  have hCB :
+      C ≠ B :=
+    hData.2.2.1
+
+  have hCXBcol :
+      PrimCollinear Geo C X B :=
+    hData.2.2.2.1
+
+  --------------------------------------------------------------------
+  -- KCX is nondegenerate.
+  --------------------------------------------------------------------
+
+  have hKCX :
+      Not (PrimCollinear Geo K C X) := by
+    intro h
+
+    rcases h with
+      ⟨l, hKl, hCl, hXl⟩
+
+    have hl :
+        l = lineKX :=
+      HilbertPlaneIncidence.line_unique
+        K X hKX
+        l lineKX
+        hKl hXl
+        hKline hXline
+
+    have hCline :
+        HilbertIncidence.OnLine C lineKX := by
+      rw [← hl]
+      exact hCl
+
+    exact hCoff hCline
+
+  --------------------------------------------------------------------
+  -- KXB is nondegenerate.
+  --------------------------------------------------------------------
+
+  have hKXB :
+      Not (PrimCollinear Geo K X B) := by
+    intro h
+
+    rcases h with
+      ⟨lKXB, hKl, hXl, hBl⟩
+
+    rcases hCXBcol with
+      ⟨lCXB, hCl', hXl', hBl'⟩
+
+    have hLines :
+        lKXB = lCXB :=
+      HilbertPlaneIncidence.line_unique
+        X B hXB
+        lKXB lCXB
+        hXl hBl
+        hXl' hBl'
+
+    have hCl :
+        HilbertIncidence.OnLine C lKXB := by
+      rw [hLines]
+      exact hCl'
+
+    exact
+      hKCX
+        ⟨lKXB,
+          hKl,
+          hCl,
+          hXl⟩
+
+  --------------------------------------------------------------------
+  -- KCB is nondegenerate.
+  --------------------------------------------------------------------
+
+  have hKCB :
+      Not (PrimCollinear Geo K C B) := by
+    intro h
+
+    rcases h with
+      ⟨lKCB, hKl, hCl, hBl⟩
+
+    rcases hCXBcol with
+      ⟨lCXB, hCl', hXl', hBl'⟩
+
+    have hLines :
+        lKCB = lCXB :=
+      HilbertPlaneIncidence.line_unique
+        C B hCB
+        lKCB lCXB
+        hCl hBl
+        hCl' hBl'
+
+    have hXl :
+        HilbertIncidence.OnLine X lKCB := by
+      rw [hLines]
+      exact hXl'
+
+    exact
+      hKXB
+        ⟨lKCB,
+          hKl,
+          hXl,
+          hBl⟩
+
+  --------------------------------------------------------------------
+  -- Equal radii give equal base angles in triangle KCB.
+  --------------------------------------------------------------------
+
+  have hIso :
+      Geo.AngleCongruent
+        K C B
+        K B C :=
+    hilbert_isosceles_base_angles
+      Geo
+      K C B
+      hKCB
+      hKC_KB
+
+  have hIsoSymm :
+      Geo.AngleCongruent
+        K B C
+        K C B :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      K C B
+      K B C
+      hIso
+
+  --------------------------------------------------------------------
+  -- Since C-X-B, X lies on the corresponding rays from C and B.
+  --------------------------------------------------------------------
+
+  have hRayCXB :
+      HilbertSameRay Geo C X B :=
+    hilbert_sameRay_of_between
+      Geo C X B hCXB
+
+  have hBXC :
+      Geo.Between B X C :=
+    hData.2.2.2.2
+
+  have hRayBXC :
+      HilbertSameRay Geo B X C :=
+    hilbert_sameRay_of_between
+      Geo B X C hBXC
+
+  have hAtC :
+      Geo.Angle K C X =
+      Geo.Angle K C B :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo
+      C K X B
+      hRayCXB
+
+  have hAtB :
+      Geo.Angle K B X =
+      Geo.Angle K B C :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo
+      B K X C
+      hRayBXC
+
+  have hKBX_KCX :
+      Geo.AngleCongruent
+        K B X
+        K C X := by
+    unfold Geometry.Geo.AngleCongruent
+      at hIsoSymm ⊢
+    rw [hAtB, hAtC]
+    exact hIsoSymm
+
+  --------------------------------------------------------------------
+  -- I.16 in triangle KCX:
+  --
+  -- angle KCX < angle KXB.
+  --------------------------------------------------------------------
+
+  have hKCX_KXB :
+      HilbertAngleLess Geo
+        K C X
+        K X B :=
+    (euclid_proposition_16
+      Geo
+      K C X B
+      hKCX
+      hCXB).2
+
+  --------------------------------------------------------------------
+  -- KBX is nondegenerate.
+  --------------------------------------------------------------------
+
+  have hKBX :
+      Not (PrimCollinear Geo K B X) := by
+    intro h
+
+    rcases h with
+      ⟨l, hKl, hBl, hXl⟩
+
+    exact
+      hKXB
+        ⟨l,
+          hKl,
+          hXl,
+          hBl⟩
+
+  --------------------------------------------------------------------
+  -- Replace KCX by the congruent angle KBX.
+  --------------------------------------------------------------------
+
+  have hKBX_KXB :
+      HilbertAngleLess Geo
+        K B X
+        K X B :=
+    hilbert_angleLess_transport_left
+      Geo
+      K C X
+      K B X
+      K X B
+      hKCX_KXB
+      hKBX
+      hKBX_KCX
+
+  --------------------------------------------------------------------
+  -- I.19 in triangle KXB:
+  --
+  -- KX < KB.
+  --------------------------------------------------------------------
+
+  exact
+    euclid_proposition_19
+      Geo
+      K X B
+      hKXB
+      hKBX_KXB
+
+theorem proposition39_test_shorter_collinear_point_on_ray
+    [HilbertCongruence Geo]
+    (A K X : Geo.Point)
+    (line : Geo.Line)
+    (hAline :
+      HilbertIncidence.OnLine A line)
+    (hKline :
+      HilbertIncidence.OnLine K line)
+    (hXline :
+      HilbertIncidence.OnLine X line)
+    (hAK :
+      A ≠ K)
+    (hKX :
+      K ≠ X)
+    (hLess :
+      HilbertSegmentLess Geo K X K A) :
+    HilbertSameRay Geo A K X := by
+
+  have hAX :
+      A ≠ X := by
+    intro h
+    subst X
+
+    exact
+      (hilbert_segmentLess_not_congruent
+        Geo
+        K A
+        K A
+        hLess)
+        (hilbert_congruent_reflexive
+          Geo K A)
+
+  have hAKX :
+      PrimCollinear Geo A K X :=
+    ⟨line,
+      hAline,
+      hKline,
+      hXline⟩
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        A K X
+        hAK
+        hKX
+        hAX
+        hAKX
+    with
+    hAKXbet | hKAX | hAXK
+
+  ·
+    exact
+      hilbert_sameRay_of_between
+        Geo
+        A K X
+        hAKXbet
+
+  ·
+    have hKA_lt_KX :
+        HilbertSegmentLess Geo K A K X :=
+      hilbert_segmentLess_of_between
+        Geo
+        K A X
+        hKAX
+
+    exact
+      False.elim
+        ((hilbert_segmentLess_asymm
+            Geo
+            K X
+            K A
+            hLess)
+          hKA_lt_KX)
+
+  ·
+    have hRayAXK :
+        HilbertSameRay Geo A X K :=
+      hilbert_sameRay_of_between
+        Geo
+        A X K
+        hAXK
+
+    exact
+      hilbert_sameRay_symm
+        Geo
+        A X K
+        hRayAXK
+
+theorem proposition39_test_inscribed_oppositeSide_meets_AK
+    [HilbertCongruence Geo]
+    (A C B E K : Geo.Point)
+    (lineAE : Geo.Line)
+    (hK :
+      HilbertIsMidpoint Geo K A E)
+    (hAline :
+      HilbertIncidence.OnLine A lineAE)
+    (hKline :
+      HilbertIncidence.OnLine K lineAE)
+    (hOppCB :
+      HilbertOppositeSide Geo C B lineAE)
+    (hKC_KB :
+      Geo.Congruent K C K B)
+    (hKB_KA :
+      Geo.Congruent K B K A) :
+    HilbertRayMeetsSegment Geo A K C B := by
+
+  have hAKE :
+      Geo.Between A K E :=
+    hK.1
+
+  have hAK :
+      A ≠ K :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).1
+
+  rcases hOppCB.2.2 with
+    ⟨X, hCXB, hXline⟩
+
+  by_cases hXK : X = K
+
+  --------------------------------------------------------------------
+  -- The chord passes through the center.
+  --------------------------------------------------------------------
+
+  · subst X
+
+    have hRayAKK :
+        HilbertSameRay Geo A K K :=
+      hilbert_sameRay_refl
+        Geo A K
+        (Ne.symm hAK)
+
+    exact
+      ⟨K,
+        hCXB,
+        hRayAKK⟩
+
+  --------------------------------------------------------------------
+  -- Otherwise X is strictly inside the circle:
+  --
+  -- KX < KB = KA.
+  --------------------------------------------------------------------
+
+  · have hKX :
+        K ≠ X :=
+      Ne.symm hXK
+
+    have hKX_KB :
+        HilbertSegmentLess Geo K X K B :=
+      proposition39_test_chord_interior_point_lt_radius
+        Geo
+        K C B X
+        lineAE
+        hKline
+        hXline
+        hOppCB.1
+        hCXB
+        hKC_KB
+        hKX
+
+    have hKX_KA :
+        HilbertSegmentLess Geo K X K A :=
+      hilbert_segmentLess_congruent_right
+        Geo
+        K X
+        K B
+        K A
+        hKX_KB
+        hKB_KA
+
+    have hRayAKX :
+        HilbertSameRay Geo A K X :=
+      proposition39_test_shorter_collinear_point_on_ray
+        Geo
+        A K X
+        lineAE
+        hAline
+        hKline
+        hXline
+        hAK
+        hKX
+        hKX_KA
+
+    exact
+      ⟨X,
+        hCXB,
+        hRayAKX⟩
+
+theorem proposition39_test_midpoint_chord_triangle_nondegenerate
+    [HilbertCongruence Geo]
+    (K C B E P Q : Geo.Point)
+    (lineAE : Geo.Line)
+    (hKline :
+      HilbertIncidence.OnLine K lineAE)
+    (hEline :
+      HilbertIncidence.OnLine E lineAE)
+    (hP :
+      HilbertIsMidpoint Geo P C E)
+    (hQ :
+      HilbertIsMidpoint Geo Q B E)
+    (hOppCB :
+      HilbertOppositeSide Geo C B lineAE)
+    (hKC_KB :
+      Geo.Congruent K C K B)
+    (hKE_KB :
+      Geo.Congruent K E K B)
+    (hKE :
+      K ≠ E) :
+    Not (PrimCollinear Geo Q P E) := by
+
+  have hCPE :
+      Geo.Between C P E :=
+    hP.1
+
+  have hBQE :
+      Geo.Between B Q E :=
+    hQ.1
+
+  have hPE :
+      P ≠ E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.1
+
+  have hQE :
+      Q ≠ E :=
+    (HilbertOrder.between_incidence
+      B Q E hBQE).2.1
+
+  intro hQPE
+
+  --------------------------------------------------------------------
+  -- C,P,E lie on one line.
+  --------------------------------------------------------------------
+
+  rcases
+      (HilbertOrder.between_incidence
+        C P E hCPE).2.2.2.1
+    with
+    ⟨lineCPE,
+      hClineCPE,
+      hPlineCPE,
+      hElineCPE⟩
+
+  --------------------------------------------------------------------
+  -- B,Q,E lie on one line.
+  --------------------------------------------------------------------
+
+  rcases
+      (HilbertOrder.between_incidence
+        B Q E hBQE).2.2.2.1
+    with
+    ⟨lineBQE,
+      hBlineBQE,
+      hQlineBQE,
+      hElineBQE⟩
+
+  --------------------------------------------------------------------
+  -- Q,P,E lie on one line by the contradictory assumption.
+  --------------------------------------------------------------------
+
+  rcases hQPE with
+    ⟨lineQPE,
+      hQlineQPE,
+      hPlineQPE,
+      hElineQPE⟩
+
+  have hQPEeq :
+      lineQPE = lineBQE :=
+    HilbertPlaneIncidence.line_unique
+      Q E hQE
+      lineQPE lineBQE
+      hQlineQPE hElineQPE
+      hQlineBQE hElineBQE
+
+  have hPlineBQE :
+      HilbertIncidence.OnLine P lineBQE := by
+    rw [← hQPEeq]
+    exact hPlineQPE
+
+  have hCPEeq :
+      lineCPE = lineBQE :=
+    HilbertPlaneIncidence.line_unique
+      P E hPE
+      lineCPE lineBQE
+      hPlineCPE hElineCPE
+      hPlineBQE hElineBQE
+
+  have hClineBQE :
+      HilbertIncidence.OnLine C lineBQE := by
+    rw [← hCPEeq]
+    exact hClineCPE
+
+  --------------------------------------------------------------------
+  -- OppositeSide provides X with C-X-B and X on AE.
+  --------------------------------------------------------------------
+
+  rcases hOppCB.2.2 with
+    ⟨X, hCXB, hXline⟩
+
+  have hXlineBQE :
+      HilbertIncidence.OnLine X lineBQE :=
+    hilbert_between_on_line
+      Geo
+      C X B
+      lineBQE
+      hClineBQE
+      hBlineBQE
+      hCXB
+
+  --------------------------------------------------------------------
+  -- The two carriers meet both at E and at X.
+  -- They cannot coincide because C is off AE.
+  -- Hence X = E.
+  --------------------------------------------------------------------
+
+  have hEX :
+      E = X := by
+    by_contra hEXne
+
+    have hLines :
+        lineBQE = lineAE :=
+      HilbertPlaneIncidence.line_unique
+        E X hEXne
+        lineBQE lineAE
+        hElineBQE hXlineBQE
+        hEline hXline
+
+    have hClineAE :
+        HilbertIncidence.OnLine C lineAE := by
+      rw [← hLines]
+      exact hClineBQE
+
+    exact hOppCB.1 hClineAE
+
+  subst X
+
+  --------------------------------------------------------------------
+  -- Thus E is an interior point of chord CB.
+  -- The chord lemma says KE < KB.
+  --------------------------------------------------------------------
+
+  have hKE_KB_less :
+      HilbertSegmentLess Geo K E K B :=
+    proposition39_test_chord_interior_point_lt_radius
+      Geo
+      K C B E
+      lineAE
+      hKline
+      hEline
+      hOppCB.1
+      hCXB
+      hKC_KB
+      hKE
+
+  --------------------------------------------------------------------
+  -- But E and B are on the same circle centered at K.
+  --------------------------------------------------------------------
+
+  exact
+    (hilbert_segmentLess_not_congruent
+      Geo
+      K E
+      K B
+      hKE_KB_less)
+      hKE_KB
+
+theorem proposition39_test_midpoints_PQ_parallel
+    [HilbertEuclideanPlane Geo]
+    (C B E P Q : Geo.Point)
+    (hP :
+      HilbertIsMidpoint Geo P C E)
+    (hQ :
+      HilbertIsMidpoint Geo Q B E)
+    (hQPE :
+      Not (PrimCollinear Geo Q P E)) :
+    Geo.Parallel P Q C B := by
+
+  have hPEC :
+      HilbertIsMidpoint Geo P E C :=
+    MidpointSymmetry
+      Geo P C E hP
+
+  have hQEB :
+      HilbertIsMidpoint Geo Q E B :=
+    MidpointSymmetry
+      Geo Q B E hQ
+
+  exact
+    MidsegmentTheorem
+      Geo
+      E C B
+      P Q
+      hPEC
+      hQEB
+      hQPE
+
+theorem proposition39_test_midpoint_XE_lies_on_PQ
+    [HilbertEuclideanPlane Geo]
+    (C B E P Q X : Geo.Point)
+    (lineAE : Geo.Line)
+    (hEline :
+      HilbertIncidence.OnLine E lineAE)
+    (hXline :
+      HilbertIncidence.OnLine X lineAE)
+    (hCoff :
+      Not (HilbertIncidence.OnLine C lineAE))
+    (hP :
+      HilbertIsMidpoint Geo P C E)
+    (hCXB :
+      Geo.Between C X B)
+    (hPQ_CB :
+      Geo.Parallel P Q C B)
+    (hXE :
+      X ≠ E) :
+    ∃ Y : Geo.Point,
+      HilbertIsMidpoint Geo Y X E ∧
+      PrimCollinear Geo P Y Q := by
+
+  have hCPE :
+      Geo.Between C P E :=
+    hP.1
+
+  have hPE :
+      P ≠ E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.1
+
+  have hCE :
+      C ≠ E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.2.1
+
+  have hCX :
+      C ≠ X :=
+    (HilbertOrder.between_incidence
+      C X B hCXB).1
+
+  have hCB :
+      C ≠ B :=
+    (HilbertOrder.between_incidence
+      C X B hCXB).2.2.1
+
+  --------------------------------------------------------------------
+  -- Y is the midpoint of XE.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertMidpointExists
+        Geo X E hXE
+    with
+    ⟨Y, hY⟩
+
+  have hXYE :
+      Geo.Between X Y E :=
+    hY.1
+
+  have hYE :
+      Y ≠ E :=
+    (HilbertOrder.between_incidence
+      X Y E hXYE).2.1
+
+  have hYline :
+      HilbertIncidence.OnLine Y lineAE :=
+    hilbert_between_on_line
+      Geo
+      X Y E
+      lineAE
+      hXline
+      hEline
+      hXYE
+
+  --------------------------------------------------------------------
+  -- P is off AE.
+  --------------------------------------------------------------------
+
+  have hCPEcol :
+      PrimCollinear Geo C P E :=
+    (HilbertOrder.between_incidence
+      C P E hCPE).2.2.2.1
+
+  have hPoff :
+      Not (HilbertIncidence.OnLine P lineAE) := by
+    intro hPline
+
+    have hCline :
+        HilbertIncidence.OnLine C lineAE :=
+      hilbert_collinear_on_line
+        Geo
+        P E C
+        lineAE
+        hPE
+        hPline
+        hEline
+        (PrimCollinearCycle
+          Geo C P E hCPEcol)
+
+    exact hCoff hCline
+
+  --------------------------------------------------------------------
+  -- Hence Y,P,E are noncollinear.
+  --------------------------------------------------------------------
+
+  have hYPE :
+      Not (PrimCollinear Geo Y P E) := by
+    intro h
+
+    rcases h with
+      ⟨l, hYl, hPl, hEl⟩
+
+    have hl :
+        l = lineAE :=
+      HilbertPlaneIncidence.line_unique
+        Y E hYE
+        l lineAE
+        hYl hEl
+        hYline hEline
+
+    have hPline :
+        HilbertIncidence.OnLine P lineAE := by
+      rw [← hl]
+      exact hPl
+
+    exact hPoff hPline
+
+  --------------------------------------------------------------------
+  -- In triangle ECX:
+  -- P is midpoint of EC,
+  -- Y is midpoint of EX,
+  -- so PY || CX.
+  --------------------------------------------------------------------
+
+  have hPEC :
+      HilbertIsMidpoint Geo P E C :=
+    MidpointSymmetry
+      Geo P C E hP
+
+  have hYEX :
+      HilbertIsMidpoint Geo Y E X :=
+    MidpointSymmetry
+      Geo Y X E hY
+
+  have hPY_CX :
+      Geo.Parallel P Y C X :=
+    MidsegmentTheorem
+      Geo
+      E C X
+      P Y
+      hPEC
+      hYEX
+      hYPE
+
+  --------------------------------------------------------------------
+  -- Since C-X-B, CX and CB are the same carrier.
+  -- Therefore PY || CB.
+  --------------------------------------------------------------------
+
+  have hCXBcol :
+      PrimCollinear Geo C X B :=
+    (HilbertOrder.between_incidence
+      C X B hCXB).2.2.2.1
+
+  have hCBX :
+      Collinear Geo C B X := by
+    rcases hCXBcol with
+      ⟨l, hCl, hXl, hBl⟩
+
+    exact
+      ⟨l,
+        hCl,
+        hBl,
+        hXl⟩
+
+  have hCX_PY :
+      Geo.Parallel C X P Y :=
+    ParallelSymmetry
+      Geo P Y C X hPY_CX
+
+  have hCB_PY :
+      Geo.Parallel C B P Y :=
+    collinear_parallel_trans
+      Geo
+      C B X
+      P Y
+      hCB
+      hCBX
+      hCX_PY
+
+  have hPY_CB :
+      Geo.Parallel P Y C B :=
+    ParallelSymmetry
+      Geo C B P Y hCB_PY
+
+  --------------------------------------------------------------------
+  -- PY and PQ pass through P and are both parallel to CB.
+  -- By Euclidean uniqueness they are the same carrier.
+  --------------------------------------------------------------------
+
+  have hPointLineEq :
+      Geo.PointLine P Y =
+      Geo.PointLine P Q := by
+
+    by_contra hDistinct
+
+    have hPY_PQ :
+        Geo.Parallel P Y P Q :=
+      hilbert_parallel_transitive_distinct
+        Geo
+        P Y
+        P Q
+        C B
+        hPY_CB
+        hPQ_CB
+        hDistinct
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          P Y hPY_CB.1
+      with
+      ⟨linePY, hPpy, hYpy⟩
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          P Q hPQ_CB.1
+      with
+      ⟨linePQ, hPpq, hQpq⟩
+
+    have hPinPY :
+        P ∈ Geo.PointLine P Y :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        P Y P
+        linePY
+        hPY_CB.1
+        hPpy
+        hYpy).mpr
+        hPpy
+
+    have hPinPQ :
+        P ∈ Geo.PointLine P Q :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        P Q P
+        linePQ
+        hPQ_CB.1
+        hPpq
+        hQpq).mpr
+        hPpq
+
+    exact
+      Set.disjoint_left.mp
+        hPY_PQ.2.2
+        hPinPY
+        hPinPQ
+
+  --------------------------------------------------------------------
+  -- Hence Y lies on PQ.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        P Y hPY_CB.1
+    with
+    ⟨linePY, hPpy, hYpy⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        P Q hPQ_CB.1
+    with
+    ⟨linePQ, hPpq, hQpq⟩
+
+  have hYinPY :
+      Y ∈ Geo.PointLine P Y :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo
+      P Y Y
+      linePY
+      hPY_CB.1
+      hPpy
+      hYpy).mpr
+      hYpy
+
+  have hYinPQ :
+      Y ∈ Geo.PointLine P Q := by
+    rw [← hPointLineEq]
+    exact hYinPY
+
+  have hYpq :
+      HilbertIncidence.OnLine Y linePQ :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo
+      P Q Y
+      linePQ
+      hPQ_CB.1
+      hPpq
+      hQpq).mp
+      hYinPQ
+
+  exact
+    ⟨Y,
+      hY,
+      ⟨linePQ,
+        hPpq,
+        hYpq,
+        hQpq⟩⟩
+
 
 
 /--
