@@ -5584,6 +5584,429 @@ theorem proposition39_test_circle_outer_outer_sameSide_chord
       hAB⟩
 
 
+theorem proposition39_test_circle_sameRay_order
+    [HilbertOrder Geo]
+    (O A B : Geo.Point)
+    (hRay : HilbertSameRay Geo O A B)
+    (hAB : A ≠ B) :
+    Geo.Between O A B ∨
+    Geo.Between O B A := by
+
+  have hOA :
+      O ≠ A :=
+    hRay.1.symm
+
+  have hOB :
+      O ≠ B :=
+    hRay.2.1.symm
+
+  have hOAB :
+      PrimCollinear Geo O A B :=
+    hRay.2.2.1
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        O A B
+        hOA
+        hAB
+        hOB
+        hOAB
+    with hOABet | hAOB | hOBA
+
+  · exact Or.inl hOABet
+
+  · exact False.elim
+      (hRay.2.2.2 hAOB)
+
+  · exact Or.inr hOBA
+
+
+
+theorem proposition39_test_circle_ray_order_cases
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayBD : HilbertSameRay Geo O B D)
+    (hAC : A ≠ C)
+    (hBD : B ≠ D) :
+    (Geo.Between O A C ∧ Geo.Between O B D) ∨
+    (Geo.Between O A C ∧ Geo.Between O D B) ∨
+    (Geo.Between O C A ∧ Geo.Between O B D) ∨
+    (Geo.Between O C A ∧ Geo.Between O D B) := by
+
+  rcases
+      proposition39_test_circle_sameRay_order
+        Geo O A C hRayAC hAC
+    with hOAC | hOCA
+
+  · rcases
+        proposition39_test_circle_sameRay_order
+          Geo O B D hRayBD hBD
+      with hOBD | hODB
+
+    · exact Or.inl ⟨hOAC, hOBD⟩
+
+    · exact
+        Or.inr
+          (Or.inl ⟨hOAC, hODB⟩)
+
+  · rcases
+        proposition39_test_circle_sameRay_order
+          Geo O B D hRayBD hBD
+      with hOBD | hODB
+
+    · exact
+        Or.inr
+          (Or.inr
+            (Or.inl ⟨hOCA, hOBD⟩))
+
+    · exact
+        Or.inr
+          (Or.inr
+            (Or.inr ⟨hOCA, hODB⟩))
+
+
+theorem proposition39_test_circle_inner_inner_sameSide_chord
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hOCA : Geo.Between O C A)
+    (hODB : Geo.Between O D B) :
+    ∃ chord : Geo.Line,
+      HilbertIncidence.OnLine C chord ∧
+      HilbertIncidence.OnLine D chord ∧
+      HilbertSameSide Geo A B chord := by
+
+  have hRayCA :
+      HilbertSameRay Geo O C A :=
+    hilbert_sameRay_of_between
+      Geo O C A hOCA
+
+  have hRayAC :
+      HilbertSameRay Geo O A C :=
+    hilbert_sameRay_symm
+      Geo O C A hRayCA
+
+  have hRayDB :
+      HilbertSameRay Geo O D B :=
+    hilbert_sameRay_of_between
+      Geo O D B hODB
+
+  have hRayBD :
+      HilbertSameRay Geo O B D :=
+    hilbert_sameRay_symm
+      Geo O D B hRayDB
+
+  have hCOD :
+      Not (PrimCollinear Geo C O D) :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O B
+      C D
+      hAOB
+      hRayAC
+      hRayBD
+
+  have hCDO :
+      Not (PrimCollinear Geo C D O) := by
+    intro h
+    exact
+      hCOD
+        (PrimCollinearRotate
+          Geo C D O h)
+
+  have hCD :
+      C ≠ D :=
+    hilbert_noncollinear_ne_first
+      Geo C D O hCDO
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        C D hCD
+    with
+    ⟨chord, hCchord, hDchord⟩
+
+  have hOAB :
+      Not (PrimCollinear Geo O A B) := by
+    intro h
+    exact
+      hAOB
+        (PrimCollinearSwap
+          Geo O A B h)
+
+  have hSame :
+      HilbertSameSide Geo A B chord :=
+    hilbert_third_side_endpoints_sameSide
+      Geo
+      O A B
+      C D
+      chord
+      hOAB
+      hOCA
+      hODB
+      hCchord
+      hDchord
+
+  exact
+    ⟨chord,
+      hCchord,
+      hDchord,
+      hSame⟩
+
+theorem proposition39_test_circle_mixed_outer_inner_oppositeSide_chord
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hOAC : Geo.Between O A C)
+    (hODB : Geo.Between O D B) :
+    ∃ chord : Geo.Line,
+      HilbertIncidence.OnLine C chord ∧
+      HilbertIncidence.OnLine D chord ∧
+      HilbertOppositeSide Geo A B chord := by
+
+  have hRayAC :
+      HilbertSameRay Geo O A C :=
+    hilbert_sameRay_of_between
+      Geo O A C hOAC
+
+  have hRayDB :
+    HilbertSameRay Geo O D B :=
+  hilbert_sameRay_of_between
+    Geo O D B hODB
+
+  have hRayBD :
+    HilbertSameRay Geo O B D :=
+  hilbert_sameRay_symm
+    Geo O D B hRayDB
+
+  have hCOD :
+      Not (PrimCollinear Geo C O D) :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O B
+      C D
+      hAOB
+      hRayAC
+      hRayBD
+
+  have hOCD :
+      Not (PrimCollinear Geo O C D) := by
+    intro h
+    exact
+      hCOD
+        (PrimCollinearSwap
+          Geo O C D h)
+
+  have hCDO :
+      Not (PrimCollinear Geo C D O) := by
+    intro h
+    exact
+      hCOD
+        (PrimCollinearRotate
+          Geo C D O h)
+
+  have hCD :
+      C ≠ D :=
+    hilbert_noncollinear_ne_first
+      Geo C D O hCDO
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        C D hCD
+    with
+    ⟨chord, hCchord, hDchord⟩
+
+  --------------------------------------------------------------------
+  -- O and A lie on the same side of CD, because O-A-C.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        O A D C
+        hOAC
+        hOCD
+    with
+    ⟨chord₁, hDchord₁, hCchord₁, hOA₁⟩
+
+  have hChordEq :
+      chord₁ = chord :=
+    HilbertPlaneIncidence.line_unique
+      C D hCD
+      chord₁ chord
+      hCchord₁
+      hDchord₁
+      hCchord
+      hDchord
+
+  have hOA :
+      HilbertSameSide Geo O A chord := by
+    rw [← hChordEq]
+    exact hOA₁
+
+  --------------------------------------------------------------------
+  -- O and B lie on opposite sides of CD, because O-D-B.
+  --------------------------------------------------------------------
+
+  have hOppOB :
+      HilbertOppositeSide Geo O B chord :=
+    ⟨hOA.1,
+      by
+        intro hBchord
+
+        have hODBData :=
+          HilbertOrder.between_incidence
+            O D B hODB
+
+        have hDB :
+            D ≠ B :=
+          hODBData.2.1
+
+        have hODBcol :
+            PrimCollinear Geo O D B :=
+          hODBData.2.2.2.1
+
+        have hDBO :
+            PrimCollinear Geo D B O :=
+          PrimCollinearCycle
+            Geo O D B hODBcol
+
+        have hOchord :
+            HilbertIncidence.OnLine O chord :=
+          hilbert_collinear_on_line
+            Geo
+            D B O
+            chord
+            hDB
+            hDchord
+            hBchord
+            hDBO
+
+        exact hOA.1 hOchord,
+      ⟨D, hODB, hDchord⟩⟩
+
+  --------------------------------------------------------------------
+  -- Replace O by A inside the same half-plane.
+  --------------------------------------------------------------------
+
+  have hOppBO :
+      HilbertOppositeSide Geo B O chord :=
+    hilbert_oppositeSide_symm
+      Geo O B chord hOppOB
+
+  have hOppBA :
+      HilbertOppositeSide Geo B A chord :=
+    hilbert_oppositeSide_transport_right
+      Geo
+      B O A
+      chord
+      hOppBO
+      hOA
+
+  have hOppAB :
+      HilbertOppositeSide Geo A B chord :=
+    hilbert_oppositeSide_symm
+      Geo B A chord hOppBA
+
+  exact
+    ⟨chord,
+      hCchord,
+      hDchord,
+      hOppAB⟩
+
+theorem proposition39_test_circle_mixed_inner_outer_oppositeSide_chord
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hOCA : Geo.Between O C A)
+    (hOBD : Geo.Between O B D) :
+    ∃ chord : Geo.Line,
+      HilbertIncidence.OnLine C chord ∧
+      HilbertIncidence.OnLine D chord ∧
+      HilbertOppositeSide Geo A B chord := by
+
+  have hBOA :
+      Not (PrimCollinear Geo B O A) := by
+    intro h
+    exact
+      hAOB
+        (PrimCollinearSymm
+          Geo B O A h)
+
+  rcases
+      proposition39_test_circle_mixed_outer_inner_oppositeSide_chord
+        Geo
+        O B D A C
+        hBOA
+        hOBD
+        hOCA
+    with
+    ⟨chord,
+      hDchord,
+      hCchord,
+      hOppBA⟩
+
+  have hOppAB :
+      HilbertOppositeSide Geo A B chord :=
+    hilbert_oppositeSide_symm
+      Geo B A chord hOppBA
+
+  exact
+    ⟨chord,
+      hCchord,
+      hDchord,
+      hOppAB⟩
+
+theorem proposition39_test_opposite_equal_extension
+    [HilbertCongruence Geo]
+    (D H : Geo.Point)
+    (hDH : D ≠ H) :
+    ∃ E : Geo.Point,
+      Geo.Between D H E ∧
+      Geo.Congruent H E H D := by
+
+  rcases
+      HilbertOrder.between_extension
+        D H hDH
+    with
+    ⟨S, hDHS⟩
+
+  have hHS :
+      H ≠ S :=
+    (HilbertOrder.between_incidence
+      D H S hDHS).2.1
+
+  rcases
+      HilbertCongruence.segment_construction
+        (Geo := Geo)
+        H D
+        H S
+        hHS
+    with
+    ⟨E, hRaySE, hHE_HD⟩
+
+  have hRayHDD :
+      HilbertSameRay Geo H D D :=
+    hilbert_sameRay_refl
+      Geo H D hDH
+
+  have hDHE :
+      Geo.Between D H E :=
+    hilbert_between_transport_sameRays
+      Geo
+      D H S
+      D E
+      hDHS
+      hRayHDD
+      hRaySE
+
+  exact
+    ⟨E,
+      hDHE,
+      hHE_HD⟩
+
+
 /--
 Circle theorem used in Hilbert sec. 14.
 
@@ -6624,7 +7047,7 @@ theorem proposition39_test_corresponding_parallel
     Geo.Parallel A B' B A' := by
 
   rcases
-      proposition39_test_sameRay_order
+      proposition39_test_circle_sameRay_order
         Geo O A B hRayAB hAB
     with hOAB | hOBA
 
@@ -7567,7 +7990,7 @@ theorem proposition39_test_pascal_second_angle
   --------------------------------------------------------------------
 
   rcases
-      proposition39_test_sameRay_order
+      proposition39_test_circle_sameRay_order
         Geo
         O B' C'
         hRayB'C'
