@@ -6296,7 +6296,7 @@ An interior ray of one angle can be transported to an interior ray
 of a congruent angle so that the corresponding component angles are
 congruent.
 -/
-theorem hilbert_interior_subangle_transport
+theorem hilbert_interior_subangle_transport_both
     [HilbertCongruence Geo]
     (O X C D A' O' B' : Geo.Point)
     (hXOC : ¬ PrimCollinear Geo X O C)
@@ -6306,7 +6306,10 @@ theorem hilbert_interior_subangle_transport
       Geo.AngleCongruent X O C A' O' B') :
     ∃ D' : Geo.Point,
       HilbertRayMeetsSegment Geo O' D' A' B' ∧
-      Geo.AngleCongruent C O D B' O' D' := by
+      (
+        Geo.AngleCongruent C O D B' O' D' ∧
+        Geo.AngleCongruent X O D A' O' D'
+      ) := by
 
   have hXO : X ≠ O :=
     hilbert_noncollinear_ne_first
@@ -6710,9 +6713,92 @@ theorem hilbert_interior_subangle_transport
           = Geo.Angle C₀ O D := hAngleC
       _ = Geo.Angle C₀ O H₀ := hAngleD
 
-  unfold Geometry.Geo.AngleCongruent at hSub₀ ⊢
-  rw [hAngleCOD]
-  exact hSub₀
+  have hRight :
+      Geo.AngleCongruent
+        C O D
+        B' O' H' := by
+    unfold Geometry.Geo.AngleCongruent at hSub₀ ⊢
+    rw [hAngleCOD]
+    exact hSub₀
+
+  --------------------------------------------------------------------
+  -- The other component was already obtained by the small SAS.
+  --------------------------------------------------------------------
+
+  have hLeft₀ :
+      Geo.AngleCongruent
+        X₀ O H₀
+        A' O' H' :=
+    hSmall.angleB
+
+  have hAngleX :
+      Geo.Angle X O H₀ =
+      Geo.Angle X₀ O H₀ :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo
+      O X X₀ H₀
+      hRayX₀
+
+  have hAngleDLeft :
+      Geo.Angle X O D =
+      Geo.Angle X O H₀ :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo
+      O X D H₀
+      hRayODH₀
+
+  have hAngleXOD :
+      Geo.Angle X O D =
+      Geo.Angle X₀ O H₀ := by
+    calc
+      Geo.Angle X O D
+          = Geo.Angle X O H₀ :=
+        hAngleDLeft
+      _ = Geo.Angle X₀ O H₀ :=
+        hAngleX
+
+  have hLeft :
+      Geo.AngleCongruent
+        X O D
+        A' O' H' := by
+    unfold Geometry.Geo.AngleCongruent
+      at hLeft₀ ⊢
+    rw [hAngleXOD]
+    exact hLeft₀
+
+  exact
+    ⟨hRight, hLeft⟩
+
+theorem hilbert_interior_subangle_transport
+    [HilbertCongruence Geo]
+    (O X C D A' O' B' : Geo.Point)
+    (hXOC : ¬ PrimCollinear Geo X O C)
+    (hAOB : ¬ PrimCollinear Geo A' O' B')
+    (hInside :
+      HilbertRayMeetsSegment Geo O D X C)
+    (hWhole :
+      Geo.AngleCongruent X O C A' O' B') :
+    ∃ D' : Geo.Point,
+      HilbertRayMeetsSegment Geo O' D' A' B' ∧
+      Geo.AngleCongruent C O D B' O' D' := by
+
+  rcases
+      hilbert_interior_subangle_transport_both
+        Geo
+        O X C D
+        A' O' B'
+        hXOC
+        hAOB
+        hInside
+        hWhole
+    with
+    ⟨D', hInside', hBoth⟩
+
+  exact
+    ⟨D',
+      hInside',
+      hBoth.1⟩
+
 
 theorem hilbert_exterior_angle_aux
     [HilbertCongruence Geo]
