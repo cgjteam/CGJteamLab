@@ -37,12 +37,12 @@ variable (Geo : Geometry.Geo)
 -- an endpoint.
 --
 -- Step 3 needs the fourth vertex, obtained as the intersection of two
--- lines constructed parallel to two different given directions.  The
--- library has no theorem producing that intersection; the precedents
--- for leaving such a fact as an explicit local assumption are
--- `hilbert_circle_circle_intersection` in `HilbertInterface.lean` and
--- `i42_construct_parallelogram` in `Proposition42.lean`.  It is
--- recorded below as `i46_complete_parallelogram`.
+-- lines constructed parallel to two different given directions.  This
+-- is `hilbert_parallelogram_fourth_vertex_exists`, proved in
+-- `HilbertInterface.lean`: since `Geo.Parallel` is disjointness of the
+-- two point-line carriers, the only real content is that the two
+-- constructed parallels are not parallel to each other, which follows
+-- from `hilbert_parallel_transitive_distinct` (axiom IV).
 --
 -- Step 5 is Euclid's own citation of I.29.  The library does prove
 -- I.29 (`euclid_proposition_29`), but only in the explicit transversal
@@ -84,28 +84,7 @@ def IsSquare
   HilbertRightAngle Geo C D A
 
 /--
-Local axiom 1.
-
-Given a base `AB` and a point `D` off the line `AB`, the parallelogram
-`A B C D` can be completed: there is a fourth vertex `C`.
-
-`C` is the intersection of the line through `B` parallel to `AD` with
-the line through `D` parallel to `AB`.  Both lines exist by I.31
-(`hilbert_parallel_through_point_exists`); what is missing from the
-library is the fact that two non-parallel lines meet.  This is the same
-gap already recorded by `hilbert_circle_circle_intersection` and by
-`i42_construct_parallelogram`.
--/
-axiom i46_complete_parallelogram
-    [HilbertIncidence Geo]
-    [HilbertEuclideanPlane Geo]
-    (A B D : Geo.Point)
-    (hABD : Not (Collinear Geo A B D)) :
-    ∃ C : Geo.Point,
-      IsParallelogram Geo A B C D
-
-/--
-Local axiom 2.
+Local axiom.
 
 In a parallelogram `A B C D`, an angle adjacent to a right angle is
 itself right.
@@ -422,7 +401,7 @@ theorem euclid_proposition_46
   --------------------------------------------------------------------
 
   rcases
-      i46_complete_parallelogram
+      hilbert_parallelogram_fourth_vertex_exists
         Geo A B D hNCABD with
     ⟨C, hParallelogram⟩
 

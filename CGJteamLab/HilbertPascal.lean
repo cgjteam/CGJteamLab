@@ -9716,6 +9716,972 @@ theorem proposition39_test_angle_addition_interior
       hLeft
       hRight
 
+theorem proposition39_test_equal_halves_equal_wholes
+    [HilbertCongruence Geo]
+    (O X C D O' X' C' D' : Geo.Point)
+    (hXOC :
+      Not (PrimCollinear Geo X O C))
+    (hX'O'C' :
+      Not (PrimCollinear Geo X' O' C'))
+    (hInside :
+      HilbertRayMeetsSegment Geo O D X C)
+    (hInside' :
+      HilbertRayMeetsSegment Geo O' D' X' C')
+    (hBisect :
+      Geo.AngleCongruent
+        X O D
+        D O C)
+    (hBisect' :
+      Geo.AngleCongruent
+        X' O' D'
+        D' O' C')
+    (hHalf :
+      Geo.AngleCongruent
+        X O D
+        X' O' D') :
+    Geo.AngleCongruent
+      X O C
+      X' O' C' := by
+
+  --------------------------------------------------------------------
+  -- The second halves are congruent as well.
+  --------------------------------------------------------------------
+
+  have hDOC_XOD :
+      Geo.AngleCongruent
+        D O C
+        X O D :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      X O D
+      D O C
+      hBisect
+
+  have hDOC_X'O'D' :
+      Geo.AngleCongruent
+        D O C
+        X' O' D' :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      D O C
+      X O D
+      X' O' D'
+      hDOC_XOD
+      hHalf
+
+  have hRight :
+      Geo.AngleCongruent
+        D O C
+        D' O' C' :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      D O C
+      X' O' D'
+      D' O' C'
+      hDOC_X'O'D'
+      hBisect'
+
+  --------------------------------------------------------------------
+  -- Add the two congruent halves.
+  --------------------------------------------------------------------
+
+  exact
+    proposition39_test_angle_addition_interior
+      Geo
+      O X C D
+      O' X' C' D'
+      hXOC
+      hX'O'C'
+      hInside
+      hInside'
+      hHalf
+      hRight
+
+theorem proposition39_test_circle_inscribed_components_are_central_halves
+    [HilbertEuclideanPlane Geo]
+    (K R C A B : Geo.Point)
+    (hC : HilbertCircle Geo K R C)
+    (hA : HilbertCircle Geo K R A)
+    (hB : HilbertCircle Geo K R B)
+    (hKCA :
+      Not (PrimCollinear Geo K C A))
+    (hKAB :
+      Not (PrimCollinear Geo K A B)) :
+    ∃ E P Q : Geo.Point,
+      Geo.Between A K E ∧
+      HilbertCircle Geo K R E ∧
+      Geo.Between C P E ∧
+      Geo.Between B Q E ∧
+      Geo.AngleCongruent C A K C K P ∧
+      Geo.AngleCongruent C K P P K E ∧
+      Geo.AngleCongruent K A B B K Q ∧
+      Geo.AngleCongruent B K Q Q K E := by
+
+  rcases
+      proposition39_test_circle_inscribed_vertex_central_halves
+        Geo
+        K R C A B
+        hC
+        hA
+        hB
+        hKCA
+        hKAB
+    with
+    ⟨E,
+      P,
+      Q,
+      hAKE,
+      hE,
+      hCPE,
+      hBQE,
+      hCAK_PKE,
+      hKAB_QKE,
+      hCKP_PKE,
+      hBKQ_QKE⟩
+
+  have hPKE_CKP :
+      Geo.AngleCongruent
+        P K E
+        C K P :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      C K P
+      P K E
+      hCKP_PKE
+
+  have hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      P K E
+      C K P
+      hCAK_PKE
+      hPKE_CKP
+
+  have hQKE_BKQ :
+      Geo.AngleCongruent
+        Q K E
+        B K Q :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      B K Q
+      Q K E
+      hBKQ_QKE
+
+  have hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      Q K E
+      B K Q
+      hKAB_QKE
+      hQKE_BKQ
+
+  exact
+    ⟨E,
+      P,
+      Q,
+      hAKE,
+      hE,
+      hCPE,
+      hBQE,
+      hCAK_CKP,
+      hCKP_PKE,
+      hKAB_BKQ,
+      hBKQ_QKE⟩
+
+theorem proposition39_test_circle_inscribed_additive_assembly
+    [HilbertCongruence Geo]
+    (A C K B P E Q : Geo.Point)
+    (hCAB :
+      Not (PrimCollinear Geo C A B))
+    (hPKQ :
+      Not (PrimCollinear Geo P K Q))
+    (hInsideA :
+      HilbertRayMeetsSegment Geo A K C B)
+    (hInsideK :
+      HilbertRayMeetsSegment Geo K E P Q)
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    Geo.AngleCongruent
+      C A B
+      P K Q := by
+
+  have hCAK_PKE :
+      Geo.AngleCongruent
+        C A K
+        P K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      C K P
+      P K E
+      hCAK_CKP
+      hCKP_PKE
+
+  have hKAB_QKE :
+      Geo.AngleCongruent
+        K A B
+        Q K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      B K Q
+      Q K E
+      hKAB_BKQ
+      hBKQ_QKE
+
+  have hKAB_EKQ :
+      Geo.AngleCongruent
+        K A B
+        E K Q :=
+    (Geo.angle_congruent_reverse_second
+      K A B
+      Q K E).mp
+      hKAB_QKE
+
+  exact
+    proposition39_test_angle_addition_interior
+      Geo
+      A C B K
+      K P Q E
+      hCAB
+      hPKQ
+      hInsideA
+      hInsideK
+      hCAK_PKE
+      hKAB_EKQ
+
+theorem proposition39_test_circle_inscribed_subtractive_assembly
+    [HilbertCongruence Geo]
+    (A C K B P E Q : Geo.Point)
+    (hCAK :
+      Not (PrimCollinear Geo C A K))
+    (hPKE :
+      Not (PrimCollinear Geo P K E))
+    (hInsideA :
+      HilbertRayMeetsSegment Geo A B C K)
+    (hInsideK :
+      HilbertRayMeetsSegment Geo K Q P E)
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    Geo.AngleCongruent
+      C A B
+      P K Q := by
+
+  --------------------------------------------------------------------
+  -- Equal larger angles.
+  --------------------------------------------------------------------
+
+  have hCAK_PKE :
+      Geo.AngleCongruent
+        C A K
+        P K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      C K P
+      P K E
+      hCAK_CKP
+      hCKP_PKE
+
+  --------------------------------------------------------------------
+  -- Equal parts to be subtracted.
+  --------------------------------------------------------------------
+
+  have hKAB_QKE :
+      Geo.AngleCongruent
+        K A B
+        Q K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      B K Q
+      Q K E
+      hKAB_BKQ
+      hBKQ_QKE
+
+  have hKAB_EKQ :
+      Geo.AngleCongruent
+        K A B
+        E K Q :=
+    (Geo.angle_congruent_reverse_second
+      K A B
+      Q K E).mp
+      hKAB_QKE
+
+  --------------------------------------------------------------------
+  -- Subtract equal interior parts from equal whole angles.
+  --
+  -- CAB = CAK - KAB
+  -- PKQ = PKE - EKQ
+  --------------------------------------------------------------------
+
+  exact
+    proposition39_test_angle_subtraction
+      Geo
+      A C K B
+      P K E Q
+      hCAK
+      hPKE
+      hInsideA
+      hInsideK
+      hCAK_PKE
+      hKAB_EKQ
+
+theorem proposition39_test_circle_inscribed_subtractive_assembly_mirror
+    [HilbertCongruence Geo]
+    (A C K B P E Q : Geo.Point)
+    (hBAK :
+      Not (PrimCollinear Geo B A K))
+    (hQKE :
+      Not (PrimCollinear Geo Q K E))
+    (hInsideA :
+      HilbertRayMeetsSegment Geo A C B K)
+    (hInsideK :
+      HilbertRayMeetsSegment Geo K P Q E)
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E) :
+    Geo.AngleCongruent
+      C A B
+      P K Q := by
+
+  --------------------------------------------------------------------
+  -- Equal larger angles.
+  --------------------------------------------------------------------
+
+  have hKAB_QKE :
+      Geo.AngleCongruent
+        K A B
+        Q K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      K A B
+      B K Q
+      Q K E
+      hKAB_BKQ
+      hBKQ_QKE
+
+  have hBAK_QKE :
+      Geo.AngleCongruent
+        B A K
+        Q K E :=
+    (Geo.angle_congruent_reverse_first
+      K A B
+      Q K E).mp
+      hKAB_QKE
+
+  --------------------------------------------------------------------
+  -- Equal parts to be subtracted.
+  --------------------------------------------------------------------
+
+  have hCAK_PKE :
+      Geo.AngleCongruent
+        C A K
+        P K E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      C A K
+      C K P
+      P K E
+      hCAK_CKP
+      hCKP_PKE
+
+  have hKAC_PKE :
+      Geo.AngleCongruent
+        K A C
+        P K E :=
+    (Geo.angle_congruent_reverse_first
+      C A K
+      P K E).mp
+      hCAK_PKE
+
+  have hKAC_EKP :
+      Geo.AngleCongruent
+        K A C
+        E K P :=
+    (Geo.angle_congruent_reverse_second
+      K A C
+      P K E).mp
+      hKAC_PKE
+
+  --------------------------------------------------------------------
+  -- BAK - KAC = BAC
+  -- QKE - EKP = QKP.
+  --------------------------------------------------------------------
+
+  have hRaw :
+      Geo.AngleCongruent
+        B A C
+        Q K P :=
+    proposition39_test_angle_subtraction
+      Geo
+      A B K C
+      Q K E P
+      hBAK
+      hQKE
+      hInsideA
+      hInsideK
+      hBAK_QKE
+      hKAC_EKP
+
+  --------------------------------------------------------------------
+  -- Reverse both resulting angles to the standard orientation.
+  --------------------------------------------------------------------
+
+  have hFirst :
+      Geo.AngleCongruent
+        C A B
+        Q K P :=
+    (Geo.angle_congruent_reverse_first
+      B A C
+      Q K P).mp
+      hRaw
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      C A B
+      Q K P).mp
+      hFirst
+
+theorem proposition39_test_circle_inscribed_three_case_assembly
+    [HilbertCongruence Geo]
+    (A C K B P E Q : Geo.Point)
+    (hCAB :
+      Not (PrimCollinear Geo C A B))
+    (hCAK :
+      Not (PrimCollinear Geo C A K))
+    (hBAK :
+      Not (PrimCollinear Geo B A K))
+    (hPKQ :
+      Not (PrimCollinear Geo P K Q))
+    (hPKE :
+      Not (PrimCollinear Geo P K E))
+    (hQKE :
+      Not (PrimCollinear Geo Q K E))
+    (hCAK_CKP :
+      Geo.AngleCongruent
+        C A K
+        C K P)
+    (hCKP_PKE :
+      Geo.AngleCongruent
+        C K P
+        P K E)
+    (hKAB_BKQ :
+      Geo.AngleCongruent
+        K A B
+        B K Q)
+    (hBKQ_QKE :
+      Geo.AngleCongruent
+        B K Q
+        Q K E)
+    (hCases :
+      (
+        HilbertRayMeetsSegment Geo A K C B
+        ∧
+        HilbertRayMeetsSegment Geo K E P Q
+      )
+      ∨
+      (
+        HilbertRayMeetsSegment Geo A B C K
+        ∧
+        HilbertRayMeetsSegment Geo K Q P E
+      )
+      ∨
+      (
+        HilbertRayMeetsSegment Geo A C B K
+        ∧
+        HilbertRayMeetsSegment Geo K P Q E
+      )) :
+    Geo.AngleCongruent
+      C A B
+      P K Q := by
+
+  rcases hCases with
+    hAdd | hSub | hMirror
+
+  --------------------------------------------------------------------
+  -- Additive case.
+  --------------------------------------------------------------------
+
+  · exact
+      proposition39_test_circle_inscribed_additive_assembly
+        Geo
+        A C K B P E Q
+        hCAB
+        hPKQ
+        hAdd.1
+        hAdd.2
+        hCAK_CKP
+        hCKP_PKE
+        hKAB_BKQ
+        hBKQ_QKE
+
+  --------------------------------------------------------------------
+  -- First subtractive case.
+  --------------------------------------------------------------------
+
+  · exact
+      proposition39_test_circle_inscribed_subtractive_assembly
+        Geo
+        A C K B P E Q
+        hCAK
+        hPKE
+        hSub.1
+        hSub.2
+        hCAK_CKP
+        hCKP_PKE
+        hKAB_BKQ
+        hBKQ_QKE
+
+  --------------------------------------------------------------------
+  -- Mirror subtractive case.
+  --------------------------------------------------------------------
+
+  · exact
+      proposition39_test_circle_inscribed_subtractive_assembly_mirror
+        Geo
+        A C K B P E Q
+        hBAK
+        hQKE
+        hMirror.1
+        hMirror.2
+        hCAK_CKP
+        hCKP_PKE
+        hKAB_BKQ
+        hBKQ_QKE
+
+theorem proposition39_test_circle_inscribed_auxiliary_midpoints
+    [HilbertEuclideanPlane Geo]
+    (K R C A B : Geo.Point)
+    (hC : HilbertCircle Geo K R C)
+    (hA : HilbertCircle Geo K R A)
+    (hB : HilbertCircle Geo K R B)
+    (hKCA :
+      Not (PrimCollinear Geo K C A))
+    (hKAB :
+      Not (PrimCollinear Geo K A B)) :
+    ∃ E P Q : Geo.Point,
+      HilbertIsMidpoint Geo K A E ∧
+      HilbertIsMidpoint Geo P C E ∧
+      HilbertIsMidpoint Geo Q B E := by
+
+  rcases
+      proposition39_test_circle_inscribed_components_are_central_halves
+        Geo
+        K R C A B
+        hC
+        hA
+        hB
+        hKCA
+        hKAB
+    with
+    ⟨E,
+      P,
+      Q,
+      hAKE,
+      hE,
+      hCPE,
+      hBQE,
+      _hCAK_CKP,
+      hCKP_PKE,
+      _hKAB_BKQ,
+      hBKQ_QKE⟩
+
+  --------------------------------------------------------------------
+  -- K is the midpoint of AE.
+  --------------------------------------------------------------------
+
+  have hKR_KE :
+      Geo.Congruent K R K E :=
+    hilbert_congruent_symmetry
+      Geo
+      K E
+      K R
+      hE
+
+  have hKA_KE :
+      Geo.Congruent K A K E :=
+    hilbert_congruent_transitivity
+      Geo
+      K A
+      K R
+      K E
+      hA
+      hKR_KE
+
+  have hKC_KE :
+      Geo.Congruent K C K E :=
+    hilbert_congruent_transitivity
+      Geo
+      K C
+      K R
+      K E
+      hC
+      hKR_KE
+
+  have hKB_KE :
+      Geo.Congruent K B K E :=
+    hilbert_congruent_transitivity
+      Geo
+      K B
+      K R
+      K E
+      hB
+      hKR_KE
+
+  have hAK_KE :
+      Geo.Congruent A K K E :=
+    (Geo.congruent_reverse_first
+      K A
+      K E).mp
+      hKA_KE
+
+  have hMidK :
+      HilbertIsMidpoint Geo K A E :=
+    ⟨hAKE, hAK_KE⟩
+
+  --------------------------------------------------------------------
+  -- C,K,E is noncollinear.
+  --------------------------------------------------------------------
+
+  have hAKEcol :
+      PrimCollinear Geo A K E :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).2.2.2.1
+
+  have hKE :
+      K ≠ E :=
+    (HilbertOrder.between_incidence
+      A K E hAKE).2.1
+
+  have hKEA :
+      PrimCollinear Geo K E A :=
+    PrimCollinearCycle
+      Geo A K E hAKEcol
+
+  have hCKE :
+      Not (PrimCollinear Geo C K E) := by
+    intro h
+
+    have hCKA :
+        PrimCollinear Geo C K A :=
+      hilbert_primCollinear_trans
+        Geo
+        C K E A
+        hKE
+        h
+        hKEA
+
+    exact
+      hKCA
+        (PrimCollinearSwap
+          Geo C K A hCKA)
+
+  --------------------------------------------------------------------
+  -- P is inside CE, hence triangles KCP and KEP are nondegenerate.
+  --------------------------------------------------------------------
+
+  have hKP :
+      K ≠ P := by
+    intro h
+    subst P
+
+    exact
+      hCKE
+        ((HilbertOrder.between_incidence
+          C K E hCPE).2.2.2.1)
+
+  have hRayKPP :
+      HilbertSameRay Geo K P P :=
+    hilbert_sameRay_refl
+      Geo K P hKP.symm
+
+  have hInsideP :
+      HilbertRayMeetsSegment Geo K P C E :=
+    ⟨P, hCPE, hRayKPP⟩
+
+  have hCKP :
+      Not (PrimCollinear Geo C K P) :=
+    (hilbert_interior_angle_less
+      Geo
+      K P C E
+      hCKE
+      hInsideP).1
+
+  have hEKC :
+      Not (PrimCollinear Geo E K C) := by
+    intro h
+
+    exact
+      hCKE
+        (PrimCollinearSymm
+          Geo E K C h)
+
+  have hInsidePrev :
+      HilbertRayMeetsSegment Geo K P E C :=
+    proposition39_test_ray_meets_segment_reverse
+      Geo
+      K P C E
+      hInsideP
+
+  have hEKP :
+      Not (PrimCollinear Geo E K P) :=
+    (hilbert_interior_angle_less
+      Geo
+      K P E C
+      hEKC
+      hInsidePrev).1
+
+  have hKCP :
+      Not (PrimCollinear Geo K C P) := by
+    intro h
+
+    exact
+      hCKP
+        (PrimCollinearSwap
+          Geo K C P h)
+
+  have hKEP :
+      Not (PrimCollinear Geo K E P) := by
+    intro h
+
+    exact
+      hEKP
+        (PrimCollinearSwap
+          Geo K E P h)
+
+  have hCKP_EKP :
+      Geo.AngleCongruent
+        C K P
+        E K P :=
+    (Geo.angle_congruent_reverse_second
+      C K P
+      P K E).mp
+      hCKP_PKE
+
+  have hKP_KP :
+      Geo.Congruent K P K P :=
+    hilbert_congruent_reflexive
+      Geo K P
+
+  have hSASP :=
+    SAS
+      Geo
+      K C P
+      K E P
+      hKCP
+      hKEP
+      hKC_KE
+      hCKP_EKP
+      hKP_KP
+
+  have hCP_EP :
+      Geo.Congruent C P E P :=
+    hSASP.sideBC
+
+  have hCP_PE :
+      Geo.Congruent C P P E :=
+    (Geo.congruent_reverse_second
+      C P
+      E P).mp
+      hCP_EP
+
+  have hMidP :
+      HilbertIsMidpoint Geo P C E :=
+    ⟨hCPE, hCP_PE⟩
+
+  --------------------------------------------------------------------
+  -- B,K,E is noncollinear.
+  --------------------------------------------------------------------
+
+  have hBKE :
+      Not (PrimCollinear Geo B K E) := by
+    intro h
+
+    have hBKA :
+        PrimCollinear Geo B K A :=
+      hilbert_primCollinear_trans
+        Geo
+        B K E A
+        hKE
+        h
+        hKEA
+
+    exact
+      hKAB
+        (PrimCollinearCycle
+          Geo B K A hBKA)
+
+  --------------------------------------------------------------------
+  -- Q is inside BE, hence the same SAS argument makes Q its midpoint.
+  --------------------------------------------------------------------
+
+  have hKQ :
+      K ≠ Q := by
+    intro h
+    subst Q
+
+    exact
+      hBKE
+        ((HilbertOrder.between_incidence
+          B K E hBQE).2.2.2.1)
+
+  have hRayKQQ :
+      HilbertSameRay Geo K Q Q :=
+    hilbert_sameRay_refl
+      Geo K Q hKQ.symm
+
+  have hInsideQ :
+      HilbertRayMeetsSegment Geo K Q B E :=
+    ⟨Q, hBQE, hRayKQQ⟩
+
+  have hBKQ :
+      Not (PrimCollinear Geo B K Q) :=
+    (hilbert_interior_angle_less
+      Geo
+      K Q B E
+      hBKE
+      hInsideQ).1
+
+  have hEKB :
+      Not (PrimCollinear Geo E K B) := by
+    intro h
+
+    exact
+      hBKE
+        (PrimCollinearSymm
+          Geo E K B h)
+
+  have hInsideQrev :
+      HilbertRayMeetsSegment Geo K Q E B :=
+    proposition39_test_ray_meets_segment_reverse
+      Geo
+      K Q B E
+      hInsideQ
+
+  have hEKQ :
+      Not (PrimCollinear Geo E K Q) :=
+    (hilbert_interior_angle_less
+      Geo
+      K Q E B
+      hEKB
+      hInsideQrev).1
+
+  have hKBQ :
+      Not (PrimCollinear Geo K B Q) := by
+    intro h
+
+    exact
+      hBKQ
+        (PrimCollinearSwap
+          Geo K B Q h)
+
+  have hKEQ :
+      Not (PrimCollinear Geo K E Q) := by
+    intro h
+
+    exact
+      hEKQ
+        (PrimCollinearSwap
+          Geo K E Q h)
+
+  have hBKQ_EKQ :
+      Geo.AngleCongruent
+        B K Q
+        E K Q :=
+    (Geo.angle_congruent_reverse_second
+      B K Q
+      Q K E).mp
+      hBKQ_QKE
+
+  have hKQ_KQ :
+      Geo.Congruent K Q K Q :=
+    hilbert_congruent_reflexive
+      Geo K Q
+
+  have hSASQ :=
+    SAS
+      Geo
+      K B Q
+      K E Q
+      hKBQ
+      hKEQ
+      hKB_KE
+      hBKQ_EKQ
+      hKQ_KQ
+
+  have hBQ_EQ :
+      Geo.Congruent B Q E Q :=
+    hSASQ.sideBC
+
+  have hBQ_QE :
+      Geo.Congruent B Q Q E :=
+    (Geo.congruent_reverse_second
+      B Q
+      E Q).mp
+      hBQ_EQ
+
+  have hMidQ :
+      HilbertIsMidpoint Geo Q B E :=
+    ⟨hBQE, hBQ_QE⟩
+
+  exact
+    ⟨E,
+      P,
+      Q,
+      hMidK,
+      hMidP,
+      hMidQ⟩
+
 
 /--
 Circle theorem used in Hilbert sec. 14.
