@@ -48,6 +48,16 @@ import CGJteamLab.Proposition35
 import CGJteamLab.Proposition36
 import CGJteamLab.Proposition37
 import CGJteamLab.Proposition38
+import CGJteamLab.Proposition39
+import CGJteamLab.Proposition40
+import CGJteamLab.Proposition41
+import CGJteamLab.Proposition42
+import CGJteamLab.Proposition43
+import CGJteamLab.Proposition44
+import CGJteamLab.Proposition45
+import CGJteamLab.Proposition46
+import CGJteamLab.Proposition47
+import CGJteamLab.Proposition48
 
 -- Suppes route
 import CGJteamLab.SuppesCore

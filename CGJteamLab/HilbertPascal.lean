@@ -9429,6 +9429,293 @@ theorem proposition39_test_angle_subtraction
 
   exact hLeftY
 
+theorem proposition39_test_angle_addition_interior
+    [HilbertCongruence Geo]
+    (O X C D O' X' C' D' : Geo.Point)
+    (hXOC :
+      Not (PrimCollinear Geo X O C))
+    (hX'O'C' :
+      Not (PrimCollinear Geo X' O' C'))
+    (hInside :
+      HilbertRayMeetsSegment Geo O D X C)
+    (hInside' :
+      HilbertRayMeetsSegment Geo O' D' X' C')
+    (hLeft :
+      Geo.AngleCongruent
+        X O D
+        X' O' D')
+    (hRight :
+      Geo.AngleCongruent
+        D O C
+        D' O' C') :
+    Geo.AngleCongruent
+      X O C
+      X' O' C' := by
+
+  --------------------------------------------------------------------
+  -- First interior ray: line OD crosses segment XC.
+  --------------------------------------------------------------------
+
+  rcases hInside with
+    ⟨H, hXHC, hRayODH⟩
+
+  have hOD :
+      O ≠ D :=
+    hRayODH.1.symm
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        O D hOD
+    with
+    ⟨lineOD,
+      hOlineOD,
+      hDlineOD⟩
+
+  have hHlineOD :
+      HilbertIncidence.OnLine H lineOD :=
+    hilbert_collinear_on_line
+      Geo
+      O D H
+      lineOD
+      hOD
+      hOlineOD
+      hDlineOD
+      hRayODH.2.2.1
+
+  have hXHCdata :=
+    HilbertOrder.between_incidence
+      X H C hXHC
+
+  have hXH :
+      X ≠ H :=
+    hXHCdata.1
+
+  have hHC :
+      H ≠ C :=
+    hXHCdata.2.1
+
+  have hXHCcol :
+      PrimCollinear Geo X H C :=
+    hXHCdata.2.2.2.1
+
+  have hXoff :
+      Not (HilbertIncidence.OnLine X lineOD) := by
+    intro hXline
+
+    have hCline :
+        HilbertIncidence.OnLine C lineOD :=
+      hilbert_collinear_on_line
+        Geo
+        X H C
+        lineOD
+        hXH
+        hXline
+        hHlineOD
+        hXHCcol
+
+    exact
+      hXOC
+        ⟨lineOD,
+          hXline,
+          hOlineOD,
+          hCline⟩
+
+  have hCoff :
+      Not (HilbertIncidence.OnLine C lineOD) := by
+    intro hCline
+
+    have hCHX :
+        PrimCollinear Geo C H X :=
+      PrimCollinearSymm
+        Geo X H C hXHCcol
+
+    have hXline :
+        HilbertIncidence.OnLine X lineOD :=
+      hilbert_collinear_on_line
+        Geo
+        C H X
+        lineOD
+        hHC.symm
+        hCline
+        hHlineOD
+        hCHX
+
+    exact
+      hXOC
+        ⟨lineOD,
+          hXline,
+          hOlineOD,
+          hCline⟩
+
+  have hOppXC :
+      HilbertOppositeSide Geo X C lineOD :=
+    ⟨hXoff,
+      hCoff,
+      ⟨H,
+        hXHC,
+        hHlineOD⟩⟩
+
+  have hNotSameXC :
+      Not (HilbertSameSide Geo X C lineOD) :=
+    hilbert_oppositeSide_not_sameSide
+      Geo X C lineOD hOppXC
+
+
+  --------------------------------------------------------------------
+  -- Second interior ray: line O'D' crosses segment X'C'.
+  --------------------------------------------------------------------
+
+  rcases hInside' with
+    ⟨H', hX'H'C', hRayO'D'H'⟩
+
+  have hO'D' :
+      O' ≠ D' :=
+    hRayO'D'H'.1.symm
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        O' D' hO'D'
+    with
+    ⟨lineO'D',
+      hO'line,
+      hD'line⟩
+
+  have hH'line :
+      HilbertIncidence.OnLine H' lineO'D' :=
+    hilbert_collinear_on_line
+      Geo
+      O' D' H'
+      lineO'D'
+      hO'D'
+      hO'line
+      hD'line
+      hRayO'D'H'.2.2.1
+
+  have hX'H'C'data :=
+    HilbertOrder.between_incidence
+      X' H' C' hX'H'C'
+
+  have hX'H' :
+      X' ≠ H' :=
+    hX'H'C'data.1
+
+  have hH'C' :
+      H' ≠ C' :=
+    hX'H'C'data.2.1
+
+  have hX'H'C'col :
+      PrimCollinear Geo X' H' C' :=
+    hX'H'C'data.2.2.2.1
+
+  have hX'off :
+      Not (HilbertIncidence.OnLine X' lineO'D') := by
+    intro hX'line
+
+    have hC'line :
+        HilbertIncidence.OnLine C' lineO'D' :=
+      hilbert_collinear_on_line
+        Geo
+        X' H' C'
+        lineO'D'
+        hX'H'
+        hX'line
+        hH'line
+        hX'H'C'col
+
+    exact
+      hX'O'C'
+        ⟨lineO'D',
+          hX'line,
+          hO'line,
+          hC'line⟩
+
+  have hC'off :
+      Not (HilbertIncidence.OnLine C' lineO'D') := by
+    intro hC'line
+
+    have hC'H'X' :
+        PrimCollinear Geo C' H' X' :=
+      PrimCollinearSymm
+        Geo X' H' C' hX'H'C'col
+
+    have hX'line :
+        HilbertIncidence.OnLine X' lineO'D' :=
+      hilbert_collinear_on_line
+        Geo
+        C' H' X'
+        lineO'D'
+        hH'C'.symm
+        hC'line
+        hH'line
+        hC'H'X'
+
+    exact
+      hX'O'C'
+        ⟨lineO'D',
+          hX'line,
+          hO'line,
+          hC'line⟩
+
+  have hOppX'C' :
+      HilbertOppositeSide Geo X' C' lineO'D' :=
+    ⟨hX'off,
+      hC'off,
+      ⟨H',
+        hX'H'C',
+        hH'line⟩⟩
+
+  have hNotSameX'C' :
+      Not (HilbertSameSide Geo X' C' lineO'D') :=
+    hilbert_oppositeSide_not_sameSide
+      Geo X' C' lineO'D' hOppX'C'
+
+
+  --------------------------------------------------------------------
+  -- The two configurations are both opposite-side configurations.
+  --------------------------------------------------------------------
+
+  have hSideConfiguration :
+      HilbertSameSide Geo X C lineOD ↔
+      HilbertSameSide Geo X' C' lineO'D' := by
+    constructor
+
+    · intro hSame
+      exact
+        False.elim
+          (hNotSameXC hSame)
+
+    · intro hSame'
+      exact
+        False.elim
+          (hNotSameX'C' hSame')
+
+
+  --------------------------------------------------------------------
+  -- Hilbert Theorem 15: addition of the two component angles.
+  --------------------------------------------------------------------
+
+  exact
+    hilbert_angle_addition
+      Geo
+      X O D C
+      X' O' D' C'
+      lineOD lineO'D'
+      hOD
+      hO'D'
+      hOlineOD
+      hDlineOD
+      hO'line
+      hD'line
+      hXoff
+      hCoff
+      hX'off
+      hC'off
+      hSideConfiguration
+      hXOC
+      hX'O'C'
+      hLeft
+      hRight
+
 
 /--
 Circle theorem used in Hilbert sec. 14.
