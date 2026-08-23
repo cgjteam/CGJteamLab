@@ -26,28 +26,980 @@ Nothing in this file is part of the permanent Hilbert theory.
 -/
 
 
-------------------------------------------------------------------------
--- Temporary Hilbert Theorem 21
-------------------------------------------------------------------------
+/--
+For two rays from the same foot into the same half-plane,
+their angles with the fixed base ray satisfy angle trichotomy.
+-/
+theorem proposition39_test_same_foot_angle_cases
+    [HilbertCongruence Geo]
+    (A D F X : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : F ≠ X)
+    (hSame : HilbertSameSide Geo A D base) :
+    Geo.AngleCongruent X F A X F D ∨
+    HilbertAngleLess Geo X F A X F D ∨
+    HilbertAngleLess Geo X F D X F A := by
+
+  have hXFA :
+      ¬ PrimCollinear Geo X F A :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X F A
+      base
+      hFX.symm
+      hXbase
+      hFbase
+      hSame.1
+
+  have hXFD :
+      ¬ PrimCollinear Geo X F D :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X F D
+      base
+      hFX.symm
+      hXbase
+      hFbase
+      hSame.2.1
+
+  exact
+    angle_trichotomy
+      Geo
+      X F A
+      X F D
+      hXFA
+      hXFD
 
 /--
-Temporary form of Hilbert Theorem 21.
-
-Hilbert, Foundations of Geometry, Section 6:
-all right angles are congruent.
-
-This declaration is an experimental assumption only.  It is used here
-to study the subsequent circle theory without yet committing to a
-permanent reconstruction of Theorem 21.
+If angle XFA is strictly smaller than angle XFD, with A and D
+on the same side of the base XF, then ray FA meets the open
+segment XD.
 -/
-axiom proposition39_test_theorem_21
+theorem proposition39_test_angle_less_ray_inside
+    [HilbertCongruence Geo]
+    (A D F X : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : F ≠ X)
+    (hSame : HilbertSameSide Geo A D base)
+    (hLess :
+      HilbertAngleLess Geo X F A X F D) :
+    HilbertRayMeetsSegment Geo F A X D := by
+
+  rcases hLess with
+    ⟨hXFA, hXFD, J, hInsideJ, hAngle⟩
+
+  rcases hInsideJ with
+    ⟨H, hXHD, hRayFJH⟩
+
+  have hDHX :
+      Geo.Between D H X :=
+    (HilbertOrder.between_incidence
+      X H D hXHD).2.2.2.2
+
+  have hDXF :
+      ¬ PrimCollinear Geo D X F := by
+    intro h
+    exact
+      hXFD
+        (PrimCollinearCycle
+          Geo D X F h)
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        D H F X
+        hDHX
+        hDXF
+    with
+    ⟨lineFX,
+      hFlineFX,
+      hXlineFX,
+      hDHSame_lineFX⟩
+
+  have hLineEq :
+      lineFX = base :=
+    HilbertPlaneIncidence.line_unique
+      F X hFX
+      lineFX base
+      hFlineFX hXlineFX
+      hFbase hXbase
+
+  have hDHSame :
+      HilbertSameSide Geo D H base := by
+    rw [← hLineEq]
+    exact hDHSame_lineFX
+
+  have hAHSame :
+      HilbertSameSide Geo A H base :=
+    hilbert_sameSide_trans
+      Geo
+      A D H
+      base
+      hSame
+      hDHSame
+
+  have hXFJ :
+      ¬ PrimCollinear Geo X F J :=
+    (hilbert_interior_angle_less
+      Geo
+      F J X D
+      hXFD
+      ⟨H, hXHD, hRayFJH⟩).1
+
+  have hFJ :
+      F ≠ J :=
+    hRayFJH.1.symm
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        F J hFJ
+    with
+    ⟨lineFJ,
+      hFlineFJ,
+      hJlineFJ⟩
+
+  have hXoffFJ :
+      ¬ HilbertIncidence.OnLine X lineFJ := by
+    intro hXline
+    exact
+      hXFJ
+        ⟨lineFJ,
+          hXline,
+          hFlineFJ,
+          hJlineFJ⟩
+
+  have hRayFJJ :
+      HilbertSameRay Geo F J J :=
+    hilbert_sameRay_refl
+      Geo F J hFJ.symm
+
+  have hJHSame :
+      HilbertSameSide Geo J H base :=
+    hilbert_sameRay_points_sameSide
+      Geo
+      F J
+      J H
+      X
+      lineFJ base
+      hFlineFJ
+      hJlineFJ
+      hFbase
+      hXbase
+      hXoffFJ
+      hRayFJJ
+      hRayFJH
+
+  have hHJSame :
+      HilbertSameSide Geo H J base :=
+    hilbert_sameSide_symm
+      Geo J H base hJHSame
+
+  have hAJSame :
+      HilbertSameSide Geo A J base :=
+    hilbert_sameSide_trans
+      Geo
+      A H J
+      base
+      hAHSame
+      hHJSame
+
+  rcases
+      hilbert_angle_unique_common_ray
+        Geo
+        X F A J
+        base
+        hFX.symm
+        hXbase
+        hFbase
+        hAJSame.1
+        hAJSame
+        hAngle
+    with
+    ⟨Z,
+      hRayZA,
+      hRayZJ⟩
+
+  have hRayAJ :
+      HilbertSameRay Geo F A J :=
+    hilbert_sameRay_of_common
+      Geo
+      F Z A J
+      hRayZA
+      hRayZJ
+
+  have hRayJA :
+      HilbertSameRay Geo F J A :=
+    hilbert_sameRay_symm
+      Geo
+      F A J
+      hRayAJ
+
+  have hRayFAH :
+      HilbertSameRay Geo F A H :=
+    hilbert_sameRay_of_common
+      Geo
+      F J A H
+      hRayJA
+      hRayFJH
+
+  exact
+    ⟨H,
+      hXHD,
+      hRayFAH⟩
+
+/--
+A right angle may be expressed using any chosen point on the
+opposite base ray.
+-/
+theorem proposition39_test_right_angle_chosen_supplement
+    [HilbertCongruence Geo]
+    (D F X Y : Geo.Point)
+    (hXFY : Geo.Between X F Y)
+    (hXFD : ¬ PrimCollinear Geo X F D)
+    (hRight : HilbertRightAngle Geo X F D) :
+    Geo.AngleCongruent X F D D F Y := by
+
+  rcases hRight with
+    ⟨E, hXFE, hRightE⟩
+
+  have hRefl :
+      Geo.AngleCongruent X F D X F D :=
+    Geo.angle_congruent_reflexive
+      X F D
+
+  have hSupp :
+      Geo.AngleCongruent D F E D F Y :=
+    hilbert_adjacent_angles_congruent
+      Geo
+      X F D E
+      X F D Y
+      hXFE
+      hXFY
+      hXFD
+      hXFD
+      hRefl
+
+  exact
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      X F D
+      D F E
+      D F Y
+      hRightE
+      hSupp
+
+/--
+If ray FA meets the open segment XD and X-F-Y, then ray FD
+meets the open segment AY, provided A and D lie on the same
+side of the base XY.
+-/
+theorem proposition39_test_inside_flip
+    [HilbertOrder Geo]
+    (A D F X Y : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hYbase : HilbertIncidence.OnLine Y base)
+    (hSame : HilbertSameSide Geo A D base)
+    (hXFY : Geo.Between X F Y)
+    (hInside :
+      HilbertRayMeetsSegment Geo F A X D) :
+    HilbertRayMeetsSegment Geo F D A Y := by
+
+  rcases hInside with
+    ⟨H, hXHD, hRayFAH⟩
+
+  have hFA :
+      F ≠ A := by
+    intro h
+    subst A
+    exact hSame.1 hFbase
+
+  have hXFYData :=
+    HilbertOrder.between_incidence
+      X F Y hXFY
+
+  have hFY :
+      F ≠ Y :=
+    hXFYData.2.1
+
+  have hXY :
+      X ≠ Y :=
+    hXFYData.2.2.1
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        F A hFA
+    with
+    ⟨lineFA,
+      hFlineFA,
+      hAlineFA⟩
+
+  have hHlineFA :
+      HilbertIncidence.OnLine H lineFA :=
+    hilbert_collinear_on_line
+      Geo
+      F A H
+      lineFA
+      hFA
+      hFlineFA
+      hAlineFA
+      hRayFAH.2.2.1
+
+  have hXYD :
+      ¬ Collinear Geo X Y D :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X Y D
+      base
+      hXY
+      hXbase
+      hYbase
+      hSame.2.1
+
+  have hYDsame :
+      HilbertSameSide Geo Y D lineFA :=
+    hilbert_third_side_endpoints_sameSide
+      Geo
+      X Y D
+      F H
+      lineFA
+      hXYD
+      hXFY
+      hXHD
+      hFlineFA
+      hHlineFA
+
+  have hDYsame :
+      HilbertSameSide Geo D Y lineFA :=
+    hilbert_sameSide_symm
+      Geo Y D lineFA hYDsame
+
+  have hFYD :
+      ¬ Collinear Geo F Y D :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      F Y D
+      base
+      hFY
+      hFbase
+      hYbase
+      hSame.2.1
+
+  have hDFY :
+      ¬ Collinear Geo D F Y := by
+    intro h
+    exact
+      hFYD
+        (PrimCollinearCycle
+          Geo D F Y h)
+
+  rcases
+      hilbert_sameSide_rays_order
+        Geo
+        F D A Y
+        lineFA
+        hFA
+        hFlineFA
+        hAlineFA
+        hDYsame.1
+        hDYsame.2.1
+        hDYsame
+        hDFY
+    with
+    hFD | hFYmeet
+
+  · rcases hFD with
+      ⟨K, hYKA, hRayFDK⟩
+
+    have hAKY :
+        Geo.Between A K Y :=
+      (HilbertOrder.between_incidence
+        Y K A hYKA).2.2.2.2
+
+    exact
+      ⟨K,
+        hAKY,
+        hRayFDK⟩
+
+  · rcases hFYmeet with
+      ⟨K, hDKA, hRayFYK⟩
+
+    have hKbase :
+        HilbertIncidence.OnLine K base :=
+      hilbert_collinear_on_line
+        Geo
+        F Y K
+        base
+        hFY
+        hFbase
+        hYbase
+        hRayFYK.2.2.1
+
+    have hOppDA :
+        HilbertOppositeSide Geo D A base :=
+      ⟨hSame.2.1,
+        hSame.1,
+        ⟨K,
+          hDKA,
+          hKbase⟩⟩
+
+    have hSameDA :
+        HilbertSameSide Geo D A base :=
+      hilbert_sameSide_symm
+        Geo A D base hSame
+
+    exact
+      False.elim
+        ((hilbert_oppositeSide_not_sameSide
+            Geo D A base hOppDA)
+          hSameDA)
+
+/--
+A strict inequality between two right angles with the same first
+base ray is impossible when their second rays lie in the same
+half-plane.
+-/
+theorem proposition39_test_right_angle_less_impossible
+    [HilbertCongruence Geo]
+    (A D F X : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : F ≠ X)
+    (hSame : HilbertSameSide Geo A D base)
+    (hRightA : HilbertRightAngle Geo X F A)
+    (hRightD : HilbertRightAngle Geo X F D)
+    (hLess :
+      HilbertAngleLess Geo X F A X F D) :
+    False := by
+
+  have hXFA :
+      ¬ PrimCollinear Geo X F A :=
+    hLess.1
+
+  have hXFD :
+      ¬ PrimCollinear Geo X F D :=
+    hLess.2.1
+
+  rcases
+      HilbertOrder.between_extension
+        X F hFX.symm
+    with
+    ⟨Y, hXFY⟩
+
+  have hXFYData :=
+    HilbertOrder.between_incidence
+      X F Y hXFY
+
+  have hFY :
+      F ≠ Y :=
+    hXFYData.2.1
+
+  have hYbase :
+      HilbertIncidence.OnLine Y base :=
+    hilbert_collinear_on_line
+      Geo
+      X F Y
+      base
+      hXFYData.1
+      hXbase
+      hFbase
+      hXFYData.2.2.2.1
+
+  have hInsideA :
+      HilbertRayMeetsSegment Geo F A X D :=
+    proposition39_test_angle_less_ray_inside
+      Geo
+      A D F X
+      base
+      hFbase
+      hXbase
+      hFX
+      hSame
+      hLess
+
+  have hInsideD :
+      HilbertRayMeetsSegment Geo F D A Y :=
+    proposition39_test_inside_flip
+      Geo
+      A D F X Y
+      base
+      hFbase
+      hXbase
+      hYbase
+      hSame
+      hXFY
+      hInsideA
+
+  have hAFY :
+      ¬ PrimCollinear Geo A F Y := by
+
+    have hFYA :
+        ¬ PrimCollinear Geo F Y A :=
+      hilbert_not_collinear_of_off_line
+        Geo
+        F Y A
+        base
+        hFY
+        hFbase
+        hYbase
+        hSame.1
+
+    intro h
+
+    exact
+      hFYA
+        (PrimCollinearCycle
+          Geo A F Y h)
+
+  have hDFY :
+      ¬ PrimCollinear Geo D F Y := by
+
+    have hFYD :
+        ¬ PrimCollinear Geo F Y D :=
+      hilbert_not_collinear_of_off_line
+        Geo
+        F Y D
+        base
+        hFY
+        hFbase
+        hYbase
+        hSame.2.1
+
+    intro h
+
+    exact
+      hFYD
+        (PrimCollinearCycle
+          Geo D F Y h)
+
+  have hXFA_AFY :
+      Geo.AngleCongruent X F A A F Y :=
+    proposition39_test_right_angle_chosen_supplement
+      Geo
+      A F X Y
+      hXFY
+      hXFA
+      hRightA
+
+  have hXFD_DFY :
+      Geo.AngleCongruent X F D D F Y :=
+    proposition39_test_right_angle_chosen_supplement
+      Geo
+      D F X Y
+      hXFY
+      hXFD
+      hRightD
+
+  have hXFA_DFY :
+      HilbertAngleLess Geo X F A D F Y :=
+    hilbert_angleLess_transport_right
+      Geo
+      X F A
+      X F D
+      D F Y
+      hLess
+      hDFY
+      hXFD_DFY
+
+  have hAFY_XFA :
+      Geo.AngleCongruent A F Y X F A :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      X F A
+      A F Y
+      hXFA_AFY
+
+  have hAFY_DFY :
+      HilbertAngleLess Geo A F Y D F Y :=
+    hilbert_angleLess_transport_left
+      Geo
+      X F A
+      A F Y
+      D F Y
+      hXFA_DFY
+      hAFY
+      hAFY_XFA
+
+  rcases hInsideD with
+    ⟨K, hAKY, hRayFDK⟩
+
+  have hYKA :
+      Geo.Between Y K A :=
+    (HilbertOrder.between_incidence
+      A K Y hAKY).2.2.2.2
+
+  have hInsideDrev :
+      HilbertRayMeetsSegment Geo F D Y A :=
+    ⟨K,
+      hYKA,
+      hRayFDK⟩
+
+  have hYFA :
+      ¬ PrimCollinear Geo Y F A := by
+
+    intro h
+
+    exact
+      hAFY
+        (PrimCollinearSymm
+          Geo Y F A h)
+
+  have hYFD_YFA :
+      HilbertAngleLess Geo Y F D Y F A :=
+    hilbert_interior_angle_less
+      Geo
+      F D Y A
+      hYFA
+      hInsideDrev
+
+  have hYFDrefl :
+      Geo.AngleCongruent Y F D Y F D :=
+    Geo.angle_congruent_reflexive
+      Y F D
+
+  have hDFY_YFD :
+      Geo.AngleCongruent D F Y Y F D :=
+    (Geo.angle_congruent_reverse_first
+      Y F D
+      Y F D).mp
+      hYFDrefl
+
+  have hDFY_YFA :
+      HilbertAngleLess Geo D F Y Y F A :=
+    hilbert_angleLess_transport_left
+      Geo
+      Y F D
+      D F Y
+      Y F A
+      hYFD_YFA
+      hDFY
+      hDFY_YFD
+
+  have hYFArefl :
+      Geo.AngleCongruent Y F A Y F A :=
+    Geo.angle_congruent_reflexive
+      Y F A
+
+  have hYFA_AFY :
+      Geo.AngleCongruent Y F A A F Y :=
+    (Geo.angle_congruent_reverse_second
+      Y F A
+      Y F A).mp
+      hYFArefl
+
+  have hDFY_AFY :
+      HilbertAngleLess Geo D F Y A F Y :=
+    hilbert_angleLess_transport_right
+      Geo
+      D F Y
+      Y F A
+      A F Y
+      hDFY_YFA
+      hAFY
+      hYFA_AFY
+
+  have hCycle :
+      HilbertAngleLess Geo A F Y A F Y :=
+    hilbert_angleLess_trans
+      Geo
+      A F Y
+      D F Y
+      A F Y
+      hAFY_DFY
+      hDFY_AFY
+
+  exact
+    (hilbert_angleLess_irrefl
+      Geo A F Y)
+      hCycle
+
+/--
+Two right angles erected from the same base ray into the same
+half-plane are congruent.
+-/
+theorem proposition39_test_same_base_right_angles_congruent
+    [HilbertCongruence Geo]
+    (A D F X : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : F ≠ X)
+    (hSame : HilbertSameSide Geo A D base)
+    (hRightA : HilbertRightAngle Geo X F A)
+    (hRightD : HilbertRightAngle Geo X F D) :
+    Geo.AngleCongruent X F A X F D := by
+
+  rcases
+      proposition39_test_same_foot_angle_cases
+        Geo
+        A D F X
+        base
+        hFbase
+        hXbase
+        hFX
+        hSame
+    with
+    hCong | hLessAD | hLessDA
+
+  · exact hCong
+
+  · exact
+      False.elim
+        (proposition39_test_right_angle_less_impossible
+          Geo
+          A D F X
+          base
+          hFbase
+          hXbase
+          hFX
+          hSame
+          hRightA
+          hRightD
+          hLessAD)
+
+  · have hSameDA :
+        HilbertSameSide Geo D A base :=
+      hilbert_sameSide_symm
+        Geo A D base hSame
+
+    exact
+      False.elim
+        (proposition39_test_right_angle_less_impossible
+          Geo
+          D A F X
+          base
+          hFbase
+          hXbase
+          hFX
+          hSameDA
+          hRightD
+          hRightA
+          hLessDA)
+
+/--
+All right angles are congruent.
+
+This is Hilbert Theorem 21 in a form with explicit carrier lines
+for the two first arms.
+-/
+theorem proposition39_test_all_right_angles_congruent
+    [HilbertCongruence Geo]
+    (A D F G X E : Geo.Point)
+    (base1 base2 : Geo.Line)
+    (hFbase1 : HilbertIncidence.OnLine F base1)
+    (hXbase1 : HilbertIncidence.OnLine X base1)
+    (hAoff : Not (HilbertIncidence.OnLine A base1))
+    (hGbase2 : HilbertIncidence.OnLine G base2)
+    (hEbase2 : HilbertIncidence.OnLine E base2)
+    (hDoff : Not (HilbertIncidence.OnLine D base2))
+    (hRightA : HilbertRightAngle Geo X F A)
+    (hRightD : HilbertRightAngle Geo E G D) :
+    Geo.AngleCongruent X F A E G D := by
+
+  rcases hRightA with
+    ⟨Y, hXFY, hRightAeq⟩
+
+  rcases hRightD with
+    ⟨T, hEGT, hRightDeq⟩
+
+  have hXF :
+      X ≠ F :=
+    (HilbertOrder.between_incidence
+      X F Y hXFY).1
+
+  have hEG :
+      E ≠ G :=
+    (HilbertOrder.between_incidence
+      E G T hEGT).1
+
+  have hGE :
+      G ≠ E :=
+    hEG.symm
+
+  have hXFA :
+      Not (PrimCollinear Geo X F A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X F A
+      base1
+      hXF
+      hXbase1
+      hFbase1
+      hAoff
+
+  rcases
+      HilbertCongruence.angle_construction
+        (Geo := Geo)
+        X F A
+        E G D
+        hXFA
+        hEG
+        base2
+        hEbase2
+        hGbase2
+        hDoff
+    with
+    ⟨K, hKDSame, hCopy, _hUnique⟩
+
+  have hEGK :
+      Not (PrimCollinear Geo E G K) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      E G K
+      base2
+      hEG
+      hEbase2
+      hGbase2
+      hKDSame.1
+
+  have hSupp :
+      Geo.AngleCongruent A F Y K G T :=
+    hilbert_adjacent_angles_congruent
+      Geo
+      X F A Y
+      E G K T
+      hXFY
+      hEGT
+      hXFA
+      hEGK
+      hCopy
+
+  have hEGK_XFA :
+      Geo.AngleCongruent E G K X F A :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      X F A
+      E G K
+      hCopy
+
+  have hEGK_AFY :
+      Geo.AngleCongruent E G K A F Y :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      E G K
+      X F A
+      A F Y
+      hEGK_XFA
+      hRightAeq
+
+  have hEGK_KGT :
+      Geo.AngleCongruent E G K K G T :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      E G K
+      A F Y
+      K G T
+      hEGK_AFY
+      hSupp
+
+  have hRightK :
+      HilbertRightAngle Geo E G K :=
+    ⟨T,
+      hEGT,
+      hEGK_KGT⟩
+
+  have hRightD' :
+      HilbertRightAngle Geo E G D :=
+    ⟨T,
+      hEGT,
+      hRightDeq⟩
+
+  have hKGD :
+      Geo.AngleCongruent E G K E G D :=
+    proposition39_test_same_base_right_angles_congruent
+      Geo
+      K D G E
+      base2
+      hGbase2
+      hEbase2
+      hGE
+      hKDSame
+      hRightK
+      hRightD'
+
+  exact
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      X F A
+      E G K
+      E G D
+      hCopy
+      hKGD
+
+theorem proposition39_test_theorem_21
     [HilbertCongruence Geo]
     (A O B A' O' B' : Geo.Point)
     (hAOB : Not (PrimCollinear Geo A O B))
     (hA'OB' : Not (PrimCollinear Geo A' O' B'))
     (hRight : HilbertRightAngle Geo A O B)
     (hRight' : HilbertRightAngle Geo A' O' B') :
-    Geo.AngleCongruent A O B A' O' B'
+    Geo.AngleCongruent A O B A' O' B' := by
+
+  have hAO :
+      A ≠ O :=
+    hilbert_noncollinear_ne_first
+      Geo A O B hAOB
+
+  have hA'O' :
+      A' ≠ O' :=
+    hilbert_noncollinear_ne_first
+      Geo A' O' B' hA'OB'
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A O hAO
+    with
+    ⟨base1, hAbase1, hObase1⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        A' O' hA'O'
+    with
+    ⟨base2, hA'base2, hO'base2⟩
+
+  have hBoff :
+      Not (HilbertIncidence.OnLine B base1) := by
+    intro hBbase1
+    exact
+      hAOB
+        ⟨base1,
+          hAbase1,
+          hObase1,
+          hBbase1⟩
+
+  have hB'off :
+      Not (HilbertIncidence.OnLine B' base2) := by
+    intro hB'base2
+    exact
+      hA'OB'
+        ⟨base2,
+          hA'base2,
+          hO'base2,
+          hB'base2⟩
+
+  exact
+    proposition39_test_all_right_angles_congruent
+      Geo
+      B B'
+      O O'
+      A A'
+      base1 base2
+      hObase1
+      hAbase1
+      hBoff
+      hO'base2
+      hA'base2
+      hB'off
+      hRight
+      hRight'
+
+
 
 
 ------------------------------------------------------------------------
@@ -117,25 +1069,17 @@ theorem proposition39_test_perpendiculars_parallel
       hOpp
       hAngles
 
-------------------------------------------------------------------------
--- Temporary right-angle construction
-------------------------------------------------------------------------
-
-/--
-Temporary existence statement for a right angle erected at a point
-lying between two points of a line.
-
-Hilbert proves existence of right angles already in Section 6,
-before Theorem 15.  This assumption is kept separate from temporary
-Theorem 21 so that the two dependencies can be tracked independently.
--/
-axiom proposition39_test_right_angle_exists
+theorem proposition39_test_right_angle_exists
     [HilbertCongruence Geo]
     (A O C : Geo.Point)
     (hAOC : Geo.Between A O C) :
     ∃ B : Geo.Point,
       Not (PrimCollinear Geo A O B) ∧
-      HilbertRightAngle Geo A O B
+      HilbertRightAngle Geo A O B := by
+
+  exact
+    hilbert_right_angle_exists_nondegenerate
+      Geo A O C hAOC
 
 ------------------------------------------------------------------------
 -- Copying a right angle to the opposite side of a transversal
@@ -3366,6 +4310,1279 @@ theorem proposition39_test_circumcircle_exists
 -- Hilbert sec. 7
 -- Circle theorem: converse in the crossing-chord configuration
 ------------------------------------------------------------------------
+theorem proposition39_test_first_secant_noncollinear
+    [HilbertOrder Geo]
+    (O A C B : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hAC : A ≠ C) :
+    Not (PrimCollinear Geo A C B) := by
+
+  intro hACB
+
+  have hOAC :
+      PrimCollinear Geo O A C :=
+    hRayAC.2.2.1
+
+  have hOAB :
+      PrimCollinear Geo O A B :=
+    hilbert_primCollinear_trans
+      Geo
+      O A C B
+      hAC
+      hOAC
+      hACB
+
+  have hABO :
+      PrimCollinear Geo A B O :=
+    PrimCollinearCycle
+      Geo O A B hOAB
+
+  have hAOB' :
+      PrimCollinear Geo A O B :=
+    PrimCollinearRotate
+      Geo A B O hABO
+
+  exact hAOB hAOB'
+
+
+theorem proposition39_test_second_secant_noncollinear
+    [HilbertOrder Geo]
+    (O A B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hRayBD : HilbertSameRay Geo O B D)
+    (hBD : B ≠ D) :
+    Not (PrimCollinear Geo A D B) := by
+
+  intro hADB
+
+  have hOBD :
+      PrimCollinear Geo O B D :=
+    hRayBD.2.2.1
+
+  have hBDO :
+      PrimCollinear Geo B D O :=
+    PrimCollinearCycle
+      Geo O B D hOBD
+
+  have hABD :
+      PrimCollinear Geo A B D :=
+    PrimCollinearRotate
+      Geo A D B hADB
+
+  have hABO :
+      PrimCollinear Geo A B O :=
+    hilbert_primCollinear_trans
+      Geo
+      A B D O
+      hBD
+      hABD
+      hBDO
+
+  have hAOB' :
+      PrimCollinear Geo A O B :=
+    PrimCollinearRotate
+      Geo A B O hABO
+
+  exact hAOB hAOB'
+
+theorem proposition39_test_circle_crossing_chords_concyclic_degenerate
+    [HilbertEuclideanPlane Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayBD : HilbertSameRay Geo O B D)
+    (hDeg : A = C ∨ B = D) :
+    HilbertConcyclic4 Geo A C D B := by
+
+  rcases hDeg with hACeq | hBDeq
+
+  --------------------------------------------------------------------
+  -- A = C
+  --------------------------------------------------------------------
+
+  · subst C
+
+    by_cases hBD : B = D
+
+    --------------------------------------------------------------
+    -- A = C and B = D.
+    -- Use the circumcircle of the genuine triangle AOB.
+    --------------------------------------------------------------
+
+    · subst D
+
+      rcases
+          proposition39_test_circumcircle_exists
+            Geo
+            A O B
+            hAOB
+        with
+        ⟨K, hA, hO, hB⟩
+
+      exact
+        hilbert_concyclic4_of_circle
+          Geo
+          K A
+          A A B B
+          hA
+          hA
+          hB
+          hB
+
+    --------------------------------------------------------------
+    -- A = C, but B != D.
+    -- The triangle ADB is noncollinear.
+    --------------------------------------------------------------
+
+    · have hADB :
+          Not (PrimCollinear Geo A D B) :=
+        proposition39_test_second_secant_noncollinear
+          Geo
+          O A B D
+          hAOB
+          hRayBD
+          hBD
+
+      rcases
+          proposition39_test_circumcircle_exists
+            Geo
+            A D B
+            hADB
+        with
+        ⟨K, hA, hD, hB⟩
+
+      exact
+        hilbert_concyclic4_of_circle
+          Geo
+          K A
+          A A D B
+          hA
+          hA
+          hD
+          hB
+
+  --------------------------------------------------------------------
+  -- B = D
+  --------------------------------------------------------------------
+
+  · subst D
+
+    by_cases hAC : A = C
+
+    --------------------------------------------------------------
+    -- Again A = C and B = D.
+    --------------------------------------------------------------
+
+    · subst C
+
+      rcases
+          proposition39_test_circumcircle_exists
+            Geo
+            A O B
+            hAOB
+        with
+        ⟨K, hA, hO, hB⟩
+
+      exact
+        hilbert_concyclic4_of_circle
+          Geo
+          K A
+          A A B B
+          hA
+          hA
+          hB
+          hB
+
+    --------------------------------------------------------------
+    -- B = D, but A != C.
+    -- The triangle ACB is noncollinear.
+    --------------------------------------------------------------
+
+    · have hACB :
+          Not (PrimCollinear Geo A C B) :=
+        proposition39_test_first_secant_noncollinear
+          Geo
+          O A C B
+          hAOB
+          hRayAC
+          hAC
+
+      rcases
+          proposition39_test_circumcircle_exists
+            Geo
+            A C B
+            hACB
+        with
+        ⟨K, hA, hC, hB⟩
+
+      exact
+        hilbert_concyclic4_of_circle
+          Geo
+          K A
+          A C B B
+          hA
+          hC
+          hB
+          hB
+
+theorem proposition39_test_circle_crossing_chords_nondegenerate_data
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayBD : HilbertSameRay Geo O B D)
+    (hAC : A ≠ C)
+    (hBD : B ≠ D) :
+    Not (PrimCollinear Geo O A D) ∧
+    Not (PrimCollinear Geo O B C) ∧
+    (Geo.Between O A C ∨ Geo.Between O C A) ∧
+    (Geo.Between O B D ∨ Geo.Between O D B) := by
+
+  have hRayAA :
+      HilbertSameRay Geo O A A :=
+    hilbert_sameRay_refl
+      Geo O A hRayAC.1
+
+  have hRayBB :
+      HilbertSameRay Geo O B B :=
+    hilbert_sameRay_refl
+      Geo O B hRayBD.1
+
+  have hAOD :
+      Not (PrimCollinear Geo A O D) :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O B
+      A D
+      hAOB
+      hRayAA
+      hRayBD
+
+  have hOAD :
+      Not (PrimCollinear Geo O A D) := by
+    intro h
+    exact
+      hAOD
+        (PrimCollinearSwap
+          Geo O A D h)
+
+  have hCOB :
+      Not (PrimCollinear Geo C O B) :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O B
+      C B
+      hAOB
+      hRayAC
+      hRayBB
+
+  have hOBC :
+      Not (PrimCollinear Geo O B C) := by
+    intro h
+    exact
+      hCOB
+        (PrimCollinearRotate
+          Geo
+          C B O
+          (PrimCollinearSymm
+            Geo O B C h))
+
+  have hOrderAC :
+      Geo.Between O A C ∨
+      Geo.Between O C A := by
+
+    rcases
+        hilbert_sameRay_cases
+          Geo O A C hRayAC
+      with hEq | hOAC | hOCA
+
+    · exact False.elim (hAC hEq)
+
+    · exact Or.inl hOAC
+
+    · exact Or.inr hOCA
+
+  have hOrderBD :
+      Geo.Between O B D ∨
+      Geo.Between O D B := by
+
+    rcases
+        hilbert_sameRay_cases
+          Geo O B D hRayBD
+      with hEq | hOBD | hODB
+
+    · exact False.elim (hBD hEq)
+
+    · exact Or.inl hOBD
+
+    · exact Or.inr hODB
+
+  exact
+    ⟨hOAD,
+      hOBC,
+      hOrderAC,
+      hOrderBD⟩
+
+
+theorem proposition39_test_circle_crossing_chords_angle_at_O
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayBD : HilbertSameRay Geo O B D) :
+    Geo.AngleCongruent
+      A O D
+      B O C := by
+
+  have hAOB_AOD :
+      Geo.Angle A O B =
+      Geo.Angle A O D :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo O A B D hRayBD
+
+  have hBOA_BOC :
+      Geo.Angle B O A =
+      Geo.Angle B O C :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo O B A C hRayAC
+
+  have hAOB_BOA :
+      Geo.AngleCongruent
+        A O B
+        B O A :=
+    (Geometry.Geo.angle_congruent_reverse_second
+      Geo
+      A O B
+      A O B).mp
+      (Geometry.Geo.angle_congruent_reflexive
+        Geo A O B)
+
+  unfold Geometry.Geo.AngleCongruent at hAOB_BOA ⊢
+
+  rw [← hAOB_AOD, ← hBOA_BOC]
+
+  exact hAOB_BOA
+
+theorem proposition39_test_circle_outer_outer_angles
+    [HilbertCongruence Geo]
+    (O A C B D : Geo.Point)
+    (hOAD : Not (PrimCollinear Geo O A D))
+    (hOBC : Not (PrimCollinear Geo O B C))
+    (hOAC : Geo.Between O A C)
+    (hOBD : Geo.Between O B D)
+    (hAngle :
+      Geo.AngleCongruent
+        O A D
+        O B C) :
+    Geo.AngleCongruent
+      C A D
+      C B D := by
+
+  --------------------------------------------------------------------
+  -- A != D.
+  --------------------------------------------------------------------
+
+  have hADO :
+      Not (PrimCollinear Geo A D O) := by
+
+    intro h
+
+    have hDOA :
+        PrimCollinear Geo D O A :=
+      PrimCollinearCycle
+        Geo A D O h
+
+    have hOAD' :
+        PrimCollinear Geo O A D :=
+      PrimCollinearCycle
+        Geo D O A hDOA
+
+    exact hOAD hOAD'
+
+  have hAD :
+      A ≠ D :=
+    hilbert_noncollinear_ne_first
+      Geo A D O hADO
+
+  --------------------------------------------------------------------
+  -- B != C.
+  --------------------------------------------------------------------
+
+  have hBCO :
+      Not (PrimCollinear Geo B C O) := by
+
+    intro h
+
+    have hCOB :
+        PrimCollinear Geo C O B :=
+      PrimCollinearCycle
+        Geo B C O h
+
+    have hOBC' :
+        PrimCollinear Geo O B C :=
+      PrimCollinearCycle
+        Geo C O B hCOB
+
+    exact hOBC hOBC'
+
+  have hBC :
+      B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C O hBCO
+
+  --------------------------------------------------------------------
+  -- Since O-A-C, angle DAC is supplementary to OAD.
+  --------------------------------------------------------------------
+
+  have hRayADD :
+      HilbertSameRay Geo A D D :=
+    hilbert_sameRay_refl
+      Geo A D hAD.symm
+
+  have hSuppA :
+      BookZeroSupplement Geo
+        O A D
+        D C :=
+    ⟨hRayADD, hOAC⟩
+
+  --------------------------------------------------------------------
+  -- Since O-B-D, angle CBD is supplementary to OBC.
+  --------------------------------------------------------------------
+
+  have hRayBCC :
+      HilbertSameRay Geo B C C :=
+    hilbert_sameRay_refl
+      Geo B C hBC.symm
+
+  have hSuppB :
+      BookZeroSupplement Geo
+        O B C
+        C D :=
+    ⟨hRayBCC, hOBD⟩
+
+  --------------------------------------------------------------------
+  -- Supplements of congruent angles are congruent.
+  --------------------------------------------------------------------
+
+  have hDAC_CBD :
+      Geo.AngleCongruent
+        D A C
+        C B D :=
+    bookZero_43_supplements
+      Geo
+      O A D
+      D C
+      O B C
+      C D
+      hAngle
+      hSuppA
+      hSuppB
+      hOAD
+      hOBC
+
+  --------------------------------------------------------------------
+  -- Reverse the first angle: DAC = CAD.
+  --------------------------------------------------------------------
+
+  exact
+    (Geo.angle_congruent_reverse_first
+      D A C
+      C B D).mp
+      hDAC_CBD
+
+theorem proposition39_test_circle_inner_inner_angles
+    [HilbertCongruence Geo]
+    (O A C B D : Geo.Point)
+    (hOCA : Geo.Between O C A)
+    (hODB : Geo.Between O D B)
+    (hAngle :
+      Geo.AngleCongruent
+        O A D
+        O B C) :
+    Geo.AngleCongruent
+      C A D
+      C B D := by
+
+  have hACO :
+      Geo.Between A C O :=
+    (HilbertOrder.between_incidence
+      O C A hOCA).2.2.2.2
+
+  have hBDO :
+      Geo.Between B D O :=
+    (HilbertOrder.between_incidence
+      O D B hODB).2.2.2.2
+
+  have hRayACO :
+      HilbertSameRay Geo A C O :=
+    hilbert_sameRay_of_between
+      Geo A C O hACO
+
+  have hRayAOC :
+      HilbertSameRay Geo A O C :=
+    hilbert_sameRay_symm
+      Geo A C O hRayACO
+
+  have hRayBDO :
+      HilbertSameRay Geo B D O :=
+    hilbert_sameRay_of_between
+      Geo B D O hBDO
+
+  have hRayBOD :
+      HilbertSameRay Geo B O D :=
+    hilbert_sameRay_symm
+      Geo B D O hRayBDO
+
+  have hLeft :
+      Geo.Angle O A D =
+      Geo.Angle C A D :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo A O C D hRayAOC
+
+  have hRight :
+      Geo.Angle O B C =
+      Geo.Angle D B C :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo B O D C hRayBOD
+
+  have hCAD_DBC :
+      Geo.AngleCongruent
+        C A D
+        D B C := by
+
+    unfold Geometry.Geo.AngleCongruent
+      at hAngle ⊢
+
+    rw [← hLeft, ← hRight]
+
+    exact hAngle
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      C A D
+      D B C).mp
+      hCAD_DBC
+
+theorem proposition39_test_circle_mixed_outer_inner_angle_data
+    [HilbertCongruence Geo]
+    (O A C B D : Geo.Point)
+    (hOAD : Not (PrimCollinear Geo O A D))
+    (hOAC : Geo.Between O A C)
+    (hODB : Geo.Between O D B)
+    (hAngle :
+      Geo.AngleCongruent
+        O A D
+        O B C) :
+    BookZeroSupplement Geo
+        O A D
+        D C
+    ∧
+    Geo.AngleCongruent
+        O A D
+        C B D := by
+
+  have hADO :
+      Not (PrimCollinear Geo A D O) := by
+    intro h
+    exact
+      hOAD
+        (PrimCollinearRotate
+          Geo
+          O D A
+          (PrimCollinearSymm
+            Geo A D O h))
+
+  have hAD :
+      A ≠ D :=
+    hilbert_noncollinear_ne_first
+      Geo A D O hADO
+
+  have hRayADD :
+      HilbertSameRay Geo A D D :=
+    hilbert_sameRay_refl
+      Geo A D hAD.symm
+
+  have hSuppA :
+      BookZeroSupplement Geo
+        O A D
+        D C :=
+    ⟨hRayADD, hOAC⟩
+
+  have hBDO :
+      Geo.Between B D O :=
+    (HilbertOrder.between_incidence
+      O D B hODB).2.2.2.2
+
+  have hRayBDO :
+      HilbertSameRay Geo B D O :=
+    hilbert_sameRay_of_between
+      Geo B D O hBDO
+
+  have hRayBOD :
+      HilbertSameRay Geo B O D :=
+    hilbert_sameRay_symm
+      Geo B D O hRayBDO
+
+  have hRight :
+      Geo.Angle O B C =
+      Geo.Angle D B C :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo B O D C hRayBOD
+
+  have hOAD_DBC :
+      Geo.AngleCongruent
+        O A D
+        D B C := by
+
+    unfold Geometry.Geo.AngleCongruent
+      at hAngle ⊢
+
+    rw [← hRight]
+
+    exact hAngle
+
+  have hOAD_CBD :
+      Geo.AngleCongruent
+        O A D
+        C B D :=
+    (Geo.angle_congruent_reverse_second
+      O A D
+      D B C).mp
+      hOAD_DBC
+
+  exact
+    ⟨hSuppA, hOAD_CBD⟩
+
+theorem proposition39_test_circle_mixed_inner_outer_angle_data
+    [HilbertCongruence Geo]
+    (O A C B D : Geo.Point)
+    (hOBC : Not (PrimCollinear Geo O B C))
+    (hOCA : Geo.Between O C A)
+    (hOBD : Geo.Between O B D)
+    (hAngle :
+      Geo.AngleCongruent
+        O A D
+        O B C) :
+    Geo.AngleCongruent
+        C A D
+        O B C
+    ∧
+    BookZeroSupplement Geo
+        O B C
+        C D := by
+
+  --------------------------------------------------------------------
+  -- Transport OAD to CAD, since O-C-A.
+  --------------------------------------------------------------------
+
+  have hACO :
+      Geo.Between A C O :=
+    (HilbertOrder.between_incidence
+      O C A hOCA).2.2.2.2
+
+  have hRayACO :
+      HilbertSameRay Geo A C O :=
+    hilbert_sameRay_of_between
+      Geo A C O hACO
+
+  have hRayAOC :
+      HilbertSameRay Geo A O C :=
+    hilbert_sameRay_symm
+      Geo A C O hRayACO
+
+  have hLeft :
+      Geo.Angle O A D =
+      Geo.Angle C A D :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo A O C D hRayAOC
+
+  have hCAD_OBC :
+      Geo.AngleCongruent
+        C A D
+        O B C := by
+
+    unfold Geometry.Geo.AngleCongruent
+      at hAngle ⊢
+
+    rw [← hLeft]
+
+    exact hAngle
+
+  --------------------------------------------------------------------
+  -- Since O-B-D, CBD is supplementary to OBC.
+  --------------------------------------------------------------------
+
+  have hBCO :
+      Not (PrimCollinear Geo B C O) := by
+    intro h
+
+    have hCOB :
+        PrimCollinear Geo C O B :=
+      PrimCollinearCycle
+        Geo B C O h
+
+    have hOBC' :
+        PrimCollinear Geo O B C :=
+      PrimCollinearCycle
+        Geo C O B hCOB
+
+    exact hOBC hOBC'
+
+  have hBC :
+      B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C O hBCO
+
+  have hRayBCC :
+      HilbertSameRay Geo B C C :=
+    hilbert_sameRay_refl
+      Geo B C hBC.symm
+
+  have hSuppB :
+      BookZeroSupplement Geo
+        O B C
+        C D :=
+    ⟨hRayBCC, hOBD⟩
+
+  exact
+    ⟨hCAD_OBC, hSuppB⟩
+
+theorem proposition39_test_equal_angles_same_secant_unique
+    [HilbertCongruence Geo]
+    (O B B' C : Geo.Point)
+    (hOBC : Not (PrimCollinear Geo O B C))
+    (hRay :
+      HilbertSameRay Geo O B B')
+    (hAngle :
+      Geo.AngleCongruent
+        O B C
+        O B' C) :
+    B = B' := by
+
+  rcases
+      hilbert_sameRay_cases
+        Geo O B B' hRay
+    with
+    hEq | hOBB' | hOB'B
+
+  --------------------------------------------------------------------
+  -- B = B'.
+  --------------------------------------------------------------------
+
+  · exact hEq
+
+  --------------------------------------------------------------------
+  -- O-B-B'.
+  --
+  -- Then O is on the extension of B'B beyond B.
+  -- Thus CBO is an exterior angle of triangle B B' C,
+  -- while BB'C is the remote interior angle.
+  --------------------------------------------------------------------
+
+  · have hOBB'Data :=
+      HilbertOrder.between_incidence
+        O B B' hOBB'
+
+    have hBB' :
+        B ≠ B' :=
+      hOBB'Data.2.1
+
+    have hOBB'col :
+        PrimCollinear Geo O B B' :=
+      hOBB'Data.2.2.2.1
+
+    have hBB'C :
+        Not (PrimCollinear Geo B B' C) := by
+
+      intro hBB'C
+
+      have hOBC' :
+          PrimCollinear Geo O B C :=
+        hilbert_primCollinear_trans
+          Geo
+          O B B' C
+          hBB'
+          hOBB'col
+          hBB'C
+
+      exact hOBC hOBC'
+
+    have hB'BO :
+        Geo.Between B' B O :=
+      hOBB'Data.2.2.2.2
+
+    have hRayB'BO :
+        HilbertSameRay Geo B' B O :=
+      hilbert_sameRay_of_between
+        Geo B' B O hB'BO
+
+    have hAtB' :
+        Geo.Angle B B' C =
+        Geo.Angle O B' C :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo
+        B' B O C
+        hRayB'BO
+
+    have hCBO_OB'C :
+        Geo.AngleCongruent
+          C B O
+          O B' C :=
+      (Geo.angle_congruent_reverse_first
+        O B C
+        O B' C).mp
+        hAngle
+
+    have hExterior :
+        Geo.AngleCongruent
+          C B O
+          B B' C := by
+
+      unfold Geometry.Geo.AngleCongruent
+        at hCBO_OB'C ⊢
+
+      rw [hAtB']
+
+      exact hCBO_OB'C
+
+    exact
+      False.elim
+        ((hilbert_exterior_angle_not_congruent_other
+            Geo
+            B B' C O
+            hBB'C
+            hB'BO)
+          hExterior)
+
+  --------------------------------------------------------------------
+  -- O-B'-B.
+  --
+  -- Symmetric situation.
+  --------------------------------------------------------------------
+
+  · have hOB'BData :=
+      HilbertOrder.between_incidence
+        O B' B hOB'B
+
+    have hB'B :
+        B' ≠ B :=
+      hOB'BData.2.1
+
+    have hOB'Bcol :
+        PrimCollinear Geo O B' B :=
+      hOB'BData.2.2.2.1
+
+    have hB'BC :
+        Not (PrimCollinear Geo B' B C) := by
+
+      intro hB'BC
+
+      have hOBB'col :
+          PrimCollinear Geo O B B' :=
+        PrimCollinearRotate
+          Geo O B' B hOB'Bcol
+
+      have hBB'C :
+          PrimCollinear Geo B B' C :=
+        PrimCollinearSwap
+          Geo B' B C hB'BC
+
+      have hOBC' :
+          PrimCollinear Geo O B C :=
+        hilbert_primCollinear_trans
+          Geo
+          O B B' C
+          hB'B.symm
+          hOBB'col
+          hBB'C
+
+      exact hOBC hOBC'
+
+    have hBB'O :
+        Geo.Between B B' O :=
+      hOB'BData.2.2.2.2
+
+    have hRayBB'O :
+        HilbertSameRay Geo B B' O :=
+      hilbert_sameRay_of_between
+        Geo B B' O hBB'O
+
+    have hAtB :
+        Geo.Angle B' B C =
+        Geo.Angle O B C :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo
+        B B' O C
+        hRayBB'O
+
+    have hSym :
+        Geo.AngleCongruent
+          O B' C
+          O B C :=
+      Geometry.Geo.angle_congruent_symmetry
+        Geo
+        O B C
+        O B' C
+        hAngle
+
+    have hCB'O_OBC :
+        Geo.AngleCongruent
+          C B' O
+          O B C :=
+      (Geo.angle_congruent_reverse_first
+        O B' C
+        O B C).mp
+        hSym
+
+    have hExterior :
+        Geo.AngleCongruent
+          C B' O
+          B' B C := by
+
+      unfold Geometry.Geo.AngleCongruent
+        at hCB'O_OBC ⊢
+
+      rw [hAtB]
+
+      exact hCB'O_OBC
+
+    exact
+      False.elim
+        ((hilbert_exterior_angle_not_congruent_other
+            Geo
+            B' B C O
+            hB'BC
+            hBB'O)
+          hExterior)
+
+theorem proposition39_test_circle_nondegenerate_circumcircle
+    [HilbertEuclideanPlane Geo]
+    (O A C D : Geo.Point)
+    (hOAD : Not (PrimCollinear Geo O A D))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hAC : A ≠ C) :
+    ∃ K : Geo.Point,
+      HilbertCircle Geo K A A ∧
+      HilbertCircle Geo K A C ∧
+      HilbertCircle Geo K A D := by
+
+  have hOAC :
+      PrimCollinear Geo O A C :=
+    hRayAC.2.2.1
+
+  have hACD :
+      Not (PrimCollinear Geo A C D) := by
+
+    intro hACD
+
+    have hOAD' :
+        PrimCollinear Geo O A D :=
+      hilbert_primCollinear_trans
+        Geo
+        O A C D
+        hAC
+        hOAC
+        hACD
+
+    exact hOAD hOAD'
+
+  exact
+    proposition39_test_circumcircle_exists
+      Geo
+      A C D
+      hACD
+
+theorem proposition39_test_circle_acd_circumcircle
+    [HilbertEuclideanPlane Geo]
+    (O A C D : Geo.Point)
+    (hOAD : Not (PrimCollinear Geo O A D))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hAC : A ≠ C) :
+    ∃ K : Geo.Point,
+      HilbertCircle Geo K A A ∧
+      HilbertCircle Geo K A C ∧
+      HilbertCircle Geo K A D := by
+
+  have hAOD :
+      Not (PrimCollinear Geo A O D) := by
+    intro h
+    exact
+      hOAD
+        (PrimCollinearSwap
+          Geo A O D h)
+
+  have hACD :
+      Not (PrimCollinear Geo A C D) :=
+    proposition39_test_first_secant_noncollinear
+      Geo
+      O A C D
+      hAOD
+      hRayAC
+      hAC
+
+  exact
+    proposition39_test_circumcircle_exists
+      Geo
+      A C D
+      hACD
+
+theorem proposition39_test_circle_nondegenerate_angle_classification
+    [HilbertEuclideanPlane Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayBD : HilbertSameRay Geo O B D)
+    (hAC : A ≠ C)
+    (hBD : B ≠ D)
+    (hAngle :
+      Geo.AngleCongruent
+        O A D
+        O B C) :
+    (
+      Geo.AngleCongruent
+        C A D
+        C B D
+    )
+    ∨
+    (
+      BookZeroSupplement Geo
+        O A D
+        D C
+      ∧
+      Geo.AngleCongruent
+        O A D
+        C B D
+    )
+    ∨
+    (
+      Geo.AngleCongruent
+        C A D
+        O B C
+      ∧
+      BookZeroSupplement Geo
+        O B C
+        C D
+    ) := by
+
+  rcases
+      proposition39_test_circle_crossing_chords_nondegenerate_data
+        Geo
+        O A C B D
+        hAOB
+        hRayAC
+        hRayBD
+        hAC
+        hBD
+    with
+    ⟨hOAD,
+      hOBC,
+      hOrderAC,
+      hOrderBD⟩
+
+  rcases hOrderAC with hOAC | hOCA
+
+  --------------------------------------------------------------------
+  -- O-A-C
+  --------------------------------------------------------------------
+
+  · rcases hOrderBD with hOBD | hODB
+
+    --------------------------------------------------------------
+    -- O-A-C and O-B-D
+    --------------------------------------------------------------
+
+    · left
+
+      exact
+        proposition39_test_circle_outer_outer_angles
+          Geo
+          O A C B D
+          hOAD
+          hOBC
+          hOAC
+          hOBD
+          hAngle
+
+    --------------------------------------------------------------
+    -- O-A-C and O-D-B
+    --------------------------------------------------------------
+
+    · right
+      left
+
+      exact
+        proposition39_test_circle_mixed_outer_inner_angle_data
+          Geo
+          O A C B D
+          hOAD
+          hOAC
+          hODB
+          hAngle
+
+  --------------------------------------------------------------------
+  -- O-C-A
+  --------------------------------------------------------------------
+
+  · rcases hOrderBD with hOBD | hODB
+
+    --------------------------------------------------------------
+    -- O-C-A and O-B-D
+    --------------------------------------------------------------
+
+    · right
+      right
+
+      exact
+        proposition39_test_circle_mixed_inner_outer_angle_data
+          Geo
+          O A C B D
+          hOBC
+          hOCA
+          hOBD
+          hAngle
+
+    --------------------------------------------------------------
+    -- O-C-A and O-D-B
+    --------------------------------------------------------------
+
+    · left
+
+      exact
+        proposition39_test_circle_inner_inner_angles
+          Geo
+          O A C B D
+          hOCA
+          hODB
+          hAngle
+
+theorem proposition39_test_circle_outer_outer_sameSide_chord
+    [HilbertOrder Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hOAC : Geo.Between O A C)
+    (hOBD : Geo.Between O B D) :
+    ∃ chord : Geo.Line,
+      HilbertIncidence.OnLine C chord ∧
+      HilbertIncidence.OnLine D chord ∧
+      HilbertSameSide Geo A B chord := by
+
+  have hRayAC :
+      HilbertSameRay Geo O A C :=
+    hilbert_sameRay_of_between
+      Geo O A C hOAC
+
+  have hRayBD :
+      HilbertSameRay Geo O B D :=
+    hilbert_sameRay_of_between
+      Geo O B D hOBD
+
+  have hCOD :
+      Not (PrimCollinear Geo C O D) :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O B
+      C D
+      hAOB
+      hRayAC
+      hRayBD
+
+  have hOCD :
+      Not (PrimCollinear Geo O C D) := by
+    intro h
+    apply hCOD
+    exact
+      PrimCollinearRotate
+        Geo C D O
+        (PrimCollinearCycle
+          Geo O C D h)
+
+  have hODC :
+      Not (PrimCollinear Geo O D C) := by
+    intro h
+    exact
+      hOCD
+        (PrimCollinearRotate
+          Geo O D C h)
+
+  have hCDO :
+      Not (PrimCollinear Geo C D O) := by
+    intro h
+    apply hOCD
+    exact
+      PrimCollinearCycle
+        Geo D O C
+        (PrimCollinearCycle
+          Geo C D O h)
+
+  have hCD :
+      C ≠ D :=
+    hilbert_noncollinear_ne_first
+      Geo C D O hCDO
+
+  --------------------------------------------------------------------
+  -- O and A are on the same side of CD.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        O A D C
+        hOAC
+        hOCD
+    with
+    ⟨chord₁, hDchord₁, hCchord₁, hOA⟩
+
+  --------------------------------------------------------------------
+  -- O and B are on the same side of CD.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_points_sameSide_transversal
+        Geo
+        O B C D
+        hOBD
+        hODC
+    with
+    ⟨chord₂, hCchord₂, hDchord₂, hOB⟩
+
+  --------------------------------------------------------------------
+  -- Both carrier lines are the unique line CD.
+  --------------------------------------------------------------------
+
+  have hChordEq :
+      chord₁ = chord₂ :=
+    HilbertPlaneIncidence.line_unique
+      C D hCD
+      chord₁ chord₂
+      hCchord₁
+      hDchord₁
+      hCchord₂
+      hDchord₂
+
+  rw [← hChordEq] at hOB
+
+  --------------------------------------------------------------------
+  -- A -- O -- B in the same side component of CD.
+  --------------------------------------------------------------------
+
+  have hAO :
+      HilbertSameSide Geo A O chord₁ :=
+    hilbert_sameSide_symm
+      Geo O A chord₁ hOA
+
+  have hAB :
+      HilbertSameSide Geo A B chord₁ :=
+    hilbert_sameSide_trans
+      Geo A O B chord₁
+      hAO
+      hOB
+
+  exact
+    ⟨chord₁,
+      hCchord₁,
+      hDchord₁,
+      hAB⟩
+
 
 /--
 Circle theorem used in Hilbert sec. 14.

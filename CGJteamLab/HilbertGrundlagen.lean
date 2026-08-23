@@ -8575,4 +8575,5 @@ theorem hilbert_right_angle_opposite_extension
       hAOB_BOD
       hBOD_BOC
 
+
 end Geometry
