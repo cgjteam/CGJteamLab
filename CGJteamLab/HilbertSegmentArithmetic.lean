@@ -1,4 +1,4 @@
-import CGJteamLab.HilbertInterface
+import CGJteamLab.HilbertRightAngle
 
 namespace Geometry
 
@@ -837,5 +837,406 @@ theorem hilbertPositiveSegment_add_assoc
       hA_BC
       (hilbertPositiveSegmentAdd_spec
         Geo a (b + c))
+
+/--
+Right cancellation for geometric addition of positive segment classes.
+-/
+theorem hilbertPositiveSegmentSum_cancel_right
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (a b c x : HilbertPositiveSegmentClass Geo)
+    (hac : HilbertPositiveSegmentSum Geo a c x)
+    (hbc : HilbertPositiveSegmentSum Geo b c x) :
+    a = b := by
+
+  rcases hac with
+    ⟨A, B, C, hABC, hABa, hBCc, hACx⟩
+
+  rcases hbc with
+    ⟨P, Q, R, hPQR, hPQb, hQRc, hPRx⟩
+
+  have hAB : Ne A B :=
+    (HilbertOrder.between_incidence
+      A B C hABC).1
+
+  have hBC : Ne B C :=
+    (HilbertOrder.between_incidence
+      A B C hABC).2.1
+
+  have hAC : Ne A C :=
+    (HilbertOrder.between_incidence
+      A B C hABC).2.2.1
+
+  have hPQ : Ne P Q :=
+    (HilbertOrder.between_incidence
+      P Q R hPQR).1
+
+  have hQR : Ne Q R :=
+    (HilbertOrder.between_incidence
+      P Q R hPQR).2.1
+
+  have hPR : Ne P R :=
+    (HilbertOrder.between_incidence
+      P Q R hPQR).2.2.1
+
+  ----------------------------------------------------------------
+  -- The common right summand gives BC ~= QR.
+  ----------------------------------------------------------------
+
+  have hBCeqQR :
+      hilbertPositiveSegmentClassOf Geo B C hBC =
+        hilbertPositiveSegmentClassOf Geo Q R hQR :=
+    hBCc.trans hQRc.symm
+
+  have hBCQR :
+      Geo.Congruent B C Q R := by
+    exact Quotient.exact hBCeqQR
+
+  ----------------------------------------------------------------
+  -- The common total gives AC ~= PR.
+  ----------------------------------------------------------------
+
+  have hACeqPR :
+      hilbertPositiveSegmentClassOf Geo A C hAC =
+        hilbertPositiveSegmentClassOf Geo P R hPR :=
+    hACx.trans hPRx.symm
+
+  have hACPR :
+      Geo.Congruent A C P R := by
+    exact Quotient.exact hACeqPR
+
+  ----------------------------------------------------------------
+  -- Reverse both decompositions:
+  --
+  --   A-B-C       P-Q-R
+  --
+  -- becomes
+  --
+  --   C-B-A       R-Q-P.
+  --
+  -- Now the common right parts become the first parts.
+  ----------------------------------------------------------------
+
+  have hCBA :
+      Geo.Between C B A :=
+    (HilbertOrder.between_incidence
+      A B C hABC).2.2.2.2
+
+  have hRQP :
+      Geo.Between R Q P :=
+    (HilbertOrder.between_incidence
+      P Q R hPQR).2.2.2.2
+
+  have hCBRQ :
+      Geo.Congruent C B R Q :=
+    CongruentReverseBoth
+      Geo B C Q R hBCQR
+
+  have hCARP :
+      Geo.Congruent C A R P :=
+    CongruentReverseBoth
+      Geo A C P R hACPR
+
+  ----------------------------------------------------------------
+  -- Segment subtraction:
+  --
+  -- CB ~= RQ
+  -- CA ~= RP
+  -- ----------------
+  -- BA ~= QP
+  ----------------------------------------------------------------
+
+  have hBAQP :
+      Geo.Congruent B A Q P :=
+    hilbert_segment_subtraction
+      Geo
+      C B A
+      R Q P
+      hCBA
+      hRQP
+      hCBRQ
+      hCARP
+
+  have hABPQ :
+      Geo.Congruent A B P Q :=
+    CongruentReverseBoth
+      Geo B A Q P hBAQP
+
+  have hABeqPQ :
+      hilbertPositiveSegmentClassOf Geo A B hAB =
+        hilbertPositiveSegmentClassOf Geo P Q hPQ := by
+    exact Quotient.sound hABPQ
+
+  calc
+    a =
+        hilbertPositiveSegmentClassOf Geo A B hAB :=
+      hABa.symm
+    _ =
+        hilbertPositiveSegmentClassOf Geo P Q hPQ :=
+      hABeqPQ
+    _ = b :=
+      hPQb
+
+/--
+Right cancellation for addition of positive Hilbert segment classes.
+-/
+theorem hilbertPositiveSegment_add_right_cancel
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (a b c : HilbertPositiveSegmentClass Geo)
+    (h : a + c = b + c) :
+    a = b := by
+
+  have hac :
+      HilbertPositiveSegmentSum
+        Geo
+        a c
+        (a + c) :=
+    hilbertPositiveSegmentAdd_spec
+      Geo a c
+
+  have hbc :
+      HilbertPositiveSegmentSum
+        Geo
+        b c
+        (a + c) := by
+    rw [h]
+    exact
+      hilbertPositiveSegmentAdd_spec
+        Geo b c
+
+  exact
+    hilbertPositiveSegmentSum_cancel_right
+      Geo
+      a b c
+      (a + c)
+      hac
+      hbc
+
+/--
+A geometric witness for the ratio a : b of positive segment classes.
+
+The right triangle has right angle at O.
+
+  OB represents a
+  OA represents b
+
+Hence the angle OAB is the angle opposite the leg representing a.
+-/
+structure HilbertPositiveSegmentRatioWitness
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (a b : HilbertPositiveSegmentClass Geo) where
+
+  O : Geo.Point
+  A : Geo.Point
+  B : Geo.Point
+
+  hOA : Ne O A
+  hOB : Ne O B
+
+  hNoncol :
+    Not (PrimCollinear Geo O A B)
+
+  hRight :
+    HilbertRightAngle Geo A O B
+
+  hFirst :
+    hilbertPositiveSegmentClassOf Geo O B hOB = a
+
+  hSecond :
+    hilbertPositiveSegmentClassOf Geo O A hOA = b
+
+/--
+Equality of ratios of positive Hilbert segment classes.
+
+The proportion
+
+  a : b = c : d
+
+means that right triangles representing a:b and c:d
+have congruent defining acute angles.
+-/
+def HilbertPositiveSegmentProportion
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (a b c d : HilbertPositiveSegmentClass Geo) : Prop :=
+  ∃ w1 : HilbertPositiveSegmentRatioWitness Geo a b,
+    ∃ w2 : HilbertPositiveSegmentRatioWitness Geo c d,
+      Geo.AngleCongruent
+        w1.O w1.A w1.B
+        w2.O w2.A w2.B
+
+
+/--
+Every pair of positive segment classes admits a right-triangle
+representative of its ratio.
+-/
+theorem hilbertPositiveSegmentRatioWitness_exists
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (a b : HilbertPositiveSegmentClass Geo) :
+    Nonempty (HilbertPositiveSegmentRatioWitness Geo a b) := by
+
+  refine
+    Quotient.inductionOn₂
+      a b
+      (fun
+        (sa : HilbertPositiveSegmentRep Geo)
+        (sb : HilbertPositiveSegmentRep Geo) => ?_)
+
+  rcases sa with
+    ⟨⟨U, V⟩, hUV⟩
+
+  rcases sb with
+    ⟨⟨O, A⟩, hOA⟩
+
+  change Ne U V at hUV
+  change Ne O A at hOA
+
+  ----------------------------------------------------------------
+  -- Extend AO through O:
+  --
+  --     A - O - E
+  ----------------------------------------------------------------
+
+  rcases
+      HilbertOrder.between_extension
+        A O hOA.symm
+    with
+    ⟨E, hAOE⟩
+
+  ----------------------------------------------------------------
+  -- Erect a nondegenerate perpendicular at O.
+  ----------------------------------------------------------------
+
+  rcases
+      hilbert_right_angle_exists_nondegenerate
+        Geo A O E hAOE
+    with
+    ⟨X, hAOX, hRightX⟩
+
+  ----------------------------------------------------------------
+  -- O and X are distinct.
+  ----------------------------------------------------------------
+
+  have hOXA :
+      Not (PrimCollinear Geo O X A) := by
+    intro h
+
+    have hAOX' :
+        PrimCollinear Geo A O X :=
+      PrimCollinearCycle
+        Geo X A O
+        (PrimCollinearCycle
+          Geo O X A h)
+
+    exact hAOX hAOX'
+
+  have hOX :
+      Ne O X :=
+    hilbert_noncollinear_ne_first
+      Geo O X A hOXA
+
+  ----------------------------------------------------------------
+  -- Lay off a copy of UV on the perpendicular ray OX.
+  ----------------------------------------------------------------
+
+  rcases
+      HilbertCongruence.segment_construction
+        (Geo := Geo)
+        U V
+        O X
+        hOX
+    with
+    ⟨B, hRayOXB, hOBUV⟩
+
+  have hOB :
+      Ne O B :=
+    hRayOXB.2.1.symm
+
+  ----------------------------------------------------------------
+  -- Replacing X by B on the same ray preserves noncollinearity.
+  ----------------------------------------------------------------
+
+  have hRayOAA :
+      HilbertSameRay Geo O A A :=
+    hilbert_sameRay_refl
+      Geo O A hOA.symm
+
+  have hAOB :
+      Not (PrimCollinear Geo A O B) :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O X
+      A B
+      hAOX
+      hRayOAA
+      hRayOXB
+
+  have hOAB :
+      Not (PrimCollinear Geo O A B) := by
+    intro h
+
+    exact
+      hAOB
+        (PrimCollinearSwap
+          Geo O A B h)
+
+  ----------------------------------------------------------------
+  -- Transport the right angle from ray OX to the same ray OB.
+  --
+  -- We do this directly from the definition of HilbertRightAngle.
+  ----------------------------------------------------------------
+
+  rcases hRightX with
+    ⟨C, hAOC, hRightCong⟩
+
+  have hAngleLeft :
+      Geo.Angle A O X =
+        Geo.Angle A O B :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo O A X B hRayOXB
+
+  have hAngleRight :
+      Geo.Angle X O C =
+        Geo.Angle B O C :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo O X B C hRayOXB
+
+  have hRightB :
+      HilbertRightAngle Geo A O B := by
+
+    refine ⟨C, hAOC, ?_⟩
+
+    unfold Geometry.Geo.AngleCongruent
+      at hRightCong ⊢
+
+    rw [← hAngleLeft, ← hAngleRight]
+
+    exact hRightCong
+
+  ----------------------------------------------------------------
+  -- Package the right triangle as a ratio witness.
+  ----------------------------------------------------------------
+
+  refine
+    ⟨{
+      O := O
+      A := A
+      B := B
+      hOA := hOA
+      hOB := hOB
+      hNoncol := hOAB
+      hRight := hRightB
+      hFirst := ?_
+      hSecond := ?_
+    }⟩
+
+  · exact
+      Quotient.sound hOBUV
+
+  · rfl
+
 
 end Geometry
