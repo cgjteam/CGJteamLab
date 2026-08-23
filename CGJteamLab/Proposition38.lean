@@ -178,16 +178,17 @@ theorem i38_nondegenerate
 theorem i38_equal_base_copy
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
-    (A B C D E F : Geo.Point)
-    (hAD_BC : Geo.Parallel A D B C)
+    (A B C E F : Geo.Point)
+    (base : Geo.Line)
     (hBCE : Geo.Between B C E)
     (hCEF : Geo.Between C E F)
-    (hBC_EF : Geo.Congruent B C E F) :
-    exists base G,
-      HilbertIncidence.OnLine B base /\
-      HilbertIncidence.OnLine C base /\
-      HilbertIncidence.OnLine E base /\
-      HilbertIncidence.OnLine F base /\
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hEbase : HilbertIncidence.OnLine E base)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hBC_EF : Geo.Congruent B C E F)
+    (hAoff : Not (HilbertIncidence.OnLine A base)) :
+    exists G : Geo.Point,
       HilbertSameSide Geo A G base /\
       TriangleCongruenceResult
         Geo B A C E G F := by
@@ -196,32 +197,29 @@ theorem i38_equal_base_copy
   -- Common base carrier.
   --------------------------------------------------------------------
 
-  rcases
-      i38_base_carrier
-        Geo A B C D E F
-        hAD_BC hBCE hCEF
-    with
-    ⟨base,
-      hBbase,
-      hCbase,
-      hEbase,
-      hFbase,
-      hADsame⟩
+  have hBC :
+      Not (B = C) :=
+    (HilbertOrder.between_incidence
+      B C E hBCE).1
 
-  have hAoff :
-      Not (HilbertIncidence.OnLine A base) :=
-    hADsame.1
+  have hBCA :
+      Not (Collinear Geo B C A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      B C A
+      base
+      hBC
+      hBbase
+      hCbase
+      hAoff
 
-  --------------------------------------------------------------------
-  -- Nondegeneracy of ABC.
-  --------------------------------------------------------------------
-
-  rcases
-      i38_nondegenerate
-        Geo A B C D E F
-        hAD_BC hBCE hCEF
-    with
-    ⟨hABC, _hDEF⟩
+  have hABC :
+      Not (Collinear Geo A B C) := by
+    intro h
+    exact
+      hBCA
+        (PrimCollinearCycle
+          Geo A B C h)
 
   --------------------------------------------------------------------
   -- E and F are distinct.
@@ -461,23 +459,25 @@ theorem i38_equal_base_copy
       hBC_EF
 
   exact
-    ⟨base, G,
-      hBbase,
-      hCbase,
-      hEbase,
-      hFbase,
+    ⟨G,
       hAGsame,
       hTriangles⟩
 
 theorem i38_copy_parallelogram
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
-    (A B C D E F : Geo.Point)
-    (hAD_BC : Geo.Parallel A D B C)
+    (A B C E F : Geo.Point)
+    (base : Geo.Line)
     (hBCE : Geo.Between B C E)
     (hCEF : Geo.Between C E F)
-    (hBC_EF : Geo.Congruent B C E F) :
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hEbase : HilbertIncidence.OnLine E base)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hBC_EF : Geo.Congruent B C E F)
+    (hAoff : Not (HilbertIncidence.OnLine A base)) :
     exists G : Geo.Point,
+      HilbertSameSide Geo A G base /\
       IsParallelogram Geo A G E B /\
       TriangleCongruenceResult
         Geo B A C E G F := by
@@ -488,16 +488,17 @@ theorem i38_copy_parallelogram
 
   rcases
       i38_equal_base_copy
-        Geo A B C D E F
-        hAD_BC hBCE hCEF hBC_EF
+        Geo
+        A B C E F
+        base
+        hBCE hCEF
+        hBbase hCbase
+        hEbase hFbase
+        hBC_EF
+        hAoff
     with
-    ⟨base, G,
-      hBbase,
-      hCbase,
-      hEbase,
-      hFbase,
-      hAGsame,
-      hTriangles⟩
+    ⟨G, hAGsame, hTriangles⟩
+
 
   have hGoff :
       Not (HilbertIncidence.OnLine G base) :=
@@ -507,12 +508,29 @@ theorem i38_copy_parallelogram
   -- Nondegeneracy of ABC gives A != B.
   --------------------------------------------------------------------
 
-  rcases
-      i38_nondegenerate
-        Geo A B C D E F
-        hAD_BC hBCE hCEF
-    with
-    ⟨hABC, _hDEF⟩
+  have hBC :
+      Not (B = C) :=
+    (HilbertOrder.between_incidence
+      B C E hBCE).1
+
+  have hBCA :
+      Not (Collinear Geo B C A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      B C A
+      base
+      hBC
+      hBbase
+      hCbase
+      hAoff
+
+  have hABC :
+      Not (Collinear Geo A B C) := by
+    intro h
+    exact
+      hBCA
+        (PrimCollinearCycle
+          Geo A B C h)
 
   have hAB :
       Not (A = B) :=
@@ -888,6 +906,7 @@ theorem i38_copy_parallelogram
 
   exact
     ⟨G,
+      hAGsame,
       hParallelogram,
       hTriangles⟩
 
@@ -909,11 +928,33 @@ theorem i38_copy_upper_position
   --------------------------------------------------------------------
 
   rcases
-      i38_copy_parallelogram
+      i38_base_carrier
         Geo A B C D E F
-        hAD_BC hBCE hCEF hBC_EF
+        hAD_BC hBCE hCEF
     with
-    ⟨G, hAGEB, hTriangles⟩
+    ⟨base,
+      hBbase,
+      hCbase,
+      hEbase,
+      hFbase,
+      hADsame⟩
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) :=
+    hADsame.1
+
+  rcases
+      i38_copy_parallelogram
+        Geo
+        A B C E F
+        base
+        hBCE hCEF
+        hBbase hCbase
+        hEbase hFbase
+        hBC_EF
+        hAoff
+    with
+    ⟨G, _hAGsame, hAGEB, hTriangles⟩
 
   --------------------------------------------------------------------
   -- AG || EB.
