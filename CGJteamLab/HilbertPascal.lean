@@ -15787,4 +15787,725 @@ theorem proposition39_test_special_pascal
       hOC'_OA
       hParallelCB'
 
+/--
+Nondegenerate geometric core of the final step of Hilbert Theorem 48.
+
+If A and D lie on the same side of the base, AF and DG are
+perpendicular to the base, AF ~= DG, and the feet F,G are distinct,
+then AD is parallel to the base segment GF.
+-/
+theorem proposition39_test_equal_perpendiculars_parallel_nondegenerate
+    [HilbertEuclideanPlane Geo]
+    (A D F G X Y : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : Ne F X)
+    (hGbase : HilbertIncidence.OnLine G base)
+    (hYbase : HilbertIncidence.OnLine Y base)
+    (hGY : Ne G Y)
+    (hSame : HilbertSameSide Geo A D base)
+    (hRightA : HilbertRightAngle Geo X F A)
+    (hRightD : HilbertRightAngle Geo Y G D)
+    (hAlt : Geo.Congruent A F D G)
+    (hFG : Ne F G) :
+    Geo.Parallel A D G F := by
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) :=
+    hSame.1
+
+  have hDoff :
+      Not (HilbertIncidence.OnLine D base) :=
+    hSame.2.1
+
+  --------------------------------------------------------------------
+  -- Extend DG through G:
+  --
+  --     D - G - D'
+  --
+  -- so A and D' are on opposite sides of the base.
+  --------------------------------------------------------------------
+
+  have hDG :
+      Ne D G := by
+    intro h
+    subst D
+    exact hDoff hGbase
+
+  rcases
+      HilbertOrder.between_extension
+        D G hDG
+    with
+    ⟨D', hDGD'⟩
+
+  have hDGD'Data :=
+    HilbertOrder.between_incidence
+      D G D' hDGD'
+
+  have hGD' :
+      Ne G D' :=
+    hDGD'Data.2.1
+
+  have hDGD'col :
+      PrimCollinear Geo D G D' :=
+    hDGD'Data.2.2.2.1
+
+  have hD'off :
+      Not (HilbertIncidence.OnLine D' base) := by
+
+    intro hD'base
+
+    have hGD'D :
+        PrimCollinear Geo G D' D :=
+      PrimCollinearCycle
+        Geo D G D' hDGD'col
+
+    have hDbase' :
+        HilbertIncidence.OnLine D base :=
+      hilbert_collinear_on_line
+        Geo
+        G D' D
+        base
+        hGD'
+        hGbase
+        hD'base
+        hGD'D
+
+    exact hDoff hDbase'
+
+  have hOppDD' :
+      HilbertOppositeSide Geo D D' base :=
+    ⟨hDoff,
+      hD'off,
+      ⟨G, hDGD', hGbase⟩⟩
+
+  have hOppD'D :
+      HilbertOppositeSide Geo D' D base :=
+    hilbert_oppositeSide_symm
+      Geo D D' base hOppDD'
+
+  have hSameDA :
+      HilbertSameSide Geo D A base :=
+    hilbert_sameSide_symm
+      Geo A D base hSame
+
+  have hOppD'A :
+      HilbertOppositeSide Geo D' A base :=
+    hilbert_oppositeSide_transport_right
+      Geo
+      D' D A
+      base
+      hOppD'D
+      hSameDA
+
+  have hOppAD' :
+      HilbertOppositeSide Geo A D' base :=
+    hilbert_oppositeSide_symm
+      Geo D' A base hOppD'A
+
+  --------------------------------------------------------------------
+  -- Reversing the perpendicular ray at G preserves rightness.
+  --------------------------------------------------------------------
+
+  have hRightD' :
+      HilbertRightAngle Geo Y G D' :=
+    proposition39_test_right_angle_opposite_perp
+      Geo
+      D D' G Y
+      base
+      hGbase
+      hYbase
+      hDoff
+      hDGD'
+      hRightD
+
+  --------------------------------------------------------------------
+  -- Choose T strictly between the distinct feet F and G.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_exists
+        Geo F G hFG
+    with
+    ⟨T, hFTG⟩
+
+  have hFTGData :=
+    HilbertOrder.between_incidence
+      F T G hFTG
+
+  have hFT :
+      Ne F T :=
+    hFTGData.1
+
+  have hTG :
+      Ne T G :=
+    hFTGData.2.1
+
+  have hTbase :
+      HilbertIncidence.OnLine T base :=
+    hilbert_between_on_line
+      Geo
+      F T G
+      base
+      hFbase
+      hGbase
+      hFTG
+
+  --------------------------------------------------------------------
+  -- Normalize the right angle at F to the base ray FT.
+  --------------------------------------------------------------------
+
+  have hFTX :
+      PrimCollinear Geo F T X :=
+    ⟨base,
+      hFbase,
+      hTbase,
+      hXbase⟩
+
+  have hTFA :
+      Not (PrimCollinear Geo T F A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      T F A
+      base
+      hFT.symm
+      hTbase
+      hFbase
+      hAoff
+
+  have hXFA :
+      Not (PrimCollinear Geo X F A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X F A
+      base
+      hFX.symm
+      hXbase
+      hFbase
+      hAoff
+
+  have hRightTFA :
+      HilbertRightAngle Geo T F A :=
+    proposition39_test_right_angle_collinear_first
+      Geo
+      T X F A
+      hFT
+      hFX
+      hFTX
+      hTFA
+      hXFA
+      hRightA
+
+  --------------------------------------------------------------------
+  -- Normalize the right angle at G to the base ray GT.
+  --------------------------------------------------------------------
+
+  have hGTY :
+      PrimCollinear Geo G T Y :=
+    ⟨base,
+      hGbase,
+      hTbase,
+      hYbase⟩
+
+  have hTGD' :
+      Not (PrimCollinear Geo T G D') :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      T G D'
+      base
+      hTG
+      hTbase
+      hGbase
+      hD'off
+
+  have hYGD' :
+      Not (PrimCollinear Geo Y G D') :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      Y G D'
+      base
+      hGY.symm
+      hYbase
+      hGbase
+      hD'off
+
+  have hRightTGD' :
+      HilbertRightAngle Geo T G D' :=
+    proposition39_test_right_angle_collinear_first
+      Geo
+      T Y G D'
+      hTG.symm
+      hGY
+      hGTY
+      hTGD'
+      hYGD'
+      hRightD'
+
+  --------------------------------------------------------------------
+  -- Two perpendiculars to the same transversal are parallel:
+  --
+  --     FA || GD'.
+  --------------------------------------------------------------------
+
+  have hFA_GD' :
+      Geo.Parallel F A G D' :=
+    proposition39_test_perpendiculars_parallel
+      Geo
+      F T G A D'
+      base
+      hFTG
+      hFbase
+      hGbase
+      hOppAD'
+      hTFA
+      hTGD'
+      hRightTFA
+      hRightTGD'
+
+  --------------------------------------------------------------------
+  -- Replace D' by D on the same perpendicular carrier.
+  --------------------------------------------------------------------
+
+  have hAF_GD' :
+      Geo.Parallel A F G D' :=
+    ParallelSwapFirstLine
+      Geo F A G D' hFA_GD'
+
+  have hGD'_AF :
+      Geo.Parallel G D' A F :=
+    ParallelSymmetry
+      Geo A F G D' hAF_GD'
+
+  have hGDD' :
+      PrimCollinear Geo G D D' :=
+    PrimCollinearSwap
+      Geo D G D' hDGD'col
+
+  have hGD_AF :
+      Geo.Parallel G D A F :=
+    collinear_parallel_trans
+      Geo
+      G D D'
+      A F
+      hDG.symm
+      hGDD'
+      hGD'_AF
+
+  have hAF_GD :
+      Geo.Parallel A F G D :=
+    ParallelSymmetry
+      Geo G D A F hGD_AF
+
+  have hAF_DG :
+      Geo.Parallel A F D G :=
+    ParallelSwapSecondLine
+      Geo A F G D hAF_GD
+
+  --------------------------------------------------------------------
+  -- AF || DG, AF ~= DG, with the correct orientation.
+  -- Hence A-D-G-F is a parallelogram.
+  --------------------------------------------------------------------
+
+  have hOnePair :
+      OnePairParallelCongruent Geo A D G F :=
+    {
+      parallel := hAF_DG
+      congruent := hAlt
+      oriented :=
+        ⟨base,
+          hFbase,
+          hGbase,
+          hSame⟩
+    }
+
+  have hParallelogram :
+      IsParallelogram Geo A D G F :=
+    OnePairParallelCongruentCriterion
+      Geo A D G F hOnePair
+
+  exact hParallelogram.1
+
+/--
+Degenerate-foot case for the geometric core of Hilbert Theorem 48.
+
+If A and D have the same perpendicular foot F on the base,
+lie on the same side of the base, and AF ~= DF, then A = D.
+-/
+theorem proposition39_test_equal_perpendiculars_same_foot
+    [HilbertEuclideanPlane Geo]
+    (A D F X Y : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : Ne F X)
+    (hYbase : HilbertIncidence.OnLine Y base)
+    (hFY : Ne F Y)
+    (hSame : HilbertSameSide Geo A D base)
+    (hRightA : HilbertRightAngle Geo X F A)
+    (hRightD : HilbertRightAngle Geo Y F D)
+    (hAlt : Geo.Congruent A F D F) :
+    A = D := by
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) :=
+    hSame.1
+
+  have hDoff :
+      Not (HilbertIncidence.OnLine D base) :=
+    hSame.2.1
+
+  have hAF :
+      Ne A F := by
+    intro h
+    subst A
+    exact hAoff hFbase
+
+  have hDF :
+      Ne D F := by
+    intro h
+    subst D
+    exact hDoff hFbase
+
+  --------------------------------------------------------------------
+  -- Both right angles are rewritten using the same base ray FX.
+  --------------------------------------------------------------------
+
+  have hFXY :
+      PrimCollinear Geo F X Y :=
+    ⟨base,
+      hFbase,
+      hXbase,
+      hYbase⟩
+
+  have hXFA :
+      Not (PrimCollinear Geo X F A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X F A
+      base
+      hFX.symm
+      hXbase
+      hFbase
+      hAoff
+
+  have hXFD :
+      Not (PrimCollinear Geo X F D) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X F D
+      base
+      hFX.symm
+      hXbase
+      hFbase
+      hDoff
+
+  have hYFD :
+      Not (PrimCollinear Geo Y F D) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      Y F D
+      base
+      hFY.symm
+      hYbase
+      hFbase
+      hDoff
+
+  have hRightXFD :
+      HilbertRightAngle Geo X F D :=
+    proposition39_test_right_angle_collinear_first
+      Geo
+      X Y F D
+      hFX
+      hFY
+      hFXY
+      hXFD
+      hYFD
+      hRightD
+
+  --------------------------------------------------------------------
+  -- A and D are perpendicular rays from the same foot, on the
+  -- same side of the base. Hence they are on the same ray from F.
+  --------------------------------------------------------------------
+
+  have hRayAD :
+      HilbertSameRay Geo F A D :=
+    proposition39_test_same_foot_perpendicular_same_ray
+      Geo
+      X F A D
+      base
+      hFX.symm
+      hXbase
+      hFbase
+      hAoff
+      hSame
+      hXFA
+      hXFD
+      hRightA
+      hRightXFD
+
+  --------------------------------------------------------------------
+  -- Reverse both segments:
+  --
+  --     AF ~= DF
+  --
+  -- becomes
+  --
+  --     FA ~= FD.
+  --------------------------------------------------------------------
+
+  have hFA_FD :
+      Geo.Congruent F A F D :=
+    CongruentReverseBoth
+      Geo
+      A F D F
+      hAlt
+
+  have hRayAA :
+      HilbertSameRay Geo F A A :=
+    hilbert_sameRay_refl
+      Geo F A hAF
+
+  --------------------------------------------------------------------
+  -- A and D lie on the same ray from F and have the same distance
+  -- from F. Uniqueness of segment construction gives A = D.
+  --------------------------------------------------------------------
+
+  have hFD_FA :
+      Geo.Congruent F D F A :=
+    hilbert_congruent_symmetry
+      Geo F A F D hFA_FD
+
+  exact
+    hilbert_segment_construction_unique
+      Geo
+      F A
+      F A
+      A D
+      hRayAA
+      hRayAD
+      (hilbert_congruent_reflexive Geo F A)
+      hFD_FA
+
+/--
+Geometric part of Hilbert Theorem 48.
+
+If A and D lie on the same side of the base, and their perpendicular
+distances from the base are congruent, then there is one Hilbert line
+through A and D disjoint from the base.
+-/
+theorem proposition39_test_equal_perpendiculars_parallel
+    [HilbertEuclideanPlane Geo]
+    (A D F G X Y : Geo.Point)
+    (base : Geo.Line)
+    (hFbase : HilbertIncidence.OnLine F base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hFX : Ne F X)
+    (hGbase : HilbertIncidence.OnLine G base)
+    (hYbase : HilbertIncidence.OnLine Y base)
+    (hGY : Ne G Y)
+    (hSame : HilbertSameSide Geo A D base)
+    (hRightA : HilbertRightAngle Geo X F A)
+    (hRightD : HilbertRightAngle Geo Y G D)
+    (hAlt : Geo.Congruent A F D G) :
+    exists top : Geo.Line,
+      HilbertIncidence.OnLine A top /\
+      HilbertIncidence.OnLine D top /\
+      HilbertLinesDisjoint Geo top base := by
+
+  by_cases hFG : F = G
+
+  --------------------------------------------------------------------
+  -- Degenerate-foot case: F = G.
+  --
+  -- Equal perpendicular segments on the same perpendicular ray give
+  -- A = D. Then construct any parallel through A to the base.
+  --------------------------------------------------------------------
+
+  · subst G
+
+    have hAD :
+        A = D :=
+      proposition39_test_equal_perpendiculars_same_foot
+        Geo
+        A D F X Y
+        base
+        hFbase
+        hXbase
+        hFX
+        hYbase
+        hGY
+        hSame
+        hRightA
+        hRightD
+        hAlt
+
+    subst D
+
+    have hAoff :
+        Not (HilbertIncidence.OnLine A base) :=
+      hSame.1
+
+    have hFXA :
+        Not (PrimCollinear Geo F X A) :=
+      hilbert_not_collinear_of_off_line
+        Geo
+        F X A
+        base
+        hFX
+        hFbase
+        hXbase
+        hAoff
+
+    rcases
+        hilbert_parallel_through_point_exists
+          Geo
+          F X A
+          hFX
+          hFXA
+      with
+      ⟨Q, hAQ, hFX_AQ⟩
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          A Q hAQ
+      with
+      ⟨top, hAtop, hQtop⟩
+
+    have hTopBase :
+        HilbertLinesDisjoint Geo top base := by
+
+      rintro ⟨P, hPtop, hPbase⟩
+
+      have hPAQ :
+          P ∈ Geo.PointLine A Q :=
+        (hilbert_mem_pointLine_iff_onLine
+          Geo
+          A Q P
+          top
+          hAQ
+          hAtop
+          hQtop).mpr hPtop
+
+      have hPFX :
+          P ∈ Geo.PointLine F X :=
+        (hilbert_mem_pointLine_iff_onLine
+          Geo
+          F X P
+          base
+          hFX
+          hFbase
+          hXbase).mpr hPbase
+
+      exact
+        Set.disjoint_left.mp
+          hFX_AQ.2.2
+          hPFX
+          hPAQ
+
+    exact
+      ⟨top,
+        hAtop,
+        hAtop,
+        hTopBase⟩
+
+  --------------------------------------------------------------------
+  -- Nondegenerate-foot case: F != G.
+  --
+  -- The previous theorem gives AD || GF. Convert the extensional
+  -- parallelism to actual Hilbert incidence lines and identify the
+  -- line GF with the given base.
+  --------------------------------------------------------------------
+
+  · have hParallel :
+        Geo.Parallel A D G F :=
+      proposition39_test_equal_perpendiculars_parallel_nondegenerate
+        Geo
+        A D F G X Y
+        base
+        hFbase
+        hXbase
+        hFX
+        hGbase
+        hYbase
+        hGY
+        hSame
+        hRightA
+        hRightD
+        hAlt
+        hFG
+
+    have hAD :
+        Ne A D :=
+      hParallel.1
+
+    have hGF :
+        Ne G F :=
+      hParallel.2.1
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          A D hAD
+      with
+      ⟨top, hAtop, hDtop⟩
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          G F hGF
+      with
+      ⟨lineGF, hGlineGF, hFlineGF⟩
+
+    have hTopGF :
+        HilbertLinesDisjoint Geo top lineGF := by
+
+      rintro ⟨P, hPtop, hPlineGF⟩
+
+      have hPAD :
+          P ∈ Geo.PointLine A D :=
+        (hilbert_mem_pointLine_iff_onLine
+          Geo
+          A D P
+          top
+          hAD
+          hAtop
+          hDtop).mpr hPtop
+
+      have hPGF :
+          P ∈ Geo.PointLine G F :=
+        (hilbert_mem_pointLine_iff_onLine
+          Geo
+          G F P
+          lineGF
+          hGF
+          hGlineGF
+          hFlineGF).mpr hPlineGF
+
+      exact
+        Set.disjoint_left.mp
+          hParallel.2.2
+          hPAD
+          hPGF
+
+    have hLineGFBase :
+        lineGF = base :=
+      HilbertPlaneIncidence.line_unique
+        G F
+        hGF
+        lineGF base
+        hGlineGF
+        hFlineGF
+        hGbase
+        hFbase
+
+    have hTopBase :
+        HilbertLinesDisjoint Geo top base := by
+      rw [← hLineGFBase]
+      exact hTopGF
+
+    exact
+      ⟨top,
+        hAtop,
+        hDtop,
+        hTopBase⟩
+
 end Geometry
