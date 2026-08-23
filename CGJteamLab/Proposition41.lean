@@ -36,61 +36,7 @@ variable (Geo : Geometry.Geo)
 -- this is the faithful synthetic reading of "double".
 ------------------------------------------------------------------------
 
-/--
-Equicomplementability doubles: if `P` is equicomplementable with `Q`,
-then `P + P` is equicomplementable with `Q + Q`.
 
-Proved directly from the definition, reusing the same complement
-`(R + R, S + S)` twice and the associativity/commutativity rearrangement
-technique already used in `equicomplementable_trans`.
--/
-theorem i41_equicomplementable_double
-    {P Q : HilbertScissorsTerm Geo}
-    (h : HilbertScissorsEquicomplementable Geo P Q) :
-    HilbertScissorsEquicomplementable Geo (P + P) (Q + Q) := by
-
-  rcases h with ⟨R, S, hRS, hPQ⟩
-
-  have hStep1 :
-      HilbertScissorsEq Geo
-        ((P + R) + (P + R))
-        ((Q + S) + (Q + S)) :=
-    HilbertScissorsEq.add
-      (Geo := Geo) hPQ hPQ
-
-  have hEqLeft :
-      (P + R) + (P + R) = (P + P) + (R + R) := by
-    calc
-      (P + R) + (P + R)
-          = P + (R + (P + R)) := Multiset.add_assoc _ _ _
-      _ = P + ((R + P) + R) := by rw [Multiset.add_assoc]
-      _ = P + ((P + R) + R) := by rw [Multiset.add_comm R P]
-      _ = P + (P + (R + R)) := by rw [Multiset.add_assoc]
-      _ = (P + P) + (R + R) := (Multiset.add_assoc _ _ _).symm
-
-  have hEqRight :
-      (Q + S) + (Q + S) = (Q + Q) + (S + S) := by
-    calc
-      (Q + S) + (Q + S)
-          = Q + (S + (Q + S)) := Multiset.add_assoc _ _ _
-      _ = Q + ((S + Q) + S) := by rw [Multiset.add_assoc]
-      _ = Q + ((Q + S) + S) := by rw [Multiset.add_comm S Q]
-      _ = Q + (Q + (S + S)) := by rw [Multiset.add_assoc]
-      _ = (Q + Q) + (S + S) := (Multiset.add_assoc _ _ _).symm
-
-  have hStep1' :
-      HilbertScissorsEq Geo
-        ((P + P) + (R + R))
-        ((Q + Q) + (S + S)) := by
-    rw [hEqLeft, hEqRight] at hStep1
-    exact hStep1
-
-  have hRR :
-      HilbertScissorsEq Geo (R + R) (S + S) :=
-    HilbertScissorsEq.add
-      (Geo := Geo) hRS hRS
-
-  exact ⟨R + R, S + S, hRR, hStep1'⟩
 
 /--
 Euclid I.41.
@@ -182,8 +128,10 @@ theorem euclid_proposition_41
          hilbertScissorsTriangle Geo A B C)
         (hilbertScissorsTriangle Geo E B C +
          hilbertScissorsTriangle Geo E B C) :=
-    i41_equicomplementable_double
-      Geo hABC_EBC
+    equicomplementable_add
+      Geo
+      hABC_EBC
+      hABC_EBC
 
   exact
     equicomplementable_transport

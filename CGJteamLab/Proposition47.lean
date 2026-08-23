@@ -680,8 +680,10 @@ theorem euclid_proposition_47
          hilbertScissorsTriangle Geo B A D)
         (hilbertScissorsTriangle Geo B F C +
          hilbertScissorsTriangle Geo B F C) :=
-    i41_equicomplementable_double
+    equicomplementable_add
       Geo
+      (equicomplementable_of_scissorsEq
+        Geo hScTri1)
       (equicomplementable_of_scissorsEq
         Geo hScTri1)
 
@@ -708,8 +710,10 @@ theorem euclid_proposition_47
          hilbertScissorsTriangle Geo C A E)
         (hilbertScissorsTriangle Geo C K B +
          hilbertScissorsTriangle Geo C K B) :=
-    i41_equicomplementable_double
+    equicomplementable_add
       Geo
+      (equicomplementable_of_scissorsEq
+        Geo hScTri2)
       (equicomplementable_of_scissorsEq
         Geo hScTri2)
 

@@ -262,6 +262,78 @@ theorem equicomplementable_of_scissorsEq
         (HilbertScissorsEq.refl
           (Geo := Geo) 0)
 
+/--
+Equicomplementability is compatible with formal addition.
+-/
+theorem equicomplementable_add
+    {P1 Q1 P2 Q2 : HilbertScissorsTerm Geo}
+    (h1 :
+      HilbertScissorsEquicomplementable Geo P1 Q1)
+    (h2 :
+      HilbertScissorsEquicomplementable Geo P2 Q2) :
+    HilbertScissorsEquicomplementable Geo
+      (P1 + P2)
+      (Q1 + Q2) := by
+
+  rcases h1 with
+    ⟨R1, S1, hR1S1, hP1Q1⟩
+
+  rcases h2 with
+    ⟨R2, S2, hR2S2, hP2Q2⟩
+
+  refine
+    ⟨R1 + R2, S1 + S2, ?_, ?_⟩
+
+  · exact
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        hR1S1
+        hR2S2
+
+  · have hWhole :
+        HilbertScissorsEq Geo
+          ((P1 + R1) + (P2 + R2))
+          ((Q1 + S1) + (Q2 + S2)) :=
+      HilbertScissorsEq.add
+        (Geo := Geo)
+        hP1Q1
+        hP2Q2
+
+    have hLeft :
+        ((P1 + R1) + (P2 + R2)) =
+        ((P1 + P2) + (R1 + R2)) := by
+      calc
+        ((P1 + R1) + (P2 + R2))
+            = P1 + (R1 + (P2 + R2)) :=
+          Multiset.add_assoc _ _ _
+        _ = P1 + ((R1 + P2) + R2) := by
+          rw [Multiset.add_assoc]
+        _ = P1 + ((P2 + R1) + R2) := by
+          rw [Multiset.add_comm R1 P2]
+        _ = P1 + (P2 + (R1 + R2)) := by
+          rw [Multiset.add_assoc]
+        _ = (P1 + P2) + (R1 + R2) :=
+          (Multiset.add_assoc _ _ _).symm
+
+    have hRight :
+        ((Q1 + S1) + (Q2 + S2)) =
+        ((Q1 + Q2) + (S1 + S2)) := by
+      calc
+        ((Q1 + S1) + (Q2 + S2))
+            = Q1 + (S1 + (Q2 + S2)) :=
+          Multiset.add_assoc _ _ _
+        _ = Q1 + ((S1 + Q2) + S2) := by
+          rw [Multiset.add_assoc]
+        _ = Q1 + ((Q2 + S1) + S2) := by
+          rw [Multiset.add_comm S1 Q2]
+        _ = Q1 + (Q2 + (S1 + S2)) := by
+          rw [Multiset.add_assoc]
+        _ = (Q1 + Q2) + (S1 + S2) :=
+          (Multiset.add_assoc _ _ _).symm
+
+    rw [hLeft, hRight] at hWhole
+    exact hWhole
+
 theorem triangle_swap23
     (A B C : Geo.Point) :
     hilbertTriangleTerm Geo A B C =
