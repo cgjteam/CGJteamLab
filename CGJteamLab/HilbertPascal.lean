@@ -13259,7 +13259,7 @@ theorem proposition39_test_pascal_equal_angles_concyclic
 -- Circle theorem: inscribed angles in the crossing-chord configuration
 ------------------------------------------------------------------------
 
-/--
+/-
 Circle theorem used in Hilbert sec. 14.
 
 If A,C lie on one ray from O, B,D lie on another ray from O,
@@ -13269,6 +13269,7 @@ by the chord CB are congruent.
 This is a test assumption representing the circle theorem of sec. 7.
 It is to be derived from Groups III-IV.
 -/
+/-
 axiom proposition39_test_circle_crossing_chords_angle
     [HilbertEuclideanPlane Geo]
     (O A C B D : Geo.Point)
@@ -13279,7 +13280,8 @@ axiom proposition39_test_circle_crossing_chords_angle
     Geo.AngleCongruent
       O D C
       O A B
-
+-/
+/-
 theorem proposition39_test_pascal_concyclic_angle
     [HilbertEuclideanPlane Geo]
     (O A C A' B' D' : Geo.Point)
@@ -13328,13 +13330,43 @@ theorem proposition39_test_pascal_concyclic_angle
       hRayAC
       hRayB'D'
       hCyclic
+-/
+
+/--
+Similar-triangle transfer in the crossing-rays configuration.
+
+Let A,C lie on one ray from O and B,D on another ray from O.
+If
+
+    angle OAD ~= angle OBC,
+
+then
+
+    angle ODC ~= angle OAB.
+
+This is the actual metric content needed in the special Pascal argument.
+It is temporarily assumed here and is to be derived independently.
+-/
+axiom proposition39_test_crossing_chords_similar
+    [HilbertEuclideanPlane Geo]
+    (O A C B D : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayBD : HilbertSameRay Geo O B D)
+    (hAngle :
+      Geo.AngleCongruent
+        O A D
+        O B C) :
+    Geo.AngleCongruent
+      O D C
+      O A B
 
 ------------------------------------------------------------------------
 -- Hilbert sec. 14
 -- Special Pascal: relation (3t)
 ------------------------------------------------------------------------
 
-/--
+/-
 Hilbert's relation (3t) in the special Pascal configuration.
 
 From
@@ -13346,6 +13378,7 @@ angle theorem then gives
 
     angle OD'C ~= angle OAB'.
 -/
+/-
 theorem proposition39_test_pascal_third_angle
     [HilbertEuclideanPlane Geo]
     (O A C A' B' D' : Geo.Point)
@@ -13381,6 +13414,65 @@ theorem proposition39_test_pascal_third_angle
       hRayA'B'
       hRayA'D'
       hCyclic
+-/
+
+/--
+Hilbert's relation (3t) in the special Pascal configuration.
+
+The required angle transfer is now obtained directly from the
+crossing-rays similarity theorem, without passing through concyclicity.
+-/
+theorem proposition39_test_pascal_third_angle
+    [HilbertEuclideanPlane Geo]
+    (O A C A' B' D' : Geo.Point)
+    (hAOA' : Not (PrimCollinear Geo A O A'))
+    (hRayAC : HilbertSameRay Geo O A C)
+    (hRayA'B' : HilbertSameRay Geo O A' B')
+    (hRayA'D' : HilbertSameRay Geo O A' D')
+    (hAngle :
+      Geo.AngleCongruent
+        O A D'
+        O B' C) :
+    Geo.AngleCongruent
+      O D' C
+      O A B' := by
+
+  have hAO :
+      Not (A = O) :=
+    hilbert_noncollinear_ne_first
+      Geo A O A' hAOA'
+
+  have hRayAA :
+      HilbertSameRay Geo O A A :=
+    hilbert_sameRay_refl
+      Geo O A hAO
+
+  have hAOB' :
+      Not (PrimCollinear Geo A O B') :=
+    hilbert_noncollinear_of_sameRays
+      Geo
+      A O A'
+      A B'
+      hAOA'
+      hRayAA
+      hRayA'B'
+
+  have hRayB'D' :
+      HilbertSameRay Geo O B' D' :=
+    hilbert_sameRay_common_reference
+      Geo
+      O A' B' D'
+      hRayA'B'
+      hRayA'D'
+
+  exact
+    proposition39_test_crossing_chords_similar
+      Geo
+      O A C B' D'
+      hAOB'
+      hRayAC
+      hRayB'D'
+      hAngle
 
 ------------------------------------------------------------------------
 -- Hilbert sec. 14
