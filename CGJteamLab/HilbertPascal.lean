@@ -16508,4 +16508,59 @@ theorem proposition39_test_equal_perpendiculars_parallel
         hDtop,
         hTopBase⟩
 
+/--
+A and D have equal perpendicular distances from the given base line.
+-/
+def HilbertEqualAltitudeToLine
+    (A D : Geo.Point)
+    (base : Geo.Line) : Prop :=
+  ∃ F G X Y : Geo.Point,
+    HilbertIncidence.OnLine F base ∧
+    HilbertIncidence.OnLine X base ∧
+    Ne F X ∧
+    HilbertIncidence.OnLine G base ∧
+    HilbertIncidence.OnLine Y base ∧
+    Ne G Y ∧
+    HilbertRightAngle Geo X F A ∧
+    HilbertRightAngle Geo Y G D ∧
+    Geo.Congruent A F D G
+
+/--
+Equal altitude on the same side of the base implies that the two
+vertices lie on one line disjoint from the base.
+-/
+theorem proposition39_test_equal_altitude_parallel
+    [HilbertEuclideanPlane Geo]
+    (A D : Geo.Point)
+    (base : Geo.Line)
+    (hSame : HilbertSameSide Geo A D base)
+    (hAlt : HilbertEqualAltitudeToLine Geo A D base) :
+    ∃ top : Geo.Line,
+      HilbertIncidence.OnLine A top ∧
+      HilbertIncidence.OnLine D top ∧
+      HilbertLinesDisjoint Geo top base := by
+
+  rcases hAlt with
+    ⟨F, G, X, Y,
+      hFbase, hXbase, hFX,
+      hGbase, hYbase, hGY,
+      hRightA, hRightD, hAFDG⟩
+
+  exact
+    proposition39_test_equal_perpendiculars_parallel
+      Geo
+      A D F G X Y
+      base
+      hFbase
+      hXbase
+      hFX
+      hGbase
+      hYbase
+      hGY
+      hSame
+      hRightA
+      hRightD
+      hAFDG
+
+
 end Geometry
