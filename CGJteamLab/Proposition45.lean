@@ -183,17 +183,13 @@ theorem euclid_proposition_45
             (hilbertScissorsTriangle Geo P Q R +
              rectilinealTerm Geo (hd2 :: tl2))
             (hilbertScissorsTriangle Geo P Q R +
-             hilbertParallelogramTerm Geo S T U V) := by
-        have h0 :=
-          equicomplementable_add_right
-            Geo (hilbertScissorsTriangle Geo P Q R) hEquicompTl
-        rw [Multiset.add_comm
-              (rectilinealTerm Geo (hd2 :: tl2))
-              (hilbertScissorsTriangle Geo P Q R),
-            Multiset.add_comm
-              (hilbertParallelogramTerm Geo S T U V)
-              (hilbertScissorsTriangle Geo P Q R)] at h0
-        exact h0
+             hilbertParallelogramTerm Geo S T U V) :=
+        equicomplementable_add
+          Geo
+          (equicomplementable_refl
+            Geo
+            (hilbertScissorsTriangle Geo P Q R))
+          hEquicompTl
 
       exact
         equicomplementable_trans
