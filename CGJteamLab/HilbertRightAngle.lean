@@ -1293,6 +1293,7 @@ theorem hilbert_right_angle_exists
 ------------------------------------------------------------------------
 
 theorem hilbert_right_angle_same_foot_angle_cases
+    [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A D F X : Geo.Point)
     (base : Geo.Line)
@@ -1340,6 +1341,7 @@ on the same side of the base XF, then ray FA meets the open
 segment XD.
 -/
 theorem hilbert_right_angle_less_ray_inside
+    [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A D F X : Geo.Point)
     (base : Geo.Line)
@@ -1518,6 +1520,7 @@ A right angle may be expressed using any chosen point on the
 opposite base ray.
 -/
 theorem hilbert_right_angle_chosen_supplement
+    [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (D F X Y : Geo.Point)
     (hXFY : Geo.Between X F Y)
@@ -1560,6 +1563,7 @@ meets the open segment AY, provided A and D lie on the same
 side of the base XY.
 -/
 theorem hilbert_right_angle_inside_flip
+    [HilbertIncidence Geo]
     [HilbertOrder Geo]
     (A D F X Y : Geo.Point)
     (base : Geo.Line)
@@ -1727,6 +1731,7 @@ base ray is impossible when their second rays lie in the same
 half-plane.
 -/
 theorem hilbert_right_angle_less_impossible
+    [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A D F X : Geo.Point)
     (base : Geo.Line)
@@ -1986,6 +1991,7 @@ Two right angles erected from the same base ray into the same
 half-plane are congruent.
 -/
 theorem hilbert_same_base_right_angles_congruent
+[HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A D F X : Geo.Point)
     (base : Geo.Line)
@@ -2051,6 +2057,7 @@ This is Hilbert Theorem 21 in a form with explicit carrier lines
 for the two first arms.
 -/
 theorem hilbert_all_right_angles_congruent_lines
+    [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A D F G X E : Geo.Point)
     (base1 base2 : Geo.Line)
@@ -2195,6 +2202,7 @@ theorem hilbert_all_right_angles_congruent_lines
       hKGD
 
 theorem hilbert_all_right_angles_congruent
+    [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A O B A' O' B' : Geo.Point)
     (hAOB : Not (PrimCollinear Geo A O B))
@@ -2259,5 +2267,6 @@ theorem hilbert_all_right_angles_congruent
       hA'base2
       hB'off
       hRight
+      hRight'
 
 end Geometry
