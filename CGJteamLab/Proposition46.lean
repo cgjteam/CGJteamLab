@@ -83,137 +83,9 @@ def IsSquare
   HilbertRightAngle Geo B C D ∧
   HilbertRightAngle Geo C D A
 
-/--
-Local axiom.
-
-In a parallelogram `A B C D`, an angle adjacent to a right angle is
-itself right.
-
-This is Euclid's citation of I.29 in the proof of I.46: the side `AB`
-is a transversal of the parallels `AD` and `BC`, so the co-interior
-angles `∠DAB` and `∠ABC` are together equal to two right angles.  The
-library proves I.29 only in an explicit transversal configuration
-(`euclid_proposition_29`), and the normalization of the parallelogram
-configuration to that form is not yet available as a reusable lemma.
--/
-axiom i46_parallelogram_adjacent_right_angle
-    [HilbertIncidence Geo]
-    [HilbertEuclideanPlane Geo]
-    (A B C D : Geo.Point)
-    (hParallelogram : IsParallelogram Geo A B C D)
-    (hRight : HilbertRightAngle Geo D A B) :
-    HilbertRightAngle Geo A B C
-
 ------------------------------------------------------------------------
 -- Auxiliary results
 ------------------------------------------------------------------------
-
-/--
-An endpoint of one of two parallel lines is not collinear with the
-other line.
-
-Immediate from the definition of `Geo.Parallel` as disjointness of the
-two point-line carriers.
--/
-theorem parallel_first_not_collinear
-    [HilbertIncidence Geo]
-    [HilbertOrder Geo]
-    (A B C D : Geo.Point)
-    (hParallel : Geo.Parallel A B C D) :
-    Not (Collinear Geo A B C) := by
-
-  intro hCol
-
-  rcases hCol with ⟨l, hAl, hBl, hCl⟩
-
-  have hAB : A ≠ B :=
-    hParallel.1
-
-  have hC_AB :
-      C ∈ Geo.PointLine A B :=
-    (hilbert_mem_pointLine_iff_onLine
-      Geo A B C l hAB hAl hBl).mpr hCl
-
-  have hC_CD :
-      C ∈ Geo.PointLine C D := by
-    change Geometry.Geo.LineCollinear Geo C D C
-    exact Or.inr (Or.inl rfl)
-
-  exact
-    Set.disjoint_left.mp hParallel.2.2
-      hC_AB hC_CD
-
-/--
-All four vertex triples of a parallelogram are noncollinear.
-
-These are the side conditions required by every angle theorem applied
-below.
--/
-theorem parallelogram_vertices_noncollinear
-    [HilbertIncidence Geo]
-    [HilbertOrder Geo]
-    (A B C D : Geo.Point)
-    (hParallelogram : IsParallelogram Geo A B C D) :
-    Not (Collinear Geo D A B) ∧
-    Not (Collinear Geo A B C) ∧
-    Not (Collinear Geo B C D) ∧
-    Not (Collinear Geo C D A) := by
-
-  have hAB_CD :
-      Geo.Parallel A B C D :=
-    hParallelogram.1
-
-  have hBC_DA :
-      Geo.Parallel B C D A :=
-    hParallelogram.2
-
-  ----------------------------------------------------------------
-  -- `A B C`
-  ----------------------------------------------------------------
-
-  have hABC :
-      Not (Collinear Geo A B C) :=
-    parallel_first_not_collinear
-      Geo A B C D hAB_CD
-
-  ----------------------------------------------------------------
-  -- `B C D`
-  ----------------------------------------------------------------
-
-  have hBCD :
-      Not (Collinear Geo B C D) :=
-    parallel_first_not_collinear
-      Geo B C D A hBC_DA
-
-  ----------------------------------------------------------------
-  -- `C D A`
-  ----------------------------------------------------------------
-
-  have hCD_AB :
-      Geo.Parallel C D A B :=
-    ParallelSymmetry
-      Geo A B C D hAB_CD
-
-  have hCDA :
-      Not (Collinear Geo C D A) :=
-    parallel_first_not_collinear
-      Geo C D A B hCD_AB
-
-  ----------------------------------------------------------------
-  -- `D A B`
-  ----------------------------------------------------------------
-
-  have hDA_BC :
-      Geo.Parallel D A B C :=
-    ParallelSymmetry
-      Geo B C D A hBC_DA
-
-  have hDAB :
-      Not (Collinear Geo D A B) :=
-    parallel_first_not_collinear
-      Geo D A B C hDA_BC
-
-  exact ⟨hDAB, hABC, hBCD, hCDA⟩
 
 /--
 Euclid I.11 at an endpoint, together with I.3.
@@ -468,7 +340,7 @@ theorem euclid_proposition_46
 
   have hRightABC :
       HilbertRightAngle Geo A B C :=
-    i46_parallelogram_adjacent_right_angle
+    parallelogram_adjacent_right_angle
       Geo A B C D hParallelogram hRightDAB
 
   have hOppositeAngles :

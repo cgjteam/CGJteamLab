@@ -10003,4 +10003,398 @@ theorem hilbert_parallelogram_fourth_vertex_exists
 --    `ML`, not from the diagram axiom.
 ------------------------------------------------------------------------
 
+/--
+An endpoint of one of two parallel lines is not collinear with the
+other line.
+
+Immediate from the definition of `Geo.Parallel` as disjointness of the
+two point-line carriers.
+-/
+theorem parallel_first_not_collinear
+    [HilbertOrder Geo]
+    (A B C D : Geo.Point)
+    (hParallel : Geo.Parallel A B C D) :
+    Not (Collinear Geo A B C) := by
+
+  intro hCol
+
+  rcases hCol with ⟨l, hAl, hBl, hCl⟩
+
+  have hAB : A ≠ B :=
+    hParallel.1
+
+  have hC_AB :
+      C ∈ Geo.PointLine A B :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo A B C l hAB hAl hBl).mpr hCl
+
+  have hC_CD :
+      C ∈ Geo.PointLine C D := by
+    change Geometry.Geo.LineCollinear Geo C D C
+    exact Or.inr (Or.inl rfl)
+
+  exact
+    Set.disjoint_left.mp hParallel.2.2
+      hC_AB hC_CD
+
+/--
+All four vertex triples of a parallelogram are noncollinear.
+
+These are the standard nondegeneracy facts needed when applying
+angle theorems to a parallelogram.
+-/
+theorem parallelogram_vertices_noncollinear
+    [HilbertOrder Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    Not (Collinear Geo D A B) ∧
+    Not (Collinear Geo A B C) ∧
+    Not (Collinear Geo B C D) ∧
+    Not (Collinear Geo C D A) := by
+
+  have hAB_CD :
+      Geo.Parallel A B C D :=
+    hParallelogram.1
+
+  have hBC_DA :
+      Geo.Parallel B C D A :=
+    hParallelogram.2
+
+  have hABC :
+      Not (Collinear Geo A B C) :=
+    parallel_first_not_collinear
+      Geo A B C D hAB_CD
+
+  have hBCD :
+      Not (Collinear Geo B C D) :=
+    parallel_first_not_collinear
+      Geo B C D A hBC_DA
+
+  have hCD_AB :
+      Geo.Parallel C D A B :=
+    ParallelSymmetry
+      Geo A B C D hAB_CD
+
+  have hCDA :
+      Not (Collinear Geo C D A) :=
+    parallel_first_not_collinear
+      Geo C D A B hCD_AB
+
+  have hDA_BC :
+      Geo.Parallel D A B C :=
+    ParallelSymmetry
+      Geo B C D A hBC_DA
+
+  have hDAB :
+      Not (Collinear Geo D A B) :=
+    parallel_first_not_collinear
+      Geo D A B C hDA_BC
+
+  exact ⟨hDAB, hABC, hBCD, hCDA⟩
+
+/--
+In a parallelogram `A B C D`, extending the side `CB` beyond `B`
+produces an exterior angle at `B` congruent to the interior angle
+`DAB`.
+
+More precisely, there is a point `F` with `F-B-C` such that
+`DAB` is congruent to `FBA`.
+
+This is the Euclidean direction of Hilbert's Theorem 30
+(Euclid I.29) applied to the parallel sides `AD` and `BC`.
+-/
+theorem parallelogram_adjacent_exterior_angle_congruent
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D) :
+    ∃ F : Geo.Point,
+      Geo.Between F B C ∧
+      Not (Collinear Geo F B A) ∧
+      Geo.AngleCongruent D A B F B A := by
+
+  --------------------------------------------------------------------
+  -- Basic noncollinearity / distinctness data.
+  --------------------------------------------------------------------
+
+  have hNC :=
+    parallelogram_vertices_noncollinear
+      Geo A B C D hParallelogram
+
+  have hNC_ABC :
+      Not (Collinear Geo A B C) :=
+    hNC.2.1
+
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hNC_ABC
+
+  have hBC : B ≠ C := by
+    intro hEq
+    apply hNC_ABC
+    subst hEq
+    rcases HilbertPlaneIncidence.line_through A B hAB with
+      ⟨l, hAl, hBl⟩
+    exact ⟨l, hAl, hBl, hBl⟩
+
+  --------------------------------------------------------------------
+  -- `trans` is the line `AB`; `C, D` lie on the same side of it.
+  --------------------------------------------------------------------
+
+  rcases HilbertPlaneIncidence.line_through A B hAB with
+    ⟨trans, hAtrans, hBtrans⟩
+
+  have hParallelCDAB :
+      Geo.Parallel C D A B :=
+    ParallelSymmetry
+      Geo A B C D hParallelogram.1
+
+  rcases
+      parallel_endpoints_sameSide
+        Geo C D A B hParallelCDAB with
+    ⟨l, hAl, hBl, hSameSideCD⟩
+
+  have hLineEq : l = trans :=
+    HilbertPlaneIncidence.line_unique
+      A B hAB l trans hAl hBl hAtrans hBtrans
+
+  have hSameSideCDtrans :
+      HilbertSameSide Geo C D trans :=
+    hLineEq ▸ hSameSideCD
+
+  --------------------------------------------------------------------
+  -- Extend `CB` beyond `B` to `F`.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertOrder.between_extension C B hBC.symm with
+    ⟨F, hCBF⟩
+
+  have hCBFdata :=
+    HilbertOrder.between_incidence C B F hCBF
+
+  have hBF : B ≠ F :=
+    hCBFdata.2.1
+
+  have hFBC :
+      Geo.Between F B C :=
+    hCBFdata.2.2.2.2
+
+  have hCtrans_not :
+      Not (HilbertIncidence.OnLine C trans) :=
+    hSameSideCDtrans.1
+
+  rcases HilbertPlaneIncidence.line_through B C hBC with
+    ⟨lineBC, hBlineBC, hClineBC⟩
+
+  have hFlineBC :
+      HilbertIncidence.OnLine F lineBC := by
+    rcases hCBFdata.2.2.2.1 with
+      ⟨l', hCl', hBl', hFl'⟩
+    have hEq : l' = lineBC :=
+      HilbertPlaneIncidence.line_unique
+        B C hBC l' lineBC hBl' hCl' hBlineBC hClineBC
+    exact hEq ▸ hFl'
+
+  have hFtrans_not :
+      Not (HilbertIncidence.OnLine F trans) := by
+    intro hFtrans
+    have hLineEq2 : lineBC = trans :=
+      HilbertPlaneIncidence.line_unique
+        B F hBF lineBC trans hBlineBC hFlineBC hBtrans hFtrans
+    exact hCtrans_not (hLineEq2 ▸ hClineBC)
+
+  have hOppositeCF :
+      HilbertOppositeSide Geo C F trans :=
+    ⟨hCtrans_not, hFtrans_not, ⟨B, hCBF, hBtrans⟩⟩
+
+  have hOppositeFC :
+      HilbertOppositeSide Geo F C trans :=
+    hilbert_oppositeSide_symm
+      Geo C F trans hOppositeCF
+
+  have hOppositeFD :
+      HilbertOppositeSide Geo F D trans :=
+    hilbert_oppositeSide_transport_right
+      Geo F C D trans hOppositeFC hSameSideCDtrans
+
+  have hOppositeDF :
+      HilbertOppositeSide Geo D F trans :=
+    hilbert_oppositeSide_symm
+      Geo F D trans hOppositeFD
+
+  --------------------------------------------------------------------
+  -- `AD ∥ BF`.
+  --------------------------------------------------------------------
+
+  have hBC_DA :
+      Geo.Parallel B C D A :=
+    hParallelogram.2
+
+  have hDA_BC :
+      Geo.Parallel D A B C :=
+    ParallelSymmetry
+      Geo B C D A hBC_DA
+
+  have hAD_BC :
+      Geo.Parallel A D B C :=
+    ParallelSwapFirstLine
+      Geo D A B C hDA_BC
+
+  have hBC_AD :
+      Geo.Parallel B C A D :=
+    ParallelSymmetry
+      Geo A D B C hAD_BC
+
+  have hCollBFC :
+      Collinear Geo B F C :=
+    PrimCollinearCycle
+      Geo C B F
+      hCBFdata.2.2.2.1
+
+  have hBF_AD :
+      Geo.Parallel B F A D :=
+    collinear_parallel_trans
+      Geo B F C A D
+      hBF
+      hCollBFC
+      hBC_AD
+
+  have hAD_BF :
+      Geo.Parallel A D B F :=
+    ParallelSymmetry
+      Geo B F A D hBF_AD
+
+  --------------------------------------------------------------------
+  -- Hilbert Theorem 30 / Euclid I.29.
+  --------------------------------------------------------------------
+
+  rcases hilbert_between_exists Geo A B hAB with
+    ⟨E, hAEB⟩
+
+  have hRawAngle :
+      Geo.AngleCongruent E A D E B F :=
+    hilbert_alternate_angles_of_parallel_oppositeSide_lines
+      Geo A D B E F trans
+      hAEB hAtrans hBtrans hOppositeDF hAD_BF
+
+  --------------------------------------------------------------------
+  -- Normalize the angle arms along `AB`.
+  --------------------------------------------------------------------
+
+  have hAEBdata :=
+    HilbertOrder.between_incidence A E B hAEB
+
+  have hRayAEB :
+      HilbertSameRay Geo A E B :=
+    hilbert_sameRay_of_between
+      Geo A E B hAEB
+
+  have hBEA :
+      Geo.Between B E A :=
+    hAEBdata.2.2.2.2
+
+  have hRayBEA :
+      HilbertSameRay Geo B E A :=
+    hilbert_sameRay_of_between
+      Geo B E A hBEA
+
+  have hLeft :
+      Geo.Angle E A D = Geo.Angle B A D :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo A E B D hRayAEB
+
+  have hRightRay :
+      Geo.Angle E B F = Geo.Angle A B F :=
+    hilbert_angle_eq_of_sameRay_first
+      Geo B E A F hRayBEA
+
+  have hStep1 :
+      Geo.AngleCongruent B A D A B F := by
+    unfold Geometry.Geo.AngleCongruent at hRawAngle ⊢
+    rw [hLeft, hRightRay] at hRawAngle
+    exact hRawAngle
+
+  have hStep2 :
+      Geo.AngleCongruent D A B A B F :=
+    (Geo.angle_congruent_reverse_first
+      B A D A B F).mp hStep1
+
+  have hStep3 :
+      Geo.AngleCongruent D A B F B A :=
+    (Geo.angle_congruent_reverse_second
+      D A B A B F).mp hStep2
+
+  --------------------------------------------------------------------
+  -- `FBA` is noncollinear.
+  --------------------------------------------------------------------
+
+  have hNCFBA :
+      Not (Collinear Geo F B A) := by
+    intro hCol
+    rcases hCol with
+      ⟨l', hFl', hBl', hAl'⟩
+    have hEq : l' = trans :=
+      HilbertPlaneIncidence.line_unique
+        A B hAB l' trans hAl' hBl' hAtrans hBtrans
+    exact hFtrans_not (hEq ▸ hFl')
+
+  exact ⟨F, hFBC, hNCFBA, hStep3⟩
+
+/--
+In a parallelogram, if one interior angle is right, then the adjacent
+interior angle is right.
+
+The proof first obtains a congruent exterior angle from the Euclidean
+parallel-angle theorem, transports rightness to that angle, and then
+uses the straight extension at the adjacent vertex.
+-/
+theorem parallelogram_adjacent_right_angle
+    [HilbertEuclideanPlane Geo]
+    (A B C D : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D)
+    (hRight : HilbertRightAngle Geo D A B) :
+    HilbertRightAngle Geo A B C := by
+
+  have hNC :=
+    parallelogram_vertices_noncollinear
+      Geo A B C D hParallelogram
+
+  have hNC_DAB :
+      Not (Collinear Geo D A B) :=
+    hNC.1
+
+  have hNC_ABC :
+      Not (Collinear Geo A B C) :=
+    hNC.2.1
+
+  rcases
+      parallelogram_adjacent_exterior_angle_congruent
+        Geo A B C D hParallelogram with
+    ⟨F, hFBC, hNCFBA, hCongDAB_FBA⟩
+
+  have hRightFBA :
+      HilbertRightAngle Geo F B A :=
+    hilbert_right_angle_transport
+      Geo D A B F B A
+      hNC_DAB
+      hNCFBA
+      hRight
+      hCongDAB_FBA
+
+  have hCongFBA_ABC :
+      Geo.AngleCongruent F B A A B C :=
+    hilbert_right_angle_opposite_extension
+      Geo F B A C
+      hNCFBA
+      hRightFBA
+      hFBC
+
+  exact
+    hilbert_right_angle_transport
+      Geo F B A A B C
+      hNCFBA
+      hNC_ABC
+      hRightFBA
+      hCongFBA_ABC
+
 end Geometry

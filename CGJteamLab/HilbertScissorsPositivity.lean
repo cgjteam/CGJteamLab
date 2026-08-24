@@ -127,7 +127,7 @@ theorem hilbert_scissors_triangle_proper_part
     [HilbertOrder Geo]
     (A X B C : Geo.Point)
     (hBXA : Geo.Between B X A)
-    (hBC : B ≠ C)
+    (_hBC : B ≠ C)
     (hNoncol : ¬ Collinear Geo B C A) :
     ¬ HilbertScissorsEquicomplementable Geo
         (hilbertScissorsTriangle Geo A B C)
