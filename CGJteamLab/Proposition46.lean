@@ -44,16 +44,15 @@ variable (Geo : Geometry.Geo)
 -- constructed parallels are not parallel to each other, which follows
 -- from `hilbert_parallel_transitive_distinct` (axiom IV).
 --
--- Step 5 is Euclid's own citation of I.29.  The library does prove
--- I.29 (`euclid_proposition_29`), but only in the explicit transversal
--- configuration `A-D-C`, `C-E-B`, `D-E-F`; connecting that
--- configuration to the parallelogram `A B C D` with a right angle at
--- `A` is a configuration-normalization exercise of the kind carried
--- out in `Proposition27.lean`, and is not yet available as a reusable
--- lemma.  It is recorded below as the second local assumption
--- `i46_parallelogram_adjacent_right_angle`, and is the natural
--- candidate for elimination once the co-interior-angle form of I.29 is
--- packaged.
+-- Step 5 is Euclid's own citation of I.29.  The configuration
+-- normalization needed to apply Hilbert's Theorem 30 to a
+-- parallelogram has been factored into reusable interface lemmas.
+-- `parallelogram_adjacent_exterior_angle_congruent` constructs the
+-- appropriate exterior-angle configuration, and
+-- `parallelogram_adjacent_right_angle` transports rightness to the
+-- adjacent interior angle.  Thus Proposition I.46 itself no longer
+-- contains the low-level SameSide/OppositeSide and transversal
+-- normalization required by I.29.
 --
 -- Everything else -- the four side congruences and the remaining two
 -- right angles (via the opposite-angle theorem I.34 and
