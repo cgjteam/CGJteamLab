@@ -53,7 +53,7 @@ diagonal, and the two "diagonal" parallelograms `AGKE` (at `A`, with
 the quadrilateral `EKHD` (near `D`), each triangulated via its own
 diagonal -- are equicomplementable.
 -/
-theorem euclid_proposition_43
+theorem i43_raw_complements
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C D K G E F H : Geo.Point)
@@ -341,5 +341,41 @@ theorem euclid_proposition_43
        hilbertScissorsTriangle Geo K H C,
      HilbertScissorsEq.add (Geo := Geo) hT4 hT5,
      hMaster⟩
+
+/--
+Euclid I.43.
+
+In a parallelogram, the complements of the parallelograms
+about the diagonal are equicomplementable.
+-/
+theorem euclid_proposition_43
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D K G E F H : Geo.Point)
+    (hParallelogram : IsParallelogram Geo A B C D)
+    (hAKC : Geo.Between A K C)
+    (hAGB : Geo.Between A G B)
+    (hAED : Geo.Between A E D)
+    (hBFC : Geo.Between B F C)
+    (hDHC : Geo.Between D H C)
+    (hPar1 : IsParallelogram Geo A G K E)
+    (hPar2 : IsParallelogram Geo K F C H) :
+    HilbertScissorsEquicomplementable Geo
+      (hilbertScissorsTriangle Geo G B K +
+       hilbertScissorsTriangle Geo K B F)
+      (hilbertScissorsTriangle Geo E D K +
+       hilbertScissorsTriangle Geo K D H) := by
+  exact
+    i43_raw_complements
+      Geo
+      A B C D K G E F H
+      hParallelogram
+      hAKC
+      hAGB
+      hAED
+      hBFC
+      hDHC
+      hPar1
+      hPar2
 
 end Geometry
