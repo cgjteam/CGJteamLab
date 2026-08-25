@@ -1169,8 +1169,107 @@ theorem hilbertPositiveSegmentMul_unique
             (hilbertUnitSegment Geo) a b x)
     (hy : HilbertPositiveSegmentProportion Geo
             (hilbertUnitSegment Geo) a b y) :
-    x = y :=
-  sorry
+    x = y := by
+  obtain ⟨w1x, w2x, hAngleX⟩ := hx
+  obtain ⟨w1y, w2y, hAngleY⟩ := hy
+
+  have hUnitLeg :
+      Geo.Congruent w1x.O w1x.B w1y.O w1y.B :=
+    Quotient.exact (w1x.hFirst.trans w1y.hFirst.symm)
+
+  have hALeg :
+      Geo.Congruent w1x.O w1x.A w1y.O w1y.A :=
+    Quotient.exact (w1x.hSecond.trans w1y.hSecond.symm)
+
+  have hNoncolAOB_x : ¬ PrimCollinear Geo w1x.A w1x.O w1x.B :=
+    fun h => w1x.hNoncol (PrimCollinearSwap Geo w1x.A w1x.O w1x.B h)
+
+  have hNoncolAOB_y : ¬ PrimCollinear Geo w1y.A w1y.O w1y.B :=
+    fun h => w1y.hNoncol (PrimCollinearSwap Geo w1y.A w1y.O w1y.B h)
+
+  have hRightCong1 :
+      Geo.AngleCongruent w1x.A w1x.O w1x.B w1y.A w1y.O w1y.B :=
+    hilbert_all_right_angles_congruent
+      Geo w1x.A w1x.O w1x.B w1y.A w1y.O w1y.B
+      hNoncolAOB_x hNoncolAOB_y
+      w1x.hRight w1y.hRight
+
+  have hSAS1 :=
+    hilbert_sas_remaining_angles
+      Geo w1x.O w1x.A w1x.B w1y.O w1y.A w1y.B
+      w1x.hNoncol w1y.hNoncol
+      hALeg hUnitLeg hRightCong1
+
+  have hAngle_w1 :
+      Geo.AngleCongruent w1x.O w1x.A w1x.B w1y.O w1y.A w1y.B :=
+    hSAS1.1
+
+  have hAngle_w2 :
+      Geo.AngleCongruent w2x.O w2x.A w2x.B w2y.O w2y.A w2y.B :=
+    Geo.angle_congruent_transitivity
+      w2x.O w2x.A w2x.B
+      w1y.O w1y.A w1y.B
+      w2y.O w2y.A w2y.B
+      (Geo.angle_congruent_transitivity
+        w2x.O w2x.A w2x.B
+        w1x.O w1x.A w1x.B
+        w1y.O w1y.A w1y.B
+        (Geo.angle_congruent_symmetry
+          w1x.O w1x.A w1x.B w2x.O w2x.A w2x.B
+          hAngleX)
+        hAngle_w1)
+      hAngleY
+
+  have hBLeg :
+      Geo.Congruent w2x.O w2x.B w2y.O w2y.B :=
+    Quotient.exact (w2x.hFirst.trans w2y.hFirst.symm)
+
+  have hNoncolAOB2_x : ¬ PrimCollinear Geo w2x.A w2x.O w2x.B :=
+    fun h => w2x.hNoncol (PrimCollinearSwap Geo w2x.A w2x.O w2x.B h)
+
+  have hNoncolAOB2_y : ¬ PrimCollinear Geo w2y.A w2y.O w2y.B :=
+    fun h => w2y.hNoncol (PrimCollinearSwap Geo w2y.A w2y.O w2y.B h)
+
+  have hRightCong2 :
+      Geo.AngleCongruent w2x.A w2x.O w2x.B w2y.A w2y.O w2y.B :=
+    hilbert_all_right_angles_congruent
+      Geo w2x.A w2x.O w2x.B w2y.A w2y.O w2y.B
+      hNoncolAOB2_x hNoncolAOB2_y
+      w2x.hRight w2y.hRight
+
+  have hRightCong2' :
+      Geo.AngleCongruent w2x.B w2x.O w2x.A w2y.B w2y.O w2y.A := by
+    have h1 :
+        Geo.AngleCongruent w2x.B w2x.O w2x.A w2y.A w2y.O w2y.B :=
+      (Geo.angle_congruent_reverse_first
+        w2x.A w2x.O w2x.B w2y.A w2y.O w2y.B).mp hRightCong2
+    exact
+      (Geo.angle_congruent_reverse_second
+        w2x.B w2x.O w2x.A w2y.A w2y.O w2y.B).mp h1
+
+  have hNoncolOBA_x : ¬ PrimCollinear Geo w2x.O w2x.B w2x.A :=
+    fun h => w2x.hNoncol (PrimCollinearRotate Geo w2x.O w2x.B w2x.A h)
+
+  have hNoncolOBA_y : ¬ PrimCollinear Geo w2y.O w2y.B w2y.A :=
+    fun h => w2y.hNoncol (PrimCollinearRotate Geo w2y.O w2y.B w2y.A h)
+
+  have hAAS :=
+    hilbert_aas_sides
+      Geo w2x.O w2x.B w2x.A w2y.O w2y.B w2y.A
+      hNoncolOBA_x hNoncolOBA_y
+      hBLeg hRightCong2' hAngle_w2
+
+  have hOALeg :
+      Geo.Congruent w2x.O w2x.A w2y.O w2y.A :=
+    hAAS.1
+
+  calc
+    x = hilbertPositiveSegmentClassOf Geo w2x.O w2x.A w2x.hOA :=
+      w2x.hSecond.symm
+    _ = hilbertPositiveSegmentClassOf Geo w2y.O w2y.A w2y.hOA :=
+      Quotient.sound hOALeg
+    _ = y := w2y.hSecond
+
 
 /-- The product of two positive segment classes. -/
 noncomputable def hilbertPositiveSegmentMul
@@ -1426,7 +1525,5 @@ theorem hilbert_scissors_triangle_positive'
     hilbertAreaWeight_pos Geo A B C hNoncol
       (by simpa [HilbertTriangleWeight.toValuation,
                  hilbertScissorsTriangle] using hZero)
-
-#print axioms hilbert_scissors_triangle_positive'
 
 end Geometry
