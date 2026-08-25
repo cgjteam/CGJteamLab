@@ -439,14 +439,12 @@ theorem hilbert_between_of_collinear_oppositeSide
 [ELEM] The fourth proportional exists: given `a, b, c` there is `d`
 with `a : b = c : d`.
 
-Split by `hilbert_between_trichotomy` on `O1, B1, B2`: the degenerate
-case `c = a` (`B2 = B1`, `d := b`) and the "shrinking" case `c ≤ a`
-(`B2` between `O1, B1`, via Pasch + Euclid I.29 corresponding angles)
-are both discharged in full below.  The remaining "growing" case
-`c > a` (`B1` between `O1, B2`) is recorded as a single `sorry`; see
-the comment at that point -- it is *not* just a missing transcription,
-it needs a genuinely different ("exterior Pasch") construction that
-has not yet been found.
+Split by `hilbert_between_trichotomy` on `O1, B1, B2`.  The degenerate
+case reuses the original witness.  The shrinking case uses Pasch to
+intersect the inner parallel with `O1 A1`.  The growing case intersects
+that parallel directly with `O1 A1`; parallel uniqueness proves the
+intersection, and side separation proves the order `O1-A1-A2`.
+Euclid I.29 supplies the defining angle in both genuine cases.
 -/
 theorem hilbertPositiveSegmentProportion_fourth_exists
     [HilbertIncidence Geo]
@@ -535,266 +533,289 @@ theorem hilbertPositiveSegmentProportion_fourth_exists
       hCase2 | hImpossible | hCase1
 
     ----------------------------------------------------------------
-    -- Goal 1, `hCase2 : Between w1.O w1.B B2`  (c > a, "growing"
-    -- case).  Construction after Hartshorne / Hilbert (see the
-    -- comment on `hilbert_right_triangle_third_angle_congruent`
-    -- above): copy `β := ∠(w1.A, w1.B, w1.O)` onto `B2`, on the side
-    -- opposite `w1.A`; the copied ray's line meets `line(w1.O, w1.A)`
-    -- (else `β` would be congruent to a right angle, contradicting
-    -- `β < right angle`); call the meeting point `A2`.  The right
-    -- angle at `w1.O` transports to `(A2, B2)` since `A2, w1.O, w1.A`
-    -- are collinear, and the third-angle lemma then gives the needed
-    -- angle match at `A2`.
+    -- Goal 1, `hCase2 : Between w1.O w1.B B2` (c > a, growing case).
+    -- Intersect OA with the line through B2 parallel to BA.  Parallel
+    -- uniqueness gives the intersection, and side separation gives
+    -- the required order O-A-A2.  Euclid I.29 then transfers the
+    -- defining angle directly, without angle subtraction.
     ----------------------------------------------------------------
 
     · have hABO : ¬ PrimCollinear Geo w1.A w1.B w1.O := fun h =>
         w1.hNoncol
           (PrimCollinearCycle Geo w1.B w1.O w1.A
             (PrimCollinearCycle Geo w1.A w1.B w1.O h))
-
       have hBAO : ¬ PrimCollinear Geo w1.B w1.A w1.O := fun h =>
         hABO (PrimCollinearSwap Geo w1.B w1.A w1.O h)
 
-      have hNoncolAOB : ¬ PrimCollinear Geo w1.A w1.O w1.B := fun h =>
-        w1.hNoncol (PrimCollinearSwap Geo w1.A w1.O w1.B h)
-
-      rcases w1.hRight with ⟨Cext, hAOCext, hRightCongOrig⟩
-
-      ----------------------------------------------------------------
-      -- `β` is strictly less than a right angle.
-      ----------------------------------------------------------------
-
-      have hβLess :
-          HilbertAngleLess Geo w1.A w1.B w1.O w1.A w1.O w1.B := by
-        have hRaw :
-            HilbertAngleLess Geo w1.A w1.B w1.O w1.B w1.O Cext :=
-          euclid_proposition_16_first Geo w1.B w1.A w1.O Cext hBAO hAOCext
-        exact
-          hilbert_angleLess_transport_right
-            Geo w1.A w1.B w1.O w1.B w1.O Cext w1.A w1.O w1.B
-            hRaw hNoncolAOB
-            (Geometry.Geo.angle_congruent_symmetry
-              Geo w1.A w1.O w1.B w1.B w1.O Cext hRightCongOrig)
-
-      ----------------------------------------------------------------
-      -- Copy `β` onto vertex `B2`, arm preserved towards `w1.O`, on
-      -- the side of `legB := line(w1.O, B2)` opposite `w1.A` (i.e.
-      -- the side of `Cext`, since `A1, O1, Cext` are collinear with
-      -- `O1` between them, `Cext` is on the opposite ray of
-      -- `line(w1.O, w1.A)` from `w1.A`, hence the opposite side of
-      -- `legB`).
-      ----------------------------------------------------------------
-
-      obtain ⟨legB, hO1legB, hB2legB⟩ :=
-        HilbertPlaneIncidence.line_through w1.O B2 hO1B2
-
-      have hA1legB : ¬ HilbertIncidence.OnLine w1.A legB := by
-        intro h
-        rcases hCollO1B1B2 with ⟨m, hO1m, hB1m, hB2m⟩
-        have hlm : legB = m :=
-          HilbertPlaneIncidence.line_unique
-            w1.O B2 hO1B2 legB m hO1legB hB2legB hO1m hB2m
-        exact w1.hNoncol ⟨m, hO1m, hlm ▸ h, hB1m⟩
-
-      have hCextO : Cext ≠ w1.O :=
-        (HilbertOrder.between_incidence w1.A w1.O Cext hAOCext).2.1.symm
-
-      have hCextlegB : ¬ HilbertIncidence.OnLine Cext legB := by
-        intro h
-        obtain ⟨p, hAp, hOp⟩ :=
-          HilbertPlaneIncidence.line_through w1.A w1.O w1.hOA.symm
-        have hCextp : HilbertIncidence.OnLine Cext p := by
-          have hData := HilbertOrder.between_incidence w1.A w1.O Cext hAOCext
-          rcases hData.2.2.2.1 with ⟨q, hAq, hOq, hCextq⟩
-          have hqp : q = p :=
-            HilbertPlaneIncidence.line_unique
-              w1.A w1.O w1.hOA.symm q p hAq hOq hAp hOp
-          exact hqp ▸ hCextq
-        have hplegB : p = legB :=
-          HilbertPlaneIncidence.line_unique
-            w1.O Cext hCextO.symm p legB hOp hCextp hO1legB h
-        exact hA1legB (hplegB ▸ hAp)
-
-      obtain ⟨D2, hD2Side, hAngleD2, _⟩ :=
-        HilbertCongruence.angle_construction
-          w1.A w1.B w1.O w1.O B2 Cext
-          hABO hO1B2 legB hO1legB hB2legB hCextlegB
-
-      have hOppAC : HilbertOppositeSide Geo w1.A Cext legB :=
-        ⟨hA1legB, hCextlegB, ⟨w1.O, hAOCext, hO1legB⟩⟩
-
-      have hOppositeD2 : HilbertOppositeSide Geo w1.A D2 legB :=
-        hilbert_oppositeSide_transport_right Geo w1.A Cext D2 legB hOppAC
-          (hilbert_sameSide_symm Geo D2 Cext legB hD2Side)
-
-      ----------------------------------------------------------------
-      -- The carrier `m` of ray `B2 → D2` is not parallel to
-      -- `n := line(w1.O, w1.A)`: otherwise alternate angles for the
-      -- transversal `legB` would force `β ≅` a right angle,
-      -- contradicting `hβLess`.
-      ----------------------------------------------------------------
-
       obtain ⟨n, hOn, hAn⟩ :=
         HilbertPlaneIncidence.line_through w1.O w1.A w1.hOA
+      obtain ⟨l, hB2l, hQpl⟩ :=
+        HilbertPlaneIncidence.line_through B2 Qp hB2Qp
+      obtain ⟨bl, hB1bl, hAbl⟩ :=
+        HilbertPlaneIncidence.line_through w1.B w1.A hA1B1.symm
 
-      have hB2D2 : B2 ≠ D2 := by
-        intro h
-        exact hOppositeD2.2.1 (h ▸ hB2legB)
+      have hDistinct :
+          Geo.PointLine w1.O w1.A ≠ Geo.PointLine w1.B w1.A := by
+        intro hEq
+        have hO_BA : w1.O ∈ Geo.PointLine w1.B w1.A := by
+          rw [← hEq]
+          exact intersection_test_left_mem Geo w1.O w1.A
+        have hObl : HilbertIncidence.OnLine w1.O bl :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo w1.B w1.A w1.O bl hA1B1.symm hB1bl hAbl).mp hO_BA
+        exact hBAO ⟨bl, hB1bl, hAbl, hObl⟩
 
-      obtain ⟨m, hB2m, hD2m⟩ :=
-        HilbertPlaneIncidence.line_through B2 D2 hB2D2
-
-      have hE : ∃ E, Geo.Between w1.O E B2 :=
-        hilbert_between_exists Geo w1.O B2 hO1B2
-
-      obtain ⟨E, hOEB2⟩ := hE
-
-      have hMeet : HilbertLinesMeet Geo n m := by
+      have hMeet : HilbertLinesMeet Geo n l := by
         by_contra hDisjoint
-        have hParallel_nm : Geo.Parallel w1.O w1.A B2 D2 :=
+        have hOA_B2Qp : Geo.Parallel w1.O w1.A B2 Qp :=
           intersection_test_parallel_of_lines_disjoint
-            Geo w1.O w1.A B2 D2 n m
-            w1.hOA hB2D2 hOn hAn hB2m hD2m hDisjoint
-        have hEn2 : Geo.AngleCongruent E w1.O w1.A E B2 D2 :=
-          hilbert_alternate_angles_of_parallel_oppositeSide_lines
-            Geo w1.O w1.A B2 E D2 legB
-            hOEB2 hO1legB hB2legB hOppositeD2 hParallel_nm
-        have hRayEB2 : HilbertSameRay Geo w1.O E B2 :=
-          hilbert_sameRay_of_between Geo w1.O E B2 hOEB2
-        have hAngleEOA :
-            Geo.Angle E w1.O w1.A = Geo.Angle B2 w1.O w1.A :=
-          hilbert_angle_eq_of_sameRay_first Geo w1.O E B2 w1.A hRayEB2
-        have hRayB2E : HilbertSameRay Geo B2 E w1.O := by
-          have hB2EO : Geo.Between B2 E w1.O :=
-            (HilbertOrder.between_incidence w1.O E B2 hOEB2).2.2.2.2
-          exact hilbert_sameRay_of_between Geo B2 E w1.O hB2EO
-        have hAngleED2 :
-            Geo.Angle E B2 D2 = Geo.Angle w1.O B2 D2 :=
-          hilbert_angle_eq_of_sameRay_first Geo B2 E w1.O D2 hRayB2E
+            Geo w1.O w1.A B2 Qp n l
+            w1.hOA hB2Qp hOn hAn hB2l hQpl hDisjoint
+        have hOA_BA : Geo.Parallel w1.O w1.A w1.B w1.A :=
+          hilbert_parallel_transitive_distinct
+            Geo w1.O w1.A w1.B w1.A B2 Qp
+            hOA_B2Qp hParallel hDistinct
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.O w1.A w1.B w1.A w1.A
+            (intersection_test_right_mem Geo w1.O w1.A)
+            (intersection_test_right_mem Geo w1.B w1.A)
+            hOA_BA
 
-        have hEn2' : Geo.AngleCongruent B2 w1.O w1.A w1.O B2 D2 := by
-          unfold Geometry.Geo.AngleCongruent at hEn2 ⊢
-          rw [← hAngleEOA, ← hAngleED2]
-          exact hEn2
-
-        have hB2OA_β : Geo.AngleCongruent B2 w1.O w1.A w1.A w1.B w1.O :=
-          Geometry.Geo.angle_congruent_transitivity
-            Geo B2 w1.O w1.A w1.O B2 D2 w1.A w1.B w1.O
-            hEn2'
-            (Geometry.Geo.angle_congruent_symmetry
-              Geo w1.A w1.B w1.O w1.O B2 D2 hAngleD2)
-
-        have hStepA : Geo.AngleCongruent w1.A w1.O B2 w1.A w1.B w1.O :=
-          (Geometry.Geo.angle_congruent_reverse_first
-            Geo B2 w1.O w1.A w1.A w1.B w1.O).mp hB2OA_β
-
-        have hRaySymm : HilbertSameRay Geo w1.O B2 w1.B :=
-          hilbert_sameRay_symm Geo w1.O w1.B B2 hRayB1B2
-
-        have hAOB2_AOB :
-            Geo.Angle w1.A w1.O B2 = Geo.Angle w1.A w1.O w1.B :=
-          hilbert_angle_eq_of_sameRay_second Geo w1.O w1.A B2 w1.B hRaySymm
-
-        have hStepB : Geo.AngleCongruent w1.A w1.O w1.B w1.A w1.B w1.O := by
-          unfold Geometry.Geo.AngleCongruent at hStepA ⊢
-          rw [← hAOB2_AOB]
-          exact hStepA
-
-        have hFinalLess : HilbertAngleLess Geo w1.A w1.B w1.O w1.A w1.B w1.O :=
-          hilbert_angleLess_transport_right
-            Geo w1.A w1.B w1.O w1.A w1.O w1.B w1.A w1.B w1.O
-            hβLess hABO hStepB
-
-        exact hilbert_angleLess_irrefl Geo w1.A w1.B w1.O hFinalLess
-
-      ----------------------------------------------------------------
-      -- `A2 := n ∩ m`.  REMAINING WORK: characterize `A2`'s ray from
-      -- `w1.O` relative to `w1.A` (`hilbert_between_trichotomy` on
-      -- `w1.A, w1.O, A2`, and separately relative to `D2, B2, A2`
-      -- (`A2 ≠ w1.O` is immediate: `A2 ∈ legB` would force `A2 = w1.O`,
-      -- the only point of `n ∩ legB`, since `w1.A ∉ legB`; similarly
-      -- `A2 ≠ B2` from `B2 ∉ n`).  The natural case split is
-      -- `by_cases` on `Geo.Between w1.A w1.O A2` (only 2 cases, not a
-      -- full trichotomy, directly from `HilbertSameRay`'s own
-      -- definition when it fails).  The two ray-relations are NOT
-      -- independent: `legB` meets `n` only at `w1.O` and meets `m`
-      -- only at `B2` (`m ≠ legB` since `m` crosses it at angle `β ≠ 0,
-      -- 180`), so each of the two rays of `n` from `w1.O`, and each of
-      -- the two rays of `m` from `B2`, lies entirely on one side of
-      -- `legB`; since `D2`'s ray (from `B2`) is on the side opposite
-      -- `w1.A` (`hOppositeD2`), `A2` is on `w1.A`'s ray of `n` iff it
-      -- is on the ray of `m` OPPOSITE `D2`, and on the opposite ray of
-      -- `n` iff it is on `D2`'s own ray of `m` -- i.e. the same
-      -- `by_cases` split determines both relations at once, it just
-      -- needs proving for `m` the same way it would be proved for
-      -- `n` (same-side-of-a-line-via-no-segment-crossing, as for
-      -- `hSameSideB2B1`/`hNoMeetB1B2n` in Goal 3 above, or via
-      -- `hilbert_between_points_sameSide_transversal` used inside
-      -- `euclid_proposition_32_exterior`'s own proof).
-      --
-      -- Given the right ray-relations: same-ray case, transport the
-      -- right angle and the `β`-angle via `hilbert_angle_eq_of_sameRay_first`/
-      -- `_second` (plain `Angle` equalities, lifted to `AngleCongruent`
-      -- by the `unfold; rw; exact` pattern used throughout this file,
-      -- e.g. Goal 3's `hRightA2B2`).  Opposite-ray case: via
-      -- `hilbert_right_angle_chosen_supplement` for the right angle
-      -- (exactly as sketched previously) and the same kind of
-      -- same-ray transport for the `β`-angle (now from the ray
-      -- OPPOSITE `D2`, using `hilbert_sameRay_symm`/`hilbert_between_transport_sameRays`
-      -- as needed).  Either way this gives `HilbertRightAngle Geo A2
-      -- w1.O B2` (via `hilbert_right_angle_of_congruent`) and
-      -- `AngleCongruent w1.A w1.B w1.O A2 w1.O B2`-ish (i.e. the
-      -- `hAngleB` hypothesis of `hilbert_right_triangle_third_angle_congruent`,
-      -- applied with `(O,A,B) := (w1.O, A2, B2)` and `(O',A',B') :=
-      -- (w1.O, w1.A, w1.B)`); its conclusion `AngleCongruent w1.O A2
-      -- B2 w1.O w1.A w1.B`, reversed
-      -- (`angle_congruent_symmetry`), is exactly `hFinalAngle` in
-      -- Goal 3's sense.  Package `⟨class(w1.O, A2), w1, {witness2},
-      -- hFinalAngle⟩` exactly as in Goal 3's final `refine`
-      -- (`hFirst := Quotient.sound hO1B2_UV`, `hSecond := rfl`,
-      -- `hNoncol` via `hilbert_noncollinear_of_sameRays` as in Goal 3).
-      ----------------------------------------------------------------
-
-      rcases hMeet with ⟨A2, hA2n, hA2m⟩
+      rcases hMeet with ⟨A2, hA2n, hA2l⟩
 
       have hA2O : A2 ≠ w1.O := by
-        intro h
-        have hOm : HilbertIncidence.OnLine w1.O m := by
-          rw [← h]
-          exact hA2m
-        have hmlegB : m = legB :=
+        intro hA2O
+        have hOl : HilbertIncidence.OnLine w1.O l := by
+          rw [← hA2O]
+          exact hA2l
+        rcases hCollO1B1B2 with ⟨ob, hOob, hB1ob, hB2ob⟩
+        have hobl : ob = l :=
           HilbertPlaneIncidence.line_unique
-            w1.O B2 hO1B2
-            m legB
-            hOm hB2m
-            hO1legB hB2legB
-        exact hOppositeD2.2.1 (hmlegB ▸ hD2m)
+            w1.O B2 hO1B2 ob l hOob hB2ob hOl hB2l
+        have hB1l : HilbertIncidence.OnLine w1.B l := by
+          rw [← hobl]
+          exact hB1ob
+        have hB1_B2Qp : w1.B ∈ Geo.PointLine B2 Qp :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo B2 Qp w1.B l hB2Qp hB2l hQpl).mpr hB1l
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.B w1.A B2 Qp w1.B
+            (intersection_test_left_mem Geo w1.B w1.A)
+            hB1_B2Qp hParallel
 
       have hA2B2 : A2 ≠ B2 := by
-        intro h
+        intro hA2B2
         have hB2n : HilbertIncidence.OnLine B2 n := by
-          rw [← h]
+          rw [← hA2B2]
           exact hA2n
-        have hnlegB : n = legB :=
+        rcases hCollO1B1B2 with ⟨ob, hOob, hB1ob, hB2ob⟩
+        have hnob : n = ob :=
           HilbertPlaneIncidence.line_unique
-            w1.O B2 hO1B2
-            n legB
-            hOn hB2n
-            hO1legB hB2legB
-        exact hA1legB (hnlegB ▸ hAn)
+            w1.O B2 hO1B2 n ob hOn hB2n hOob hB2ob
+        have hB1n : HilbertIncidence.OnLine w1.B n := by
+          rw [hnob]
+          exact hB1ob
+        exact w1.hNoncol ⟨n, hOn, hAn, hB1n⟩
 
-      have hA2legB :
-          ¬ HilbertIncidence.OnLine A2 legB := by
+      have hCollB2A2Qp : Collinear Geo B2 A2 Qp :=
+        ⟨l, hB2l, hA2l, hQpl⟩
+      have hB2Qp_BA : Geo.Parallel B2 Qp w1.B w1.A :=
+        ParallelSymmetry Geo w1.B w1.A B2 Qp hParallel
+      have hB2A2_BA : Geo.Parallel B2 A2 w1.B w1.A :=
+        collinear_parallel_trans
+          Geo B2 A2 Qp w1.B w1.A hA2B2.symm hCollB2A2Qp hB2Qp_BA
+      have hBA_B2A2 : Geo.Parallel w1.B w1.A B2 A2 :=
+        ParallelSymmetry Geo B2 A2 w1.B w1.A hB2A2_BA
+
+      rcases
+          hilbert_parallel_second_endpoints_sameSide
+            Geo w1.B w1.A B2 A2 hBA_B2A2 with
+        ⟨base, hB1base, hAbase, hSameBase⟩
+      have hBaseEq : base = bl :=
+        HilbertPlaneIncidence.line_unique
+          w1.B w1.A hA1B1.symm
+          base bl hB1base hAbase hB1bl hAbl
+      have hSameB2A2 : HilbertSameSide Geo B2 A2 bl := by
+        simpa [hBaseEq] using hSameBase
+
+      have hObl : ¬ HilbertIncidence.OnLine w1.O bl := by
         intro h
-        have hnlegB : n = legB :=
-          HilbertPlaneIncidence.line_unique
-            w1.O A2 hA2O.symm
-            n legB
-            hOn hA2n
-            hO1legB h
-        exact hA1legB (hnlegB ▸ hAn)
+        exact hBAO ⟨bl, hB1bl, hAbl, h⟩
+      have hOppOB2 : HilbertOppositeSide Geo w1.O B2 bl :=
+        ⟨hObl, hSameB2A2.1, ⟨w1.B, hCase2, hB1bl⟩⟩
+      have hOppOA2 : HilbertOppositeSide Geo w1.O A2 bl :=
+        hilbert_oppositeSide_transport_right
+          Geo w1.O B2 A2 bl hOppOB2 hSameB2A2
+      have hOA1A2 : Geo.Between w1.O w1.A A2 :=
+        hilbert_between_of_collinear_oppositeSide
+          Geo w1.A w1.O A2 bl n hAbl hAn hOn hA2n hOppOA2
 
-      sorry
+      have hOA1A2Data :=
+        HilbertOrder.between_incidence w1.O w1.A A2 hOA1A2
+      have hA1A2 : w1.A ≠ A2 := hOA1A2Data.2.1
+      have hRayA1A2 : HilbertSameRay Geo w1.O w1.A A2 :=
+        hilbert_sameRay_of_between Geo w1.O w1.A A2 hOA1A2
+
+      obtain ⟨Aext, hB2A2Aext⟩ :=
+        HilbertOrder.between_extension B2 A2 hA2B2.symm
+      obtain ⟨Cext, hB1A1Cext⟩ :=
+        HilbertOrder.between_extension w1.B w1.A hA1B1.symm
+
+      have hAextData :=
+        HilbertOrder.between_incidence B2 A2 Aext hB2A2Aext
+      have hB2Aext : B2 ≠ Aext := hAextData.2.2.1
+      have hCextData :=
+        HilbertOrder.between_incidence w1.B w1.A Cext hB1A1Cext
+      have hB1Cext : w1.B ≠ Cext := hCextData.2.2.1
+
+      have hAextl : HilbertIncidence.OnLine Aext l := by
+        rcases hAextData.2.2.2.1 with ⟨q, hB2q, hA2q, hAextq⟩
+        have hql : q = l :=
+          HilbertPlaneIncidence.line_unique
+            B2 A2 hAextData.1 q l hB2q hA2q hB2l hA2l
+        exact hql ▸ hAextq
+
+      have hCextbl : HilbertIncidence.OnLine Cext bl := by
+        rcases hCextData.2.2.2.1 with ⟨q, hB1q, hA1q, hCextq⟩
+        have hqbl : q = bl :=
+          HilbertPlaneIncidence.line_unique
+            w1.B w1.A hA1B1.symm q bl hB1q hA1q hB1bl hAbl
+        exact hqbl ▸ hCextq
+
+      have hCollB2AextQp : Collinear Geo B2 Aext Qp :=
+        ⟨l, hB2l, hAextl, hQpl⟩
+      have hCollB1CextA1 : Collinear Geo w1.B Cext w1.A :=
+        ⟨bl, hB1bl, hCextbl, hAbl⟩
+      have hB2Aext_BA : Geo.Parallel B2 Aext w1.B w1.A :=
+        collinear_parallel_trans
+          Geo B2 Aext Qp w1.B w1.A hB2Aext hCollB2AextQp hB2Qp_BA
+      have hBA_B2Aext : Geo.Parallel w1.B w1.A B2 Aext :=
+        ParallelSymmetry Geo B2 Aext w1.B w1.A hB2Aext_BA
+      have hB1Cext_B2Aext : Geo.Parallel w1.B Cext B2 Aext :=
+        collinear_parallel_trans
+          Geo w1.B Cext w1.A B2 Aext
+          hB1Cext hCollB1CextA1 hBA_B2Aext
+      have hB2Aext_B1Cext : Geo.Parallel B2 Aext w1.B Cext :=
+        ParallelSymmetry Geo w1.B Cext B2 Aext hB1Cext_B2Aext
+      have hAextB2_B1Cext : Geo.Parallel Aext B2 w1.B Cext :=
+        ParallelSwapFirstLine Geo B2 Aext w1.B Cext hB2Aext_B1Cext
+      have hAextB2_CextB1 : Geo.Parallel Aext B2 Cext w1.B :=
+        ParallelSwapSecondLine Geo Aext B2 w1.B Cext hAextB2_B1Cext
+      have hCextB1_AextB2 : Geo.Parallel Cext w1.B Aext B2 :=
+        ParallelSymmetry Geo Aext B2 Cext w1.B hAextB2_CextB1
+
+      have hB1n : ¬ HilbertIncidence.OnLine w1.B n := by
+        intro h
+        exact w1.hNoncol ⟨n, hOn, hAn, h⟩
+      have hB2n : ¬ HilbertIncidence.OnLine B2 n := by
+        intro h
+        rcases hCollO1B1B2 with ⟨ob, hOob, hB1ob, hB2ob⟩
+        have hnob : n = ob :=
+          HilbertPlaneIncidence.line_unique
+            w1.O B2 hO1B2 n ob hOn h hOob hB2ob
+        exact hB1n (hnob ▸ hB1ob)
+
+      have hB2B1O : Geo.Between B2 w1.B w1.O :=
+        (HilbertOrder.between_incidence w1.O w1.B B2 hCase2).2.2.2.2
+      have hSameB2B1 : HilbertSameSide Geo B2 w1.B n :=
+        hilbert_between_sameSide_of_endpoint_on_line
+          Geo B2 w1.B w1.O n hB2B1O hOn hB2n
+      have hSameB1B2 : HilbertSameSide Geo w1.B B2 n :=
+        hilbert_sameSide_symm Geo B2 w1.B n hSameB2B1
+
+      have hCextn : ¬ HilbertIncidence.OnLine Cext n := by
+        intro h
+        have hnbl : n = bl :=
+          HilbertPlaneIncidence.line_unique
+            w1.A Cext hCextData.2.1 n bl hAn h hAbl hCextbl
+        exact hB1n (hnbl ▸ hB1bl)
+
+      have hCextA1B1 : Geo.Between Cext w1.A w1.B :=
+        hCextData.2.2.2.2
+      have hOppCextB1 : HilbertOppositeSide Geo Cext w1.B n :=
+        ⟨hCextn, hB1n, ⟨w1.A, hCextA1B1, hAn⟩⟩
+      have hOppCextB2 : HilbertOppositeSide Geo Cext B2 n :=
+        hilbert_oppositeSide_transport_right
+          Geo Cext w1.B B2 n hOppCextB1 hSameB1B2
+
+      have hAextA2B2 : Geo.Between Aext A2 B2 :=
+        hAextData.2.2.2.2
+      have hCorresponding :
+          Geo.AngleCongruent w1.O w1.A w1.B w1.A A2 B2 :=
+        euclid_proposition_29_corresponding
+          Cext w1.B Aext B2 w1.O w1.A A2
+          n
+          hCextA1B1 hAextA2B2 hOA1A2 hA1A2 hAn hA2n
+          hOppCextB2 hCextB1_AextB2
+
+      have hA2A1O : Geo.Between A2 w1.A w1.O :=
+        hOA1A2Data.2.2.2.2
+      have hRayA2A1O : HilbertSameRay Geo A2 w1.A w1.O :=
+        hilbert_sameRay_of_between Geo A2 w1.A w1.O hA2A1O
+      have hAngleAtA2 :
+          Geo.Angle w1.A A2 B2 = Geo.Angle w1.O A2 B2 :=
+        hilbert_angle_eq_of_sameRay_first
+          Geo A2 w1.A w1.O B2 hRayA2A1O
+      have hFinalAngle :
+          Geo.AngleCongruent w1.O w1.A w1.B w1.O A2 B2 := by
+        unfold Geometry.Geo.AngleCongruent at hCorresponding ⊢
+        rw [hAngleAtA2] at hCorresponding
+        exact hCorresponding
+
+      have hRightA2B2 : HilbertRightAngle Geo A2 w1.O B2 := by
+        rcases w1.hRight with ⟨C, hAOC, hRightCong⟩
+        have hCO1 : C ≠ w1.O :=
+          (HilbertOrder.between_incidence w1.A w1.O C hAOC).2.1.symm
+        have hA2OC : Geo.Between A2 w1.O C :=
+          hilbert_between_transport_sameRays
+            Geo w1.A w1.O C A2 C
+            hAOC hRayA1A2 (hilbert_sameRay_refl Geo w1.O C hCO1)
+        have hAngleLeft1 :
+            Geo.Angle w1.A w1.O w1.B = Geo.Angle A2 w1.O w1.B :=
+          hilbert_angle_eq_of_sameRay_first
+            Geo w1.O w1.A A2 w1.B hRayA1A2
+        have hAngleLeft2 :
+            Geo.Angle A2 w1.O w1.B = Geo.Angle A2 w1.O B2 :=
+          hilbert_angle_eq_of_sameRay_second
+            Geo w1.O A2 w1.B B2 hRayB1B2
+        have hAngleRight1 :
+            Geo.Angle w1.B w1.O C = Geo.Angle B2 w1.O C :=
+          hilbert_angle_eq_of_sameRay_first
+            Geo w1.O w1.B B2 C hRayB1B2
+        refine ⟨C, hA2OC, ?_⟩
+        unfold Geometry.Geo.AngleCongruent at hRightCong ⊢
+        rw [← hAngleLeft2, ← hAngleLeft1, ← hAngleRight1]
+        exact hRightCong
+
+      have hAOBswap : ¬ PrimCollinear Geo w1.A w1.O w1.B := fun h =>
+        w1.hNoncol (PrimCollinearSwap Geo w1.A w1.O w1.B h)
+      have hNoncolOA2B2 : ¬ PrimCollinear Geo w1.O A2 B2 := by
+        intro h
+        exact
+          (hilbert_noncollinear_of_sameRays
+            Geo w1.A w1.O w1.B A2 B2
+            hAOBswap hRayA1A2 hRayB1B2)
+            (PrimCollinearSwap Geo w1.O A2 B2 h)
+
+      have hFirstD :
+          hilbertPositiveSegmentClassOf Geo w1.O B2 hO1B2 =
+            hilbertPositiveSegmentClassOf Geo U V hUV :=
+        Quotient.sound hO1B2_UV
+
+      exact
+        ⟨hilbertPositiveSegmentClassOf Geo w1.O A2 hA2O.symm, w1,
+          { O := w1.O
+            A := A2
+            B := B2
+            hOA := hA2O.symm
+            hOB := hO1B2
+            hNoncol := hNoncolOA2B2
+            hRight := hRightA2B2
+            hFirst := hFirstD
+            hSecond := rfl },
+          hFinalAngle⟩
 
     ----------------------------------------------------------------
     -- Goal 2, `hImpossible : Between w1.B w1.O B2` cannot happen: it
@@ -1119,84 +1140,6 @@ theorem hilbertPositiveSegmentProportion_fourth_exists
         exact
           intersection_test_not_parallel_of_common_point
             Geo w1.B w1.A B2 Qp X hX_B1A1 hX_B2Qp hParallel
-
-  ------------------------------------------------------------------
-  -- REMAINING: Case 2 (`hCase2 : Between w1.O w1.B B2`, c > a) at
-  -- Goal 1 above is still `sorry`.
-  --
-  -- The Goal-3 (Thales/Pasch) technique above is the WRONG model for
-  -- this case -- and, in hindsight, it is not how Hilbert or
-  -- Hartshorne actually build the fourth proportional at all.  Both
-  -- (Hilbert, Grundlagen sec. 15; Hartshorne, *Geometry: Euclid and
-  -- Beyond*, sec. 19, Definition before Prop. 19.2) construct a
-  -- product/ratio by building the SECOND right triangle from
-  -- scratch -- copying an angle and erecting a perpendicular -- never
-  -- by extending a shared axis and cutting with a parallel.  That
-  -- construction has NO case split on which of two given segments is
-  -- longer, because it never compares them; it only ever compares an
-  -- angle against a right angle.  Concretely, for our shape
-  -- (`HilbertPositiveSegmentRatioWitness`, angle at the vertex
-  -- adjacent to the given/wanted legs, not at the right-angle
-  -- vertex), the construction is:
-  --
-  --  1. Let `β := ∠(w1.A, w1.B, w1.O)` (vertex `w1.B`), the OTHER
-  --     acute angle of witness `w1`, i.e. the complement of `θ`.
-  --  2. `β` is strictly less than a right angle: apply
-  --     `euclid_proposition_16_first` (Proposition16.lean) to the
-  --     triangle `(w1.B, w1.A, w1.O)`, extending side `w1.A–w1.O`
-  --     through `w1.O` to the SAME point `C` already provided by
-  --     `w1.hRight` (`w1.hRight : ∃C, Between w1.A w1.O C ∧
-  --     AngleCongruent w1.A w1.O w1.B w1.B w1.O C`) -- no fresh
-  --     extension point is needed.  This gives
-  --     `HilbertAngleLess Geo w1.A w1.B w1.O w1.B w1.O C`, and
-  --     transporting the right side along `w1.hRight`'s own
-  --     congruence (`hilbert_angleLess_transport_right`) gives
-  --     `HilbertAngleLess Geo w1.A w1.B w1.O w1.A w1.O w1.B`, i.e.
-  --     `β` is less than the right angle at `w1.O`.
-  --  3. Copy `β` onto vertex `B2`, arm preserved towards `w1.O`
-  --     (`angle_construction`, base line `= line(w1.O, B2)`), on the
-  --     side containing `w1.A`.  This gives a ray from `B2`; let `m`
-  --     be its carrier line.
-  --  4. `m` is not parallel to `n := line(w1.O, w1.A)`: if it were,
-  --     since `legB := line(w1.O, B2) ⊥ n` already (same right angle
-  --     as `w1.hRight`, transported along `HilbertSameRay Geo w1.O
-  --     w1.B B2 = hRayB1B2`), corresponding angles for the transversal
-  --     `legB` crossing the parallels `m, n` would force the angle
-  --     `m` makes with `legB` at `B2` (`= β`, by construction) to be
-  --     congruent to the angle `n` makes with `legB` at `w1.O`
-  --     (`=` a right angle).  That contradicts step 2
-  --     (`hilbert_angleLess_irrefl`, after transporting `β`'s
-  --     partner to `β` itself via the derived congruence).  Hence,
-  --     as in Goal 3, `m` and `n` meet (`hilbert_parallel_transitive_distinct`
-  --     + `intersection_test_not_parallel_of_common_point`, no Pasch
-  --     needed since this argument does not depend on any
-  --     betweenness case).  Call the meeting point `A2`.
-  --  5. The remaining gap: show `∠(w1.O, A2, B2) ≅ θ`.  On reflection
-  --     (after reading Hilbert's own §16 and Hartshorne 19.2(5)) this
-  --     is NOT the general "AA similarity" fact and does NOT need
-  --     Hartshorne's incenter argument (Prop. 20.1) -- that argument
-  --     is for *arbitrary* equiangular triangles.  Both `(w1.O, w1.A,
-  --     w1.B)` and `(w1.O, A2, B2)` already have a RIGHT angle, so
-  --     their third angle is pinned down by `euclid_proposition_32`
-  --     (I.32, angle sum = two right angles) alone, applied once to
-  --     EACH triangle, exactly as Hartshorne does for the
-  --     multiplicative-inverse case (19.2(5)): "let β be the other
-  --     acute angle [of the first triangle]... since the other angle
-  --     [of the second triangle] is β (I.32), ab = 1" -- no
-  --     incenter, no comparison of the two triangles against each
-  --     other, just the same numeric fact (`180 - 90 - β`) instantiated
-  --     twice.  The remaining work is to extract this cleanly from
-  --     `HilbertTriangleAnglesEqualTwoRightAngles` /
-  --     `HilbertExteriorAngleEqualsRemoteAngles` (Proposition32.lean),
-  --     which package I.32 as an exterior-angle-splitting statement
-  --     (a point `R` with `∠BAC ≅ ∠ACR` and `∠ABC ≅ ∠RCD`) rather
-  --     than a numeric equation, so turning "two triangles agree on
-  --     two angles out of three, hence agree on the third" into a
-  --     couple of lines of `AngleCongruent` bookkeeping is still
-  --     genuine (if now clearly bounded) work; not yet done.  Steps
-  --     1-4 above are believed correct and mostly follow patterns
-  --     already used and verified in Goal 3.
-  ------------------------------------------------------------------
 
 /-- [ELEM] The fourth proportional exists. -/
 theorem hilbertPositiveSegmentMul_exists
