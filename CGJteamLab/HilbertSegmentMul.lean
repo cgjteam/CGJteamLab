@@ -1302,8 +1302,23 @@ theorem hilbertPositiveSegmentMul_one
     [HilbertCongruence Geo]
     [HilbertEuclideanPlane Geo]
     (a : HilbertPositiveSegmentClass Geo) :
-    hilbertPositiveSegmentMul Geo a (hilbertUnitSegment Geo) = a :=
-  sorry
+    hilbertPositiveSegmentMul Geo a (hilbertUnitSegment Geo) = a := by
+  obtain ⟨w⟩ :=
+    hilbertPositiveSegmentRatioWitness_exists
+      Geo (hilbertUnitSegment Geo) a
+
+  have hRefl :
+      HilbertPositiveSegmentProportion Geo
+        (hilbertUnitSegment Geo) a
+        (hilbertUnitSegment Geo) a :=
+    ⟨w, w, Geo.angle_congruent_reflexive w.O w.A w.B⟩
+
+  exact
+    hilbertPositiveSegmentMul_unique
+      Geo a (hilbertUnitSegment Geo)
+      (hilbertPositiveSegmentMul Geo a (hilbertUnitSegment Geo)) a
+      (hilbertPositiveSegmentMul_spec Geo a (hilbertUnitSegment Geo))
+      hRefl
 
 /--
 [PASCAL] Commutativity.
@@ -1525,5 +1540,6 @@ theorem hilbert_scissors_triangle_positive'
     hilbertAreaWeight_pos Geo A B C hNoncol
       (by simpa [HilbertTriangleWeight.toValuation,
                  hilbertScissorsTriangle] using hZero)
+
 
 end Geometry
