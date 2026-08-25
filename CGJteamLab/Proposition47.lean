@@ -1,4 +1,5 @@
 import CGJteamLab.Proposition14
+import CGJteamLab.Proposition17
 import CGJteamLab.HilbertRightAngle
 import CGJteamLab.Proposition41
 import CGJteamLab.Proposition46
@@ -1241,6 +1242,839 @@ theorem i47_square_AC_parallel_AB
     ParallelSwapFirstLine
       Geo B A C K hBA_CK
 
+/--
+A nondegenerate triangle cannot have right angles at both A and B.
+
+This is the synthetic I.17 contradiction: BAC + ABC is strictly less
+than two right angles, while if both are right then the supplementary
+angle to ABC is congruent to BAC.
+-/
+theorem i47_two_right_angles_impossible
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hABC : Not (Collinear Geo A B C))
+    (hRightA : HilbertRightAngle Geo B A C)
+    (hRightB : HilbertRightAngle Geo A B C) :
+    False := by
+
+  --------------------------------------------------------------------
+  -- I.17: angle BAC + angle ABC is less than two right angles.
+  --
+  -- Thus there is E with C-B-E and
+  --
+  --     angle BAC < angle ABE.
+  --------------------------------------------------------------------
+
+  rcases
+      euclid_proposition_17_BAC_ABC
+        Geo A B C hABC with
+    ⟨E, hCBE, hLess⟩
+
+  have hBAC :
+      Not (Collinear Geo B A C) :=
+    hLess.1
+
+  have hABE :
+      Not (Collinear Geo A B E) :=
+    hLess.2.1
+
+  --------------------------------------------------------------------
+  -- Reverse the arms of the right angle ABC:
+  --
+  --     ABC right  ->  CBA right.
+  --------------------------------------------------------------------
+
+  have hCBA :
+      Not (Collinear Geo C B A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSymm Geo C B A h)
+
+  have hABC_CBA :
+      Geo.AngleCongruent A B C C B A :=
+    bookZero_56_ABCequalsCBA
+      Geo A B C hABC
+
+  have hRightCBA :
+      HilbertRightAngle Geo C B A :=
+    hilbert_right_angle_transport
+      Geo
+      A B C
+      C B A
+      hABC
+      hCBA
+      hRightB
+      hABC_CBA
+
+  --------------------------------------------------------------------
+  -- Since C-B-E, ABE is the adjacent right angle to CBA.
+  --------------------------------------------------------------------
+
+  have hCBA_ABE :
+      Geo.AngleCongruent C B A A B E :=
+    hilbert_right_angle_opposite_extension
+      Geo
+      C B A E
+      hCBA
+      hRightCBA
+      hCBE
+
+  have hRightABE :
+      HilbertRightAngle Geo A B E :=
+    hilbert_right_angle_transport
+      Geo
+      C B A
+      A B E
+      hCBA
+      hABE
+      hRightCBA
+      hCBA_ABE
+
+  --------------------------------------------------------------------
+  -- ABE and BAC are both right, hence congruent.
+  --------------------------------------------------------------------
+
+  have hABE_BAC :
+      Geo.AngleCongruent A B E B A C :=
+    hilbert_all_right_angles_congruent
+      Geo
+      A B E
+      B A C
+      hABE
+      hBAC
+      hRightABE
+      hRightA
+
+  --------------------------------------------------------------------
+  -- I.17 gave BAC < ABE.  Replace ABE by the congruent right
+  -- angle BAC and obtain BAC < BAC.
+  --------------------------------------------------------------------
+
+  have hSelf :
+      HilbertAngleLess Geo B A C B A C :=
+    hilbert_angleLess_transport_right
+      Geo
+      B A C
+      A B E
+      B A C
+      hLess
+      hBAC
+      hABE_BAC
+
+  exact
+    (hilbert_angleLess_irrefl
+      Geo B A C)
+      hSelf
+
+/--
+In the outward I.47 configuration, C,A,E are noncollinear.
+
+Otherwise the opposite-side condition forces E-C-A.  The right angle
+BCE of the square on BC then becomes a right angle of triangle ABC at C.
+Together with the given right angle at A this contradicts I.17.
+-/
+theorem i47_noncollinear_CAE
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (base : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hRightA : HilbertRightAngle Geo B A C)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hSquare : IsSquare Geo B C E D)
+    (hOppEA : HilbertOppositeSide Geo E A base) :
+    Not (Collinear Geo C A E) := by
+
+  intro hCAE
+
+  --------------------------------------------------------------------
+  -- CAE has a carrier line.
+  --------------------------------------------------------------------
+
+  rcases hCAE with
+    ⟨lineCAE, hCcae, hAcae, hEcae⟩
+
+  --------------------------------------------------------------------
+  -- E and A are on opposite sides of BC, hence EA crosses base.
+  --------------------------------------------------------------------
+
+  rcases hOppEA.2.2 with
+    ⟨X, hEXA, hXbase⟩
+
+  have hXcae :
+      HilbertIncidence.OnLine X lineCAE :=
+    hilbert_between_on_line
+      Geo
+      E X A
+      lineCAE
+      hEcae
+      hAcae
+      hEXA
+
+  --------------------------------------------------------------------
+  -- The intersection X must be C.
+  --------------------------------------------------------------------
+
+  have hXC : X = C := by
+    by_contra hXC
+
+    have hLines :
+        lineCAE = base :=
+      HilbertPlaneIncidence.line_unique
+        X C hXC
+        lineCAE base
+        hXcae hCcae
+        hXbase hCbase
+
+    exact
+      hOppEA.1
+        (hLines ▸ hEcae)
+
+  have hECA :
+      Geo.Between E C A := by
+    simpa [hXC] using hEXA
+
+  --------------------------------------------------------------------
+  -- The square BCE D has right angle BCE.
+  --------------------------------------------------------------------
+
+  have hNCBCE :
+      Not (Collinear Geo B C E) :=
+    (parallelogram_vertices_noncollinear
+      Geo B C E D hSquare.1).2.1
+
+  have hRightBCE :
+      HilbertRightAngle Geo B C E :=
+    hSquare.2.2.2.2.2.1
+
+  --------------------------------------------------------------------
+  -- Reverse the arms: BCE right -> ECB right.
+  --------------------------------------------------------------------
+
+  have hNCECB :
+      Not (Collinear Geo E C B) := by
+    intro h
+    exact
+      hNCBCE
+        (PrimCollinearSymm Geo E C B h)
+
+  have hBCE_ECB :
+      Geo.AngleCongruent B C E E C B :=
+    bookZero_56_ABCequalsCBA
+      Geo B C E hNCBCE
+
+  have hRightECB :
+      HilbertRightAngle Geo E C B :=
+    hilbert_right_angle_transport
+      Geo
+      B C E
+      E C B
+      hNCBCE
+      hNCECB
+      hRightBCE
+      hBCE_ECB
+
+  --------------------------------------------------------------------
+  -- Since E-C-A, the opposite ray CA gives another right angle BCA.
+  --------------------------------------------------------------------
+
+  have hECB_BCA :
+      Geo.AngleCongruent E C B B C A :=
+    hilbert_right_angle_opposite_extension
+      Geo
+      E C B A
+      hNCECB
+      hRightECB
+      hECA
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle Geo B C A h))
+
+  have hRightBCA :
+      HilbertRightAngle Geo B C A :=
+    hilbert_right_angle_transport
+      Geo
+      E C B
+      B C A
+      hNCECB
+      hBCA
+      hRightECB
+      hECB_BCA
+
+  --------------------------------------------------------------------
+  -- Reverse BCA to ACB.
+  --------------------------------------------------------------------
+
+  have hACB :
+      Not (Collinear Geo A C B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearRotate Geo A C B h)
+
+  have hBCA_ACB :
+      Geo.AngleCongruent B C A A C B :=
+    bookZero_56_ABCequalsCBA
+      Geo B C A hBCA
+
+  have hRightACB :
+      HilbertRightAngle Geo A C B :=
+    hilbert_right_angle_transport
+      Geo
+      B C A
+      A C B
+      hBCA
+      hACB
+      hRightBCA
+      hBCA_ACB
+
+  --------------------------------------------------------------------
+  -- Reverse the given right angle BAC to CAB.
+  --------------------------------------------------------------------
+
+  have hBAC :
+      Not (Collinear Geo B A C) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C h)
+
+  have hCAB :
+      Not (Collinear Geo C A B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle Geo C A B h)
+
+  have hBAC_CAB :
+      Geo.AngleCongruent B A C C A B :=
+    bookZero_56_ABCequalsCBA
+      Geo B A C hBAC
+
+  have hRightCAB :
+      HilbertRightAngle Geo C A B :=
+    hilbert_right_angle_transport
+      Geo
+      B A C
+      C A B
+      hBAC
+      hCAB
+      hRightA
+      hBAC_CAB
+
+  --------------------------------------------------------------------
+  -- Triangle ACB would have two right angles, at A and C.
+  --------------------------------------------------------------------
+
+  exact
+    i47_two_right_angles_impossible
+      Geo
+      A C B
+      hACB
+      hRightCAB
+      hRightACB
+
+/--
+The two remaining noncollinearity facts needed in the I.47 angle step
+follow immediately from the leg-square parallels.
+-/
+theorem i47_parallel_noncollinearities
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C F K : Geo.Point)
+    (hAC_BF : Geo.Parallel A C B F)
+    (hAB_CK : Geo.Parallel A B C K) :
+    Not (Collinear Geo B F C) ∧
+    Not (Collinear Geo C K B) := by
+
+  --------------------------------------------------------------------
+  -- BF || CA
+  --------------------------------------------------------------------
+
+  have hBF_AC :
+      Geo.Parallel B F A C :=
+    ParallelSymmetry
+      Geo A C B F hAC_BF
+
+  have hBF_CA :
+      Geo.Parallel B F C A :=
+    ParallelSwapSecondLine
+      Geo B F A C hBF_AC
+
+  have hBFC :
+      Not (Collinear Geo B F C) :=
+    parallel_first_not_collinear
+      Geo B F C A hBF_CA
+
+  --------------------------------------------------------------------
+  -- CK || BA
+  --------------------------------------------------------------------
+
+  have hCK_AB :
+      Geo.Parallel C K A B :=
+    ParallelSymmetry
+      Geo A B C K hAB_CK
+
+  have hCK_BA :
+      Geo.Parallel C K B A :=
+    ParallelSwapSecondLine
+      Geo C K A B hCK_AB
+
+  have hCKB :
+      Not (Collinear Geo C K B) :=
+    parallel_first_not_collinear
+      Geo C K B A hCK_BA
+
+  exact ⟨hBFC, hCKB⟩
+
+/--
+Euclid I.47 angle step at B:
+
+    angle ABD ~= angle FBC.
+
+The proof adds equal angles:
+    DBC ~= FBA      (both right),
+    CBA ~= ABC      (same unordered angle).
+-/
+theorem i47_angle_ABD_FBC
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E F G : Geo.Point)
+    (lBC lAB : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hBlBC : HilbertIncidence.OnLine B lBC)
+    (hClBC : HilbertIncidence.OnLine C lBC)
+    (hAlAB : HilbertIncidence.OnLine A lAB)
+    (hBlAB : HilbertIncidence.OnLine B lAB)
+    (hSquareBC : IsSquare Geo B C E D)
+    (hSquareAB : IsSquare Geo A B F G)
+    (hOppDA : HilbertOppositeSide Geo D A lBC)
+    (hOppFC : HilbertOppositeSide Geo F C lAB)
+    (hNCBAD : Not (Collinear Geo B A D))
+    (hNCBFC : Not (Collinear Geo B F C)) :
+    Geo.AngleCongruent A B D F B C := by
+
+  --------------------------------------------------------------------
+  -- Nondegenerate reference rays BC and BA.
+  --------------------------------------------------------------------
+
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hABC
+
+  have hBA : B ≠ A :=
+    hAB.symm
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle Geo B C A h))
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hBCA
+
+  --------------------------------------------------------------------
+  -- Outer angles DBA and FBC are genuine.
+  --------------------------------------------------------------------
+
+  have hDBA :
+      Not (Collinear Geo D B A) := by
+    intro h
+    exact
+      hNCBAD
+        (PrimCollinearCycle Geo D B A h)
+
+  have hFBC :
+      Not (Collinear Geo F B C) := by
+    intro h
+    exact
+      hNCBFC
+        (PrimCollinearSwap Geo F B C h)
+
+  --------------------------------------------------------------------
+  -- Component 1:
+  --
+  -- DBC ~= FBA, since both are right angles.
+  --------------------------------------------------------------------
+
+  have hNCBC :=
+    parallelogram_vertices_noncollinear
+      Geo B C E D hSquareBC.1
+
+  have hDBC :
+      Not (Collinear Geo D B C) :=
+    hNCBC.1
+
+  have hRightDBC :
+      HilbertRightAngle Geo D B C :=
+    hSquareBC.2.2.2.2.1
+
+  have hNCAB :=
+    parallelogram_vertices_noncollinear
+      Geo A B F G hSquareAB.1
+
+  have hABF :
+      Not (Collinear Geo A B F) :=
+    hNCAB.2.1
+
+  have hRightABF :
+      HilbertRightAngle Geo A B F :=
+    hSquareAB.2.2.2.2.2.1
+
+  have hDBC_ABF :
+      Geo.AngleCongruent D B C A B F :=
+    hilbert_all_right_angles_congruent
+      Geo
+      D B C
+      A B F
+      hDBC
+      hABF
+      hRightDBC
+      hRightABF
+
+  have hDBC_FBA :
+      Geo.AngleCongruent D B C F B A :=
+    (Geo.angle_congruent_reverse_second
+      D B C
+      A B F).mp hDBC_ABF
+
+  --------------------------------------------------------------------
+  -- Component 2:
+  --
+  -- CBA ~= ABC.
+  --------------------------------------------------------------------
+
+  have hCBA :
+      Not (Collinear Geo C B A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSymm Geo C B A h)
+
+  have hCBA_ABC :
+      Geo.AngleCongruent C B A A B C :=
+    bookZero_56_ABCequalsCBA
+      Geo C B A hCBA
+
+  --------------------------------------------------------------------
+  -- In the first sum D and A are on opposite sides of BC.
+  -- In the second sum F and C are on opposite sides of AB.
+  --
+  -- Hence the two angle-addition configurations have the same
+  -- side pattern: both are the opposite-side case.
+  --------------------------------------------------------------------
+
+  have hNotSameDA :
+      Not (HilbertSameSide Geo D A lBC) := by
+    intro hSame
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo D A lBC hOppDA)
+        hSame
+
+  have hNotSameFC :
+      Not (HilbertSameSide Geo F C lAB) := by
+    intro hSame
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo F C lAB hOppFC)
+        hSame
+
+  have hSideConfiguration :
+      HilbertSameSide Geo D A lBC ↔
+      HilbertSameSide Geo F C lAB := by
+    constructor
+    · intro hSame
+      exact False.elim (hNotSameDA hSame)
+    · intro hSame
+      exact False.elim (hNotSameFC hSame)
+
+  --------------------------------------------------------------------
+  -- Hilbert Theorem 15:
+  --
+  --     DBA ~= FBC.
+  --------------------------------------------------------------------
+
+  have hDBA_FBC :
+      Geo.AngleCongruent D B A F B C :=
+    hilbert_angle_addition
+      Geo
+      D B C A
+      F B A C
+      lBC lAB
+      hBC
+      hBA
+      hBlBC
+      hClBC
+      hBlAB
+      hAlAB
+      hOppDA.1
+      hOppDA.2.1
+      hOppFC.1
+      hOppFC.2.1
+      hSideConfiguration
+      hDBA
+      hFBC
+      hDBC_FBA
+      hCBA_ABC
+
+  --------------------------------------------------------------------
+  -- Normalize DBA to the requested ABD.
+  --------------------------------------------------------------------
+
+  exact
+    (Geo.angle_congruent_reverse_first
+      D B A
+      F B C).mp hDBA_FBC
+
+/--
+Euclid I.47 angle step at C:
+
+    angle ACE ~= angle KCB.
+
+The proof adds equal angles:
+    ACB ~= BCA      (same unordered angle),
+    BCE ~= ACK      (both right).
+-/
+theorem i47_angle_ACE_KCB
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E K H : Geo.Point)
+    (lBC lAC : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hBlBC : HilbertIncidence.OnLine B lBC)
+    (hClBC : HilbertIncidence.OnLine C lBC)
+    (hAlAC : HilbertIncidence.OnLine A lAC)
+    (hClAC : HilbertIncidence.OnLine C lAC)
+    (hSquareBC : IsSquare Geo B C E D)
+    (hSquareAC : IsSquare Geo A C K H)
+    (hOppEA : HilbertOppositeSide Geo E A lBC)
+    (hOppKB : HilbertOppositeSide Geo K B lAC)
+    (hNCCAE : Not (Collinear Geo C A E))
+    (hNCCKB : Not (Collinear Geo C K B)) :
+    Geo.AngleCongruent A C E K C B := by
+
+  --------------------------------------------------------------------
+  -- Nondegenerate reference ray CB.
+  --------------------------------------------------------------------
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle
+            Geo B C A h))
+
+  have hCBA :
+      Not (Collinear Geo C B A) := by
+    intro h
+    exact
+      hBCA
+        (PrimCollinearSwap
+          Geo C B A h)
+
+  have hCB : C ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo C B A hCBA
+
+  --------------------------------------------------------------------
+  -- Nondegenerate reference ray CA.
+  --------------------------------------------------------------------
+
+  have hACB :
+      Not (Collinear Geo A C B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearRotate
+          Geo A C B h)
+
+  have hAC : A ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo A C B hACB
+
+  have hCA : C ≠ A :=
+    hAC.symm
+
+  --------------------------------------------------------------------
+  -- Outer angle ACE is genuine.
+  --------------------------------------------------------------------
+
+  have hACE :
+      Not (Collinear Geo A C E) := by
+    intro h
+    exact
+      hNCCAE
+        (PrimCollinearSwap
+          Geo A C E h)
+
+  --------------------------------------------------------------------
+  -- Outer angle BCK is genuine.
+  --------------------------------------------------------------------
+
+  have hBCK :
+      Not (Collinear Geo B C K) := by
+    intro h
+    exact
+      hNCCKB
+        (PrimCollinearCycle
+          Geo B C K h)
+
+  --------------------------------------------------------------------
+  -- Component 1:
+  --
+  -- ACB ~= BCA.
+  --------------------------------------------------------------------
+
+  have hACB_BCA :
+      Geo.AngleCongruent A C B B C A :=
+    bookZero_56_ABCequalsCBA
+      Geo A C B hACB
+
+  --------------------------------------------------------------------
+  -- Component 2:
+  --
+  -- BCE ~= ACK, since both are right angles.
+  --------------------------------------------------------------------
+
+  have hNCBC :=
+    parallelogram_vertices_noncollinear
+      Geo B C E D hSquareBC.1
+
+  have hBCE :
+      Not (Collinear Geo B C E) :=
+    hNCBC.2.1
+
+  have hRightBCE :
+      HilbertRightAngle Geo B C E :=
+    hSquareBC.2.2.2.2.2.1
+
+  have hNCAC :=
+    parallelogram_vertices_noncollinear
+      Geo A C K H hSquareAC.1
+
+  have hACK :
+      Not (Collinear Geo A C K) :=
+    hNCAC.2.1
+
+  have hRightACK :
+      HilbertRightAngle Geo A C K :=
+    hSquareAC.2.2.2.2.2.1
+
+  have hBCE_ACK :
+      Geo.AngleCongruent B C E A C K :=
+    hilbert_all_right_angles_congruent
+      Geo
+      B C E
+      A C K
+      hBCE
+      hACK
+      hRightBCE
+      hRightACK
+
+  --------------------------------------------------------------------
+  -- Both angle-addition configurations are opposite-side cases:
+  --
+  -- A,E are opposite across BC,
+  -- B,K are opposite across AC.
+  --------------------------------------------------------------------
+
+  have hNotSameAE :
+      Not (HilbertSameSide Geo A E lBC) := by
+    intro hSameAE
+
+    have hSameEA :
+        HilbertSameSide Geo E A lBC :=
+      hilbert_sameSide_symm
+        Geo A E lBC hSameAE
+
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo E A lBC hOppEA)
+        hSameEA
+
+  have hOppBK :
+      HilbertOppositeSide Geo B K lAC :=
+    hilbert_oppositeSide_symm
+      Geo K B lAC hOppKB
+
+  have hNotSameBK :
+      Not (HilbertSameSide Geo B K lAC) := by
+    intro hSameBK
+
+    exact
+      (hilbert_oppositeSide_not_sameSide
+        Geo B K lAC hOppBK)
+        hSameBK
+
+  have hSideConfiguration :
+      HilbertSameSide Geo A E lBC ↔
+      HilbertSameSide Geo B K lAC := by
+    constructor
+
+    · intro hSameAE
+      exact
+        False.elim
+          (hNotSameAE hSameAE)
+
+    · intro hSameBK
+      exact
+        False.elim
+          (hNotSameBK hSameBK)
+
+  --------------------------------------------------------------------
+  -- Hilbert Theorem 15:
+  --
+  --     ACE ~= BCK.
+  --------------------------------------------------------------------
+
+  have hACE_BCK :
+      Geo.AngleCongruent A C E B C K :=
+    hilbert_angle_addition
+      Geo
+      A C B E
+      B C A K
+      lBC lAC
+      hCB
+      hCA
+      hClBC
+      hBlBC
+      hClAC
+      hAlAC
+      hOppEA.2.1
+      hOppEA.1
+      hOppKB.2.1
+      hOppKB.1
+      hSideConfiguration
+      hACE
+      hBCK
+      hACB_BCA
+      hBCE_ACK
+
+  --------------------------------------------------------------------
+  -- Normalize BCK to KCB.
+  --------------------------------------------------------------------
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      A C E
+      B C K).mp hACE_BCK
 
 
 /--
