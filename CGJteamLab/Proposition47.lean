@@ -1,3 +1,5 @@
+import CGJteamLab.Proposition14
+import CGJteamLab.HilbertRightAngle
 import CGJteamLab.Proposition41
 import CGJteamLab.Proposition46
 
@@ -409,6 +411,837 @@ theorem i47_square_split
   exact
     HilbertScissorsEq.trans
       (Geo := Geo) hRotate hFinalStep
+
+theorem hilbert_erect_equal_perpendicular_opposite_side
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B R : Geo.Point)
+    (l : Geo.Line)
+    (hAB : A ≠ B)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hBl : HilbertIncidence.OnLine B l)
+    (hRl : Not (HilbertIncidence.OnLine R l)) :
+    ∃ D : Geo.Point,
+      Not (Collinear Geo A B D) ∧
+      HilbertRightAngle Geo D A B ∧
+      Geo.Congruent A D A B ∧
+      HilbertOppositeSide Geo D R l := by
+
+  have hBA : B ≠ A := hAB.symm
+
+  have hRA : R ≠ A := by
+    intro hEq
+    subst hEq
+    exact hRl hAl
+
+  --------------------------------------------------------------------
+  -- Step 0. A point `S` on the side of `l` opposite `R`.
+  --------------------------------------------------------------------
+
+  rcases HilbertOrder.between_extension R A hRA with
+    ⟨S, hRAS⟩
+
+  have hRASdata :=
+    HilbertOrder.between_incidence R A S hRAS
+
+  have hSl : Not (HilbertIncidence.OnLine S l) := by
+    intro hSl
+    rcases hRASdata.2.2.2.1 with ⟨l', hRl', hAl', hSl'⟩
+    have hEq : l' = l :=
+      HilbertPlaneIncidence.line_unique
+        A S hRASdata.2.1 l' l hAl' hSl' hAl hSl
+    exact hRl (hEq ▸ hRl')
+
+  have hOppositeRS :
+      HilbertOppositeSide Geo R S l :=
+    ⟨hRl, hSl, ⟨A, hRAS, hAl⟩⟩
+
+  --------------------------------------------------------------------
+  -- Step 1. Extend `BA` beyond `A`, so that I.11 applies at `A`.
+  --------------------------------------------------------------------
+
+  rcases ExtendSegmentBeyond Geo B A hBA with
+    ⟨F, hBAF, _hCongBA⟩
+
+  --------------------------------------------------------------------
+  -- Step 2. An arbitrary perpendicular direction at `A`.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_right_angle_exists_nondegenerate
+        Geo B A F hBAF with
+    ⟨X0, hNCBAX0, hRightBAX0⟩
+
+  --------------------------------------------------------------------
+  -- Step 3. Copy the right angle onto the side of `l` chosen by `S`
+  -- (Hilbert III,4).
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertCongruence.angle_construction
+        (Geo := Geo) B A X0 B A S
+        hNCBAX0 hBA l hBl hAl hSl with
+    ⟨X, hXSside, hAngleCong, _⟩
+
+  have hXl : Not (HilbertIncidence.OnLine X l) :=
+    hXSside.1
+
+  have hNCBAX : Not (PrimCollinear Geo B A X) := by
+    intro hCol
+    rcases hCol with ⟨l', hBl', hAl', hXl'⟩
+    have hEq : l' = l :=
+      HilbertPlaneIncidence.line_unique
+        A B hAB l' l hAl' hBl' hAl hBl
+    exact hXl (hEq ▸ hXl')
+
+  have hRightBAX :
+      HilbertRightAngle Geo B A X :=
+    hilbert_right_angle_transport
+      Geo B A X0 B A X
+      hNCBAX0 hNCBAX
+      hRightBAX0 hAngleCong
+
+  have hOppositeXR :
+      HilbertOppositeSide Geo X R l := by
+    have hSameSideSX :
+        HilbertSameSide Geo S X l :=
+      hilbert_sameSide_symm
+        Geo X S l hXSside
+    have hOppositeRX :
+        HilbertOppositeSide Geo R X l :=
+      hilbert_oppositeSide_transport_right
+        Geo R S X l hOppositeRS hSameSideSX
+    exact
+      hilbert_oppositeSide_symm
+        Geo R X l hOppositeRX
+
+  --------------------------------------------------------------------
+  -- Step 4. Lay off `AB` on the ray `AX` (Hilbert III,1).
+  --------------------------------------------------------------------
+
+  have hAX : A ≠ X := by
+    intro hEq
+    apply hNCBAX
+    subst hEq
+    exact ⟨l, hBl, hAl, hAl⟩
+
+  rcases
+      HilbertCongruence.segment_construction
+        (Geo := Geo) A B A X hAX with
+    ⟨D, hRayAXD, hCongAD⟩
+
+  have hDA : D ≠ A := hRayAXD.2.1
+  have hAXD : Collinear Geo A X D := hRayAXD.2.2.1
+  have hADX : Collinear Geo A D X :=
+    PrimCollinearRotate Geo A X D hAXD
+
+  have hNCBAD : Not (Collinear Geo B A D) := by
+    intro hCol
+    apply hNCBAX
+    exact
+      hilbert_primCollinear_trans
+        Geo B A D X
+        hDA.symm
+        hCol
+        hADX
+
+  have hNCDAB : Not (Collinear Geo D A B) := by
+    intro hCol
+    exact hNCBAD (PrimCollinearSymm Geo D A B hCol)
+
+  have hNCABD : Not (Collinear Geo A B D) := by
+    intro hCol
+    exact hNCBAD (PrimCollinearSwap Geo A B D hCol)
+
+  --------------------------------------------------------------------
+  -- Step 5. Replacing `X` by `D` does not change the angle at `A`, and
+  -- does not change its side of `l` (both lie on the ray `AX`).
+  --------------------------------------------------------------------
+
+  have hAngleEq :
+      Geo.Angle B A X = Geo.Angle B A D :=
+    hilbert_angle_eq_of_sameRay_second
+      Geo A B X D hRayAXD
+
+  have hRefl :
+      Geo.AngleCongruent B A X B A X :=
+    HilbertCongruence.angle_congruence_reflexive
+      (Geo := Geo) B A X hNCBAX
+
+  have hAngleBAX_BAD :
+      Geo.AngleCongruent B A X B A D := by
+    unfold Geometry.Geo.AngleCongruent
+    rw [← hAngleEq]
+    exact hRefl
+
+  have hRightBAD :
+      HilbertRightAngle Geo B A D :=
+    hilbert_right_angle_transport
+      Geo B A X B A D
+      hNCBAX hNCBAD
+      hRightBAX hAngleBAX_BAD
+
+  have hArmSwap :
+      Geo.AngleCongruent B A D D A B :=
+    bookZero_56_ABCequalsCBA
+      Geo B A D hNCBAD
+
+  have hRightDAB :
+      HilbertRightAngle Geo D A B :=
+    hilbert_right_angle_transport
+      Geo B A D D A B
+      hNCBAD hNCDAB
+      hRightBAD hArmSwap
+
+  rcases HilbertPlaneIncidence.line_through A X hAX with
+    ⟨lineAX, hAlineAX, hXlineAX⟩
+
+  have hBlineAX : Not (HilbertIncidence.OnLine B lineAX) := by
+    intro hBlineAX
+    exact hNCBAX ⟨lineAX, hBlineAX, hAlineAX, hXlineAX⟩
+
+  have hSameSideXD :
+      HilbertSameSide Geo X D l :=
+    hilbert_sameRay_points_sameSide
+      Geo A X X D B lineAX l
+      hAlineAX hXlineAX hAl hBl hBlineAX
+      (hilbert_sameRay_refl Geo A X hAX.symm)
+      hRayAXD
+
+  have hOppositeDR :
+      HilbertOppositeSide Geo D R l := by
+    have hOppositeRX' :
+        HilbertOppositeSide Geo R X l :=
+      hilbert_oppositeSide_symm
+        Geo X R l hOppositeXR
+    have hOppositeRD :
+        HilbertOppositeSide Geo R D l :=
+      hilbert_oppositeSide_transport_right
+        Geo R X D l hOppositeRX' hSameSideXD
+    exact
+      hilbert_oppositeSide_symm
+        Geo R D l hOppositeRD
+
+  exact ⟨D, hNCABD, hRightDAB, hCongAD, hOppositeDR⟩
+
+/--
+Euclid I.46, on a prescribed side.
+
+On a given segment `AB` and a point `R` off the line `AB`, there is a
+square `A B C D` with `C, D` on the side of `AB` opposite `R`.
+-/
+theorem hilbert_square_exists_opposite_side
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B R : Geo.Point)
+    (l : Geo.Line)
+    (hAB : A ≠ B)
+    (hAl : HilbertIncidence.OnLine A l)
+    (hBl : HilbertIncidence.OnLine B l)
+    (hRl : Not (HilbertIncidence.OnLine R l)) :
+    ∃ C D : Geo.Point,
+      IsSquare Geo A B C D ∧
+      HilbertOppositeSide Geo D R l ∧
+      HilbertOppositeSide Geo C R l := by
+
+  --------------------------------------------------------------------
+  -- Steps 1-2 (I.11, I.3): the perpendicular side `AD` at `A`, on the
+  -- side of `l` opposite `R`.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_erect_equal_perpendicular_opposite_side
+        Geo A B R l hAB hAl hBl hRl with
+    ⟨D, hNCABD, hRightDAB, hCongAD_AB, hOppositeDR⟩
+
+  --------------------------------------------------------------------
+  -- Step 3 (I.31): complete the parallelogram.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_parallelogram_fourth_vertex_exists
+        Geo A B D hNCABD with
+    ⟨C, hParallelogram⟩
+
+  --------------------------------------------------------------------
+  -- Step 4 (I.34): all four sides are congruent to `AB`.
+  --------------------------------------------------------------------
+
+  have hI34 :=
+    euclid_proposition_34
+      Geo A B C D hParallelogram
+
+  have hSides :
+      OppositeSidesCongruent Geo A B C D :=
+    hI34.1
+
+  have hCongDA_AB :
+      Geo.Congruent D A A B :=
+    CongruentReverseFirst
+      Geo A D A B hCongAD_AB
+
+  have hCongBC_AB :
+      Geo.Congruent B C A B :=
+    hilbert_congruent_transitivity
+      Geo B C D A A B
+      hSides.2
+      hCongDA_AB
+
+  have hCongAB_BC :
+      Geo.Congruent A B B C :=
+    hilbert_congruent_symmetry
+      Geo B C A B hCongBC_AB
+
+  have hCongBC_CD :
+      Geo.Congruent B C C D :=
+    hilbert_congruent_transitivity
+      Geo B C A B C D
+      hCongBC_AB
+      hSides.1
+
+  have hCongCD_AB :
+      Geo.Congruent C D A B :=
+    hilbert_congruent_symmetry
+      Geo A B C D hSides.1
+
+  have hCongAB_DA :
+      Geo.Congruent A B D A :=
+    hilbert_congruent_symmetry
+      Geo D A A B hCongDA_AB
+
+  have hCongCD_DA :
+      Geo.Congruent C D D A :=
+    hilbert_congruent_transitivity
+      Geo C D A B D A
+      hCongCD_AB
+      hCongAB_DA
+
+  --------------------------------------------------------------------
+  -- Step 5 (I.29 and I.34): all four angles are right.
+  --------------------------------------------------------------------
+
+  have hNC :=
+    parallelogram_vertices_noncollinear
+      Geo A B C D hParallelogram
+
+  have hRightABC :
+    HilbertRightAngle Geo A B C :=
+  parallelogram_adjacent_right_angle
+    Geo A B C D hParallelogram hRightDAB
+
+  have hOppositeAngles :
+      OppositeAnglesCongruent Geo A B C D :=
+    hI34.2
+
+  have hRightBCD :
+      HilbertRightAngle Geo B C D :=
+    hilbert_right_angle_transport
+      Geo D A B B C D
+      hNC.1 hNC.2.2.1
+      hRightDAB hOppositeAngles.1
+
+  have hRightCDA :
+      HilbertRightAngle Geo C D A :=
+    hilbert_right_angle_transport
+      Geo A B C C D A
+      hNC.2.1 hNC.2.2.2
+      hRightABC hOppositeAngles.2
+
+  --------------------------------------------------------------------
+  -- `C` lies on the same side of `l` as `D` (opposite sides of a
+  -- parallelogram are on the same side of each other).
+  --------------------------------------------------------------------
+
+  have hParallelCDAB :
+      Geo.Parallel C D A B :=
+    ParallelSymmetry
+      Geo A B C D hParallelogram.1
+
+  rcases
+      parallel_endpoints_sameSide
+        Geo C D A B hParallelCDAB with
+    ⟨l', hAl', hBl', hSameSideCD'⟩
+
+  have hLineEq : l' = l :=
+    HilbertPlaneIncidence.line_unique
+      A B hAB l' l hAl' hBl' hAl hBl
+
+  have hSameSideCD :
+      HilbertSameSide Geo C D l :=
+    hLineEq ▸ hSameSideCD'
+
+  have hOppositeCR :
+      HilbertOppositeSide Geo C R l := by
+    have hOppositeRD :
+        HilbertOppositeSide Geo R D l :=
+      hilbert_oppositeSide_symm
+        Geo D R l hOppositeDR
+    have hSameSideDC :
+        HilbertSameSide Geo D C l :=
+      hilbert_sameSide_symm
+        Geo C D l hSameSideCD
+    have hOppositeRC :
+        HilbertOppositeSide Geo R C l :=
+      hilbert_oppositeSide_transport_right
+        Geo R D C l hOppositeRD hSameSideDC
+    exact
+      hilbert_oppositeSide_symm
+        Geo R C l hOppositeRC
+
+  exact
+    ⟨C, D,
+      ⟨hParallelogram,
+        hCongAB_BC, hCongBC_CD, hCongCD_DA,
+        hRightDAB, hRightABC, hRightBCD, hRightCDA⟩,
+      hOppositeDR, hOppositeCR⟩
+
+
+/--
+The three squares of the I.47 diagram, constructed outward from the
+triangle.
+
+The square on each side is chosen on the side of its supporting line
+opposite to the remaining vertex of the triangle.
+-/
+theorem i47_outward_squares
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C : Geo.Point)
+    (hABC : Not (Collinear Geo A B C)) :
+    ∃ lBC lAB lAC : Geo.Line,
+    ∃ D E F G H K : Geo.Point,
+      HilbertIncidence.OnLine B lBC ∧
+      HilbertIncidence.OnLine C lBC ∧
+      HilbertIncidence.OnLine A lAB ∧
+      HilbertIncidence.OnLine B lAB ∧
+      HilbertIncidence.OnLine A lAC ∧
+      HilbertIncidence.OnLine C lAC ∧
+      IsSquare Geo B C E D ∧
+      IsSquare Geo A B F G ∧
+      IsSquare Geo A C K H ∧
+      HilbertOppositeSide Geo D A lBC ∧
+      HilbertOppositeSide Geo E A lBC ∧
+      HilbertOppositeSide Geo G C lAB ∧
+      HilbertOppositeSide Geo F C lAB ∧
+      HilbertOppositeSide Geo H B lAC ∧
+      HilbertOppositeSide Geo K B lAC := by
+
+  --------------------------------------------------------------------
+  -- Nondegeneracy of the three sides.
+  --------------------------------------------------------------------
+
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hABC
+
+  have hACB :
+      Not (Collinear Geo A C B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearRotate Geo A C B h)
+
+  have hAC : A ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo A C B hACB
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle Geo B C A h))
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hBCA
+
+  --------------------------------------------------------------------
+  -- Square on BC, opposite A.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through B C hBC with
+    ⟨lBC, hBlBC, hClBC⟩
+
+  have hAoffBC :
+      Not (HilbertIncidence.OnLine A lBC) := by
+    intro hAlBC
+    exact
+      hBCA
+        ⟨lBC, hBlBC, hClBC, hAlBC⟩
+
+  rcases
+      hilbert_square_exists_opposite_side
+        Geo B C A lBC
+        hBC hBlBC hClBC hAoffBC with
+    ⟨E, D, hSqBC, hOppDA, hOppEA⟩
+
+  --------------------------------------------------------------------
+  -- Square on AB, opposite C.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through A B hAB with
+    ⟨lAB, hAlAB, hBlAB⟩
+
+  have hCoffAB :
+      Not (HilbertIncidence.OnLine C lAB) := by
+    intro hClAB
+    exact
+      hABC
+        ⟨lAB, hAlAB, hBlAB, hClAB⟩
+
+  rcases
+      hilbert_square_exists_opposite_side
+        Geo A B C lAB
+        hAB hAlAB hBlAB hCoffAB with
+    ⟨F, G, hSqAB, hOppGC, hOppFC⟩
+
+  --------------------------------------------------------------------
+  -- Square on AC, opposite B.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through A C hAC with
+    ⟨lAC, hAlAC, hClAC⟩
+
+  have hBoffAC :
+      Not (HilbertIncidence.OnLine B lAC) := by
+    intro hBlAC
+    exact
+      hACB
+        ⟨lAC, hAlAC, hClAC, hBlAC⟩
+
+  rcases
+      hilbert_square_exists_opposite_side
+        Geo A C B lAC
+        hAC hAlAC hClAC hBoffAC with
+    ⟨K, H, hSqAC, hOppHB, hOppKB⟩
+
+  exact
+    ⟨lBC, lAB, lAC,
+      D, E, F, G, H, K,
+      hBlBC, hClBC,
+      hAlAB, hBlAB,
+      hAlAC, hClAC,
+      hSqBC, hSqAB, hSqAC,
+      hOppDA, hOppEA,
+      hOppGC, hOppFC,
+      hOppHB, hOppKB⟩
+
+/--
+If two right-angle rays based at O lie on opposite sides of the
+supporting line OB, then they are opposite rays: P-O-Q.
+-/
+theorem i47_opposite_right_rays_straight
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (P O B Q : Geo.Point)
+    (base : Geo.Line)
+    (hOB : O ≠ B)
+    (hOl : HilbertIncidence.OnLine O base)
+    (hBl : HilbertIncidence.OnLine B base)
+    (hOpp : HilbertOppositeSide Geo P Q base)
+    (hRightP : HilbertRightAngle Geo P O B)
+    (hRightQ : HilbertRightAngle Geo B O Q) :
+    Geo.Between P O Q := by
+
+  have hPO : P ≠ O := by
+    intro h
+    subst P
+    exact hOpp.1 hOl
+
+  --------------------------------------------------------------------
+  -- Extend PO through O.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertOrder.between_extension P O hPO with
+    ⟨E, hPOE⟩
+
+  --------------------------------------------------------------------
+  -- The two right angles are genuine.
+  --------------------------------------------------------------------
+
+  have hOBP :
+      Not (Collinear Geo O B P) :=
+    hilbert_not_collinear_of_off_line
+      Geo O B P base
+      hOB hOl hBl hOpp.1
+
+  have hPOB :
+      Not (Collinear Geo P O B) := by
+    intro h
+    exact
+      hOBP
+        (PrimCollinearCycle Geo P O B h)
+
+  have hOBQ :
+      Not (Collinear Geo O B Q) :=
+    hilbert_not_collinear_of_off_line
+      Geo O B Q base
+      hOB hOl hBl hOpp.2.1
+
+  have hBOQ :
+      Not (Collinear Geo B O Q) := by
+    intro h
+    exact
+      hOBQ
+        (PrimCollinearSwap Geo B O Q h)
+
+  --------------------------------------------------------------------
+  -- BOQ and POB are both right, hence congruent.
+  --------------------------------------------------------------------
+
+  have hRightCong :
+      Geo.AngleCongruent B O Q P O B :=
+    hilbert_all_right_angles_congruent
+      Geo
+      B O Q
+      P O B
+      hBOQ hPOB
+      hRightQ hRightP
+
+  --------------------------------------------------------------------
+  -- Since P-O-E, POB is congruent to BOE.
+  --------------------------------------------------------------------
+
+  have hOppExtension :
+      Geo.AngleCongruent P O B B O E :=
+    hilbert_right_angle_opposite_extension
+      Geo
+      P O B E
+      hPOB
+      hRightP
+      hPOE
+
+  have hBOQ_BOE :
+      Geo.AngleCongruent B O Q B O E :=
+    Geometry.Geo.angle_congruent_transitivity
+      Geo
+      B O Q
+      P O B
+      B O E
+      hRightCong
+      hOppExtension
+
+  --------------------------------------------------------------------
+  -- This is exactly the synthetic "two right angles" hypothesis of I.14.
+  --------------------------------------------------------------------
+
+  have hTwoRight :
+      HilbertAnglesEqualTwoRightAngles
+        Geo B O P Q :=
+    ⟨E, hPOE, hBOQ_BOE⟩
+
+  exact
+    euclid_proposition_14
+      Geo
+      B O P Q
+      base
+      hOB.symm
+      hBl
+      hOl
+      hOpp
+      hTwoRight
+
+/--
+In the I.47 configuration, the outward square on AB extends the
+right-angle side AC through A: G-A-C.
+-/
+theorem i47_square_AB_extension
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C F G : Geo.Point)
+    (base : Geo.Line)
+    (hAB : A ≠ B)
+    (hAbase : HilbertIncidence.OnLine A base)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hSquare : IsSquare Geo A B F G)
+    (hOppGC : HilbertOppositeSide Geo G C base)
+    (hRight : HilbertRightAngle Geo B A C) :
+    Geo.Between G A C := by
+
+  have hRightGAB :
+      HilbertRightAngle Geo G A B :=
+    hSquare.2.2.2.2.1
+
+  exact
+    i47_opposite_right_rays_straight
+      Geo
+      G A B C
+      base
+      hAB
+      hAbase
+      hBbase
+      hOppGC
+      hRightGAB
+      hRight
+
+/--
+In the I.47 configuration, the outward square on AC extends the
+right-angle side AB through A: H-A-B.
+-/
+theorem i47_square_AC_extension
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C K H : Geo.Point)
+    (base : Geo.Line)
+    (hAC : A ≠ C)
+    (hAbase : HilbertIncidence.OnLine A base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hABC : Not (Collinear Geo A B C))
+    (hSquare : IsSquare Geo A C K H)
+    (hOppHB : HilbertOppositeSide Geo H B base)
+    (hRight : HilbertRightAngle Geo B A C) :
+    Geo.Between H A B := by
+
+  have hRightHAC :
+      HilbertRightAngle Geo H A C :=
+    hSquare.2.2.2.2.1
+
+  have hBAC :
+      Not (Collinear Geo B A C) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C h)
+
+  have hCAB :
+      Not (Collinear Geo C A B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle Geo C A B h)
+
+  have hArmSwap :
+      Geo.AngleCongruent B A C C A B :=
+    bookZero_56_ABCequalsCBA
+      Geo B A C hBAC
+
+  have hRightCAB :
+      HilbertRightAngle Geo C A B :=
+    hilbert_right_angle_transport
+      Geo
+      B A C
+      C A B
+      hBAC
+      hCAB
+      hRight
+      hArmSwap
+
+  exact
+    i47_opposite_right_rays_straight
+      Geo
+      H A C B
+      base
+      hAC
+      hAbase
+      hCbase
+      hOppHB
+      hRightHAC
+      hRightCAB
+
+/--
+In the I.47 configuration, the side BF of the square on AB is
+parallel to AC, because G-A-C and BF || GA.
+-/
+theorem i47_square_AB_parallel_AC
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C F G : Geo.Point)
+    (hAC : A ≠ C)
+    (hSquare : IsSquare Geo A B F G)
+    (hGAC : Geo.Between G A C) :
+    Geo.Parallel A C B F := by
+
+  have hBF_GA :
+      Geo.Parallel B F G A :=
+    hSquare.1.2
+
+  have hGA_BF :
+      Geo.Parallel G A B F :=
+    ParallelSymmetry
+      Geo B F G A hBF_GA
+
+  have hGACcol :
+      Collinear Geo G A C :=
+    (HilbertOrder.between_incidence
+      G A C hGAC).2.2.2.1
+
+  have hCGA :
+      Collinear Geo C G A :=
+    PrimCollinearCycle
+      Geo A C G
+      (PrimCollinearCycle
+        Geo G A C hGACcol)
+
+  have hCA_BF :
+      Geo.Parallel C A B F :=
+    ParallelCollinearLeft
+      Geo
+      G A C
+      B F
+      hAC.symm
+      hGA_BF
+      hCGA
+
+  exact
+    ParallelSwapFirstLine
+      Geo C A B F hCA_BF
+
+/--
+In the I.47 configuration, the side CK of the square on AC is
+parallel to AB, because H-A-B and CK || HA.
+-/
+theorem i47_square_AC_parallel_AB
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (A B C K H : Geo.Point)
+    (hAB : A ≠ B)
+    (hSquare : IsSquare Geo A C K H)
+    (hHAB : Geo.Between H A B) :
+    Geo.Parallel A B C K := by
+
+  have hCK_HA :
+      Geo.Parallel C K H A :=
+    hSquare.1.2
+
+  have hHA_CK :
+      Geo.Parallel H A C K :=
+    ParallelSymmetry
+      Geo C K H A hCK_HA
+
+  have hHABcol :
+      Collinear Geo H A B :=
+    (HilbertOrder.between_incidence
+      H A B hHAB).2.2.2.1
+
+  have hBHA :
+      Collinear Geo B H A :=
+    PrimCollinearCycle
+      Geo A B H
+      (PrimCollinearCycle
+        Geo H A B hHABcol)
+
+  have hBA_CK :
+      Geo.Parallel B A C K :=
+    ParallelCollinearLeft
+      Geo
+      H A B
+      C K
+      hAB.symm
+      hHA_CK
+      hBHA
+
+  exact
+    ParallelSwapFirstLine
+      Geo B A C K hBA_CK
+
+
 
 /--
 Local axiom: Euclid's figure for I.47.
