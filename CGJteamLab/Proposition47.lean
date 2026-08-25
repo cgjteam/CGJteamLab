@@ -1369,6 +1369,104 @@ theorem i47_two_right_angles_impossible
       hSelf
 
 /--
+In the outward I.47 configuration, B,A,D are noncollinear.
+
+Otherwise the opposite-side condition forces D-B-A.  The right angle
+DBC of the square on BC would then make ABC right, contradicting the
+given right angle BAC via I.17.
+-/
+theorem i47_noncollinear_BAD
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (base : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hRightA : HilbertRightAngle Geo B A C)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hSquare : IsSquare Geo B C E D)
+    (hOppDA : HilbertOppositeSide Geo D A base) :
+    Not (Collinear Geo B A D) := by
+
+  intro hBAD
+
+  rcases hBAD with
+    ⟨lineBAD, hBbad, hAbad, hDbad⟩
+
+  rcases hOppDA.2.2 with
+    ⟨X, hDXA, hXbase⟩
+
+  have hXbad :
+      HilbertIncidence.OnLine X lineBAD :=
+    hilbert_between_on_line
+      Geo
+      D X A
+      lineBAD
+      hDbad
+      hAbad
+      hDXA
+
+  have hXB : X = B := by
+    by_contra hXB
+
+    have hLines :
+        lineBAD = base :=
+      HilbertPlaneIncidence.line_unique
+        X B hXB
+        lineBAD base
+        hXbad hBbad
+        hXbase hBbase
+
+    exact
+      hOppDA.1
+        (hLines ▸ hDbad)
+
+  have hDBA :
+      Geo.Between D B A := by
+    simpa [hXB] using hDXA
+
+  have hNCDBC :
+      Not (Collinear Geo D B C) :=
+    (parallelogram_vertices_noncollinear
+      Geo B C E D hSquare.1).1
+
+  have hRightDBC :
+      HilbertRightAngle Geo D B C :=
+    hSquare.2.2.2.2.1
+
+  have hDBC_CBA :
+      Geo.AngleCongruent D B C C B A :=
+    hilbert_right_angle_opposite_extension
+      Geo
+      D B C A
+      hNCDBC
+      hRightDBC
+      hDBA
+
+  have hDBC_ABC :
+      Geo.AngleCongruent D B C A B C :=
+    (Geo.angle_congruent_reverse_second
+      D B C
+      C B A).mp hDBC_CBA
+
+  have hRightB :
+      HilbertRightAngle Geo A B C :=
+    hilbert_right_angle_transport
+      Geo
+      D B C
+      A B C
+      hNCDBC
+      hABC
+      hRightDBC
+      hDBC_ABC
+
+  exact
+    i47_two_right_angles_impossible
+      Geo A B C
+      hABC
+      hRightA
+      hRightB
+
+/--
 In the outward I.47 configuration, C,A,E are noncollinear.
 
 Otherwise the opposite-side condition forces E-C-A.  The right angle
@@ -2077,7 +2175,7 @@ theorem i47_angle_ACE_KCB
       B C K).mp hACE_BCK
 
 
-/--
+/-
 Local axiom: Euclid's figure for I.47.
 
 Given a triangle `A B C` with a right angle at `A`, the whole
@@ -2100,6 +2198,7 @@ Pythagoras diagram exists:
   whose crossbar hypotheses are read off the figure;
 * the four triangles used in the two SAS steps are nondegenerate.
 -/
+/-
 axiom i47_diagram
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
@@ -2126,6 +2225,308 @@ axiom i47_diagram
       Not (Collinear Geo B F C) ∧
       Not (Collinear Geo C A E) ∧
       Not (Collinear Geo C K B)
+-/
+
+
+axiom i47_cut_core
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (base : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hRight : HilbertRightAngle Geo B A C)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hSquare : IsSquare Geo B C E D)
+    (hOppDA : HilbertOppositeSide Geo D A base)
+    (hOppEA : HilbertOppositeSide Geo E A base) :
+    ∃ L M N : Geo.Point,
+      Geo.Between B M C ∧
+      Geo.Between D L E ∧
+      Geo.Between D N C ∧
+      Geo.Between M N L ∧
+      IsParallelogram Geo L D B M ∧
+      IsParallelogram Geo C E L M ∧
+      Geo.Parallel L A D B ∧
+      Geo.Parallel M A C E
+
+/-
+Remaining geometric construction debt in Euclid I.47.
+
+The three outward squares and all angle/noncollinearity data are now
+proved separately.  This axiom records only the internal cut of the
+square on BC:
+
+* M lies strictly between B and C;
+* L lies strictly between D and E;
+* the line through A cuts the square into the two parallelograms
+  LDBM and CELM;
+* N is the crossing point of DC and ML.
+
+This is the only part of the former monolithic `i47_diagram` which
+remains provisional.
+-/
+
+
+/--
+Full I.47 diagram reconstructed from the proved outward-square and
+angle infrastructure, plus the remaining internal-cut construction.
+-/
+theorem i47_diagram
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C : Geo.Point)
+    (hABC : Not (Collinear Geo A B C))
+    (hRight : HilbertRightAngle Geo B A C) :
+    ∃ D E F G H K L M N : Geo.Point,
+      IsSquare Geo B C E D ∧
+      IsSquare Geo A B F G ∧
+      IsSquare Geo A C K H ∧
+      Geo.Between B M C ∧
+      Geo.Between D L E ∧
+      Geo.Between D N C ∧
+      Geo.Between M N L ∧
+      IsParallelogram Geo L D B M ∧
+      IsParallelogram Geo C E L M ∧
+      Geo.Parallel L A D B ∧
+      Geo.Parallel M A C E ∧
+      Geo.Parallel A C B F ∧
+      Geo.Parallel A B C K ∧
+      Geo.AngleCongruent A B D F B C ∧
+      Geo.AngleCongruent A C E K C B ∧
+      Not (Collinear Geo B A D) ∧
+      Not (Collinear Geo B F C) ∧
+      Not (Collinear Geo C A E) ∧
+      Not (Collinear Geo C K B) := by
+
+  --------------------------------------------------------------------
+  -- Basic nondegeneracy of the triangle.
+  --------------------------------------------------------------------
+
+  have hAB : A ≠ B :=
+    hilbert_noncollinear_ne_first
+      Geo A B C hABC
+
+  have hACB :
+      Not (Collinear Geo A C B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearRotate Geo A C B h)
+
+  have hAC : A ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo A C B hACB
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle Geo B C A h))
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hBCA
+
+  --------------------------------------------------------------------
+  -- The three outward squares.
+  --------------------------------------------------------------------
+
+  rcases
+      i47_outward_squares
+        Geo A B C hABC with
+    ⟨lBC, lAB, lAC,
+      D, E, F, G, H, K,
+      hBlBC, hClBC,
+      hAlAB, hBlAB,
+      hAlAC, hClAC,
+      hSqBC, hSqAB, hSqAC,
+      hOppDA, hOppEA,
+      hOppGC, hOppFC,
+      hOppHB, hOppKB⟩
+
+  --------------------------------------------------------------------
+  -- Straight extensions through A.
+  --------------------------------------------------------------------
+
+  have hGAC :
+      Geo.Between G A C :=
+    i47_square_AB_extension
+      Geo
+      A B C F G
+      lAB
+      hAB
+      hAlAB
+      hBlAB
+      hSqAB
+      hOppGC
+      hRight
+
+  have hHAB :
+      Geo.Between H A B :=
+    i47_square_AC_extension
+      Geo
+      A B C K H
+      lAC
+      hAC
+      hAlAC
+      hClAC
+      hABC
+      hSqAC
+      hOppHB
+      hRight
+
+  --------------------------------------------------------------------
+  -- Parallels induced by the two leg squares.
+  --------------------------------------------------------------------
+
+  have hParallelAC :
+      Geo.Parallel A C B F :=
+    i47_square_AB_parallel_AC
+      Geo
+      A B C F G
+      hAC
+      hSqAB
+      hGAC
+
+  have hParallelAB :
+      Geo.Parallel A B C K :=
+    i47_square_AC_parallel_AB
+      Geo
+      A B C K H
+      hAB
+      hSqAC
+      hHAB
+
+  --------------------------------------------------------------------
+  -- Mixed noncollinearities at D and E.
+  --------------------------------------------------------------------
+
+  have hNCBAD :
+      Not (Collinear Geo B A D) :=
+    i47_noncollinear_BAD
+      Geo
+      A B C D E
+      lBC
+      hABC
+      hRight
+      hBlBC
+      hSqBC
+      hOppDA
+
+  have hNCCAE :
+      Not (Collinear Geo C A E) :=
+    i47_noncollinear_CAE
+      Geo
+      A B C D E
+      lBC
+      hABC
+      hRight
+      hClBC
+      hSqBC
+      hOppEA
+
+  --------------------------------------------------------------------
+  -- The two remaining SAS nondegeneracy facts follow from parallels.
+  --------------------------------------------------------------------
+
+  rcases
+      i47_parallel_noncollinearities
+        Geo
+        A B C F K
+        hParallelAC
+        hParallelAB with
+    ⟨hNCBFC, hNCCKB⟩
+
+  --------------------------------------------------------------------
+  -- Euclid's two angle-addition steps.
+  --------------------------------------------------------------------
+
+  have hAngleB :
+      Geo.AngleCongruent A B D F B C :=
+    i47_angle_ABD_FBC
+      Geo
+      A B C D E F G
+      lBC lAB
+      hABC
+      hBlBC
+      hClBC
+      hAlAB
+      hBlAB
+      hSqBC
+      hSqAB
+      hOppDA
+      hOppFC
+      hNCBAD
+      hNCBFC
+
+  have hAngleC :
+      Geo.AngleCongruent A C E K C B :=
+    i47_angle_ACE_KCB
+      Geo
+      A B C D E K H
+      lBC lAC
+      hABC
+      hBlBC
+      hClBC
+      hAlAC
+      hClAC
+      hSqBC
+      hSqAC
+      hOppEA
+      hOppKB
+      hNCCAE
+      hNCCKB
+
+  --------------------------------------------------------------------
+  -- The only remaining provisional construction: the internal cut.
+  --------------------------------------------------------------------
+
+  rcases
+      i47_cut_core
+        Geo
+        A B C D E
+        lBC
+        hABC
+        hRight
+        hBlBC
+        hClBC
+        hSqBC
+        hOppDA
+        hOppEA with
+    ⟨L, M, N,
+      hBMC, hDLE, hDNC, hMNL,
+      hParLDBM, hParCELM,
+      hParallelLA, hParallelMA⟩
+
+  --------------------------------------------------------------------
+  -- Assemble the former i47_diagram package.
+  --------------------------------------------------------------------
+
+  exact
+    ⟨D, E, F, G, H, K, L, M, N,
+      hSqBC,
+      hSqAB,
+      hSqAC,
+      hBMC,
+      hDLE,
+      hDNC,
+      hMNL,
+      hParLDBM,
+      hParCELM,
+      hParallelLA,
+      hParallelMA,
+      hParallelAC,
+      hParallelAB,
+      hAngleB,
+      hAngleC,
+      hNCBAD,
+      hNCBFC,
+      hNCCAE,
+      hNCCKB⟩
 
 ------------------------------------------------------------------------
 -- Euclid I.47
