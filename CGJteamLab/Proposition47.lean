@@ -4167,6 +4167,707 @@ theorem i47_aux_upper_cut_between
       hBC_DE
       hMC_LE
 
+/--
+The cut line ML meets the diagonal DC internally.
+
+Pasch is applied to triangle C-B-D.  The line ML enters through
+the side CB at M and cannot meet BD because DB || ML.  Hence it
+meets CD at an interior point N.  The parallel-order theorem then
+places N between M and L.
+-/
+theorem i47_aux_diagonal_cut_intersection
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (B C D E M L : Geo.Point)
+    (hBMC : Geo.Between B M C)
+    (hSquare : IsSquare Geo B C E D)
+    (hLeftPar : IsParallelogram Geo L D B M) :
+    ∃ N : Geo.Point,
+      Geo.Between D N C ∧
+      Geo.Between M N L := by
+
+  have hBMCdata :=
+    HilbertOrder.between_incidence
+      B M C hBMC
+
+  have hBM : B ≠ M :=
+    hBMCdata.1
+
+  have hMC : M ≠ C :=
+    hBMCdata.2.1
+
+  have hBC : B ≠ C :=
+    hBMCdata.2.2.1
+
+  have hBMCcol :
+      Collinear Geo B M C :=
+    hBMCdata.2.2.2.1
+
+  have hCMB :
+      Geo.Between C M B :=
+    hBMCdata.2.2.2.2
+
+  have hCMBcol :
+      Collinear Geo C M B :=
+    (HilbertOrder.between_incidence
+      C M B hCMB).2.2.2.1
+
+  --------------------------------------------------------------------
+  -- DB || ML from the left cut parallelogram.
+  --------------------------------------------------------------------
+
+  have hDB_ML :
+      Geo.Parallel D B M L :=
+    hLeftPar.2
+
+  have hDB : D ≠ B :=
+    hDB_ML.1
+
+  have hML : M ≠ L :=
+    hDB_ML.2.1
+
+  --------------------------------------------------------------------
+  -- Choose actual incidence carriers DB and ML.
+  --------------------------------------------------------------------
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        D B hDB with
+    ⟨lineDB, hDdb, hBdb⟩
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        M L hML with
+    ⟨lineML, hMml, hLml⟩
+
+  --------------------------------------------------------------------
+  -- The two incidence lines are disjoint because DB || ML.
+  --------------------------------------------------------------------
+
+  have hLinesDB_ML :
+      HilbertLinesDisjoint Geo lineDB lineML := by
+
+    rintro ⟨X, hXdb, hXml⟩
+
+    have hX_DB :
+        X ∈ Geo.PointLine D B :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        D B X
+        lineDB
+        hDB
+        hDdb
+        hBdb).mpr hXdb
+
+    have hX_ML :
+        X ∈ Geo.PointLine M L :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        M L X
+        lineML
+        hML
+        hMml
+        hLml).mpr hXml
+
+    exact
+      Set.disjoint_left.mp
+        hDB_ML.2.2
+        hX_DB
+        hX_ML
+
+  --------------------------------------------------------------------
+  -- B and D are therefore off ML.
+  --------------------------------------------------------------------
+
+  have hBoff :
+      Not (HilbertIncidence.OnLine B lineML) := by
+    intro hBml
+    exact
+      hLinesDB_ML
+        ⟨B, hBdb, hBml⟩
+
+  have hDoff :
+      Not (HilbertIncidence.OnLine D lineML) := by
+    intro hDml
+    exact
+      hLinesDB_ML
+        ⟨D, hDdb, hDml⟩
+
+  --------------------------------------------------------------------
+  -- C is also off ML.
+  --
+  -- Otherwise C and M would put the entire carrier CMB on ML,
+  -- hence B would lie on ML.
+  --------------------------------------------------------------------
+
+  have hCoff :
+      Not (HilbertIncidence.OnLine C lineML) := by
+    intro hCml
+
+    have hBml :
+        HilbertIncidence.OnLine B lineML :=
+      hilbert_collinear_on_line
+        Geo
+        C M B
+        lineML
+        hMC.symm
+        hCml
+        hMml
+        hCMBcol
+
+    exact hBoff hBml
+
+  --------------------------------------------------------------------
+  -- Triangle C-B-D is nondegenerate.
+  --------------------------------------------------------------------
+
+  have hSquareNC :=
+    parallelogram_vertices_noncollinear
+      Geo B C E D hSquare.1
+
+  have hDBC :
+      Not (Collinear Geo D B C) :=
+    hSquareNC.1
+
+  have hCBD :
+      Not (Collinear Geo C B D) := by
+    intro h
+    exact
+      hDBC
+        (PrimCollinearSymm
+          Geo C B D h)
+
+  --------------------------------------------------------------------
+  -- ML enters triangle C-B-D through CB at M.
+  --------------------------------------------------------------------
+
+  have hMeetsCB :
+      HilbertSegmentMeetsLine Geo C B lineML :=
+    ⟨M, hCMB, hMml⟩
+
+  --------------------------------------------------------------------
+  -- ML cannot meet the open side BD because DB || ML.
+  --------------------------------------------------------------------
+
+  have hNotMeetsBD :
+      Not (HilbertSegmentMeetsLine Geo B D lineML) := by
+
+    rintro ⟨X, hBXD, hXml⟩
+
+    have hXdb :
+        HilbertIncidence.OnLine X lineDB :=
+      hilbert_between_on_line
+        Geo
+        B X D
+        lineDB
+        hBdb
+        hDdb
+        hBXD
+
+    exact
+      hLinesDB_ML
+        ⟨X, hXdb, hXml⟩
+
+  --------------------------------------------------------------------
+  -- Forced Pasch: ML therefore meets CD internally.
+  --------------------------------------------------------------------
+
+  have hMeetsCD :
+      HilbertSegmentMeetsLine Geo C D lineML :=
+    hilbert_pasch_forced
+      Geo
+      C B D
+      lineML
+      hCBD
+      hCoff
+      hBoff
+      hDoff
+      hMeetsCB
+      hNotMeetsBD
+
+  rcases hMeetsCD with
+    ⟨N, hCND, hNml⟩
+
+  have hDNC :
+      Geo.Between D N C :=
+    (HilbertOrder.between_incidence
+      C N D hCND).2.2.2.2
+
+  have hLMN :
+      Collinear Geo L M N :=
+    ⟨lineML,
+      hLml,
+      hMml,
+      hNml⟩
+
+  --------------------------------------------------------------------
+  -- We also need DL || MC.
+  --
+  -- LD || BM comes from the left parallelogram; transport BM along
+  -- the carrier B-M-C.
+  --------------------------------------------------------------------
+
+  have hDL_BM :
+      Geo.Parallel D L B M :=
+    ParallelSwapFirstLine
+      Geo
+      L D B M
+      hLeftPar.1
+
+  have hBM_DL :
+      Geo.Parallel B M D L :=
+    ParallelSymmetry
+      Geo
+      D L B M
+      hDL_BM
+
+  have hMB_DL :
+      Geo.Parallel M B D L :=
+    ParallelSwapFirstLine
+      Geo
+      B M D L
+      hBM_DL
+
+  have hMCBcol :
+      Collinear Geo M C B :=
+    PrimCollinearCycle
+      Geo B M C hBMCcol
+
+  have hMC_DL :
+      Geo.Parallel M C D L :=
+    collinear_parallel_trans
+      Geo
+      M C B
+      D L
+      hMC
+      hMCBcol
+      hMB_DL
+
+  have hDL_MC :
+      Geo.Parallel D L M C :=
+    ParallelSymmetry
+      Geo M C D L hMC_DL
+
+  --------------------------------------------------------------------
+  -- Parallel crossing order:
+  --
+  --     D-N-C
+  --     L,M,N collinear
+  --     DL || MC
+  --
+  -- gives L-N-M, hence M-N-L.
+  --------------------------------------------------------------------
+
+  have hLNM :
+      Geo.Between L N M :=
+    hilbert_collinear_between_of_parallel
+      Geo
+      D L M C N
+      hDL_MC
+      hDNC
+      hLMN
+
+  have hMNL :
+      Geo.Between M N L :=
+    (HilbertOrder.between_incidence
+      L N M hLNM).2.2.2.2
+
+  exact
+    ⟨N,
+      hDNC,
+      hMNL⟩
+
+/--
+Internal geometric cut required by Euclid I.47.
+
+The perpendicular from A to BC determines the interior point M.
+The parallelogram C-E-L-M determines the upper cut point L, and
+Pasch supplies the crossing point N on DC.
+
+Thus the square B-C-E-D is split by the line through A and M into
+the two parallelograms L-D-B-M and C-E-L-M.
+-/
+theorem i47_cut_core
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E : Geo.Point)
+    (base : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hRight : HilbertRightAngle Geo B A C)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hSquare : IsSquare Geo B C E D)
+    (hOppDA : HilbertOppositeSide Geo D A base)
+    (hOppEA : HilbertOppositeSide Geo E A base) :
+    ∃ L M N : Geo.Point,
+      Geo.Between B M C ∧
+      Geo.Between D L E ∧
+      Geo.Between D N C ∧
+      Geo.Between M N L ∧
+      IsParallelogram Geo L D B M ∧
+      IsParallelogram Geo C E L M ∧
+      Geo.Parallel L A D B ∧
+      Geo.Parallel M A C E := by
+
+  --------------------------------------------------------------------
+  -- Drop the perpendicular from A to the carrier BC.
+  --------------------------------------------------------------------
+
+  rcases
+      i47_perpendicular_foot_on_BC
+        Geo
+        A B C
+        base
+        hABC
+        hBbase
+        hCbase with
+    ⟨M, R,
+      hMbase,
+      hRbase,
+      hRightRMA⟩
+
+  --------------------------------------------------------------------
+  -- The foot is internal:
+  --
+  --     B-M-C.
+  --------------------------------------------------------------------
+
+  have hBMC :
+      Geo.Between B M C :=
+    i47_aux_perpendicular_foot_between_BC
+      Geo
+      A B C M R
+      base
+      hABC
+      hRight
+      hBbase
+      hCbase
+      hMbase
+      hRbase
+      hRightRMA
+
+  have hBMCdata :=
+    HilbertOrder.between_incidence
+      B M C hBMC
+
+  have hMC : M ≠ C :=
+    hBMCdata.2.1
+
+  --------------------------------------------------------------------
+  -- Since CE is perpendicular to BC as well:
+  --
+  --     MA || CE.
+  --------------------------------------------------------------------
+
+  have hMA_CE :
+      Geo.Parallel M A C E :=
+    i47_aux_perpendicular_foot_parallel_CE
+      Geo
+      A B C D E M R
+      base
+      hBbase
+      hCbase
+      hMbase
+      hRbase
+      hBMC
+      hRightRMA
+      hSquare
+      hOppEA
+
+  --------------------------------------------------------------------
+  -- E is off BC.
+  --------------------------------------------------------------------
+
+  have hEoff :
+      Not (HilbertIncidence.OnLine E base) :=
+    hOppEA.1
+
+  --------------------------------------------------------------------
+  -- Complete C-E-M to the parallelogram C-E-L-M.
+  --------------------------------------------------------------------
+
+  rcases
+      i47_aux_construct_L_parallelogram
+        Geo
+        C E M
+        base
+        hCbase
+        hMbase
+        hEoff
+        hMC with
+    ⟨L, hRightPar⟩
+
+  --------------------------------------------------------------------
+  -- The new side ML is the already constructed cut carrier AM.
+  --------------------------------------------------------------------
+
+  have hAML :
+      Collinear Geo A M L :=
+    i47_aux_cut_line_collinear
+      Geo
+      A C E M L
+      hMA_CE
+      hRightPar
+
+  --------------------------------------------------------------------
+  -- L lies on the upper carrier DE.
+  --------------------------------------------------------------------
+
+  have hDLEcol :
+      Collinear Geo D L E :=
+    i47_aux_L_on_DE
+      Geo
+      B C D E M L
+      hBMC
+      hSquare
+      hRightPar
+
+  --------------------------------------------------------------------
+  -- The left piece is the parallelogram L-D-B-M.
+  --------------------------------------------------------------------
+
+  have hLeftPar :
+      IsParallelogram Geo L D B M :=
+    i47_aux_left_cut_parallelogram
+      Geo
+      B C D E M L
+      hBMC
+      hDLEcol
+      hSquare
+      hRightPar
+
+  --------------------------------------------------------------------
+  -- Transfer B-M-C to the opposite side:
+  --
+  --     D-L-E.
+  --------------------------------------------------------------------
+
+  have hDLE :
+      Geo.Between D L E :=
+    i47_aux_upper_cut_between
+      Geo
+      B C D E M L
+      hBMC
+      hSquare
+      hRightPar
+      hLeftPar
+
+  --------------------------------------------------------------------
+  -- Pasch supplies the final crossing point N:
+  --
+  --     D-N-C
+  --     M-N-L.
+  --------------------------------------------------------------------
+
+  rcases
+      i47_aux_diagonal_cut_intersection
+        Geo
+        B C D E M L
+        hBMC
+        hSquare
+        hLeftPar with
+    ⟨N, hDNC, hMNL⟩
+
+  --------------------------------------------------------------------
+  -- It remains to express the cut carrier in the orientation required
+  -- by the public diagram:
+  --
+  --     LA || DB.
+  --
+  -- First prove L != A.
+  --------------------------------------------------------------------
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) :=
+    hOppDA.2.1
+
+  have hLA : L ≠ A := by
+    intro hEq
+    subst L
+
+    ------------------------------------------------------------------
+    -- We would have D-A-E.
+    --
+    -- Since D and A are opposite relative to base, choose
+    -- X with D-X-A and X on base.
+    ------------------------------------------------------------------
+
+    rcases hOppDA.2.2 with
+      ⟨X, hDXA, hXbase⟩
+
+    ------------------------------------------------------------------
+    -- Since E and A are also opposite, choose
+    -- Y with E-Y-A and Y on base.
+    ------------------------------------------------------------------
+
+    rcases hOppEA.2.2 with
+      ⟨Y, hEYA, hYbase⟩
+
+    have hDAEdata :=
+      HilbertOrder.between_incidence
+        D A E hDLE
+
+    rcases hDAEdata.2.2.2.1 with
+      ⟨lineDA, hDda, hAda, hEda⟩
+
+    ------------------------------------------------------------------
+    -- X and Y both lie on the carrier D-A-E.
+    ------------------------------------------------------------------
+
+    have hXda :
+        HilbertIncidence.OnLine X lineDA :=
+      hilbert_between_on_line
+        Geo
+        D X A
+        lineDA
+        hDda
+        hAda
+        hDXA
+
+    have hYda :
+        HilbertIncidence.OnLine Y lineDA :=
+      hilbert_between_on_line
+        Geo
+        E Y A
+        lineDA
+        hEda
+        hAda
+        hEYA
+
+    ------------------------------------------------------------------
+    -- The carrier DAE is not base because A is off base.
+    ------------------------------------------------------------------
+
+    have hLinesDistinct :
+        lineDA ≠ base := by
+      intro hEqLines
+
+      have hAbase :
+          HilbertIncidence.OnLine A base := by
+        rw [← hEqLines]
+        exact hAda
+
+      exact hAoff hAbase
+
+    ------------------------------------------------------------------
+    -- Hence the two intersections with base coincide:
+    --
+    --     Y = X.
+    ------------------------------------------------------------------
+
+    have hYX : Y = X :=
+      hilbert_common_point_unique
+        Geo
+        lineDA
+        base
+        hLinesDistinct
+        X Y
+        hXda
+        hXbase
+        hYda
+        hYbase
+
+    subst Y
+
+    ------------------------------------------------------------------
+    -- D-A-E and E-X-A force D-A-X.
+    ------------------------------------------------------------------
+
+    have hEAD :
+        Geo.Between E A D :=
+      (HilbertOrder.between_incidence
+        D A E hDLE).2.2.2.2
+
+    have hXAD :
+        Geo.Between X A D :=
+      (hilbert_between_inner_trans
+        Geo
+        E X A D
+        hEYA
+        hEAD).1
+
+    have hDAX :
+        Geo.Between D A X :=
+      (HilbertOrder.between_incidence
+        X A D hXAD).2.2.2.2
+
+    ------------------------------------------------------------------
+    -- But we already have D-X-A.
+    -- Hilbert II.3 excludes the two orders simultaneously.
+    ------------------------------------------------------------------
+
+    have hDXAdata :=
+      HilbertOrder.between_incidence
+        D X A hDXA
+
+    exact
+      (HilbertOrder.between_unique
+        (Geo := Geo)
+        D X A
+        hDXAdata.2.2.2.1
+        hDXA).2
+        hDAX
+
+  --------------------------------------------------------------------
+  -- DB || ML from the left parallelogram.
+  --------------------------------------------------------------------
+
+  have hML_DB :
+      Geo.Parallel M L D B :=
+    ParallelSymmetry
+      Geo
+      D B M L
+      hLeftPar.2
+
+  have hLM_DB :
+      Geo.Parallel L M D B :=
+    ParallelSwapFirstLine
+      Geo
+      M L D B
+      hML_DB
+
+  --------------------------------------------------------------------
+  -- A,M,L are collinear, hence L,A,M are collinear.
+  --------------------------------------------------------------------
+
+  have hLAM :
+      Collinear Geo L A M :=
+    PrimCollinearCycle
+      Geo
+      M L A
+      (PrimCollinearCycle
+        Geo A M L hAML)
+
+  --------------------------------------------------------------------
+  -- Transport LM || DB along the same carrier to LA || DB.
+  --------------------------------------------------------------------
+
+  have hLA_DB :
+      Geo.Parallel L A D B :=
+    collinear_parallel_trans
+      Geo
+      L A M
+      D B
+      hLA
+      hLAM
+      hLM_DB
+
+  --------------------------------------------------------------------
+  -- Assemble the complete cut.
+  --------------------------------------------------------------------
+
+  exact
+    ⟨L, M, N,
+      hBMC,
+      hDLE,
+      hDNC,
+      hMNL,
+      hLeftPar,
+      hRightPar,
+      hLA_DB,
+      hMA_CE⟩
+
+/-
 axiom i47_cut_core
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
@@ -4188,6 +4889,7 @@ axiom i47_cut_core
       IsParallelogram Geo C E L M ∧
       Geo.Parallel L A D B ∧
       Geo.Parallel M A C E
+-/
 
 /-
 Remaining geometric construction debt in Euclid I.47.
