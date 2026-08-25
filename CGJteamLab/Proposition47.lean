@@ -1,3 +1,4 @@
+import CGJteamLab.Proposition12
 import CGJteamLab.Proposition14
 import CGJteamLab.Proposition17
 import CGJteamLab.HilbertRightAngle
@@ -2227,6 +2228,1944 @@ axiom i47_diagram
       Not (Collinear Geo C K B)
 -/
 
+/--
+First step of the internal cut in Euclid I.47.
+
+From the right-angle vertex A drop a perpendicular to the carrier BC.
+At this stage we record only incidence of the foot M on BC and the
+right angle.  The strict order B-M-C will be proved separately.
+-/
+theorem i47_perpendicular_foot_on_BC
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C : Geo.Point)
+    (base : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base) :
+    ∃ M R : Geo.Point,
+      HilbertIncidence.OnLine M base ∧
+      HilbertIncidence.OnLine R base ∧
+      HilbertRightAngle Geo R M A := by
+
+  --------------------------------------------------------------------
+  -- BC is nondegenerate.
+  --------------------------------------------------------------------
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle
+            Geo B C A h))
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hBCA
+
+  --------------------------------------------------------------------
+  -- A is outside the carrier BC.
+  --------------------------------------------------------------------
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) := by
+    intro hAbase
+    exact
+      hABC
+        ⟨base, hAbase, hBbase, hCbase⟩
+
+  --------------------------------------------------------------------
+  -- Euclid I.12 / Hilbert perpendicular construction.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_perpendicular_from_point_exists
+        Geo
+        B C A
+        base
+        hBC
+        hBbase
+        hCbase
+        hAoff with
+    ⟨M, R, hMbase, hRbase, hRightRMA⟩
+
+  exact
+    ⟨M, R,
+      hMbase,
+      hRbase,
+      hRightRMA⟩
+
+/--
+In a right triangle ABC, right at A, the angle at B is strictly
+smaller than the right angle BAC.
+
+This is the exterior-angle theorem I.16 applied after extending
+CA beyond A.
+-/
+theorem i47_angle_ABC_less_right_BAC
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hABC : Not (Collinear Geo A B C))
+    (hRight : HilbertRightAngle Geo B A C) :
+    HilbertAngleLess Geo A B C B A C := by
+
+  --------------------------------------------------------------------
+  -- Required permutations of triangle noncollinearity.
+  --------------------------------------------------------------------
+
+  have hBAC :
+      Not (Collinear Geo B A C) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C h)
+
+  have hCAB :
+      Not (Collinear Geo C A B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle Geo C A B h)
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle Geo B C A h))
+
+  --------------------------------------------------------------------
+  -- Extend CA through A to X:
+  --
+  --     C - A - X.
+  --------------------------------------------------------------------
+
+  have hCA : C ≠ A :=
+    hilbert_noncollinear_ne_first
+      Geo C A B hCAB
+
+  rcases
+      HilbertOrder.between_extension
+        C A hCA with
+    ⟨X, hCAX⟩
+
+  --------------------------------------------------------------------
+  -- I.16 on triangle B C A:
+  --
+  --     angle CBA < angle BAX.
+  --------------------------------------------------------------------
+
+  have hLessCBA_BAX :
+      HilbertAngleLess Geo C B A B A X :=
+    euclid_proposition_16_first
+      Geo
+      B C A X
+      hBCA
+      hCAX
+
+  --------------------------------------------------------------------
+  -- Reverse CBA to ABC.
+  --------------------------------------------------------------------
+
+  have hABC_CBA :
+      Geo.AngleCongruent A B C C B A :=
+    bookZero_56_ABCequalsCBA
+      Geo A B C hABC
+
+  have hLessABC_BAX :
+      HilbertAngleLess Geo A B C B A X :=
+    hilbert_angleLess_transport_left
+      Geo
+      C B A
+      A B C
+      B A X
+      hLessCBA_BAX
+      hABC
+      hABC_CBA
+
+  --------------------------------------------------------------------
+  -- CAB is right because BAC is right.
+  --------------------------------------------------------------------
+
+  have hBAC_CAB :
+      Geo.AngleCongruent B A C C A B :=
+    bookZero_56_ABCequalsCBA
+      Geo B A C hBAC
+
+  have hRightCAB :
+      HilbertRightAngle Geo C A B :=
+    hilbert_right_angle_transport
+      Geo
+      B A C
+      C A B
+      hBAC
+      hCAB
+      hRight
+      hBAC_CAB
+
+  --------------------------------------------------------------------
+  -- Since C-A-X, the exterior angle BAX is also right.
+  --------------------------------------------------------------------
+
+  have hCAB_BAX :
+      Geo.AngleCongruent C A B B A X :=
+    hilbert_right_angle_opposite_extension
+      Geo
+      C A B X
+      hCAB
+      hRightCAB
+      hCAX
+
+  have hBAX :
+      Not (Collinear Geo B A X) :=
+    hLessABC_BAX.2.1
+
+  have hRightBAX :
+      HilbertRightAngle Geo B A X :=
+    hilbert_right_angle_transport
+      Geo
+      C A B
+      B A X
+      hCAB
+      hBAX
+      hRightCAB
+      hCAB_BAX
+
+  --------------------------------------------------------------------
+  -- All right angles are congruent:
+  --
+  --     BAX ~= BAC.
+  --------------------------------------------------------------------
+
+  have hBAX_BAC :
+      Geo.AngleCongruent B A X B A C :=
+    hilbert_all_right_angles_congruent
+      Geo
+      B A X
+      B A C
+      hBAX
+      hBAC
+      hRightBAX
+      hRight
+
+  --------------------------------------------------------------------
+  -- Transport the containing angle.
+  --------------------------------------------------------------------
+
+  exact
+    hilbert_angleLess_transport_right
+      Geo
+      A B C
+      B A X
+      B A C
+      hLessABC_BAX
+      hBAC
+      hBAX_BAC
+
+/--
+In a right triangle ABC, right at A, the angle at C is strictly
+smaller than the right angle BAC.
+-/
+theorem i47_angle_ACB_less_right_BAC
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C : Geo.Point)
+    (hABC : Not (Collinear Geo A B C))
+    (hRight : HilbertRightAngle Geo B A C) :
+    HilbertAngleLess Geo A C B B A C := by
+
+  --------------------------------------------------------------------
+  -- Noncollinearity permutations.
+  --------------------------------------------------------------------
+
+  have hBAC :
+      Not (Collinear Geo B A C) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C h)
+
+  have hCAB :
+      Not (Collinear Geo C A B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle Geo C A B h)
+
+  have hACB :
+      Not (Collinear Geo A C B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearRotate Geo A C B h)
+
+  --------------------------------------------------------------------
+  -- Reverse the right angle BAC to CAB.
+  --------------------------------------------------------------------
+
+  have hBAC_CAB :
+      Geo.AngleCongruent B A C C A B :=
+    bookZero_56_ABCequalsCBA
+      Geo B A C hBAC
+
+  have hRightCAB :
+      HilbertRightAngle Geo C A B :=
+    hilbert_right_angle_transport
+      Geo
+      B A C
+      C A B
+      hBAC
+      hCAB
+      hRight
+      hBAC_CAB
+
+  --------------------------------------------------------------------
+  -- Apply the previous theorem to triangle A C B.
+  --
+  -- This gives:
+  --
+  --     ACB < CAB.
+  --------------------------------------------------------------------
+
+  have hLessACB_CAB :
+      HilbertAngleLess Geo A C B C A B :=
+    i47_angle_ABC_less_right_BAC
+      Geo
+      A C B
+      hACB
+      hRightCAB
+
+  --------------------------------------------------------------------
+  -- Normalize the containing right angle CAB back to BAC.
+  --------------------------------------------------------------------
+
+  have hCAB_BAC :
+      Geo.AngleCongruent C A B B A C :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo
+      B A C
+      C A B
+      hBAC_CAB
+
+  exact
+    hilbert_angleLess_transport_right
+      Geo
+      A C B
+      C A B
+      B A C
+      hLessACB_CAB
+      hBAC
+      hCAB_BAC
+
+/--
+A right angle determined by one nonvertex point of a carrier remains
+right when that point is replaced by any other nonvertex point of the
+same carrier.
+
+This is the local transport needed for the perpendicular foot in I.47.
+-/
+theorem i47_right_angle_along_base
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A R M X : Geo.Point)
+    (base : Geo.Line)
+    (hAoff : Not (HilbertIncidence.OnLine A base))
+    (hRbase : HilbertIncidence.OnLine R base)
+    (hMbase : HilbertIncidence.OnLine M base)
+    (hXbase : HilbertIncidence.OnLine X base)
+    (hMX : M ≠ X)
+    (hRight : HilbertRightAngle Geo R M A) :
+    HilbertRightAngle Geo X M A := by
+
+  --------------------------------------------------------------------
+  -- The defining witness of the right angle gives R != M.
+  --------------------------------------------------------------------
+
+  rcases hRight with
+    ⟨T, hRMT, hRightEq⟩
+
+  have hRM : R ≠ M :=
+    (HilbertOrder.between_incidence
+      R M T hRMT).1
+
+  have hMR : M ≠ R :=
+    hRM.symm
+
+  have hRight' :
+      HilbertRightAngle Geo R M A :=
+    ⟨T, hRMT, hRightEq⟩
+
+  --------------------------------------------------------------------
+  -- Both source and target angles are nondegenerate because A is
+  -- outside the base line.
+  --------------------------------------------------------------------
+
+  have hRMA :
+      Not (Collinear Geo R M A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      R M A
+      base
+      hRM
+      hRbase
+      hMbase
+      hAoff
+
+  have hXMA :
+      Not (Collinear Geo X M A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X M A
+      base
+      hMX.symm
+      hXbase
+      hMbase
+      hAoff
+
+  --------------------------------------------------------------------
+  -- If R = X there is nothing to prove.
+  --------------------------------------------------------------------
+
+  by_cases hRX : R = X
+
+  · subst X
+    exact hRight'
+
+  --------------------------------------------------------------------
+  -- Otherwise M,R,X are three distinct collinear points.
+  --------------------------------------------------------------------
+
+  have hMRX :
+      Collinear Geo M R X :=
+    ⟨base,
+      hMbase,
+      hRbase,
+      hXbase⟩
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        M R X
+        hMR
+        hRX
+        hMX
+        hMRX with
+    hMRXbet | hRMXbet | hMXRbet
+
+  --------------------------------------------------------------------
+  -- Case M-R-X: R and X are on the same ray from M.
+  --------------------------------------------------------------------
+
+  · have hRayMRX :
+        HilbertSameRay Geo M R X :=
+      hilbert_sameRay_of_between
+        Geo M R X hMRXbet
+
+    have hAngleEq :
+        Geo.Angle R M A =
+        Geo.Angle X M A :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo M R X A hRayMRX
+
+    have hRefl :
+        Geo.AngleCongruent R M A R M A :=
+      HilbertCongruence.angle_congruence_reflexive
+        (Geo := Geo)
+        R M A
+        hRMA
+
+    have hCong :
+        Geo.AngleCongruent R M A X M A := by
+      unfold Geometry.Geo.AngleCongruent at hRefl ⊢
+      rw [← hAngleEq]
+      exact hRefl
+
+    exact
+      hilbert_right_angle_transport
+        Geo
+        R M A
+        X M A
+        hRMA
+        hXMA
+        hRight'
+        hCong
+
+  --------------------------------------------------------------------
+  -- Case R-M-X: X is on the opposite ray from R.
+  --------------------------------------------------------------------
+
+  · have hCong0 :
+        Geo.AngleCongruent R M A A M X :=
+      hilbert_right_angle_opposite_extension
+        Geo
+        R M A X
+        hRMA
+        hRight'
+        hRMXbet
+
+    have hCong :
+        Geo.AngleCongruent R M A X M A :=
+      (Geo.angle_congruent_reverse_second
+        R M A
+        A M X).mp hCong0
+
+    exact
+      hilbert_right_angle_transport
+        Geo
+        R M A
+        X M A
+        hRMA
+        hXMA
+        hRight'
+        hCong
+
+  --------------------------------------------------------------------
+  -- Case M-X-R: again R and X are on the same ray from M.
+  --------------------------------------------------------------------
+
+  · have hRayMXR :
+        HilbertSameRay Geo M X R :=
+      hilbert_sameRay_of_between
+        Geo M X R hMXRbet
+
+    have hRayMRX :
+        HilbertSameRay Geo M R X :=
+      hilbert_sameRay_symm
+        Geo M X R hRayMXR
+
+    have hAngleEq :
+        Geo.Angle R M A =
+        Geo.Angle X M A :=
+      hilbert_angle_eq_of_sameRay_first
+        Geo M R X A hRayMRX
+
+    have hRefl :
+        Geo.AngleCongruent R M A R M A :=
+      HilbertCongruence.angle_congruence_reflexive
+        (Geo := Geo)
+        R M A
+        hRMA
+
+    have hCong :
+        Geo.AngleCongruent R M A X M A := by
+      unfold Geometry.Geo.AngleCongruent at hRefl ⊢
+      rw [← hAngleEq]
+      exact hRefl
+
+    exact
+      hilbert_right_angle_transport
+        Geo
+        R M A
+        X M A
+        hRMA
+        hXMA
+        hRight'
+        hCong
+
+/--
+The perpendicular from the right-angle vertex A to the carrier BC
+meets the open segment BC.
+
+The two exterior positions of M are excluded by Euclid I.16 together
+with the fact that both acute angles of the right triangle are smaller
+than the right angle at A.
+-/
+theorem i47_aux_perpendicular_foot_between_BC
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C M R : Geo.Point)
+    (base : Geo.Line)
+    (hABC : Not (Collinear Geo A B C))
+    (hRightA : HilbertRightAngle Geo B A C)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hMbase : HilbertIncidence.OnLine M base)
+    (hRbase : HilbertIncidence.OnLine R base)
+    (hRightRMA : HilbertRightAngle Geo R M A) :
+    Geo.Between B M C := by
+
+  --------------------------------------------------------------------
+  -- Triangle nondegeneracy in the orientations used below.
+  --------------------------------------------------------------------
+
+  have hBAC :
+      Not (Collinear Geo B A C) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C h)
+
+  have hCAB :
+      Not (Collinear Geo C A B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle Geo C A B h)
+
+  have hACB :
+      Not (Collinear Geo A C B) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearRotate Geo A C B h)
+
+  have hBCA :
+      Not (Collinear Geo B C A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearCycle
+          Geo C A B
+          (PrimCollinearCycle Geo B C A h))
+
+  have hCBA :
+      Not (Collinear Geo C B A) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSymm Geo C B A h)
+
+  have hBC : B ≠ C :=
+    hilbert_noncollinear_ne_first
+      Geo B C A hBCA
+
+  --------------------------------------------------------------------
+  -- A is off the carrier BC.
+  --------------------------------------------------------------------
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) := by
+    intro hAbase
+    exact
+      hABC
+        ⟨base,
+          hAbase,
+          hBbase,
+          hCbase⟩
+
+  --------------------------------------------------------------------
+  -- CAB is also right.
+  --------------------------------------------------------------------
+
+  have hBAC_CAB :
+      Geo.AngleCongruent B A C C A B :=
+    bookZero_56_ABCequalsCBA
+      Geo B A C hBAC
+
+  have hRightCAB :
+      HilbertRightAngle Geo C A B :=
+    hilbert_right_angle_transport
+      Geo
+      B A C
+      C A B
+      hBAC
+      hCAB
+      hRightA
+      hBAC_CAB
+
+  --------------------------------------------------------------------
+  -- Exclude M = B.
+  --------------------------------------------------------------------
+
+  have hMB : M ≠ B := by
+    intro hEq
+    subst M
+
+    have hRightCBA :
+        HilbertRightAngle Geo C B A :=
+      i47_right_angle_along_base
+        Geo
+        A R B C
+        base
+        hAoff
+        hRbase
+        hBbase
+        hCbase
+        hBC
+        hRightRMA
+
+    have hCBA_ABC :
+        Geo.AngleCongruent C B A A B C :=
+      bookZero_56_ABCequalsCBA
+        Geo C B A hCBA
+
+    have hRightABC :
+        HilbertRightAngle Geo A B C :=
+      hilbert_right_angle_transport
+        Geo
+        C B A
+        A B C
+        hCBA
+        hABC
+        hRightCBA
+        hCBA_ABC
+
+    exact
+      i47_two_right_angles_impossible
+        Geo
+        A B C
+        hABC
+        hRightA
+        hRightABC
+
+  --------------------------------------------------------------------
+  -- Exclude M = C.
+  --------------------------------------------------------------------
+
+  have hMC : M ≠ C := by
+    intro hEq
+    subst M
+
+    have hRightBCA :
+        HilbertRightAngle Geo B C A :=
+      i47_right_angle_along_base
+        Geo
+        A R C B
+        base
+        hAoff
+        hRbase
+        hCbase
+        hBbase
+        hBC.symm
+        hRightRMA
+
+    have hBCA_ACB :
+        Geo.AngleCongruent B C A A C B :=
+      bookZero_56_ABCequalsCBA
+        Geo B C A hBCA
+
+    have hRightACB :
+        HilbertRightAngle Geo A C B :=
+      hilbert_right_angle_transport
+        Geo
+        B C A
+        A C B
+        hBCA
+        hACB
+        hRightBCA
+        hBCA_ACB
+
+    exact
+      i47_two_right_angles_impossible
+        Geo
+        A C B
+        hACB
+        hRightCAB
+        hRightACB
+
+  have hBM : B ≠ M :=
+    hMB.symm
+
+  --------------------------------------------------------------------
+  -- B, M, C lie on the same carrier.
+  --------------------------------------------------------------------
+
+  have hBMCcol :
+      Collinear Geo B M C :=
+    ⟨base,
+      hBbase,
+      hMbase,
+      hCbase⟩
+
+  --------------------------------------------------------------------
+  -- Order trichotomy:
+  --
+  --     B-M-C
+  --     M-B-C
+  --     B-C-M
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_trichotomy
+        Geo
+        B M C
+        hBM
+        hMC
+        hBC
+        hBMCcol with
+    hBMC | hMBC | hBCM
+
+  --------------------------------------------------------------------
+  -- Case 1: B-M-C.
+  --------------------------------------------------------------------
+
+  · exact hBMC
+
+  --------------------------------------------------------------------
+  -- Case 2: M-B-C.
+  --
+  -- I.16 in triangle A M B:
+  --
+  --     AMB < ABC.
+  --
+  -- Also ABC < BAC.
+  --
+  -- Since AMB and BAC are both right, this is impossible.
+  --------------------------------------------------------------------
+
+  · have hBMA :
+        Not (Collinear Geo B M A) :=
+      hilbert_not_collinear_of_off_line
+        Geo
+        B M A
+        base
+        hBM
+        hBbase
+        hMbase
+        hAoff
+
+    have hAMB :
+        Not (Collinear Geo A M B) := by
+      intro h
+      exact
+        hBMA
+          (PrimCollinearSymm Geo A M B h)
+
+    have hRightBMA :
+        HilbertRightAngle Geo B M A :=
+      i47_right_angle_along_base
+        Geo
+        A R M B
+        base
+        hAoff
+        hRbase
+        hMbase
+        hBbase
+        hMB
+        hRightRMA
+
+    have hBMA_AMB :
+        Geo.AngleCongruent B M A A M B :=
+      bookZero_56_ABCequalsCBA
+        Geo B M A hBMA
+
+    have hRightAMB :
+        HilbertRightAngle Geo A M B :=
+      hilbert_right_angle_transport
+        Geo
+        B M A
+        A M B
+        hBMA
+        hAMB
+        hRightBMA
+        hBMA_AMB
+
+    have hLessAMB_ABC :
+        HilbertAngleLess Geo A M B A B C :=
+      euclid_proposition_16_second
+        Geo
+        A M B C
+        hAMB
+        hMBC
+
+    have hLessABC_BAC :
+        HilbertAngleLess Geo A B C B A C :=
+      i47_angle_ABC_less_right_BAC
+        Geo
+        A B C
+        hABC
+        hRightA
+
+    have hLessAMB_BAC :
+        HilbertAngleLess Geo A M B B A C :=
+      hilbert_angleLess_trans
+        Geo
+        A M B
+        A B C
+        B A C
+        hLessAMB_ABC
+        hLessABC_BAC
+
+    have hAMB_BAC :
+        Geo.AngleCongruent A M B B A C :=
+      hilbert_all_right_angles_congruent
+        Geo
+        A M B
+        B A C
+        hAMB
+        hBAC
+        hRightAMB
+        hRightA
+
+    ------------------------------------------------------------------
+    -- transport_left wants:
+    --
+    --     new ~= old
+    --
+    -- hence BAC ~= AMB.
+    ------------------------------------------------------------------
+
+    have hBAC_AMB :
+        Geo.AngleCongruent B A C A M B :=
+      Geometry.Geo.angle_congruent_symmetry
+        Geo
+        A M B
+        B A C
+        hAMB_BAC
+
+    have hSelf :
+        HilbertAngleLess Geo B A C B A C :=
+      hilbert_angleLess_transport_left
+        Geo
+        A M B
+        B A C
+        B A C
+        hLessAMB_BAC
+        hBAC
+        hBAC_AMB
+
+    exact
+      False.elim
+        ((hilbert_angleLess_irrefl
+          Geo B A C)
+          hSelf)
+
+  --------------------------------------------------------------------
+  -- Case 3: B-C-M.
+  --
+  -- Reverse to M-C-B.  I.16 in triangle A M C:
+  --
+  --     AMC < ACB.
+  --
+  -- Also ACB < BAC.
+  --
+  -- Since AMC and BAC are both right, this is impossible.
+  --------------------------------------------------------------------
+
+  · have hMCB :
+        Geo.Between M C B :=
+      (HilbertOrder.between_incidence
+        B C M hBCM).2.2.2.2
+
+    have hCMA :
+        Not (Collinear Geo C M A) :=
+      hilbert_not_collinear_of_off_line
+        Geo
+        C M A
+        base
+        hMC.symm
+        hCbase
+        hMbase
+        hAoff
+
+    have hAMC :
+        Not (Collinear Geo A M C) := by
+      intro h
+      exact
+        hCMA
+          (PrimCollinearSymm Geo A M C h)
+
+    have hRightCMA :
+        HilbertRightAngle Geo C M A :=
+      i47_right_angle_along_base
+        Geo
+        A R M C
+        base
+        hAoff
+        hRbase
+        hMbase
+        hCbase
+        hMC
+        hRightRMA
+
+    have hCMA_AMC :
+        Geo.AngleCongruent C M A A M C :=
+      bookZero_56_ABCequalsCBA
+        Geo C M A hCMA
+
+    have hRightAMC :
+        HilbertRightAngle Geo A M C :=
+      hilbert_right_angle_transport
+        Geo
+        C M A
+        A M C
+        hCMA
+        hAMC
+        hRightCMA
+        hCMA_AMC
+
+    have hLessAMC_ACB :
+        HilbertAngleLess Geo A M C A C B :=
+      euclid_proposition_16_second
+        Geo
+        A M C B
+        hAMC
+        hMCB
+
+    have hLessACB_BAC :
+        HilbertAngleLess Geo A C B B A C :=
+      i47_angle_ACB_less_right_BAC
+        Geo
+        A B C
+        hABC
+        hRightA
+
+    have hLessAMC_BAC :
+        HilbertAngleLess Geo A M C B A C :=
+      hilbert_angleLess_trans
+        Geo
+        A M C
+        A C B
+        B A C
+        hLessAMC_ACB
+        hLessACB_BAC
+
+    have hAMC_BAC :
+        Geo.AngleCongruent A M C B A C :=
+      hilbert_all_right_angles_congruent
+        Geo
+        A M C
+        B A C
+        hAMC
+        hBAC
+        hRightAMC
+        hRightA
+
+    ------------------------------------------------------------------
+    -- Again transport_left needs new ~= old:
+    --
+    --     BAC ~= AMC.
+    ------------------------------------------------------------------
+
+    have hBAC_AMC :
+        Geo.AngleCongruent B A C A M C :=
+      Geometry.Geo.angle_congruent_symmetry
+        Geo
+        A M C
+        B A C
+        hAMC_BAC
+
+    have hSelf :
+        HilbertAngleLess Geo B A C B A C :=
+      hilbert_angleLess_transport_left
+        Geo
+        A M C
+        B A C
+        B A C
+        hLessAMC_BAC
+        hBAC
+        hBAC_AMC
+
+    exact
+      False.elim
+        ((hilbert_angleLess_irrefl
+          Geo B A C)
+          hSelf)
+
+/--
+The perpendicular through the interior foot M is parallel to the
+square side CE.
+
+Choose X strictly between M and C.  The angles XMA and XCE are both
+right angles.  Since A and E lie on opposite sides of the transversal
+BC, equal alternate angles give MA || CE.
+-/
+theorem i47_aux_perpendicular_foot_parallel_CE
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A B C D E M R : Geo.Point)
+    (base : Geo.Line)
+    (hBbase : HilbertIncidence.OnLine B base)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hMbase : HilbertIncidence.OnLine M base)
+    (hRbase : HilbertIncidence.OnLine R base)
+    (hBMC : Geo.Between B M C)
+    (hRightRMA : HilbertRightAngle Geo R M A)
+    (hSquare : IsSquare Geo B C E D)
+    (hOppEA : HilbertOppositeSide Geo E A base) :
+    Geo.Parallel M A C E := by
+
+  --------------------------------------------------------------------
+  -- A and E are off the transversal BC.
+  --------------------------------------------------------------------
+
+  have hEoff :
+      Not (HilbertIncidence.OnLine E base) :=
+    hOppEA.1
+
+  have hAoff :
+      Not (HilbertIncidence.OnLine A base) :=
+    hOppEA.2.1
+
+  --------------------------------------------------------------------
+  -- M != C because B-M-C.
+  --------------------------------------------------------------------
+
+  have hBMCdata :=
+    HilbertOrder.between_incidence
+      B M C hBMC
+
+  have hMC : M ≠ C :=
+    hBMCdata.2.1
+
+  --------------------------------------------------------------------
+  -- Choose X strictly between M and C.
+  --------------------------------------------------------------------
+
+  rcases
+      hilbert_between_exists
+        Geo M C hMC with
+    ⟨X, hMXC⟩
+
+  have hMXCdata :=
+    HilbertOrder.between_incidence
+      M X C hMXC
+
+  have hMX : M ≠ X :=
+    hMXCdata.1
+
+  have hXC : X ≠ C :=
+    hMXCdata.2.1
+
+  have hCX : C ≠ X :=
+    hXC.symm
+
+  have hXbase :
+      HilbertIncidence.OnLine X base :=
+    hilbert_between_on_line
+      Geo
+      M X C
+      base
+      hMbase
+      hCbase
+      hMXC
+
+  --------------------------------------------------------------------
+  -- XMA is right: replace the arbitrary base point R in the
+  -- perpendicular construction by X.
+  --------------------------------------------------------------------
+
+  have hRightXMA :
+      HilbertRightAngle Geo X M A :=
+    i47_right_angle_along_base
+      Geo
+      A R M X
+      base
+      hAoff
+      hRbase
+      hMbase
+      hXbase
+      hMX
+      hRightRMA
+
+  --------------------------------------------------------------------
+  -- BCE is right because BCED is a square.
+  --------------------------------------------------------------------
+
+  have hRightBCE :
+      HilbertRightAngle Geo B C E :=
+    hSquare.2.2.2.2.2.1
+
+  --------------------------------------------------------------------
+  -- Replace B by X on the same carrier BC: XCE is right.
+  --------------------------------------------------------------------
+
+  have hRightXCE :
+      HilbertRightAngle Geo X C E :=
+    i47_right_angle_along_base
+      Geo
+      E B C X
+      base
+      hEoff
+      hBbase
+      hCbase
+      hXbase
+      hCX
+      hRightBCE
+
+  --------------------------------------------------------------------
+  -- Nondegeneracy of the two right angles.
+  --------------------------------------------------------------------
+
+  have hXMA :
+      Not (Collinear Geo X M A) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X M A
+      base
+      hMX.symm
+      hXbase
+      hMbase
+      hAoff
+
+  have hXCE :
+      Not (Collinear Geo X C E) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      X C E
+      base
+      hXC
+      hXbase
+      hCbase
+      hEoff
+
+  --------------------------------------------------------------------
+  -- All right angles are congruent.
+  --------------------------------------------------------------------
+
+  have hAlternate :
+      Geo.AngleCongruent X M A X C E :=
+    hilbert_all_right_angles_congruent
+      Geo
+      X M A
+      X C E
+      hXMA
+      hXCE
+      hRightXMA
+      hRightXCE
+
+  --------------------------------------------------------------------
+  -- A and E lie on opposite sides of BC.
+  --------------------------------------------------------------------
+
+  have hOppAE :
+      HilbertOppositeSide Geo A E base :=
+    hilbert_oppositeSide_symm
+      Geo E A base hOppEA
+
+  --------------------------------------------------------------------
+  -- X is between M and C on the transversal.  Equal alternate right
+  -- angles therefore give MA || CE.
+  --------------------------------------------------------------------
+
+  exact
+    hilbert_parallel_of_alternate_angles_oppositeSide_lines
+      Geo
+      M A
+      C X E
+      base
+      hMXC
+      hMbase
+      hCbase
+      hOppAE
+      hAlternate
+
+/--
+Complete C-E-M to the parallelogram C-E-L-M.
+
+Since C and M lie on the base BC while E lies off that base,
+the three points C,E,M are noncollinear.
+-/
+theorem i47_aux_construct_L_parallelogram
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (C E M : Geo.Point)
+    (base : Geo.Line)
+    (hCbase : HilbertIncidence.OnLine C base)
+    (hMbase : HilbertIncidence.OnLine M base)
+    (hEoff : Not (HilbertIncidence.OnLine E base))
+    (hMC : M ≠ C) :
+    ∃ L : Geo.Point,
+      IsParallelogram Geo C E L M := by
+
+  have hCM : C ≠ M :=
+    hMC.symm
+
+  have hCME :
+      Not (Collinear Geo C M E) :=
+    hilbert_not_collinear_of_off_line
+      Geo
+      C M E
+      base
+      hCM
+      hCbase
+      hMbase
+      hEoff
+
+  have hCEM :
+      Not (Collinear Geo C E M) := by
+    intro h
+    exact
+      hCME
+        (PrimCollinearRotate Geo C E M h)
+
+  rcases
+      hilbert_parallelogram_fourth_vertex_exists
+        Geo C E M hCEM with
+    ⟨L, hPar⟩
+
+  exact ⟨L, hPar⟩
+
+/--
+If MA is parallel to CE and C-E-L-M is a parallelogram, then
+A, M, L lie on one line.
+
+Indeed ML is also parallel to CE.  Two distinct carriers through M
+cannot both be parallel to CE.
+-/
+theorem i47_aux_cut_line_collinear
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (A C E M L : Geo.Point)
+    (hMA_CE : Geo.Parallel M A C E)
+    (hPar : IsParallelogram Geo C E L M) :
+    Collinear Geo A M L := by
+
+  --------------------------------------------------------------------
+  -- From the parallelogram C-E-L-M:
+  --
+  --     CE || LM,
+  --
+  -- hence ML || CE.
+  --------------------------------------------------------------------
+
+  have hLM_CE :
+      Geo.Parallel L M C E :=
+    ParallelSymmetry
+      Geo
+      C E L M
+      hPar.1
+
+  have hML_CE :
+      Geo.Parallel M L C E :=
+    ParallelSwapFirstLine
+      Geo
+      L M C E
+      hLM_CE
+
+  --------------------------------------------------------------------
+  -- The carriers MA and ML must coincide.
+  --
+  -- Otherwise Euclidean transitivity gives MA || ML, impossible
+  -- because both contain M.
+  --------------------------------------------------------------------
+
+  have hCarrier :
+      Geo.PointLine M A =
+      Geo.PointLine M L := by
+
+    by_contra hDistinct
+
+    have hMA_ML :
+        Geo.Parallel M A M L :=
+      hilbert_parallel_transitive_distinct
+        Geo
+        M A
+        M L
+        C E
+        hMA_CE
+        hML_CE
+        hDistinct
+
+    exact
+      (intersection_test_not_parallel_of_common_point
+        Geo
+        M A
+        M L
+        M
+        (intersection_test_left_mem Geo M A)
+        (intersection_test_left_mem Geo M L))
+        hMA_ML
+
+  --------------------------------------------------------------------
+  -- Convert equality of the two extensional carriers back to
+  -- ordinary Hilbert collinearity.
+  --------------------------------------------------------------------
+
+  have hMA : M ≠ A :=
+    hMA_CE.1
+
+  have hML : M ≠ L :=
+    hML_CE.1
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        M A hMA with
+    ⟨lineMA, hMma, hAma⟩
+
+  have hL_ML :
+      L ∈ Geo.PointLine M L :=
+    intersection_test_right_mem
+      Geo M L
+
+  have hL_MA :
+      L ∈ Geo.PointLine M A := by
+    rw [hCarrier]
+    exact hL_ML
+
+  have hLma :
+      HilbertIncidence.OnLine L lineMA :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo
+      M A L
+      lineMA
+      hMA
+      hMma
+      hAma).mp hL_MA
+
+  exact
+    ⟨lineMA,
+      hAma,
+      hMma,
+      hLma⟩
+
+/--
+The new point L lies on the upper carrier DE of the square.
+
+Indeed EL is parallel to the base carrier BC through the parallelogram
+C-E-L-M, while ED is parallel to BC through the square B-C-E-D.
+Since both carriers pass through E, they coincide.
+-/
+theorem i47_aux_L_on_DE
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (B C D E M L : Geo.Point)
+    (hBMC : Geo.Between B M C)
+    (hSquare : IsSquare Geo B C E D)
+    (hPar : IsParallelogram Geo C E L M) :
+    Collinear Geo D L E := by
+
+  have hBMCdata :=
+    HilbertOrder.between_incidence
+      B M C hBMC
+
+  have hBC : B ≠ C :=
+    hBMCdata.2.2.1
+
+  have hCM : C ≠ M :=
+    hBMCdata.2.1.symm
+
+  --------------------------------------------------------------------
+  -- EL || MC from C-E-L-M.
+  --------------------------------------------------------------------
+
+  have hEL_MC :
+      Geo.Parallel E L M C :=
+    hPar.2
+
+  have hMC_EL :
+      Geo.Parallel M C E L :=
+    ParallelSymmetry
+      Geo E L M C hEL_MC
+
+  have hCM_EL :
+      Geo.Parallel C M E L :=
+    ParallelSwapFirstLine
+      Geo M C E L hMC_EL
+
+  --------------------------------------------------------------------
+  -- Replace M by B on the same base carrier:
+  --
+  --     CB || EL.
+  --------------------------------------------------------------------
+
+  have hCBMcol :
+      Collinear Geo C B M := by
+    have hBMCcol :
+        Collinear Geo B M C :=
+      hBMCdata.2.2.2.1
+
+    exact
+      PrimCollinearCycle
+        Geo
+        M C B
+        (PrimCollinearCycle
+          Geo B M C hBMCcol)
+
+  have hCB_EL :
+      Geo.Parallel C B E L :=
+    collinear_parallel_trans
+      Geo
+      C B M
+      E L
+      hBC.symm
+      hCBMcol
+      hCM_EL
+
+  have hEL_CB :
+      Geo.Parallel E L C B :=
+    ParallelSymmetry
+      Geo C B E L hCB_EL
+
+  --------------------------------------------------------------------
+  -- ED || CB from the square.
+  --------------------------------------------------------------------
+
+  have hBC_ED :
+      Geo.Parallel B C E D :=
+    hSquare.1.1
+
+  have hCB_ED :
+      Geo.Parallel C B E D :=
+    ParallelSwapFirstLine
+      Geo B C E D hBC_ED
+
+  have hED_CB :
+      Geo.Parallel E D C B :=
+    ParallelSymmetry
+      Geo C B E D hCB_ED
+
+  --------------------------------------------------------------------
+  -- EL and ED cannot be distinct parallel carriers through E.
+  --------------------------------------------------------------------
+
+  have hCarrier :
+      Geo.PointLine E L =
+      Geo.PointLine E D := by
+
+    by_contra hDistinct
+
+    have hEL_ED :
+        Geo.Parallel E L E D :=
+      hilbert_parallel_transitive_distinct
+        Geo
+        E L
+        E D
+        C B
+        hEL_CB
+        hED_CB
+        hDistinct
+
+    exact
+      (intersection_test_not_parallel_of_common_point
+        Geo
+        E L
+        E D
+        E
+        (intersection_test_left_mem Geo E L)
+        (intersection_test_left_mem Geo E D))
+        hEL_ED
+
+  --------------------------------------------------------------------
+  -- Convert carrier equality back to collinearity D-L-E.
+  --------------------------------------------------------------------
+
+  have hEL : E ≠ L :=
+    hEL_CB.1
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        E L hEL with
+    ⟨lineEL, hEel, hLel⟩
+
+  have hD_ED :
+      D ∈ Geo.PointLine E D :=
+    intersection_test_right_mem
+      Geo E D
+
+  have hD_EL :
+      D ∈ Geo.PointLine E L := by
+    rw [hCarrier]
+    exact hD_ED
+
+  have hDel :
+      HilbertIncidence.OnLine D lineEL :=
+    (hilbert_mem_pointLine_iff_onLine
+      Geo
+      E L D
+      lineEL
+      hEL
+      hEel
+      hLel).mp hD_EL
+
+  exact
+    ⟨lineEL,
+      hDel,
+      hLel,
+      hEel⟩
+
+
+/--
+The left part cut from the square is the parallelogram L-D-B-M.
+
+The only delicate point is proving L != D.  Since B-M-C,
+CM is a proper part of CB.  The two known parallelograms transport
+these lengths to EL and ED, hence EL < ED and therefore L != D.
+-/
+theorem i47_aux_left_cut_parallelogram
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (B C D E M L : Geo.Point)
+    (hBMC : Geo.Between B M C)
+    (hDLE : Collinear Geo D L E)
+    (hSquare : IsSquare Geo B C E D)
+    (hPar : IsParallelogram Geo C E L M) :
+    IsParallelogram Geo L D B M := by
+
+  have hBMCdata :=
+    HilbertOrder.between_incidence
+      B M C hBMC
+
+  have hBM : B ≠ M :=
+    hBMCdata.1
+
+  have hMC : M ≠ C :=
+    hBMCdata.2.1
+
+  have hBMCcol :
+      Collinear Geo B M C :=
+    hBMCdata.2.2.2.1
+
+  --------------------------------------------------------------------
+  -- First prove L != D.
+  --
+  -- Reverse B-M-C to C-M-B, hence CM < CB.
+  --------------------------------------------------------------------
+
+  have hCMB :
+      Geo.Between C M B :=
+    hBMCdata.2.2.2.2
+
+  have hCMltCB :
+      HilbertSegmentLess Geo C M C B :=
+    hilbert_segmentLess_of_between
+      Geo C M B hCMB
+
+  --------------------------------------------------------------------
+  -- In C-E-L-M:
+  --
+  --     EL ~= MC,
+  --
+  -- hence EL ~= CM.
+  --------------------------------------------------------------------
+
+  have hParSides :
+      OppositeSidesCongruent Geo C E L M :=
+    ParallelogramOppositeSidesCongruent
+      Geo C E L M hPar
+
+  have hEL_MC :
+      Geo.Congruent E L M C :=
+    hParSides.2
+
+  have hEL_CM :
+      Geo.Congruent E L C M :=
+    CongruentSwapSecond
+      Geo E L M C hEL_MC
+
+  have hELltCB :
+      HilbertSegmentLess Geo E L C B :=
+    hilbert_segmentLess_congruent_left
+      Geo
+      C M
+      E L
+      C B
+      hCMltCB
+      hEL_CM
+
+  --------------------------------------------------------------------
+  -- In the square B-C-E-D:
+  --
+  --     BC ~= ED,
+  --
+  -- hence CB ~= ED.
+  --------------------------------------------------------------------
+
+  have hSquareSides :
+      OppositeSidesCongruent Geo B C E D :=
+    ParallelogramOppositeSidesCongruent
+      Geo B C E D hSquare.1
+
+  have hBC_ED :
+      Geo.Congruent B C E D :=
+    hSquareSides.1
+
+  have hCB_ED :
+      Geo.Congruent C B E D :=
+    CongruentReverseFirst
+      Geo B C E D hBC_ED
+
+  have hELltED :
+      HilbertSegmentLess Geo E L E D :=
+    hilbert_segmentLess_congruent_right
+      Geo
+      E L
+      C B
+      E D
+      hELltCB
+      hCB_ED
+
+  have hLD : L ≠ D := by
+    intro hEq
+    subst D
+
+    exact
+      (hilbert_segmentLess_not_congruent
+        Geo E L E L hELltED)
+        (hilbert_congruent_reflexive
+          Geo E L)
+
+  --------------------------------------------------------------------
+  -- First pair:
+  --
+  --     LD || BM.
+  --
+  -- Start from BC || ED, transport BC to BM, then ED to LD.
+  --------------------------------------------------------------------
+
+  have hBM_ED :
+      Geo.Parallel B M E D :=
+    collinear_parallel_trans
+      Geo
+      B M C
+      E D
+      hBM
+      hBMCcol
+      hSquare.1.1
+
+  have hED_BM :
+      Geo.Parallel E D B M :=
+    ParallelSymmetry
+      Geo B M E D hBM_ED
+
+  have hLED :
+      Collinear Geo L E D :=
+    PrimCollinearCycle
+      Geo D L E hDLE
+
+  have hLD_BM :
+      Geo.Parallel L D B M :=
+    ParallelCollinearLeft
+      Geo
+      E D L
+      B M
+      hLD
+      hED_BM
+      hLED
+
+  --------------------------------------------------------------------
+  -- Second pair:
+  --
+  --     DB || ML.
+  --
+  -- Both are parallel to CE.
+  --------------------------------------------------------------------
+
+  have hDB_CE :
+      Geo.Parallel D B C E :=
+    ParallelSymmetry
+      Geo
+      C E D B
+      hSquare.1.2
+
+  have hLM_CE :
+      Geo.Parallel L M C E :=
+    ParallelSymmetry
+      Geo
+      C E L M
+      hPar.1
+
+  have hML_CE :
+      Geo.Parallel M L C E :=
+    ParallelSwapFirstLine
+      Geo
+      L M C E
+      hLM_CE
+
+  --------------------------------------------------------------------
+  -- DB and ML are distinct carriers.
+  --
+  -- If they coincided, B would lie on ML.  Together with B-M-C
+  -- this would force L,M,C collinear, contradicting the
+  -- nondegeneracy of C-E-L-M.
+  --------------------------------------------------------------------
+
+  have hDistinct :
+      Geo.PointLine D B ≠
+      Geo.PointLine M L := by
+
+    intro hEq
+
+    have hML : M ≠ L :=
+      hML_CE.1
+
+    rcases
+        HilbertPlaneIncidence.line_through
+          M L hML with
+      ⟨lineML, hMml, hLml⟩
+
+    have hB_DB :
+        B ∈ Geo.PointLine D B :=
+      intersection_test_right_mem
+        Geo D B
+
+    have hB_ML :
+        B ∈ Geo.PointLine M L := by
+      rw [← hEq]
+      exact hB_DB
+
+    have hBml :
+        HilbertIncidence.OnLine B lineML :=
+      (hilbert_mem_pointLine_iff_onLine
+        Geo
+        M L B
+        lineML
+        hML
+        hMml
+        hLml).mp hB_ML
+
+    have hBML :
+        Collinear Geo B M L :=
+      ⟨lineML,
+        hBml,
+        hMml,
+        hLml⟩
+
+    have hLMB :
+        Collinear Geo L M B :=
+      PrimCollinearSymm
+        Geo B M L hBML
+
+    have hBCM :
+        Collinear Geo B C M :=
+      PrimCollinearRotate
+        Geo B M C hBMCcol
+
+    have hLMC :
+        Collinear Geo L M C :=
+      CollinearTrans
+        Geo
+        L M B C
+        hBM.symm
+        hLMB
+        hBCM
+
+    have hNC :=
+      parallelogram_vertices_noncollinear
+        Geo C E L M hPar
+
+    exact
+      hNC.2.2.2 hLMC
+
+  have hDB_ML :
+      Geo.Parallel D B M L :=
+    hilbert_parallel_transitive_distinct
+      Geo
+      D B
+      M L
+      C E
+      hDB_CE
+      hML_CE
+      hDistinct
+
+  exact
+    ⟨hLD_BM,
+      hDB_ML⟩
+
+/--
+The order B-M-C on the lower side of the square transfers to
+D-L-E on the upper side.
+
+The two cut parallelograms and the original square provide the three
+corresponding segment congruences required by Hilbert Theorem 27.
+-/
+theorem i47_aux_upper_cut_between
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (B C D E M L : Geo.Point)
+    (hBMC : Geo.Between B M C)
+    (hSquare : IsSquare Geo B C E D)
+    (hRightPar : IsParallelogram Geo C E L M)
+    (hLeftPar : IsParallelogram Geo L D B M) :
+    Geo.Between D L E := by
+
+  --------------------------------------------------------------------
+  -- Distinctness of D,L,E follows directly from the parallel sides.
+  --------------------------------------------------------------------
+
+  have hDL : D ≠ L :=
+    hLeftPar.1.1.symm
+
+  have hLE : L ≠ E :=
+    hRightPar.2.1.symm
+
+  have hDE : D ≠ E :=
+    hSquare.1.1.2.1.symm
+
+  --------------------------------------------------------------------
+  -- BM ~= DL from L-D-B-M.
+  --------------------------------------------------------------------
+
+  have hLeftSides :
+      OppositeSidesCongruent Geo L D B M :=
+    ParallelogramOppositeSidesCongruent
+      Geo L D B M hLeftPar
+
+  have hLD_BM :
+      Geo.Congruent L D B M :=
+    hLeftSides.1
+
+  have hBM_LD :
+      Geo.Congruent B M L D :=
+    hilbert_congruent_symmetry
+      Geo L D B M hLD_BM
+
+  have hBM_DL :
+      Geo.Congruent B M D L :=
+    CongruentSwapSecond
+      Geo B M L D hBM_LD
+
+  --------------------------------------------------------------------
+  -- BC ~= DE from the square B-C-E-D.
+  --------------------------------------------------------------------
+
+  have hSquareSides :
+      OppositeSidesCongruent Geo B C E D :=
+    ParallelogramOppositeSidesCongruent
+      Geo B C E D hSquare.1
+
+  have hBC_ED :
+      Geo.Congruent B C E D :=
+    hSquareSides.1
+
+  have hBC_DE :
+      Geo.Congruent B C D E :=
+    CongruentSwapSecond
+      Geo B C E D hBC_ED
+
+  --------------------------------------------------------------------
+  -- MC ~= LE from C-E-L-M.
+  --------------------------------------------------------------------
+
+  have hRightSides :
+      OppositeSidesCongruent Geo C E L M :=
+    ParallelogramOppositeSidesCongruent
+      Geo C E L M hRightPar
+
+  have hEL_MC :
+      Geo.Congruent E L M C :=
+    hRightSides.2
+
+  have hMC_EL :
+      Geo.Congruent M C E L :=
+    hilbert_congruent_symmetry
+      Geo E L M C hEL_MC
+
+  have hMC_LE :
+      Geo.Congruent M C L E :=
+    CongruentSwapSecond
+      Geo M C E L hMC_EL
+
+  --------------------------------------------------------------------
+  -- Hilbert Theorem 27 transports the strict order.
+  --
+  --     B-M-C
+  --       |
+  --       | BM ~= DL
+  --       | BC ~= DE
+  --       | MC ~= LE
+  --       v
+  --     D-L-E
+  --------------------------------------------------------------------
+
+  exact
+    hilbert_theorem27_three_points
+      Geo
+      B M C
+      D L E
+      hBMC
+      hDL
+      hLE
+      hDE
+      hBM_DL
+      hBC_DE
+      hMC_LE
 
 axiom i47_cut_core
     [HilbertIncidence Geo]
