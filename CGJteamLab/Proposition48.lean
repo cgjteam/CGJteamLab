@@ -522,7 +522,7 @@ theorem euclid_proposition_48
          hilbertParallelogramTerm Geo A C K₁ H₁)
         (hilbertParallelogramTerm Geo A B R S +
          hilbertParallelogramTerm Geo A C T U) :=
-    i47_equicomplementable_add
+    i47_aux_equicomplementable_add
       Geo hLeg1 hLeg2
 
   --------------------------------------------------------------------

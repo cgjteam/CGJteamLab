@@ -48,31 +48,18 @@ variable (Geo : Geometry.Geo)
 --
 -- Formalization notes.
 --
--- Steps 1-2 and the placement of the whole figure are recorded as a
--- single local axiom `i47_diagram`.  Its conjuncts are exactly the
--- diagram data Euclid reads off his figure, and each is annotated in
--- the docstring with the Euclidean proposition that produces it.  Two
--- pieces of it are genuinely unavailable in the library today:
+-- The complete I.47 diagram is reconstructed internally.  The proof is
+-- organized into four layers:
 --
---   * side-controlled I.46.  `euclid_proposition_46` produces *a*
---     square on a given segment, but does not say on which side of
---     that segment it lies; the perpendicular in
---     `i46_erect_equal_perpendicular` is taken from
---     `hilbert_right_angle_exists_nondegenerate`, which does not
---     control the side.  Euclid needs the square on `BC` to be on the
---     far side from `A`.
---   * "all right angles are congruent" (Post. 4, Hilbert's Theorem
---     21).  This is proved in `Hilbert48_test.lean` as
---     `hilbert48_test_all_right_angles_congruent` but has not been
---     promoted to the main library, and the subsequent angle addition
---     needs the crossbar data of `hilbert_angle_addition_sameSide_case1`,
---     which again is diagram information.
+--   * side-controlled construction of the three outward squares;
+--   * construction of the perpendicular cut through the square on `BC`,
+--     including the strict orders `B-M-C`, `D-L-E`, `D-N-C`, `M-N-L`;
+--   * right-angle, parallel, angle-congruence, and noncollinearity helpers
+--     needed for the two SAS comparisons;
+--   * scissors dissection, four applications of I.41, and the final
+--     equicomplementability bookkeeping.
 --
--- Everything else is proved here: the scissors dissection of the big
--- square into the two rectangles (`i47_square_split`, from the two
--- `split` steps and `crossing_quadrilateral_two_triangulations`), the
--- two SAS congruences, the four applications of I.41, and the final
--- equicomplementability bookkeeping.
+-- No proposition-local geometric axiom remains in this file.
 ------------------------------------------------------------------------
 
 /--
@@ -83,7 +70,7 @@ The complements are added componentwise; the proof is the same
 associativity/commutativity rearrangement used in
 `equicomplementable_trans` and `i41_equicomplementable_double`.
 -/
-theorem i47_equicomplementable_add
+theorem i47_aux_equicomplementable_add
     {P Q P' Q' : HilbertScissorsTerm Geo}
     (hP : HilbertScissorsEquicomplementable Geo P P')
     (hQ : HilbertScissorsEquicomplementable Geo Q Q') :
@@ -938,7 +925,7 @@ theorem i47_outward_squares
 If two right-angle rays based at O lie on opposite sides of the
 supporting line OB, then they are opposite rays: P-O-Q.
 -/
-theorem i47_opposite_right_rays_straight
+theorem i47_aux_opposite_right_rays_straight
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (P O B Q : Geo.Point)
@@ -1054,7 +1041,7 @@ theorem i47_opposite_right_rays_straight
 In the I.47 configuration, the outward square on AB extends the
 right-angle side AC through A: G-A-C.
 -/
-theorem i47_square_AB_extension
+theorem i47_aux_square_AB_extension
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C F G : Geo.Point)
@@ -1072,7 +1059,7 @@ theorem i47_square_AB_extension
     hSquare.2.2.2.2.1
 
   exact
-    i47_opposite_right_rays_straight
+    i47_aux_opposite_right_rays_straight
       Geo
       G A B C
       base
@@ -1087,7 +1074,7 @@ theorem i47_square_AB_extension
 In the I.47 configuration, the outward square on AC extends the
 right-angle side AB through A: H-A-B.
 -/
-theorem i47_square_AC_extension
+theorem i47_aux_square_AC_extension
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C K H : Geo.Point)
@@ -1136,7 +1123,7 @@ theorem i47_square_AC_extension
       hArmSwap
 
   exact
-    i47_opposite_right_rays_straight
+    i47_aux_opposite_right_rays_straight
       Geo
       H A C B
       base
@@ -1151,7 +1138,7 @@ theorem i47_square_AC_extension
 In the I.47 configuration, the side BF of the square on AB is
 parallel to AC, because G-A-C and BF || GA.
 -/
-theorem i47_square_AB_parallel_AC
+theorem i47_aux_square_AB_parallel_AC
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
     (A B C F G : Geo.Point)
@@ -1199,7 +1186,7 @@ theorem i47_square_AB_parallel_AC
 In the I.47 configuration, the side CK of the square on AC is
 parallel to AB, because H-A-B and CK || HA.
 -/
-theorem i47_square_AC_parallel_AB
+theorem i47_aux_square_AC_parallel_AB
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
     (A B C K H : Geo.Point)
@@ -1250,7 +1237,7 @@ This is the synthetic I.17 contradiction: BAC + ABC is strictly less
 than two right angles, while if both are right then the supplementary
 angle to ABC is congruent to BAC.
 -/
-theorem i47_two_right_angles_impossible
+theorem i47_aux_two_right_angles_impossible
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A B C : Geo.Point)
@@ -1376,7 +1363,7 @@ Otherwise the opposite-side condition forces D-B-A.  The right angle
 DBC of the square on BC would then make ABC right, contradicting the
 given right angle BAC via I.17.
 -/
-theorem i47_noncollinear_BAD
+theorem i47_aux_noncollinear_BAD
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C D E : Geo.Point)
@@ -1461,7 +1448,7 @@ theorem i47_noncollinear_BAD
       hDBC_ABC
 
   exact
-    i47_two_right_angles_impossible
+    i47_aux_two_right_angles_impossible
       Geo A B C
       hABC
       hRightA
@@ -1474,7 +1461,7 @@ Otherwise the opposite-side condition forces E-C-A.  The right angle
 BCE of the square on BC then becomes a right angle of triangle ABC at C.
 Together with the given right angle at A this contradicts I.17.
 -/
-theorem i47_noncollinear_CAE
+theorem i47_aux_noncollinear_CAE
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C D E : Geo.Point)
@@ -1674,7 +1661,7 @@ theorem i47_noncollinear_CAE
   --------------------------------------------------------------------
 
   exact
-    i47_two_right_angles_impossible
+    i47_aux_two_right_angles_impossible
       Geo
       A C B
       hACB
@@ -1685,7 +1672,7 @@ theorem i47_noncollinear_CAE
 The two remaining noncollinearity facts needed in the I.47 angle step
 follow immediately from the leg-square parallels.
 -/
-theorem i47_parallel_noncollinearities
+theorem i47_aux_parallel_noncollinearities
     [HilbertIncidence Geo]
     [HilbertOrder Geo]
     (A B C F K : Geo.Point)
@@ -1743,7 +1730,7 @@ The proof adds equal angles:
     DBC ~= FBA      (both right),
     CBA ~= ABC      (same unordered angle).
 -/
-theorem i47_angle_ABD_FBC
+theorem i47_aux_angle_ABD_FBC
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C D E F G : Geo.Point)
@@ -1948,7 +1935,7 @@ The proof adds equal angles:
     ACB ~= BCA      (same unordered angle),
     BCE ~= ACK      (both right).
 -/
-theorem i47_angle_ACE_KCB
+theorem i47_aux_angle_ACE_KCB
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C D E K H : Geo.Point)
@@ -2176,57 +2163,6 @@ theorem i47_angle_ACE_KCB
       B C K).mp hACE_BCK
 
 
-/-
-Local axiom: Euclid's figure for I.47.
-
-Given a triangle `A B C` with a right angle at `A`, the whole
-Pythagoras diagram exists:
-
-* `B C E D`, `A B F G`, `A C K H` are the three squares on the sides,
-  placed outward -- this is I.46 together with the choice of side that
-  `euclid_proposition_46` does not yet make;
-* `M` lies on `BC` and `L` on `DE`, `AL` being the parallel to `BD`
-  through `A` [I.31], so that `L D B M` and `C E L M` are the two
-  rectangles into which `ML` divides the big square [I.34];
-* `N` is the point where the diagonal `DC` of the big square meets the
-  cut `ML` (Pasch);
-* `A C ∥ B F` and `A B ∥ C K`, which is Euclid's step "CA is in a
-  straight line with AG" [I.14] combined with the parallel sides of
-  the squares;
-* `∠ABD ≅ ∠FBC` and `∠ACE ≅ ∠KCB`, Euclid's step "let the angle ABC be
-  added to each" -- Post. 4 (all right angles are congruent, proved in
-  `Hilbert48_test.lean` but not exported) followed by angle addition,
-  whose crossbar hypotheses are read off the figure;
-* the four triangles used in the two SAS steps are nondegenerate.
--/
-/-
-axiom i47_diagram
-    [HilbertIncidence Geo]
-    [HilbertEuclideanPlane Geo]
-    (A B C : Geo.Point)
-    (hABC : Not (Collinear Geo A B C))
-    (hRight : HilbertRightAngle Geo B A C) :
-    ∃ D E F G H K L M N : Geo.Point,
-      IsSquare Geo B C E D ∧
-      IsSquare Geo A B F G ∧
-      IsSquare Geo A C K H ∧
-      Geo.Between B M C ∧
-      Geo.Between D L E ∧
-      Geo.Between D N C ∧
-      Geo.Between M N L ∧
-      IsParallelogram Geo L D B M ∧
-      IsParallelogram Geo C E L M ∧
-      Geo.Parallel L A D B ∧
-      Geo.Parallel M A C E ∧
-      Geo.Parallel A C B F ∧
-      Geo.Parallel A B C K ∧
-      Geo.AngleCongruent A B D F B C ∧
-      Geo.AngleCongruent A C E K C B ∧
-      Not (Collinear Geo B A D) ∧
-      Not (Collinear Geo B F C) ∧
-      Not (Collinear Geo C A E) ∧
-      Not (Collinear Geo C K B)
--/
 
 /--
 First step of the internal cut in Euclid I.47.
@@ -2235,7 +2171,7 @@ From the right-angle vertex A drop a perpendicular to the carrier BC.
 At this stage we record only incidence of the foot M on BC and the
 right angle.  The strict order B-M-C will be proved separately.
 -/
-theorem i47_perpendicular_foot_on_BC
+theorem i47_aux_perpendicular_foot_on_BC
     [HilbertIncidence Geo]
     [HilbertEuclideanPlane Geo]
     (A B C : Geo.Point)
@@ -2305,7 +2241,7 @@ smaller than the right angle BAC.
 This is the exterior-angle theorem I.16 applied after extending
 CA beyond A.
 -/
-theorem i47_angle_ABC_less_right_BAC
+theorem i47_aux_angle_ABC_less_right_BAC
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A B C : Geo.Point)
@@ -2472,7 +2408,7 @@ theorem i47_angle_ABC_less_right_BAC
 In a right triangle ABC, right at A, the angle at C is strictly
 smaller than the right angle BAC.
 -/
-theorem i47_angle_ACB_less_right_BAC
+theorem i47_aux_angle_ACB_less_right_BAC
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A B C : Geo.Point)
@@ -2535,7 +2471,7 @@ theorem i47_angle_ACB_less_right_BAC
 
   have hLessACB_CAB :
       HilbertAngleLess Geo A C B C A B :=
-    i47_angle_ABC_less_right_BAC
+    i47_aux_angle_ABC_less_right_BAC
       Geo
       A C B
       hACB
@@ -2570,7 +2506,7 @@ same carrier.
 
 This is the local transport needed for the perpendicular foot in I.47.
 -/
-theorem i47_right_angle_along_base
+theorem i47_aux_right_angle_along_base
     [HilbertIncidence Geo]
     [HilbertCongruence Geo]
     (A R M X : Geo.Point)
@@ -2879,7 +2815,7 @@ theorem i47_aux_perpendicular_foot_between_BC
 
     have hRightCBA :
         HilbertRightAngle Geo C B A :=
-      i47_right_angle_along_base
+      i47_aux_right_angle_along_base
         Geo
         A R B C
         base
@@ -2907,7 +2843,7 @@ theorem i47_aux_perpendicular_foot_between_BC
         hCBA_ABC
 
     exact
-      i47_two_right_angles_impossible
+      i47_aux_two_right_angles_impossible
         Geo
         A B C
         hABC
@@ -2924,7 +2860,7 @@ theorem i47_aux_perpendicular_foot_between_BC
 
     have hRightBCA :
         HilbertRightAngle Geo B C A :=
-      i47_right_angle_along_base
+      i47_aux_right_angle_along_base
         Geo
         A R C B
         base
@@ -2952,7 +2888,7 @@ theorem i47_aux_perpendicular_foot_between_BC
         hBCA_ACB
 
     exact
-      i47_two_right_angles_impossible
+      i47_aux_two_right_angles_impossible
         Geo
         A C B
         hACB
@@ -3029,7 +2965,7 @@ theorem i47_aux_perpendicular_foot_between_BC
 
     have hRightBMA :
         HilbertRightAngle Geo B M A :=
-      i47_right_angle_along_base
+      i47_aux_right_angle_along_base
         Geo
         A R M B
         base
@@ -3066,7 +3002,7 @@ theorem i47_aux_perpendicular_foot_between_BC
 
     have hLessABC_BAC :
         HilbertAngleLess Geo A B C B A C :=
-      i47_angle_ABC_less_right_BAC
+      i47_aux_angle_ABC_less_right_BAC
         Geo
         A B C
         hABC
@@ -3163,7 +3099,7 @@ theorem i47_aux_perpendicular_foot_between_BC
 
     have hRightCMA :
         HilbertRightAngle Geo C M A :=
-      i47_right_angle_along_base
+      i47_aux_right_angle_along_base
         Geo
         A R M C
         base
@@ -3200,7 +3136,7 @@ theorem i47_aux_perpendicular_foot_between_BC
 
     have hLessACB_BAC :
         HilbertAngleLess Geo A C B B A C :=
-      i47_angle_ACB_less_right_BAC
+      i47_aux_angle_ACB_less_right_BAC
         Geo
         A B C
         hABC
@@ -3343,7 +3279,7 @@ theorem i47_aux_perpendicular_foot_parallel_CE
 
   have hRightXMA :
       HilbertRightAngle Geo X M A :=
-    i47_right_angle_along_base
+    i47_aux_right_angle_along_base
       Geo
       A R M X
       base
@@ -3368,7 +3304,7 @@ theorem i47_aux_perpendicular_foot_parallel_CE
 
   have hRightXCE :
       HilbertRightAngle Geo X C E :=
-    i47_right_angle_along_base
+    i47_aux_right_angle_along_base
       Geo
       E B C X
       base
@@ -4514,7 +4450,7 @@ theorem i47_cut_core
   --------------------------------------------------------------------
 
   rcases
-      i47_perpendicular_foot_on_BC
+      i47_aux_perpendicular_foot_on_BC
         Geo
         A B C
         base
@@ -4867,51 +4803,11 @@ theorem i47_cut_core
       hLA_DB,
       hMA_CE⟩
 
-/-
-axiom i47_cut_core
-    [HilbertIncidence Geo]
-    [HilbertEuclideanPlane Geo]
-    (A B C D E : Geo.Point)
-    (base : Geo.Line)
-    (hABC : Not (Collinear Geo A B C))
-    (hRight : HilbertRightAngle Geo B A C)
-    (hBbase : HilbertIncidence.OnLine B base)
-    (hCbase : HilbertIncidence.OnLine C base)
-    (hSquare : IsSquare Geo B C E D)
-    (hOppDA : HilbertOppositeSide Geo D A base)
-    (hOppEA : HilbertOppositeSide Geo E A base) :
-    ∃ L M N : Geo.Point,
-      Geo.Between B M C ∧
-      Geo.Between D L E ∧
-      Geo.Between D N C ∧
-      Geo.Between M N L ∧
-      IsParallelogram Geo L D B M ∧
-      IsParallelogram Geo C E L M ∧
-      Geo.Parallel L A D B ∧
-      Geo.Parallel M A C E
--/
-
-/-
-Remaining geometric construction debt in Euclid I.47.
-
-The three outward squares and all angle/noncollinearity data are now
-proved separately.  This axiom records only the internal cut of the
-square on BC:
-
-* M lies strictly between B and C;
-* L lies strictly between D and E;
-* the line through A cuts the square into the two parallelograms
-  LDBM and CELM;
-* N is the crossing point of DC and ML.
-
-This is the only part of the former monolithic `i47_diagram` which
-remains provisional.
--/
 
 
 /--
-Full I.47 diagram reconstructed from the proved outward-square and
-angle infrastructure, plus the remaining internal-cut construction.
+Full I.47 diagram reconstructed from the proved outward-square, cut,
+parallel, angle, and noncollinearity infrastructure.
 -/
 theorem i47_diagram
     [HilbertIncidence Geo]
@@ -4995,7 +4891,7 @@ theorem i47_diagram
 
   have hGAC :
       Geo.Between G A C :=
-    i47_square_AB_extension
+    i47_aux_square_AB_extension
       Geo
       A B C F G
       lAB
@@ -5008,7 +4904,7 @@ theorem i47_diagram
 
   have hHAB :
       Geo.Between H A B :=
-    i47_square_AC_extension
+    i47_aux_square_AC_extension
       Geo
       A B C K H
       lAC
@@ -5026,7 +4922,7 @@ theorem i47_diagram
 
   have hParallelAC :
       Geo.Parallel A C B F :=
-    i47_square_AB_parallel_AC
+    i47_aux_square_AB_parallel_AC
       Geo
       A B C F G
       hAC
@@ -5035,7 +4931,7 @@ theorem i47_diagram
 
   have hParallelAB :
       Geo.Parallel A B C K :=
-    i47_square_AC_parallel_AB
+    i47_aux_square_AC_parallel_AB
       Geo
       A B C K H
       hAB
@@ -5048,7 +4944,7 @@ theorem i47_diagram
 
   have hNCBAD :
       Not (Collinear Geo B A D) :=
-    i47_noncollinear_BAD
+    i47_aux_noncollinear_BAD
       Geo
       A B C D E
       lBC
@@ -5060,7 +4956,7 @@ theorem i47_diagram
 
   have hNCCAE :
       Not (Collinear Geo C A E) :=
-    i47_noncollinear_CAE
+    i47_aux_noncollinear_CAE
       Geo
       A B C D E
       lBC
@@ -5075,7 +4971,7 @@ theorem i47_diagram
   --------------------------------------------------------------------
 
   rcases
-      i47_parallel_noncollinearities
+      i47_aux_parallel_noncollinearities
         Geo
         A B C F K
         hParallelAC
@@ -5088,7 +4984,7 @@ theorem i47_diagram
 
   have hAngleB :
       Geo.AngleCongruent A B D F B C :=
-    i47_angle_ABD_FBC
+    i47_aux_angle_ABD_FBC
       Geo
       A B C D E F G
       lBC lAB
@@ -5106,7 +5002,7 @@ theorem i47_diagram
 
   have hAngleC :
       Geo.AngleCongruent A C E K C B :=
-    i47_angle_ACE_KCB
+    i47_aux_angle_ACE_KCB
       Geo
       A B C D E K H
       lBC lAC
@@ -5123,7 +5019,7 @@ theorem i47_diagram
       hNCCKB
 
   --------------------------------------------------------------------
-  -- The only remaining provisional construction: the internal cut.
+  -- Construct the internal cut of the square on BC.
   --------------------------------------------------------------------
 
   rcases
@@ -5144,7 +5040,7 @@ theorem i47_diagram
       hParallelLA, hParallelMA⟩
 
   --------------------------------------------------------------------
-  -- Assemble the former i47_diagram package.
+  -- Assemble the complete I.47 diagram package.
   --------------------------------------------------------------------
 
   exact
@@ -5499,7 +5395,7 @@ theorem euclid_proposition_47
          hilbertParallelogramTerm Geo C E L M)
         (hilbertParallelogramTerm Geo A B F G +
          hilbertParallelogramTerm Geo A C K H) :=
-    i47_equicomplementable_add
+    i47_aux_equicomplementable_add
       Geo hRect1' hRect2'
 
   exact
