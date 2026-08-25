@@ -11,6 +11,7 @@ import CGJteamLab.FinlayProof
 import CGJteamLab.HilbertBookZero
 import CGJteamLab.HilbertPascal
 import CGJteamLab.HilbertScissors
+import CGJteamLab.HilbertSegmentMul
 -- Euclid Book I
 import CGJteamLab.Proposition01
 import CGJteamLab.Proposition02
