@@ -11,7 +11,8 @@ import CGJteamLab.FinlayProof
 import CGJteamLab.HilbertBookZero
 import CGJteamLab.HilbertPascal
 import CGJteamLab.HilbertScissors
-import CGJteamLab.HilbertSegmentMul
+-- import CGJteamLab.HilbertSegmentMul
+
 -- Euclid Book I
 import CGJteamLab.Proposition01
 import CGJteamLab.Proposition02
@@ -61,6 +62,11 @@ import CGJteamLab.Proposition45
 import CGJteamLab.Proposition46
 import CGJteamLab.Proposition47
 import CGJteamLab.Proposition48
+
+-- Euclid Book II
+import CGJteamLab.Proposition2_1
+import CGJteamLab.Proposition2_2
+import CGJteamLab.Proposition2_3
 
 -- Suppes route
 import CGJteamLab.SuppesCore

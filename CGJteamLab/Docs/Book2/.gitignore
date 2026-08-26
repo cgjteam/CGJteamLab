@@ -1,0 +1,26 @@
+# LaTeX temporary files
+*.aux
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.nav
+*.snm
+*.vrb
+*.bbl
+*.blg
+*.xdv
+*.tex
+
+*.tex
+
+# Asymptote generated figures
+figures/*.pdf
+
+# Editors
+*.bak
+*~
