@@ -64,8 +64,10 @@ import CGJteamLab.Proposition47
 import CGJteamLab.Proposition48
 
 -- Euclid Book II
+import CGJteamLab.HilbertRectangle
 import CGJteamLab.Proposition2_1
 import CGJteamLab.Proposition2_2
+import CGJteamLab.Proposition2_3
 import CGJteamLab.Proposition2_3
 
 -- Suppes route
