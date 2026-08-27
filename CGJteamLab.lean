@@ -68,7 +68,7 @@ import CGJteamLab.HilbertRectangle
 import CGJteamLab.Proposition2_1
 import CGJteamLab.Proposition2_2
 import CGJteamLab.Proposition2_3
-import CGJteamLab.Proposition2_3
+import CGJteamLab.Proposition2_4
 
 -- Suppes route
 import CGJteamLab.SuppesCore
