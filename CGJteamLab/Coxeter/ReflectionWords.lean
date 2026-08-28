@@ -155,4 +155,179 @@ def ReflectionPairRelation
   reflectionProductPow Geo axis1 axis2 p =
     Equiv.refl Geo.Point
 
+
+/--
+`ReflectionPairExactPeriod Geo axis1 axis2 p` means that `p` is the
+least positive exponent for which the reflection product is the identity.
+
+This is stronger than `ReflectionPairRelation`, which only states that
+the displayed exponent is satisfied.
+-/
+def ReflectionPairExactPeriod
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (axis1 axis2 : ReflectionAxis Geo)
+    (p : Nat) : Prop :=
+  0 < p /\
+  ReflectionPairRelation Geo axis1 axis2 p /\
+  forall q : Nat,
+    0 < q ->
+    q < p ->
+    Not (ReflectionPairRelation Geo axis1 axis2 q)
+
+
+/--
+Swapping the two reflection axes conjugates every power of their product
+by reflection in `axis1`.
+
+With the convention
+
+    reflectionProduct axis1 axis2 = r_axis2 r_axis1,
+
+the statement is
+
+    (r_axis1 r_axis2)^n
+      = r_axis1 (r_axis2 r_axis1)^n r_axis1
+
+pointwise.
+-/
+theorem reflectionProductPow_swap_apply
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (axis1 axis2 : ReflectionAxis Geo)
+    (n : Nat)
+    (P : Geo.Point) :
+    reflectionProductPow Geo axis2 axis1 n P =
+      lineReflect Geo axis1
+        (reflectionProductPow Geo axis1 axis2 n
+          (lineReflect Geo axis1 P)) := by
+
+  induction n with
+
+  | zero =>
+      change
+        P =
+          lineReflect Geo axis1
+            (lineReflect Geo axis1 P)
+      exact
+        (lineReflect_involutive
+          Geo axis1 P).symm
+
+  | succ n ih =>
+      change
+        lineReflect Geo axis1
+          (lineReflect Geo axis2
+            (reflectionProductPow Geo axis2 axis1 n P)) =
+        lineReflect Geo axis1
+          (lineReflect Geo axis2
+            (lineReflect Geo axis1
+              (reflectionProductPow Geo axis1 axis2 n
+                (lineReflect Geo axis1 P))))
+
+      rw [ih]
+
+
+/--
+The satisfied pair relation is symmetric in the two reflection axes.
+
+Thus
+
+    (r_axis2 r_axis1)^p = 1
+
+implies
+
+    (r_axis1 r_axis2)^p = 1.
+
+The proof uses the conjugacy formula above, not a numerical angle argument.
+-/
+theorem reflectionPairRelation_symm
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (axis1 axis2 : ReflectionAxis Geo)
+    (p : Nat)
+    (hRel :
+      ReflectionPairRelation Geo axis1 axis2 p) :
+    ReflectionPairRelation Geo axis2 axis1 p := by
+
+  unfold ReflectionPairRelation at hRel
+  unfold ReflectionPairRelation
+
+  apply Equiv.ext
+  intro P
+
+  rw [
+    reflectionProductPow_swap_apply
+      Geo axis1 axis2 p P
+  ]
+
+  have hAtReflected :
+      reflectionProductPow Geo axis1 axis2 p
+          (lineReflect Geo axis1 P) =
+        lineReflect Geo axis1 P := by
+
+    have hAt :=
+      congrArg
+        (fun f : Equiv Geo.Point Geo.Point =>
+          f (lineReflect Geo axis1 P))
+        hRel
+
+    simpa using hAt
+
+  rw [hAtReflected]
+
+  exact
+    lineReflect_involutive
+      Geo axis1 P
+
+
+/--
+Exact period is symmetric in the two reflection axes.
+
+This removes the orientation artifact caused by the implementation
+convention for `reflectionProduct`.
+-/
+theorem reflectionPairExactPeriod_symm
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (axis1 axis2 : ReflectionAxis Geo)
+    (p : Nat)
+    (hExact :
+      ReflectionPairExactPeriod Geo axis1 axis2 p) :
+    ReflectionPairExactPeriod Geo axis2 axis1 p := by
+
+  refine
+    And.intro
+      hExact.1
+      ?_
+
+  refine
+    And.intro
+      (reflectionPairRelation_symm
+        Geo
+        axis1 axis2
+        p
+        hExact.2.1)
+      ?_
+
+  intro q hqPos hqLt hRelSwap
+
+  have hRelOriginal :
+      ReflectionPairRelation Geo axis1 axis2 q :=
+    reflectionPairRelation_symm
+      Geo
+      axis2 axis1
+      q
+      hRelSwap
+
+  exact
+    hExact.2.2
+      q
+      hqPos
+      hqLt
+      hRelOriginal
+
 end Geometry

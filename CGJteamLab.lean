@@ -70,6 +70,12 @@ import CGJteamLab.Proposition2_2
 import CGJteamLab.Proposition2_3
 import CGJteamLab.Proposition2_4
 
+-- Coxeter route
+import CGJteamLab.Coxeter.Reflection
+import CGJteamLab.Coxeter.ReflectionWords
+import CGJteamLab.Coxeter.ReflectionIsometry
+import CGJteamLab.Coxeter.CoxeterRelations
+
 -- Suppes route
 import CGJteamLab.SuppesCore
 import CGJteamLab.SuppesAxioms

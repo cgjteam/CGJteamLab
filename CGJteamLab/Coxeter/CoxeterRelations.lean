@@ -3063,4 +3063,505 @@ theorem equilateral_median_reflections_product_order_three
       exact lineReflect_involutive Geo b P
 
 
+/--
+Step 20a: package the equilateral-median pointwise order-three theorem as
+the pair relation with the public axis order `(a,b)`.
+
+The existing Step 16 pointwise word is naturally the cube of
+`reflectionProduct Geo b a`.  Symmetry of `ReflectionPairRelation`
+then removes this implementation-order artifact.
+-/
+theorem equilateral_median_reflections_coxeter_relation_three
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C MA MB MC : Geo.Point)
+    (hABC : Not (Collinear Geo A B C))
+    (hABAC : Geo.Congruent A B A C)
+    (hBABC : Geo.Congruent B A B C)
+    (hCBCA : Geo.Congruent C B C A)
+    (hMidA : HilbertIsMidpoint Geo MA B C)
+    (hMidB : HilbertIsMidpoint Geo MB A C)
+    (hMidC : HilbertIsMidpoint Geo MC B A) :
+    Exists fun a : ReflectionAxis Geo =>
+      Exists fun b : ReflectionAxis Geo =>
+        Exists fun c : ReflectionAxis Geo =>
+          And
+            (HilbertIncidence.OnLine A a.carrier)
+            (And
+              (HilbertIncidence.OnLine MA a.carrier)
+              (And
+                (HilbertIncidence.OnLine B b.carrier)
+                (And
+                  (HilbertIncidence.OnLine MB b.carrier)
+                  (And
+                    (HilbertIncidence.OnLine C c.carrier)
+                    (And
+                      (HilbertIncidence.OnLine MC c.carrier)
+                      (ReflectionPairRelation
+                        Geo a b 3)))))) := by
+
+  rcases
+      equilateral_median_reflections_product_order_three
+        Geo
+        A B C MA MB MC
+        hABC
+        hABAC
+        hBABC
+        hCBCA
+        hMidA
+        hMidB
+        hMidC with
+    ⟨a, b, c,
+      hAa,
+      hMAa,
+      hBb,
+      hMBb,
+      hCc,
+      hMCc,
+      hOrder3⟩
+
+  refine
+    ⟨a, b, c,
+      hAa,
+      hMAa,
+      hBb,
+      hMBb,
+      hCc,
+      hMCc,
+      ?_⟩
+
+  have hRelBA :
+      ReflectionPairRelation Geo b a 3 := by
+    unfold ReflectionPairRelation
+    apply Equiv.ext
+    intro P
+    change
+      lineReflect Geo a
+        (lineReflect Geo b
+          (lineReflect Geo a
+            (lineReflect Geo b
+              (lineReflect Geo a
+                (lineReflect Geo b P))))) =
+      P
+    exact hOrder3 P
+
+  exact
+    reflectionPairRelation_symm
+      Geo
+      b a
+      3
+      hRelBA
+
+
+/--
+Step 20b: the two equilateral median reflections have exact period three,
+with the public axis order `(a,b)`.
+
+The period-three relation is obtained from Step 16.  Exactness is detected
+geometrically at the vertex `B`: reflection in `b` fixes `B`, while
+reflection in `a` moves it.  Hence the product is nontrivial.
+
+The intermediate proof naturally yields exact period for `(b,a)`;
+`reflectionPairExactPeriod_symm` then gives the public `(a,b)` form.
+-/
+theorem equilateral_median_reflections_exact_period_three
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (A B C MA MB MC : Geo.Point)
+    (hABC : Not (Collinear Geo A B C))
+    (hABAC : Geo.Congruent A B A C)
+    (hBABC : Geo.Congruent B A B C)
+    (hCBCA : Geo.Congruent C B C A)
+    (hMidA : HilbertIsMidpoint Geo MA B C)
+    (hMidB : HilbertIsMidpoint Geo MB A C)
+    (hMidC : HilbertIsMidpoint Geo MC B A) :
+    Exists fun a : ReflectionAxis Geo =>
+      Exists fun b : ReflectionAxis Geo =>
+        Exists fun c : ReflectionAxis Geo =>
+          And
+            (HilbertIncidence.OnLine A a.carrier)
+            (And
+              (HilbertIncidence.OnLine MA a.carrier)
+              (And
+                (HilbertIncidence.OnLine B b.carrier)
+                (And
+                  (HilbertIncidence.OnLine MB b.carrier)
+                  (And
+                    (HilbertIncidence.OnLine C c.carrier)
+                    (And
+                      (HilbertIncidence.OnLine MC c.carrier)
+                      (ReflectionPairExactPeriod
+                        Geo a b 3)))))) := by
+
+  rcases
+      equilateral_median_reflections_product_order_three
+        Geo
+        A B C MA MB MC
+        hABC
+        hABAC
+        hBABC
+        hCBCA
+        hMidA
+        hMidB
+        hMidC with
+    ⟨a, b, c,
+      hAa,
+      hMAa,
+      hBb,
+      hMBb,
+      hCc,
+      hMCc,
+      hOrder3⟩
+
+  refine
+    ⟨a, b, c,
+      hAa,
+      hMAa,
+      hBb,
+      hMBb,
+      hCc,
+      hMCc,
+      ?_⟩
+
+  ----------------------------------------------------------------------
+  -- B is off axis a.
+  ----------------------------------------------------------------------
+
+  have hBM :
+      Not (B = MA) :=
+    (HilbertOrder.between_incidence
+      B MA C hMidA.1).1
+
+  have hBMAC :
+      Collinear Geo B MA C :=
+    (HilbertOrder.between_incidence
+      B MA C hMidA.1).2.2.2.1
+
+  have hBoffA :
+      Not (HilbertIncidence.OnLine B a.carrier) := by
+    intro hBa
+
+    have hCa :
+        HilbertIncidence.OnLine C a.carrier :=
+      hilbert_collinear_on_line
+        Geo
+        B MA C
+        a.carrier
+        hBM
+        hBa
+        hMAa
+        hBMAC
+
+    exact
+      hABC
+        ⟨a.carrier,
+          hAa,
+          hBa,
+          hCa⟩
+
+  ----------------------------------------------------------------------
+  -- b fixes B; a moves B.
+  ----------------------------------------------------------------------
+
+  have hFixB :
+      lineReflect Geo b B = B := by
+    have hFixedRel :
+        IsLineReflection Geo b B B :=
+      (line_reflection_fixed_iff_on_axis
+        Geo b B).2 hBb
+
+    exact
+      line_reflection_unique
+        Geo
+        b
+        B
+        (lineReflect Geo b B)
+        B
+        (lineReflect_spec Geo b B)
+        hFixedRel
+
+  have hMoveA :
+      Not (lineReflect Geo a B = B) :=
+    line_reflection_moves_off_axis
+      Geo
+      a
+      B
+      (lineReflect Geo a B)
+      hBoffA
+      (lineReflect_spec Geo a B)
+
+  have hProductMovesB :
+      Not (reflectionProduct Geo b a B = B) := by
+    simp only [reflectionProduct_apply, hFixB]
+    exact hMoveA
+
+  ----------------------------------------------------------------------
+  -- Period three for the implementation-order pair (b,a).
+  ----------------------------------------------------------------------
+
+  have hPow3 :
+      reflectionProductPow Geo b a 3 =
+        Equiv.refl Geo.Point := by
+    apply Equiv.ext
+    intro P
+    change
+      lineReflect Geo a
+        (lineReflect Geo b
+          (lineReflect Geo a
+            (lineReflect Geo b
+              (lineReflect Geo a
+                (lineReflect Geo b P))))) =
+      P
+    exact hOrder3 P
+
+  have hRel3 :
+      ReflectionPairRelation Geo b a 3 := by
+    unfold ReflectionPairRelation
+    exact hPow3
+
+  ----------------------------------------------------------------------
+  -- Exactness for (b,a).
+  ----------------------------------------------------------------------
+
+  have hExactBA :
+      ReflectionPairExactPeriod Geo b a 3 := by
+
+    refine
+      ⟨by decide,
+        hRel3,
+        ?_⟩
+
+    intro q hqPos hqLt
+
+    have hqCases :
+        q = 1 \/ q = 2 := by
+      omega
+
+    rcases hqCases with hq1 | hq2
+
+    · subst q
+      intro hRel1
+
+      have hRel1Eq := hRel1
+      unfold ReflectionPairRelation at hRel1Eq
+      rw [reflectionProductPow_one] at hRel1Eq
+
+      have hAtB :=
+        congrArg
+          (fun f : Equiv Geo.Point Geo.Point => f B)
+          hRel1Eq
+
+      apply hProductMovesB
+      simpa using hAtB
+
+    · subst q
+      intro hRel2
+
+      have hRel2Eq := hRel2
+      unfold ReflectionPairRelation at hRel2Eq
+
+      have hPow3EqProduct :
+          reflectionProductPow Geo b a 3 =
+            reflectionProduct Geo b a := by
+        rw [show (3 : Nat) = Nat.succ 2 by rfl]
+        rw [reflectionProductPow_succ]
+        rw [hRel2Eq]
+
+        apply Equiv.ext
+        intro P
+        rfl
+
+      have hProductEqId :
+          reflectionProduct Geo b a =
+            Equiv.refl Geo.Point :=
+        hPow3EqProduct.symm.trans hPow3
+
+      have hAtB :=
+        congrArg
+          (fun f : Equiv Geo.Point Geo.Point => f B)
+          hProductEqId
+
+      apply hProductMovesB
+      simpa using hAtB
+
+  ----------------------------------------------------------------------
+  -- Remove the implementation-order artifact.
+  ----------------------------------------------------------------------
+
+  exact
+    reflectionPairExactPeriod_symm
+      Geo
+      b a
+      3
+      hExactBA
+
+
+/--
+Step 21a: restore the public p = 2 Coxeter-relation wrapper.
+
+The permutation-level square theorem already proves the whole content.
+This theorem only packages it as `ReflectionPairRelation`.
+-/
+theorem perpendicular_axes_coxeter_relation_two
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (axis1 axis2 : ReflectionAxis Geo)
+    (hAxes :
+      ReflectionAxesPerpendicular Geo axis1 axis2) :
+    ReflectionPairRelation
+      Geo
+      axis1 axis2
+      2 := by
+
+  unfold ReflectionPairRelation
+
+  exact
+    perpendicular_axes_reflectionProductPow_two
+      Geo
+      axis1 axis2
+      hAxes
+
+
+/--
+Step 21b: perpendicular reflection axes give exact period two.
+
+The relation `(r2 r1)^2 = 1` is already known.  Exactness only requires
+excluding exponent one.
+
+Use the distinguished point `U` on `axis1`.  Reflection in `axis1`
+fixes `U`, while perpendicularity implies that `U` is off `axis2`,
+so reflection in `axis2` moves it.  Therefore the product
+`r_axis2 r_axis1` is not the identity.
+-/
+theorem perpendicular_axes_reflections_exact_period_two
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (axis1 axis2 : ReflectionAxis Geo)
+    (hAxes :
+      ReflectionAxesPerpendicular Geo axis1 axis2) :
+    ReflectionPairExactPeriod
+      Geo
+      axis1 axis2
+      2 := by
+
+  have hRel2 :
+      ReflectionPairRelation Geo axis1 axis2 2 :=
+    perpendicular_axes_coxeter_relation_two
+      Geo
+      axis1 axis2
+      hAxes
+
+  ----------------------------------------------------------------------
+  -- U lies on axis1 but not on axis2.
+  ----------------------------------------------------------------------
+
+  have hUoff2 :
+      Not
+        (HilbertIncidence.OnLine
+          hAxes.U
+          axis2.carrier) := by
+
+    apply
+      perpendicular_axes_second_off_first
+        Geo
+        axis2 axis1
+        (reflectionAxesPerpendicular_symm
+          Geo
+          axis1 axis2
+          hAxes)
+        hAxes.U
+        hAxes.hU1
+
+    change Not (hAxes.O = hAxes.U)
+    exact hAxes.hOU
+
+  ----------------------------------------------------------------------
+  -- axis1 fixes U; axis2 moves U.
+  ----------------------------------------------------------------------
+
+  have hFixU :
+      lineReflect Geo axis1 hAxes.U =
+        hAxes.U := by
+
+    have hFixedRel :
+        IsLineReflection
+          Geo
+          axis1
+          hAxes.U
+          hAxes.U :=
+      (line_reflection_fixed_iff_on_axis
+        Geo axis1 hAxes.U).2 hAxes.hU1
+
+    exact
+      line_reflection_unique
+        Geo
+        axis1
+        hAxes.U
+        (lineReflect Geo axis1 hAxes.U)
+        hAxes.U
+        (lineReflect_spec
+          Geo axis1 hAxes.U)
+        hFixedRel
+
+  have hMove2 :
+      Not
+        (lineReflect Geo axis2 hAxes.U =
+          hAxes.U) :=
+    line_reflection_moves_off_axis
+      Geo
+      axis2
+      hAxes.U
+      (lineReflect Geo axis2 hAxes.U)
+      hUoff2
+      (lineReflect_spec
+        Geo axis2 hAxes.U)
+
+  have hProductMovesU :
+      Not
+        (reflectionProduct
+          Geo axis1 axis2 hAxes.U =
+          hAxes.U) := by
+
+    simp only [
+      reflectionProduct_apply,
+      hFixU
+    ]
+
+    exact hMove2
+
+  ----------------------------------------------------------------------
+  -- Exactness: the only positive q < 2 is q = 1.
+  ----------------------------------------------------------------------
+
+  refine
+    ⟨by decide,
+      hRel2,
+      ?_⟩
+
+  intro q hqPos hqLt
+
+  have hq :
+      q = 1 := by
+    omega
+
+  subst q
+  intro hRel1
+
+  have hRel1Eq := hRel1
+  unfold ReflectionPairRelation at hRel1Eq
+  rw [reflectionProductPow_one] at hRel1Eq
+
+  have hAtU :=
+    congrArg
+      (fun f : Equiv Geo.Point Geo.Point =>
+        f hAxes.U)
+      hRel1Eq
+
+  apply hProductMovesU
+  simpa using hAtU
+
 end Geometry
