@@ -51,8 +51,8 @@ structure HilbertFiniteEquilateralRadialPolygon
         (V (Nat.succ n))
         (V (Nat.succ n))
         (V (Nat.succ (Nat.succ n)))
-  closed :
-    V p = V 0
+  terminal_radial_return :
+    Collinear Geo O (V p) (V 0)
   no_early_radial_return :
     forall q : Nat,
       0 < q ->
@@ -889,10 +889,33 @@ theorem coxeter_general_exact_period_of_oriented_equilateral_polygon
         HilbertIncidence.OnLine
           (V p)
           (axis 0).carrier := by
-      rw [poly.closed]
-      exact
-        coxeter_general_radial_axis_point_on_carrier
-          Geo O V p hOV 0 (Nat.zero_le p)
+
+      have hV00 :
+          HilbertIncidence.OnLine
+            (V 0)
+            (axis 0).carrier := by
+        exact
+          coxeter_general_radial_axis_point_on_carrier
+            Geo O V p hOV 0 (Nat.zero_le p)
+
+      rcases poly.terminal_radial_return with
+        ⟨terminal, hOterminal, hVpterminal, hV0terminal⟩
+
+      have hTerminalEq :
+          terminal = (axis 0).carrier :=
+        HilbertPlaneIncidence.line_unique
+          O
+          (V 0)
+          poly.center_ne_base
+          terminal
+          (axis 0).carrier
+          hOterminal
+          hV0terminal
+          hO0
+          hV00
+
+      rw [<- hTerminalEq]
+      exact hVpterminal
 
     exact
       coxeter_general_carriers_eq_of_two_common_points
