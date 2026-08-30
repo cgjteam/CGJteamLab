@@ -78,6 +78,7 @@ import CGJteamLab.Coxeter.Reflection
 import CGJteamLab.Coxeter.ReflectionWords
 import CGJteamLab.Coxeter.ReflectionIsometry
 import CGJteamLab.Coxeter.CoxeterRelations
+import CGJteamLab.Coxeter.CoxeterRelationsGeneral
 
 -- Suppes route
 import CGJteamLab.SuppesCore
