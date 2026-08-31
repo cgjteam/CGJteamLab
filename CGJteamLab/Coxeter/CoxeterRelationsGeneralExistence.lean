@@ -1226,4 +1226,250 @@ theorem coxeter_general_exact_period_exists_of_oriented_polygon_existence_ge_two
         p
         hLt
 
+
+/-!
+equal subdivision of a half-turn.
+
+The Coxeter exact-period theorem above consumes only an oriented equilateral
+radial polygon.  For the geometric existence boundary, however, we use the
+stronger and more literal synthetic datum that p equal oriented chord steps
+run from one radius to its opposite radius.
+
+The half-turn endpoint is encoded without angle measure by
+
+  Between (V 0) O (V p).
+
+Thus no coordinates, trigonometry, numerical angle measure, or reflection
+datum occurs in the existence principle itself.
+-/
+
+/--
+A finite oriented equilateral subdivision of a Hilbert semicircle.
+
+The terminal condition `Between (V 0) O (V p)` is the synthetic replacement
+for saying that p equal angular steps fill one half-turn.
+-/
+structure HilbertFiniteOrientedEquilateralSemicircleDivision
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (p : Nat)
+    (O : Geo.Point)
+    (V : Nat -> Geo.Point) : Prop where
+  period_ge_three :
+    3 <= p
+  common_radius :
+    forall n : Nat,
+      n <= p ->
+      Geo.Congruent
+        O
+        (V n)
+        O
+        (V 0)
+  equal_consecutive_sides :
+    forall n : Nat,
+      Nat.succ n < p ->
+      Geo.Congruent
+        (V n)
+        (V (Nat.succ n))
+        (V (Nat.succ n))
+        (V (Nat.succ (Nat.succ n)))
+  local_radial_separation :
+    forall n : Nat,
+      Nat.succ n < p ->
+      exists radial : Geo.Line,
+        HilbertIncidence.OnLine O radial /\
+        HilbertIncidence.OnLine (V (Nat.succ n)) radial /\
+        HilbertOppositeSide
+          Geo
+          (V n)
+          (V (Nat.succ (Nat.succ n)))
+          radial
+  terminal_opposite :
+    Geo.Between (V 0) O (V p)
+  no_early_radial_return :
+    forall q : Nat,
+      0 < q ->
+      q < p ->
+      Not
+        (Collinear
+          Geo
+          O
+          (V q)
+          (V 0))
+
+/--
+A semicircle division gives the weaker first-radial-return polygon used by
+the Coxeter carrier argument.
+
+The only additional conversion is at the endpoint:
+`Between (V 0) O (V p)` gives both `O != V 0` and
+`Collinear O (V p) (V 0)`.
+-/
+theorem coxeter_general_oriented_polygon_of_semicircle_division
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (p : Nat)
+    (O : Geo.Point)
+    (V : Nat -> Geo.Point)
+    (division :
+      HilbertFiniteOrientedEquilateralSemicircleDivision
+        Geo p O V) :
+    HilbertFiniteOrientedEquilateralRadialPolygon
+      Geo p O V := by
+
+  have hV0O :
+      Not (V 0 = O) :=
+    (HilbertOrder.between_incidence
+      (V 0) O (V p) division.terminal_opposite).1
+
+  have hCenterNeBase :
+      Not (O = V 0) :=
+    Ne.symm hV0O
+
+  have hV0OVp :
+      Collinear Geo (V 0) O (V p) :=
+    (HilbertOrder.between_incidence
+      (V 0) O (V p) division.terminal_opposite).2.2.2.1
+
+  have hTerminal :
+      Collinear Geo O (V p) (V 0) :=
+    PrimCollinearCycle
+      Geo
+      (V 0)
+      O
+      (V p)
+      hV0OVp
+
+  exact
+    { period_ge_three := division.period_ge_three
+      center_ne_base := hCenterNeBase
+      common_radius := division.common_radius
+      equal_consecutive_sides := division.equal_consecutive_sides
+      terminal_radial_return := hTerminal
+      no_early_radial_return := division.no_early_radial_return
+      local_radial_separation := division.local_radial_separation }
+
+/--
+Existence of p-fold oriented equilateral subdivisions of a half-turn for
+every p >= 3.
+-/
+class HilbertFiniteOrientedEquilateralSemicircleDivisionExistence
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo] : Prop where
+  exists_oriented_equilateral_semicircle_division :
+    forall p : Nat,
+      3 <= p ->
+      exists O : Geo.Point,
+        exists V : Nat -> Geo.Point,
+          HilbertFiniteOrientedEquilateralSemicircleDivision
+            Geo p O V
+
+/--
+The half-turn subdivision existence principle implies the weaker oriented
+radial-polygon existence principle consumed by the Coxeter theorem.
+-/
+theorem coxeter_general_oriented_polygon_existence_of_semicircle_division
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    [HilbertFiniteOrientedEquilateralSemicircleDivisionExistence Geo] :
+    HilbertFiniteOrientedEquilateralRadialPolygonExistence Geo := by
+
+  refine
+    { exists_oriented_equilateral_radial_polygon := ?_ }
+
+  intro p hp
+
+  have hData :=
+    HilbertFiniteOrientedEquilateralSemicircleDivisionExistence.exists_oriented_equilateral_semicircle_division
+      (Geo := Geo)
+      p
+      hp
+
+  exact
+    Exists.elim hData (fun O hV =>
+      Exists.elim hV (fun V division =>
+        Exists.intro O
+          (Exists.intro V
+            (coxeter_general_oriented_polygon_of_semicircle_division
+              Geo p O V division))))
+
+/--
+For every p >= 3, existence of an oriented equilateral subdivision of a
+half-turn yields two reflection axes whose product has exact period p.
+-/
+theorem coxeter_general_exact_period_exists_of_semicircle_division_existence
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    [HilbertFiniteOrientedEquilateralSemicircleDivisionExistence Geo]
+    (p : Nat)
+    (hp : 3 <= p) :
+    exists a b : ReflectionAxis Geo,
+      ReflectionPairExactPeriod Geo a b p := by
+
+  rcases
+      HilbertFiniteOrientedEquilateralSemicircleDivisionExistence.exists_oriented_equilateral_semicircle_division
+        (Geo := Geo)
+        p
+        hp with
+    ⟨O, V, division⟩
+
+  have poly :
+      HilbertFiniteOrientedEquilateralRadialPolygon
+        Geo p O V :=
+    coxeter_general_oriented_polygon_of_semicircle_division
+      Geo p O V division
+
+  let hOV :
+      forall n : Nat,
+        n <= p ->
+        Not (O = V n) :=
+    coxeter_general_radial_nonzero_of_oriented_equilateral_polygon
+      Geo p O V poly
+
+  let axis : Nat -> ReflectionAxis Geo :=
+    coxeter_general_radial_axis_family
+      Geo O V p hOV
+
+  exact
+    ⟨axis 0,
+      axis 1,
+      coxeter_general_exact_period_of_oriented_equilateral_polygon
+        Geo p O V poly⟩
+
+/--
+Assuming existence of an oriented equilateral subdivision of a half-turn
+for every p >= 3, every finite Coxeter period p >= 2 is realized by the
+product of two Hilbert line reflections.
+
+The case p = 2 is already available from perpendicular reflection axes.
+For p >= 3, the only additional geometric assumption is existence of the
+equal half-turn subdivision.
+-/
+theorem coxeter_general_exact_period_exists_of_semicircle_division_existence_ge_two
+    (Geo : Geometry.Geo)
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    [HilbertFiniteOrientedEquilateralSemicircleDivisionExistence Geo]
+    (p : Nat)
+    (hp : 2 <= p) :
+    exists a b : ReflectionAxis Geo,
+      ReflectionPairExactPeriod Geo a b p := by
+
+  rcases Nat.eq_or_lt_of_le hp with hEq | hLt
+
+  · subst p
+    exact
+      coxeter_general_exact_period_two_exists
+        Geo
+
+  · exact
+      coxeter_general_exact_period_exists_of_semicircle_division_existence
+        Geo
+        p
+        hLt
 end Geometry
