@@ -75,6 +75,7 @@ import CGJteamLab.Proposition2_7
 import CGJteamLab.Proposition2_8
 import CGJteamLab.Proposition2_9
 import CGJteamLab.Proposition2_10
+import CGJteamLab.Proposition2_11
 
 -- Coxeter route
 import CGJteamLab.Coxeter.Reflection
