@@ -1,51 +1,36 @@
 // Proposition2_2_mechanism.asy
-// Euclid Book II, Proposition 2.
+// Euclid Book II, Proposition 2: configured II.1 cut used by Lean.
 // ASCII-only Asymptote source.
-
 settings.outformat = "pdf";
-size(15cm,0);
+size(13cm,0);
 
-pen mainpen = linewidth(0.8);
-pen cutpen = linewidth(1.0);
-pen dashpen = dashed + linewidth(0.65);
-pen lightpen = gray(0.55) + linewidth(0.7);
+pen mainpen = black + linewidth(0.9);
+pen cutpen = black + linewidth(0.85);
+pen dashpen = gray(0.45) + dashed + linewidth(0.65);
+pen fillleft = gray(0.94);
+pen fillright = gray(0.985);
 
-pair B=(0,4), C=(6,4), E=(6,0), D=(0,0);
-pair M=(2.4,4), L=(2.4,0);
-pair X=(2.4,1.6);
+pair B=(0,6), M=(2.4,6), C=(6,6);
+pair D=(0,0), L=(2.4,0), E=(6,0);
+pair X=(2.4,2.4);
+
+fill(B--M--L--D--cycle, fillleft);
+fill(M--C--E--L--cycle, fillright);
 
 draw(B--C--E--D--cycle, mainpen);
 draw(M--L, cutpen);
 draw(D--C, dashpen);
 
-dot(B); dot(C); dot(D); dot(E); dot(M); dot(L); dot(X);
+dot(B); dot(M); dot(C); dot(D); dot(L); dot(E); dot(X);
 label("$B$", B, NW);
-label("$C$", C, NE);
-label("$E$", E, SE);
-label("$D$", D, SW);
 label("$M$", M, N);
+label("$C$", C, NE);
+label("$D$", D, SW);
 label("$L$", L, S);
+label("$E$", E, SE);
 label("$X$", X, E);
 
-label("(a) square cut used by II.2", (3,-0.75));
-
-pair shift=(9.0,0.4);
-pair V0=shift+(0,0), V1=shift+(3.2,0), V2=shift+(3.2,2.4), V3=shift+(0,2.4);
-
-draw(V0--V1--V2--V3--cycle, mainpen);
-dot(V0); dot(V1); dot(V2); dot(V3);
-label("$V_0$", V0, SW);
-label("$V_1$", V1, SE);
-label("$V_2$", V2, NE);
-label("$V_3$", V3, NW);
-
-draw(V0--V1, linewidth(1.15));
-draw(V1--V2, lightpen);
-label("first side", (V0+V1)/2, S);
-label("second side", (V1+V2)/2, E);
-
-pair a=shift+(0.5,3.1), b=shift+(2.7,3.1);
-draw(a--b, lightpen, Arrow(TeXHead));
-label("$V_0V_1V_2V_3\;\longmapsto\;V_1V_2V_3V_0$", shift+(1.6,3.55));
-
-label("(b) cyclic representative rotation", shift+(1.6,-0.75));
+label("Rect(BM, BC)", (1.2,3.15));
+label("Rect(MC, BC)", (4.2,3.15));
+label("$B-M-C$", (3.0,6.70));
+label("hidden diagonal witness $X$", (3.0,-0.70));
