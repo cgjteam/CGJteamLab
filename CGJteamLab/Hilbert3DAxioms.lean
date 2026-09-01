@@ -212,4 +212,243 @@ class HilbertSpaceIncidence
     exists A B C D : Geo.Point,
       Not (HilbertCoplanar4 Geo A B C D)
 
+/-!
+## Spatial representation of Hilbert Groups II and III
+
+The existing `HilbertOrder` and `HilbertCongruence` classes were designed
+for plane geometry.  In particular, their Pasch axiom treats every
+configuration as implicitly coplanar.
+
+That representation must not be installed globally on a spatial `Geo`.
+
+The classes below do not add new mathematical axioms.  They restate
+Hilbert Groups II and III in a form in which the plane-local clauses are
+made explicit.
+
+The distinction is essential:
+
+* II.1-II.3 are line statements and remain ambient;
+* II.4 (Pasch) is explicitly restricted to one plane;
+* III.1-III.3 remain ambient segment-congruence statements;
+* III.4 constructs an angle in a specified target plane;
+* III.5 compares two triangles globally and therefore may compare
+  triangles lying in different planes.
+
+No parallel or continuity axiom is introduced here.
+-/
+
+/--
+One elementary same-side step inside a specified plane.
+
+The endpoints are required to lie in the plane and the connecting
+segment must avoid the line.
+-/
+def HilbertSameSideStepInPlane
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line)
+    (pi : S.Plane) : Prop :=
+  S.OnPlane P pi /\
+  S.OnPlane Q pi /\
+  Not (H.OnLine P l) /\
+  Not (H.OnLine Q l) /\
+  Not (HilbertSegmentMeetsLine Geo P Q l)
+
+
+/--
+Two points are on the same side of a line inside a specified plane.
+
+This is the spatial replacement for using the planar
+`HilbertSameSide Geo` globally.
+-/
+def HilbertSameSideInPlane
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (P Q : Geo.Point)
+    (l : Geo.Line)
+    (pi : S.Plane) : Prop :=
+  S.OnPlane P pi /\
+  S.OnPlane Q pi /\
+  Not (H.OnLine P l) /\
+  Not (H.OnLine Q l) /\
+  Relation.ReflTransGen
+    (fun X Y =>
+      HilbertSameSideStepInPlane Geo X Y l pi)
+    P Q
+
+
+/--
+Spatial representation of Hilbert Group II.
+
+II.1-II.3 are ambient line-order axioms.
+II.4 is Pasch with the containing plane made explicit.
+-/
+class HilbertSpaceOrder
+    (Geo : Geometry.Geo)
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertSpaceIncidence Geo] : Prop where
+
+  /--
+  II.1:
+  betweenness gives three distinct collinear points and is symmetric in
+  the endpoints.
+  -/
+  between_incidence :
+    forall A B C : Geo.Point,
+      Geo.Between A B C ->
+      Ne A B /\
+      Ne B C /\
+      Ne A C /\
+      PrimCollinear Geo A B C /\
+      Geo.Between C B A
+
+  /--
+  II.2:
+  a segment can be extended beyond an endpoint.
+  -/
+  between_extension :
+    forall A C : Geo.Point,
+      Ne A C ->
+      exists B : Geo.Point,
+        Geo.Between A C B
+
+  /--
+  II.3:
+  among three collinear points, no more than one lies between the other
+  two.
+  -/
+  between_unique :
+    forall A B C : Geo.Point,
+      PrimCollinear Geo A B C ->
+      Geo.Between A B C ->
+      Not (Geo.Between B A C) /\
+      Not (Geo.Between A C B)
+
+  /--
+  II.4:
+  Pasch in the plane containing the triangle.
+
+  The explicit hypotheses that the triangle vertices and the cutting
+  line lie in `pi` are exactly what is implicit in the present 2D class.
+  -/
+  pasch_in_plane :
+    forall pi : S.Plane,
+      forall A B C : Geo.Point,
+        S.OnPlane A pi ->
+        S.OnPlane B pi ->
+        S.OnPlane C pi ->
+        Not (PrimCollinear Geo A B C) ->
+        forall l : Geo.Line,
+          HilbertLineInPlane Geo l pi ->
+          Not (H.OnLine A l) ->
+          Not (H.OnLine B l) ->
+          Not (H.OnLine C l) ->
+          HilbertSegmentMeetsLine Geo A B l ->
+          HilbertSegmentMeetsLine Geo A C l \/
+          HilbertSegmentMeetsLine Geo B C l
+
+
+/--
+Spatial representation of Hilbert Group III.
+
+This class deliberately does not extend the planar `HilbertCongruence`
+class, because that would import its globally stated Pasch axiom.
+
+The fields below are Hilbert III.1-III.5 with III.4 made explicitly
+plane-local on the target side.
+-/
+class HilbertSpaceCongruence
+    (Geo : Geometry.Geo)
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertSpaceIncidence Geo]
+    [HilbertSpaceOrder Geo] : Prop where
+
+  /--
+  III.1:
+  a segment can be laid off on a prescribed ambient ray.
+  -/
+  segment_construction :
+    forall A B O R : Geo.Point,
+      Ne O R ->
+      exists X : Geo.Point,
+        HilbertSameRay Geo O R X /\
+        Geo.Congruent O X A B
+
+  /--
+  III.2:
+  two segments congruent to the same segment are congruent to each
+  other.
+  -/
+  segment_congruence_common :
+    forall A B A' B' A'' B'' : Geo.Point,
+      Geo.Congruent A B A' B' ->
+      Geo.Congruent A B A'' B'' ->
+      Geo.Congruent A' B' A'' B''
+
+  /--
+  III.3:
+  additivity of adjacent congruent segments.
+  -/
+  segment_additivity :
+    forall A B C A' B' C' : Geo.Point,
+      Geo.Between A B C ->
+      Geo.Between A' B' C' ->
+      Geo.Congruent A B A' B' ->
+      Geo.Congruent B C B' C' ->
+      Geo.Congruent A C A' C'
+
+  /--
+  III.4:
+  an angle can be constructed uniquely on a prescribed side of a
+  prescribed ray in a specified target plane.
+
+  The source angle `ABC` may lie in another plane.  This is the
+  cross-plane angle transport present in Hilbert's original axiom.
+  -/
+  angle_construction_in_plane :
+    forall A B C A' B' T : Geo.Point,
+      Not (PrimCollinear Geo A B C) ->
+      Ne A' B' ->
+      forall pi : S.Plane,
+        forall l : Geo.Line,
+          HilbertLineInPlane Geo l pi ->
+          H.OnLine A' l ->
+          H.OnLine B' l ->
+          S.OnPlane T pi ->
+          Not (H.OnLine T l) ->
+          exists C' : Geo.Point,
+            HilbertSameSideInPlane Geo C' T l pi /\
+            Geo.AngleCongruent A B C A' B' C' /\
+            forall D' : Geo.Point,
+              HilbertSameSideInPlane Geo D' T l pi ->
+              Geo.AngleCongruent A B C A' B' D' ->
+              HilbertSameRay Geo B' C' D'
+
+  /--
+  Reflexivity clause accompanying III.4.
+  -/
+  angle_congruence_reflexive :
+    forall A B C : Geo.Point,
+      Not (PrimCollinear Geo A B C) ->
+      Geo.AngleCongruent A B C A B C
+
+  /--
+  III.5:
+  Hilbert SAS.
+
+  The two nondegenerate triangles need not be in the same plane.
+  -/
+  sas :
+    forall A B C A' B' C' : Geo.Point,
+      Not (PrimCollinear Geo A B C) ->
+      Not (PrimCollinear Geo A' B' C') ->
+      Geo.Congruent A B A' B' ->
+      Geo.Congruent A C A' C' ->
+      Geo.AngleCongruent B A C B' A' C' ->
+      Geo.AngleCongruent A B C A' B' C'
+
+
 end Geometry
