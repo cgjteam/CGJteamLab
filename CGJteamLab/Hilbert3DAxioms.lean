@@ -213,7 +213,7 @@ class HilbertSpaceIncidence
       Not (HilbertCoplanar4 Geo A B C D)
 
 /-!
-## Spatial representation of Hilbert Groups II and III
+## Spatial representation of Hilbert Groups II-IV
 
 The existing `HilbertOrder` and `HilbertCongruence` classes were designed
 for plane geometry.  In particular, their Pasch axiom treats every
@@ -221,8 +221,8 @@ configuration as implicitly coplanar.
 
 That representation must not be installed globally on a spatial `Geo`.
 
-The classes below do not add new mathematical axioms.  They restate
-Hilbert Groups II and III in a form in which the plane-local clauses are
+The classes below do not add axioms beyond Hilbert's Groups II-IV.
+They restate these groups in a form in which the plane-local clauses are
 made explicit.
 
 The distinction is essential:
@@ -232,9 +232,10 @@ The distinction is essential:
 * III.1-III.3 remain ambient segment-congruence statements;
 * III.4 constructs an angle in a specified target plane;
 * III.5 compares two triangles globally and therefore may compare
-  triangles lying in different planes.
+  triangles lying in different planes;
+* IV is explicitly restricted to one ambient plane.
 
-No parallel or continuity axiom is introduced here.
+No continuity axiom is introduced here.
 -/
 
 /--
@@ -449,6 +450,49 @@ class HilbertSpaceCongruence
       Geo.Congruent A C A' C' ->
       Geo.AngleCongruent B A C B' A' C' ->
       Geo.AngleCongruent A B C A' B' C'
+
+
+/--
+Spatial representation of Hilbert Group IV.
+
+The Euclidean parallel axiom is plane-local.  Inside a specified
+ambient plane, through a point outside a line there is at most one line
+disjoint from the given line.
+
+This class deliberately does not install `HilbertEuclideanPlane Geo`
+on the ambient space.  The latter is a planar class and would import a
+globally stated planar congruence/order structure.  Instead, Group IV is
+recorded with the carrier plane made explicit, exactly as Pasch is made
+explicit in `HilbertSpaceOrder`.
+-/
+class HilbertSpaceEuclidean
+    (Geo : Geometry.Geo)
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertSpaceIncidence Geo]
+    [HilbertSpaceOrder Geo]
+    [HilbertSpaceCongruence Geo] : Prop where
+
+  /--
+  IV:
+  in a fixed plane, through a point outside a line there is at most one
+  line in that plane disjoint from the given line.
+  -/
+  parallel_unique_in_plane :
+    forall pi : S.Plane,
+      forall l : Geo.Line,
+        HilbertLineInPlane Geo l pi ->
+        forall A : Geo.Point,
+          S.OnPlane A pi ->
+          Not (H.OnLine A l) ->
+          forall b c : Geo.Line,
+            HilbertLineInPlane Geo b pi ->
+            HilbertLineInPlane Geo c pi ->
+            H.OnLine A b ->
+            HilbertLinesDisjoint Geo b l ->
+            H.OnLine A c ->
+            HilbertLinesDisjoint Geo c l ->
+            b = c
 
 
 end Geometry

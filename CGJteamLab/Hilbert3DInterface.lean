@@ -3798,4 +3798,114 @@ theorem HilbertLinePerpendicularPlaneAt.incidence
   exact
     ⟨hPerp.1, hPerp.2.1⟩
 
+/-!
+# Euclidean parallel axiom inherited by a fixed plane
+
+The spatial Group IV axiom is stated plane-locally in
+`HilbertSpaceEuclidean`.
+
+For every fixed ambient plane `pi`, it therefore induces the existing
+planar `HilbertEuclideanPlane` interface on `PlaneGeo Geo pi`.
+
+No global `HilbertEuclideanPlane Geo` instance is introduced.
+-/
+
+/--
+Disjointness of two lines of `PlaneGeo pi` is exactly ambient
+disjointness of their underlying spatial lines.
+
+Both lines are already known to lie wholly in `pi`, so every ambient
+intersection point automatically determines a point of `PlaneGeo pi`.
+-/
+theorem planeGeo_linesDisjoint_iff_ambient
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (pi : S.Plane)
+    (l m : PlaneLine Geo pi) :
+    HilbertLinesDisjoint
+        (PlaneGeo Geo pi) l m <->
+      HilbertLinesDisjoint Geo l.1 m.1 := by
+
+  constructor
+
+  · intro hPlane
+    rintro ⟨X, hXl, hXm⟩
+
+    have hXpi : S.OnPlane X pi :=
+      l.2 X hXl
+
+    exact
+      hPlane
+        ⟨⟨X, hXpi⟩,
+         hXl,
+         hXm⟩
+
+  · intro hAmbient
+    rintro ⟨X, hXl, hXm⟩
+
+    exact
+      hAmbient
+        ⟨X.1,
+         hXl,
+         hXm⟩
+
+/--
+Every fixed ambient plane inherits Hilbert Group IV from the spatial
+plane-local Euclidean axiom.
+
+Together with the previously constructed Group I-III instances, this
+promotes `PlaneGeo Geo pi` to the existing planar
+`HilbertEuclideanPlane` API.
+-/
+instance planeGeoHilbertEuclidean
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [_HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (pi : S.Plane) :
+    HilbertEuclideanPlane (PlaneGeo Geo pi) where
+
+  toHilbertCongruence :=
+    planeGeoHilbertCongruence
+      (Geo := Geo) pi
+
+  parallel_unique := by
+    intro l A hAl b c hAb hbl hAc hcl
+
+    have hblAmbient :
+        HilbertLinesDisjoint Geo b.1 l.1 :=
+      (planeGeo_linesDisjoint_iff_ambient
+        (Geo := Geo) pi b l).mp hbl
+
+    have hclAmbient :
+        HilbertLinesDisjoint Geo c.1 l.1 :=
+      (planeGeo_linesDisjoint_iff_ambient
+        (Geo := Geo) pi c l).mp hcl
+
+    have hbc :
+        b.1 = c.1 :=
+      HSE.parallel_unique_in_plane
+        pi
+        l.1
+        l.2
+        A.1
+        A.2
+        hAl
+        b.1
+        c.1
+        b.2
+        c.2
+        hAb
+        hblAmbient
+        hAc
+        hclAmbient
+
+    exact Subtype.ext hbc
+
+
 end Geometry
