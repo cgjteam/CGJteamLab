@@ -80,6 +80,11 @@ import CGJteamLab.Proposition2_12
 import CGJteamLab.Proposition2_13
 import CGJteamLab.Proposition2_14
 
+-- Euclid Book XI
+import CGJteamLab.Hilbert3DAxioms
+import CGJteamLab.Hilbert3DInterface
+import CGJteamLab.Proposition11_4
+
 -- Coxeter route
 import CGJteamLab.Coxeter.Reflection
 import CGJteamLab.Coxeter.ReflectionWords

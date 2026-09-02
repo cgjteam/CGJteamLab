@@ -3542,7 +3542,39 @@ def HilbertLinesPerpendicularAt
     Ne B O /\
     H.OnLine A l /\
     H.OnLine B m /\
+    Not (PrimCollinear Geo A O B) /\
     HilbertRightAngle Geo A O B
+
+
+/--
+Perpendicular incidence lines are distinct.
+
+This is now an incidence-level consequence of the explicit
+nondegeneracy witness carried by `HilbertLinesPerpendicularAt`.
+-/
+theorem hilbert_linesPerpendicularAt_ne
+    [H : HilbertIncidence Geo]
+    (l m : Geo.Line)
+    (O : Geo.Point)
+    (hPerp : HilbertLinesPerpendicularAt Geo l m O) :
+    Ne l m := by
+
+  intro hEq
+
+  rcases hPerp with
+    ⟨hOl, _hOm,
+     A, B,
+     _hAO, _hBO,
+     hAl, hBm,
+     hNon, _hRight⟩
+
+  have hBl :
+      H.OnLine B l := by
+    rw [hEq]
+    exact hBm
+
+  exact hNon
+    ⟨l, hAl, hOl, hBl⟩
 
 
 /--
@@ -3574,6 +3606,7 @@ theorem planeGeo_linesPerpendicularAt_iff_ambient
        A, B,
        hAO, hBO,
        hAl, hBm,
+       hNonPlane,
        hRightPlane⟩
 
     have hAOval :
@@ -3587,6 +3620,12 @@ theorem planeGeo_linesPerpendicularAt_iff_ambient
       intro h
       apply hBO
       exact Subtype.ext h
+
+    have hNonAmbient :
+        Not (PrimCollinear Geo A.1 O.1 B.1) :=
+      planeGeo_not_primCollinear_to_ambient
+        (Geo := Geo)
+        pi A O B hNonPlane
 
     have hRightAmbient :
         HilbertRightAngle
@@ -3604,6 +3643,7 @@ theorem planeGeo_linesPerpendicularAt_iff_ambient
        hBOval,
        hAl,
        hBm,
+       hNonAmbient,
        hRightAmbient⟩
 
   · rintro
@@ -3611,6 +3651,7 @@ theorem planeGeo_linesPerpendicularAt_iff_ambient
        A, B,
        hAO, hBO,
        hAl, hBm,
+       hNonAmbient,
        hRightAmbient⟩
 
     have hApi :
@@ -3637,6 +3678,17 @@ theorem planeGeo_linesPerpendicularAt_iff_ambient
       intro h
       exact hBO (congrArg Subtype.val h)
 
+    have hNonPlane :
+        Not (PrimCollinear
+          (PlaneGeo Geo pi) Ap O Bp) := by
+      intro hCol
+      apply hNonAmbient
+      have hAmbient :=
+        planeGeo_primCollinear_to_ambient
+          (Geo := Geo)
+          pi Ap O Bp hCol
+      simpa [Ap, Bp] using hAmbient
+
     have hRightPlane :
         HilbertRightAngle
           (PlaneGeo Geo pi) Ap O Bp := by
@@ -3656,6 +3708,7 @@ theorem planeGeo_linesPerpendicularAt_iff_ambient
        hBOp,
        hAl,
        hBm,
+       hNonPlane,
        hRightPlane⟩
 
 
