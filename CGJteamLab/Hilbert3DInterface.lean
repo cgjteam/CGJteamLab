@@ -303,6 +303,23 @@ theorem hilbert_plane_through_two_intersecting_lines
       hArho hPrho hBrho
       hApi hPpi hBpi
 
+/--
+Two ambient spatial lines are parallel when they are coplanar and
+disjoint.
+
+The coplanarity clause is essential: ambient disjointness alone would
+also classify skew lines as parallel.
+-/
+def HilbertSpaceLinesParallel
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (l m : Geo.Line) : Prop :=
+  exists sigma : S.Plane,
+    HilbertLineInPlane Geo l sigma /\
+    HilbertLineInPlane Geo m sigma /\
+    HilbertLinesDisjoint Geo l m
+
+
 /-!
 # Plane slice interface
 -/

@@ -2724,23 +2724,6 @@ theorem hilbert_XI6_normals_to_same_plane_coplanar
 
 
 /--
-Two ambient spatial lines are parallel when they are coplanar and
-disjoint.
-
-The coplanarity clause is essential: ambient disjointness alone would
-also classify skew lines as parallel.
--/
-def HilbertSpaceLinesParallel
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    (l m : Geo.Line) : Prop :=
-  exists sigma : S.Plane,
-    HilbertLineInPlane Geo l sigma /\
-    HilbertLineInPlane Geo m sigma /\
-    HilbertLinesDisjoint Geo l m
-
-
-/--
 Planar end of Euclid XI.6 after the spatial coplanarity step.
 
 Two coplanar lines perpendicular to the same transversal at distinct
