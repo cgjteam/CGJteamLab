@@ -93,6 +93,7 @@ import CGJteamLab.Proposition11_12
 import CGJteamLab.Proposition11_13
 
 -- Coxeter route
+import CGJteamLab.Coxeter.PlaneReflection
 import CGJteamLab.Coxeter.Reflection
 import CGJteamLab.Coxeter.ReflectionWords
 import CGJteamLab.Coxeter.ReflectionIsometry
