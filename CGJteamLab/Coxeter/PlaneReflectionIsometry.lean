@@ -19,7 +19,7 @@ theorem planeReflect_off_plane_data
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P : Geo.Point)
     (hPoff : Not (S.OnPlane P pi)) :
@@ -54,7 +54,7 @@ theorem planeReflect_on_normal_line
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P F : Geo.Point)
     (l : Geo.Line)
@@ -105,7 +105,7 @@ theorem planeReflect_reflected_perpendicular
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P F : Geo.Point)
     (hPerp :
@@ -146,7 +146,7 @@ theorem planeReflect_plane_point_equidistant
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q : Geo.Point)
     (hQpi : S.OnPlane Q pi) :
@@ -491,7 +491,7 @@ theorem planeReflect_preserves_congruence_left_on_plane
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q : Geo.Point)
     (hPpi : S.OnPlane P pi) :
@@ -526,7 +526,7 @@ theorem planeReflect_preserves_congruence_right_on_plane
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q : Geo.Point)
     (hQpi : S.OnPlane Q pi) :
@@ -583,7 +583,7 @@ theorem planeReflect_eq_lineReflect_in_slice
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi sigma : S.Plane)
     (axis : ReflectionAxis (PlaneGeo Geo sigma))
     (Pp Fp Rp Pp' : PlanePoint Geo sigma)
@@ -773,7 +773,7 @@ theorem planeReflect_preserves_congruence_distinct_feet
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q F G : Geo.Point)
     (hPoff : Not (S.OnPlane P pi))
@@ -1015,7 +1015,7 @@ theorem plane_other_point_exists
     [HSI : HilbertSpaceIncidence Geo]
     (pi : S.Plane)
     (F : Geo.Point)
-    (hFpi : S.OnPlane F pi) :
+    (_hFpi : S.OnPlane F pi) :
     exists R : Geo.Point,
       Ne R F /\
       S.OnPlane R pi := by
@@ -1058,7 +1058,7 @@ theorem planeReflect_preserves_congruence_same_foot
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q F : Geo.Point)
     (hPoff : Not (S.OnPlane P pi))
@@ -1322,7 +1322,7 @@ theorem planeReflect_preserves_congruence_off_plane
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q : Geo.Point)
     (hPoff : Not (S.OnPlane P pi))
@@ -1379,7 +1379,7 @@ theorem planeReflect_preserves_congruence
       (Geo := Geo) (H := H) (S := S)]
     [HSC : HilbertSpaceCongruence
       (Geo := Geo) (H := H) (S := S)]
-    [HSE : HilbertSpaceEuclidean Geo]
+    [_HSE : HilbertSpaceEuclidean Geo]
     (pi : S.Plane)
     (P Q : Geo.Point) :
     Geo.Congruent
