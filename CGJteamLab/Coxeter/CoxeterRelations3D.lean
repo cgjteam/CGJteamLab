@@ -3140,3 +3140,247 @@ theorem coxeter_A3_relations
 end CoxeterA3TetrahedralFrame
 
 end Geometry
+
+/-!
+# Explicit braid relations for Coxeter A3
+
+The global Coxeter order relations proved above imply the corresponding
+Artin braid relations and the commutation relation for the nonadjacent
+generators.
+-/
+
+namespace Geometry
+
+universe u
+
+variable (Geo : Geometry.Geo)
+
+namespace CoxeterA3TetrahedralFrame
+
+variable
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+
+/--
+Pointwise involutivity of r1.
+-/
+theorem r1_apply_twice
+    (T : CoxeterA3TetrahedralFrame Geo)
+    (P : Geo.Point) :
+    r1 (Geo := Geo) T
+      (r1 (Geo := Geo) T P) = P := by
+  have h :=
+    congrArg
+      (fun e : Equiv Geo.Point Geo.Point => e P)
+      (r1_sq (Geo := Geo) T)
+  simpa using h
+
+/--
+Pointwise involutivity of r2.
+-/
+theorem r2_apply_twice
+    (T : CoxeterA3TetrahedralFrame Geo)
+    (P : Geo.Point) :
+    r2 (Geo := Geo) T
+      (r2 (Geo := Geo) T P) = P := by
+  have h :=
+    congrArg
+      (fun e : Equiv Geo.Point Geo.Point => e P)
+      (r2_sq (Geo := Geo) T)
+  simpa using h
+
+/--
+Pointwise involutivity of r3.
+-/
+theorem r3_apply_twice
+    (T : CoxeterA3TetrahedralFrame Geo)
+    (P : Geo.Point) :
+    r3 (Geo := Geo) T
+      (r3 (Geo := Geo) T P) = P := by
+  have h :=
+    congrArg
+      (fun e : Equiv Geo.Point Geo.Point => e P)
+      (r3_sq (Geo := Geo) T)
+  simpa using h
+
+/--
+Braid relation for the adjacent generators r1 and r2:
+
+    r1 r2 r1 = r2 r1 r2.
+
+This is derived algebraically from
+    r1^2 = r2^2 = 1
+and
+    (r1 r2)^3 = 1.
+-/
+theorem r1_r2_braid
+    (T : CoxeterA3TetrahedralFrame Geo) :
+    ((r1 (Geo := Geo) T).trans
+      (r2 (Geo := Geo) T)).trans
+      (r1 (Geo := Geo) T) =
+    ((r2 (Geo := Geo) T).trans
+      (r1 (Geo := Geo) T)).trans
+      (r2 (Geo := Geo) T) := by
+
+  apply Equiv.ext
+  intro P
+
+  have hCube :
+      r2 (Geo := Geo) T
+        (r1 (Geo := Geo) T
+          (r2 (Geo := Geo) T
+            (r1 (Geo := Geo) T
+              (r2 (Geo := Geo) T
+                (r1 (Geo := Geo) T P))))) = P := by
+    have h :=
+      congrArg
+        (fun e : Equiv Geo.Point Geo.Point => e P)
+        (r12_cube_eq_refl (Geo := Geo) T)
+    simpa [r12] using h
+
+  have h1 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r2 (Geo := Geo) T X)
+      hCube
+
+  rw [r2_apply_twice (Geo := Geo) T] at h1
+
+  have h2 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r1 (Geo := Geo) T X)
+      h1
+
+  rw [r1_apply_twice (Geo := Geo) T] at h2
+
+  have h3 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r2 (Geo := Geo) T X)
+      h2
+
+  rw [r2_apply_twice (Geo := Geo) T] at h3
+
+  exact h3
+
+/--
+Braid relation for the adjacent generators r2 and r3:
+
+    r2 r3 r2 = r3 r2 r3.
+
+This is derived algebraically from
+    r2^2 = r3^2 = 1
+and
+    (r2 r3)^3 = 1.
+-/
+theorem r2_r3_braid
+    (T : CoxeterA3TetrahedralFrame Geo) :
+    ((r2 (Geo := Geo) T).trans
+      (r3 (Geo := Geo) T)).trans
+      (r2 (Geo := Geo) T) =
+    ((r3 (Geo := Geo) T).trans
+      (r2 (Geo := Geo) T)).trans
+      (r3 (Geo := Geo) T) := by
+
+  apply Equiv.ext
+  intro P
+
+  have hCube :
+      r3 (Geo := Geo) T
+        (r2 (Geo := Geo) T
+          (r3 (Geo := Geo) T
+            (r2 (Geo := Geo) T
+              (r3 (Geo := Geo) T
+                (r2 (Geo := Geo) T P))))) = P := by
+    have h :=
+      congrArg
+        (fun e : Equiv Geo.Point Geo.Point => e P)
+        (r23_cube_eq_refl (Geo := Geo) T)
+    simpa [r23] using h
+
+  have h1 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r3 (Geo := Geo) T X)
+      hCube
+
+  rw [r3_apply_twice (Geo := Geo) T] at h1
+
+  have h2 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r2 (Geo := Geo) T X)
+      h1
+
+  rw [r2_apply_twice (Geo := Geo) T] at h2
+
+  have h3 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r3 (Geo := Geo) T X)
+      h2
+
+  rw [r3_apply_twice (Geo := Geo) T] at h3
+
+  exact h3
+
+/--
+Commutation relation for the nonadjacent generators r1 and r3:
+
+    r1 r3 = r3 r1.
+
+This is derived algebraically from
+    r1^2 = r3^2 = 1
+and
+    (r1 r3)^2 = 1.
+-/
+theorem r1_r3_commute
+    (T : CoxeterA3TetrahedralFrame Geo) :
+    (r1 (Geo := Geo) T).trans
+      (r3 (Geo := Geo) T) =
+    (r3 (Geo := Geo) T).trans
+      (r1 (Geo := Geo) T) := by
+
+  apply Equiv.ext
+  intro P
+
+  have hSq :
+      r3 (Geo := Geo) T
+        (r1 (Geo := Geo) T
+          (r3 (Geo := Geo) T
+            (r1 (Geo := Geo) T P))) = P := by
+    have h :=
+      congrArg
+        (fun e : Equiv Geo.Point Geo.Point => e P)
+        (r13_sq_eq_refl (Geo := Geo) T)
+    simpa [r13] using h
+
+  have h1 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r3 (Geo := Geo) T X)
+      hSq
+
+  rw [r3_apply_twice (Geo := Geo) T] at h1
+
+  have h2 :=
+    congrArg
+      (fun X : Geo.Point =>
+        r1 (Geo := Geo) T X)
+      h1
+
+  rw [r1_apply_twice (Geo := Geo) T] at h2
+
+  exact h2
+
+end CoxeterA3TetrahedralFrame
+
+end Geometry
