@@ -12,6 +12,7 @@ import CGJteamLab.HilbertBookZero
 import CGJteamLab.HilbertPascal
 import CGJteamLab.HilbertScissors
 -- import CGJteamLab.HilbertSegmentMul
+import CGJteamLab.HilbertDimension
 
 -- Euclid Book I
 import CGJteamLab.Proposition01
@@ -102,6 +103,7 @@ import CGJteamLab.Coxeter.CoxeterRelations3D
 import CGJteamLab.Coxeter.CoxeterRelations
 import CGJteamLab.Coxeter.CoxeterRelationsGeneral
 import CGJteamLab.Coxeter.CoxeterRelationsGeneralExistence
+import CGJteamLab.Coxeter.CoxeterRelations3DS4
 
 -- Suppes route
 import CGJteamLab.SuppesCore
