@@ -84,11 +84,16 @@ import CGJteamLab.Proposition2_14
 -- Euclid Book XI
 import CGJteamLab.Hilbert3DAxioms
 import CGJteamLab.Hilbert3DInterface
+import CGJteamLab.Proposition11_1
+import CGJteamLab.Proposition11_2
+import CGJteamLab.Proposition11_3
 import CGJteamLab.Proposition11_4
 import CGJteamLab.Proposition11_5
 import CGJteamLab.Proposition11_6
 import CGJteamLab.Proposition11_7
 import CGJteamLab.Proposition11_8
+import CGJteamLab.Proposition11_9
+import CGJteamLab.Proposition11_10
 import CGJteamLab.Proposition11_11
 import CGJteamLab.Proposition11_12
 import CGJteamLab.Proposition11_13

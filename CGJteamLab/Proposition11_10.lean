@@ -1,0 +1,3669 @@
+import CGJteamLab.Proposition11_9
+import CGJteamLab.Proposition33
+
+namespace Geometry
+
+universe u
+
+variable (Geo : Geometry.Geo)
+
+/--
+Directed spatial parallelism for two nondegenerate point-pairs.
+
+`HilbertSpaceLinesParallel` is intentionally unoriented: it records only a
+common carrier plane and disjointness of the two carrier lines.
+
+For Euclid XI.10 this is not enough. The ordered pairs `A B` and `C D`
+must point towards corresponding parts of their parallel carriers.
+
+The condition below is the spatial analogue of the orientation witness used
+by the API form of Euclid I.33:
+
+* `A,B` lie on one carrier `l`;
+* `C,D` lie on a parallel carrier `m`;
+* `B,D` lie on a connector `t`;
+* the starting points `A,C` are on the same side of `t` inside the common
+  carrier plane.
+
+Thus reversing exactly one ordered pair changes the directed relation.
+-/
+def HilbertSpaceDirectedParallelSegments
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (A B C D : Geo.Point) : Prop :=
+  exists pi : S.Plane,
+    exists l m t : Geo.Line,
+      H.OnLine A l /\
+      H.OnLine B l /\
+      H.OnLine C m /\
+      H.OnLine D m /\
+      HilbertLineInPlane Geo l pi /\
+      HilbertLineInPlane Geo m pi /\
+      HilbertLinesDisjoint Geo l m /\
+      H.OnLine B t /\
+      H.OnLine D t /\
+      HilbertLineInPlane Geo t pi /\
+      HilbertSameSideInPlane Geo A C t pi
+
+
+/--
+A directed spatial parallelism witness contains ordinary spatial
+parallelism of the two carrier lines.
+-/
+theorem hilbert_XI10_directedParallelSegments_carriers
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+    exists pi : S.Plane,
+      exists l m t : Geo.Line,
+        H.OnLine A l /\
+        H.OnLine B l /\
+        H.OnLine C m /\
+        H.OnLine D m /\
+        H.OnLine B t /\
+        H.OnLine D t /\
+        HilbertLineInPlane Geo t pi /\
+        HilbertSameSideInPlane Geo A C t pi /\
+        HilbertSpaceLinesParallel Geo l m := by
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+                  have hAl := h.1
+                  have hBl := h.2.1
+                  have hCm := h.2.2.1
+                  have hDm := h.2.2.2.1
+                  have hlpi := h.2.2.2.2.1
+                  have hmpi := h.2.2.2.2.2.1
+                  have hDisjoint := h.2.2.2.2.2.2.1
+                  have hBt := h.2.2.2.2.2.2.2.1
+                  have hDt := h.2.2.2.2.2.2.2.2.1
+                  have htpi := h.2.2.2.2.2.2.2.2.2.1
+                  have hSame := h.2.2.2.2.2.2.2.2.2.2
+
+                  refine Exists.intro pi ?_
+                  refine Exists.intro l ?_
+                  refine Exists.intro m ?_
+                  refine Exists.intro t ?_
+                  refine And.intro hAl ?_
+                  refine And.intro hBl ?_
+                  refine And.intro hCm ?_
+                  refine And.intro hDm ?_
+                  refine And.intro hBt ?_
+                  refine And.intro hDt ?_
+                  refine And.intro htpi ?_
+                  refine And.intro hSame ?_
+                  exact
+                    Exists.intro pi
+                      (And.intro hlpi
+                        (And.intro hmpi hDisjoint))
+
+
+/--
+The ordered segments carried by a directed parallelism witness are
+automatically nondegenerate.
+
+This is not an additional hypothesis: the same-side orientation condition
+already places `A` and `C` off the connector through `B` and `D`.
+-/
+theorem hilbert_XI10_directedParallelSegments_nondegenerate
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+    Ne A B /\ Ne C D := by
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+                  have hBt := h.2.2.2.2.2.2.2.1
+                  have hDt := h.2.2.2.2.2.2.2.2.1
+                  have hSame := h.2.2.2.2.2.2.2.2.2.2
+
+                  have hAt : Not (H.OnLine A t) :=
+                    hSame.2.2.1
+
+                  have hCt : Not (H.OnLine C t) :=
+                    hSame.2.2.2.1
+
+                  have hAB : Ne A B := by
+                    intro hEq
+                    subst B
+                    exact hAt hBt
+
+                  have hCD : Ne C D := by
+                    intro hEq
+                    subst D
+                    exact hCt hDt
+
+                  exact And.intro hAB hCD
+
+
+/--
+The four endpoint points of a directed spatial parallelism witness all lie
+in its common carrier plane.
+
+This small extraction lemma is convenient when the next XI.10 step moves
+the configuration into `PlaneGeo pi`.
+-/
+theorem hilbert_XI10_directedParallelSegments_plane_points
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+    exists pi : S.Plane,
+      S.OnPlane A pi /\
+      S.OnPlane B pi /\
+      S.OnPlane C pi /\
+      S.OnPlane D pi := by
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+                  have hAl := h.1
+                  have hBl := h.2.1
+                  have hCm := h.2.2.1
+                  have hDm := h.2.2.2.1
+                  have hlpi := h.2.2.2.2.1
+                  have hmpi := h.2.2.2.2.2.1
+
+                  exact
+                    Exists.intro pi
+                      (And.intro (hlpi A hAl)
+                        (And.intro (hlpi B hBl)
+                          (And.intro (hmpi C hCm)
+                            (hmpi D hDm))))
+
+
+/--
+Spatial I.33 package for XI.10.
+
+If the ordered segments `AB` and `CD` are directed-parallel in space and
+are congruent, then the joining segments `AC` and `BD` are congruent and
+their carrier lines are spatially parallel.
+
+The proof is carried out entirely in the common carrier plane supplied by
+`HilbertSpaceDirectedParallelSegments`, using Euclid I.33 in `PlaneGeo pi`,
+and then transported back to the ambient space.
+-/
+theorem hilbert_XI10_directedParallelSegments_I33
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D)
+    (hCong :
+      Geo.Congruent A B C D) :
+    exists ac bd : Geo.Line,
+      H.OnLine A ac /\
+      H.OnLine C ac /\
+      H.OnLine B bd /\
+      H.OnLine D bd /\
+      HilbertSpaceLinesParallel Geo ac bd /\
+      Geo.Congruent A C B D := by
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+
+                  have hAl := h.1
+                  have hBl := h.2.1
+                  have hCm := h.2.2.1
+                  have hDm := h.2.2.2.1
+                  have hlpi := h.2.2.2.2.1
+                  have hmpi := h.2.2.2.2.2.1
+                  have hDisjointLM := h.2.2.2.2.2.2.1
+                  have hBt := h.2.2.2.2.2.2.2.1
+                  have hDt := h.2.2.2.2.2.2.2.2.1
+                  have htpi := h.2.2.2.2.2.2.2.2.2.1
+                  have hSameSpace := h.2.2.2.2.2.2.2.2.2.2
+
+                  have hApi : S.OnPlane A pi :=
+                    hlpi A hAl
+
+                  have hBpi : S.OnPlane B pi :=
+                    hlpi B hBl
+
+                  have hCpi : S.OnPlane C pi :=
+                    hmpi C hCm
+
+                  have hDpi : S.OnPlane D pi :=
+                    hmpi D hDm
+
+                  let Ap : PlanePoint Geo pi :=
+                    { val := A, property := hApi }
+
+                  let Bp : PlanePoint Geo pi :=
+                    { val := B, property := hBpi }
+
+                  let Cp : PlanePoint Geo pi :=
+                    { val := C, property := hCpi }
+
+                  let Dp : PlanePoint Geo pi :=
+                    { val := D, property := hDpi }
+
+                  let lp : PlaneLine Geo pi :=
+                    { val := l, property := hlpi }
+
+                  let mp : PlaneLine Geo pi :=
+                    { val := m, property := hmpi }
+
+                  let tp : PlaneLine Geo pi :=
+                    { val := t, property := htpi }
+
+                  have hAt : Not (H.OnLine A t) :=
+                    hSameSpace.2.2.1
+
+                  have hCt : Not (H.OnLine C t) :=
+                    hSameSpace.2.2.2.1
+
+                  have hAB : Ne A B := by
+                    intro hEq
+                    subst B
+                    exact hAt hBt
+
+                  have hCD : Ne C D := by
+                    intro hEq
+                    subst D
+                    exact hCt hDt
+
+                  have hABp : Ne Ap Bp := by
+                    intro hEq
+                    apply hAB
+                    exact congrArg Subtype.val hEq
+
+                  have hCDp : Ne Cp Dp := by
+                    intro hEq
+                    apply hCD
+                    exact congrArg Subtype.val hEq
+
+                  have hAlp :
+                      (PlaneGeo Geo pi).OnLine Ap lp := by
+                    exact hAl
+
+                  have hBlp :
+                      (PlaneGeo Geo pi).OnLine Bp lp := by
+                    exact hBl
+
+                  have hCmp :
+                      (PlaneGeo Geo pi).OnLine Cp mp := by
+                    exact hCm
+
+                  have hDmp :
+                      (PlaneGeo Geo pi).OnLine Dp mp := by
+                    exact hDm
+
+                  have hBtp :
+                      (PlaneGeo Geo pi).OnLine Bp tp := by
+                    exact hBt
+
+                  have hDtp :
+                      (PlaneGeo Geo pi).OnLine Dp tp := by
+                    exact hDt
+
+                  have hDisjointLMPlane :
+                      HilbertLinesDisjoint
+                        (PlaneGeo Geo pi) lp mp :=
+                    (planeGeo_linesDisjoint_iff_ambient
+                      (Geo := Geo) pi lp mp).mpr
+                      hDisjointLM
+
+                  have hParallelPlane :
+                      (PlaneGeo Geo pi).Parallel Ap Bp Cp Dp := by
+
+                    refine And.intro hABp ?_
+                    refine And.intro hCDp ?_
+
+                    apply Set.disjoint_left.mpr
+                    intro Xp hXAB hXCD
+
+                    have hXl :
+                        (PlaneGeo Geo pi).OnLine Xp lp :=
+                      (hilbert_mem_pointLine_iff_onLine
+                        (PlaneGeo Geo pi)
+                        Ap Bp Xp
+                        lp
+                        hABp
+                        hAlp hBlp).mp
+                        hXAB
+
+                    have hXm :
+                        (PlaneGeo Geo pi).OnLine Xp mp :=
+                      (hilbert_mem_pointLine_iff_onLine
+                        (PlaneGeo Geo pi)
+                        Cp Dp Xp
+                        mp
+                        hCDp
+                        hCmp hDmp).mp
+                        hXCD
+
+                    exact
+                      hDisjointLMPlane
+                        (Exists.intro Xp
+                          (And.intro hXl hXm))
+
+                  have hCongPlane :
+                      (PlaneGeo Geo pi).Congruent
+                        Ap Bp Cp Dp :=
+                    (planeGeo_congruent
+                      (Geo := Geo)
+                      pi Ap Bp Cp Dp).mpr
+                      hCong
+
+                  have hSamePlane :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) Ap Cp tp :=
+                    (planeGeo_sameSide_iff_space
+                      (Geo := Geo)
+                      pi Ap Cp tp).mpr
+                      hSameSpace
+
+                  have hOrientedPlane :
+                      exists q : (PlaneGeo Geo pi).Line,
+                        (PlaneGeo Geo pi).OnLine Bp q /\
+                        (PlaneGeo Geo pi).OnLine Dp q /\
+                        HilbertSameSide
+                          (PlaneGeo Geo pi) Ap Cp q :=
+                    Exists.intro tp
+                      (And.intro hBtp
+                        (And.intro hDtp hSamePlane))
+
+                  have hI33 :=
+                    euclid_proposition_33
+                      (Geo := PlaneGeo Geo pi)
+                      Ap Bp Cp Dp
+                      hParallelPlane
+                      hCongPlane
+                      hOrientedPlane
+
+                  have hParallelJoinPlane :
+                      (PlaneGeo Geo pi).Parallel
+                        Ap Cp Bp Dp :=
+                    hI33.1
+
+                  have hCongJoinAmbient :
+                      Geo.Congruent A C B D :=
+                    (planeGeo_congruent
+                      (Geo := Geo)
+                      pi Ap Cp Bp Dp).mp
+                      hI33.2
+
+                  have hACp : Ne Ap Cp :=
+                    hParallelJoinPlane.1
+
+                  have hBDp : Ne Bp Dp :=
+                    hParallelJoinPlane.2.1
+
+                  cases
+                      HilbertPlaneIncidence.line_through
+                        (Geo := PlaneGeo Geo pi)
+                        Ap Cp hACp with
+                  | intro acp hACdata =>
+                      have hAac := hACdata.1
+                      have hCac := hACdata.2
+
+                      cases
+                          HilbertPlaneIncidence.line_through
+                            (Geo := PlaneGeo Geo pi)
+                            Bp Dp hBDp with
+                      | intro bdp hBDdata =>
+                          have hBbd := hBDdata.1
+                          have hDbd := hBDdata.2
+
+                          have hJoinDisjointPlane :
+                              HilbertLinesDisjoint
+                                (PlaneGeo Geo pi)
+                                acp bdp := by
+
+                            intro hMeet
+                            cases hMeet with
+                            | intro Xp hX =>
+                                have hXac := hX.1
+                                have hXbd := hX.2
+
+                                have hXAC :
+                                    ((PlaneGeo Geo pi).PointLine
+                                      Ap Cp) Xp :=
+                                  (hilbert_mem_pointLine_iff_onLine
+                                    (PlaneGeo Geo pi)
+                                    Ap Cp Xp
+                                    acp
+                                    hACp
+                                    hAac hCac).mpr
+                                    hXac
+
+                                have hXBD :
+                                    ((PlaneGeo Geo pi).PointLine
+                                      Bp Dp) Xp :=
+                                  (hilbert_mem_pointLine_iff_onLine
+                                    (PlaneGeo Geo pi)
+                                    Bp Dp Xp
+                                    bdp
+                                    hBDp
+                                    hBbd hDbd).mpr
+                                    hXbd
+
+                                exact
+                                  Set.disjoint_left.mp
+                                    hParallelJoinPlane.2.2
+                                    hXAC hXBD
+
+                          have hJoinDisjointAmbient :
+                              HilbertLinesDisjoint
+                                Geo acp.1 bdp.1 :=
+                            (planeGeo_linesDisjoint_iff_ambient
+                              (Geo := Geo)
+                              pi acp bdp).mp
+                              hJoinDisjointPlane
+
+                          have hSpaceParallelJoin :
+                              HilbertSpaceLinesParallel
+                                Geo acp.1 bdp.1 :=
+                            Exists.intro pi
+                              (And.intro acp.2
+                                (And.intro bdp.2
+                                  hJoinDisjointAmbient))
+
+                          refine Exists.intro acp.1 ?_
+                          refine Exists.intro bdp.1 ?_
+                          refine And.intro hAac ?_
+                          refine And.intro hCac ?_
+                          refine And.intro hBbd ?_
+                          refine And.intro hDbd ?_
+                          refine And.intro hSpaceParallelJoin ?_
+                          exact hCongJoinAmbient
+
+
+/--
+The starting points of two directed-parallel segments are distinct.
+
+Indeed, they lie on the two disjoint carrier lines.
+-/
+theorem hilbert_XI10_directedParallelSegments_start_ne
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+    Ne A C := by
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+                  have hAl := h.1
+                  have hCm := h.2.2.1
+                  have hDisjoint := h.2.2.2.2.2.2.1
+
+                  intro hEq
+                  subst C
+
+                  exact
+                    hDisjoint
+                      (Exists.intro A
+                        (And.intro hAl hCm))
+
+
+/--
+Spatial line parallelism is symmetric.
+-/
+theorem hilbert_XI10_spaceLinesParallel_symm
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    (l m : Geo.Line)
+    (hParallel :
+      HilbertSpaceLinesParallel Geo l m) :
+    HilbertSpaceLinesParallel Geo m l := by
+
+  cases hParallel with
+  | intro pi h =>
+      have hlpi := h.1
+      have hmpi := h.2.1
+      have hDisjoint := h.2.2
+
+      have hDisjointSymm :
+          HilbertLinesDisjoint Geo m l := by
+
+        intro hMeet
+        cases hMeet with
+        | intro X hX =>
+            exact
+              hDisjoint
+                (Exists.intro X
+                  (And.intro hX.2 hX.1))
+
+      exact
+        Exists.intro pi
+          (And.intro hmpi
+            (And.intro hlpi
+              hDisjointSymm))
+
+
+/--
+The middle XI.10 construction after the first two applications of I.33.
+
+Assume the four selected ray segments have already been normalized in pairs:
+
+    BA ~= ED,
+    BC ~= EF.
+
+The two directed-parallel hypotheses give, by spatial I.33,
+
+    BE || AD and BE ~= AD,
+    BE || CF and BE ~= CF.
+
+If the six selected points are not all contained in one plane, then the
+three lines AD, CF, BE are not all coplanar.  Euclid XI.9 therefore yields
+
+    AD || CF.
+
+Spatial III.2 simultaneously gives
+
+    AD ~= CF.
+
+This is exactly the central node of Euclid's XI.10 proof.
+-/
+theorem hilbert_XI10_first_two_I33_and_XI9
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D E F : Geo.Point)
+    (hDirBA_ED :
+      HilbertSpaceDirectedParallelSegments Geo B A E D)
+    (hDirBC_EF :
+      HilbertSpaceDirectedParallelSegments Geo B C E F)
+    (hBA_ED :
+      Geo.Congruent B A E D)
+    (hBC_EF :
+      Geo.Congruent B C E F)
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    exists ad cf be : Geo.Line,
+      H.OnLine A ad /\
+      H.OnLine D ad /\
+      H.OnLine C cf /\
+      H.OnLine F cf /\
+      H.OnLine B be /\
+      H.OnLine E be /\
+      HilbertSpaceLinesParallel Geo ad cf /\
+      Geo.Congruent A D C F := by
+
+  have hLeft :=
+    hilbert_XI10_directedParallelSegments_I33
+      (Geo := Geo)
+      B A E D
+      hDirBA_ED
+      hBA_ED
+
+  cases hLeft with
+  | intro be1 hLeft1 =>
+      cases hLeft1 with
+      | intro ad hL =>
+
+          have hBbe1 := hL.1
+          have hEbe1 := hL.2.1
+          have hAad := hL.2.2.1
+          have hDad := hL.2.2.2.1
+          have hParBE_AD := hL.2.2.2.2.1
+          have hBE_AD := hL.2.2.2.2.2
+
+          have hRight :=
+            hilbert_XI10_directedParallelSegments_I33
+              (Geo := Geo)
+              B C E F
+              hDirBC_EF
+              hBC_EF
+
+          cases hRight with
+          | intro be2 hRight1 =>
+              cases hRight1 with
+              | intro cf hR =>
+
+                  have hBbe2 := hR.1
+                  have hEbe2 := hR.2.1
+                  have hCcf := hR.2.2.1
+                  have hFcf := hR.2.2.2.1
+                  have hParBE_CF := hR.2.2.2.2.1
+                  have hBE_CF := hR.2.2.2.2.2
+
+                  have hBE : Ne B E :=
+                    hilbert_XI10_directedParallelSegments_start_ne
+                      (Geo := Geo)
+                      B A E D
+                      hDirBA_ED
+
+                  have hBEline : be1 = be2 :=
+                    HilbertPlaneIncidence.line_unique
+                      B E hBE
+                      be1 be2
+                      hBbe1 hEbe1
+                      hBbe2 hEbe2
+
+                  subst be2
+
+                  have hParAD_BE :
+                      HilbertSpaceLinesParallel Geo ad be1 :=
+                    hilbert_XI10_spaceLinesParallel_symm
+                      (Geo := Geo)
+                      be1 ad
+                      hParBE_AD
+
+                  have hParCF_BE :
+                      HilbertSpaceLinesParallel Geo cf be1 :=
+                    hilbert_XI10_spaceLinesParallel_symm
+                      (Geo := Geo)
+                      be1 cf
+                      hParBE_CF
+
+                  have hNoPlaneAD_CF_BE :
+                      Not (exists omega : S.Plane,
+                        HilbertLineInPlane Geo ad omega /\
+                        HilbertLineInPlane Geo cf omega /\
+                        HilbertLineInPlane Geo be1 omega) := by
+
+                    intro hPlane
+                    cases hPlane with
+                    | intro omega hData =>
+
+                        have hadomega := hData.1
+                        have hcfomega := hData.2.1
+                        have hbeomega := hData.2.2
+
+                        have hAomega : S.OnPlane A omega :=
+                          hadomega A hAad
+
+                        have hDomega : S.OnPlane D omega :=
+                          hadomega D hDad
+
+                        have hComega : S.OnPlane C omega :=
+                          hcfomega C hCcf
+
+                        have hFomega : S.OnPlane F omega :=
+                          hcfomega F hFcf
+
+                        have hBomega : S.OnPlane B omega :=
+                          hbeomega B hBbe1
+
+                        have hEomega : S.OnPlane E omega :=
+                          hbeomega E hEbe1
+
+                        exact
+                          hNoCommonPlane
+                            (Exists.intro omega
+                              (And.intro hAomega
+                                (And.intro hBomega
+                                  (And.intro hComega
+                                    (And.intro hDomega
+                                      (And.intro hEomega
+                                        hFomega))))))
+
+                  have hParAD_CF :
+                      HilbertSpaceLinesParallel Geo ad cf :=
+                    euclid_proposition_11_9
+                      (Geo := Geo)
+                      ad cf be1
+                      hParAD_BE
+                      hParCF_BE
+                      hNoPlaneAD_CF_BE
+
+                  have hAD_CF :
+                      Geo.Congruent A D C F :=
+                    HilbertSpaceCongruence.segment_congruence_common
+                      (Geo := Geo)
+                      B E
+                      A D
+                      C F
+                      hBE_AD
+                      hBE_CF
+
+                  refine Exists.intro ad ?_
+                  refine Exists.intro cf ?_
+                  refine Exists.intro be1 ?_
+                  refine And.intro hAad ?_
+                  refine And.intro hDad ?_
+                  refine And.intro hCcf ?_
+                  refine And.intro hFcf ?_
+                  refine And.intro hBbe1 ?_
+                  refine And.intro hEbe1 ?_
+                  refine And.intro hParAD_CF ?_
+                  exact hAD_CF
+
+
+/--
+Euclid I.33 preserves the direction information needed by XI.10.
+
+Starting from directed-parallel equal segments `AB` and `CD`, the joining
+segments `AC` and `BD` are not only parallel and congruent: they are again
+directed-parallel in the sense of `HilbertSpaceDirectedParallelSegments`.
+
+The orientation witness comes from the original pair of parallel carriers:
+inside their common plane, the endpoints `A,B` lie on the same side of the
+second carrier `CD`.  This is exactly the connector-side condition required
+for the ordered joining segments `AC` and `BD`.
+-/
+theorem hilbert_XI10_I33_directed_output
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D)
+    (hCong :
+      Geo.Congruent A B C D) :
+    HilbertSpaceDirectedParallelSegments Geo A C B D /\
+    Geo.Congruent A C B D := by
+
+  have hJoin :=
+    hilbert_XI10_directedParallelSegments_I33
+      (Geo := Geo)
+      A B C D
+      hDir
+      hCong
+
+  cases hJoin with
+  | intro ac h1 =>
+      cases h1 with
+      | intro bd hData =>
+
+          have hAac := hData.1
+          have hCac := hData.2.1
+          have hBbd := hData.2.2.1
+          have hDbd := hData.2.2.2.1
+          have hParJoin := hData.2.2.2.2.1
+          have hCongJoin := hData.2.2.2.2.2
+
+          cases hDir with
+          | intro pi hPi =>
+              cases hPi with
+              | intro l hL =>
+                  cases hL with
+                  | intro m hM =>
+                      cases hM with
+                      | intro t h =>
+
+                          have hAl := h.1
+                          have hBl := h.2.1
+                          have hCm := h.2.2.1
+                          have hDm := h.2.2.2.1
+                          have hlpi := h.2.2.2.2.1
+                          have hmpi := h.2.2.2.2.2.1
+                          have hDisjointLM := h.2.2.2.2.2.2.1
+                          have hSameSpace := h.2.2.2.2.2.2.2.2.2.2
+
+                          have hApi : S.OnPlane A pi :=
+                            hlpi A hAl
+
+                          have hBpi : S.OnPlane B pi :=
+                            hlpi B hBl
+
+                          have hCpi : S.OnPlane C pi :=
+                            hmpi C hCm
+
+                          have hDpi : S.OnPlane D pi :=
+                            hmpi D hDm
+
+                          have hAC : Ne A C := by
+                            intro hEq
+                            subst C
+                            exact
+                              hDisjointLM
+                                (Exists.intro A
+                                  (And.intro hAl hCm))
+
+                          have hBD : Ne B D := by
+                            intro hEq
+                            subst D
+                            exact
+                              hDisjointLM
+                                (Exists.intro B
+                                  (And.intro hBl hDm))
+
+                          have hacpi :
+                              HilbertLineInPlane Geo ac pi :=
+                            HilbertSpaceIncidence.line_in_plane
+                              (Geo := Geo)
+                              A C hAC
+                              ac hAac hCac
+                              pi hApi hCpi
+
+                          have hbdpi :
+                              HilbertLineInPlane Geo bd pi :=
+                            HilbertSpaceIncidence.line_in_plane
+                              (Geo := Geo)
+                              B D hBD
+                              bd hBbd hDbd
+                              pi hBpi hDpi
+
+                          let Ap : PlanePoint Geo pi :=
+                            { val := A, property := hApi }
+
+                          let Bp : PlanePoint Geo pi :=
+                            { val := B, property := hBpi }
+
+                          let Cp : PlanePoint Geo pi :=
+                            { val := C, property := hCpi }
+
+                          let Dp : PlanePoint Geo pi :=
+                            { val := D, property := hDpi }
+
+                          let lp : PlaneLine Geo pi :=
+                            { val := l, property := hlpi }
+
+                          let mp : PlaneLine Geo pi :=
+                            { val := m, property := hmpi }
+
+                          have hAt : Not (H.OnLine A t) :=
+                            hSameSpace.2.2.1
+
+                          have hCt : Not (H.OnLine C t) :=
+                            hSameSpace.2.2.2.1
+
+                          have hAB : Ne A B := by
+                            intro hEq
+                            subst B
+                            exact hAt h.2.2.2.2.2.2.2.1
+
+                          have hCD : Ne C D := by
+                            intro hEq
+                            subst D
+                            exact hCt h.2.2.2.2.2.2.2.2.1
+
+                          have hABp : Ne Ap Bp := by
+                            intro hEq
+                            apply hAB
+                            exact congrArg Subtype.val hEq
+
+                          have hCDp : Ne Cp Dp := by
+                            intro hEq
+                            apply hCD
+                            exact congrArg Subtype.val hEq
+
+                          have hAlp :
+                              (PlaneGeo Geo pi).OnLine Ap lp := by
+                            exact hAl
+
+                          have hBlp :
+                              (PlaneGeo Geo pi).OnLine Bp lp := by
+                            exact hBl
+
+                          have hCmp :
+                              (PlaneGeo Geo pi).OnLine Cp mp := by
+                            exact hCm
+
+                          have hDmp :
+                              (PlaneGeo Geo pi).OnLine Dp mp := by
+                            exact hDm
+
+                          have hDisjointLMPlane :
+                              HilbertLinesDisjoint
+                                (PlaneGeo Geo pi) lp mp :=
+                            (planeGeo_linesDisjoint_iff_ambient
+                              (Geo := Geo) pi lp mp).mpr
+                              hDisjointLM
+
+                          have hParallelPlane :
+                              (PlaneGeo Geo pi).Parallel
+                                Ap Bp Cp Dp := by
+
+                            refine And.intro hABp ?_
+                            refine And.intro hCDp ?_
+
+                            apply Set.disjoint_left.mpr
+                            intro Xp hXAB hXCD
+
+                            have hXl :
+                                (PlaneGeo Geo pi).OnLine Xp lp :=
+                              (hilbert_mem_pointLine_iff_onLine
+                                (PlaneGeo Geo pi)
+                                Ap Bp Xp
+                                lp
+                                hABp
+                                hAlp hBlp).mp
+                                hXAB
+
+                            have hXm :
+                                (PlaneGeo Geo pi).OnLine Xp mp :=
+                              (hilbert_mem_pointLine_iff_onLine
+                                (PlaneGeo Geo pi)
+                                Cp Dp Xp
+                                mp
+                                hCDp
+                                hCmp hDmp).mp
+                                hXCD
+
+                            exact
+                              hDisjointLMPlane
+                                (Exists.intro Xp
+                                  (And.intro hXl hXm))
+
+                          have hSameAB :=
+                            parallel_endpoints_sameSide
+                              (PlaneGeo Geo pi)
+                              Ap Bp Cp Dp
+                              hParallelPlane
+
+                          cases hSameAB with
+                          | intro q hQ =>
+
+                              have hCq := hQ.1
+                              have hDq := hQ.2.1
+                              have hSamePlane := hQ.2.2
+
+                              have hSameAmbient :
+                                  HilbertSameSideInPlane
+                                    Geo A B q.1 pi :=
+                                (planeGeo_sameSide_iff_space
+                                  (Geo := Geo)
+                                  pi Ap Bp q).mp
+                                  hSamePlane
+
+                              cases hParJoin with
+                              | intro sigma hPJ =>
+                                  have hDisjointJoin :=
+                                    hPJ.2.2
+
+                                  have hDirectedJoin :
+                                      HilbertSpaceDirectedParallelSegments
+                                        Geo A C B D := by
+
+                                    refine Exists.intro pi ?_
+                                    refine Exists.intro ac ?_
+                                    refine Exists.intro bd ?_
+                                    refine Exists.intro q.1 ?_
+
+                                    refine And.intro hAac ?_
+                                    refine And.intro hCac ?_
+                                    refine And.intro hBbd ?_
+                                    refine And.intro hDbd ?_
+                                    refine And.intro hacpi ?_
+                                    refine And.intro hbdpi ?_
+                                    refine And.intro hDisjointJoin ?_
+                                    refine And.intro hCq ?_
+                                    refine And.intro hDq ?_
+                                    refine And.intro q.2 ?_
+                                    exact hSameAmbient
+
+                                  exact
+                                    And.intro
+                                      hDirectedJoin
+                                      hCongJoin
+
+
+/--
+Strengthened central package for Euclid XI.10.
+
+The first two spatial I.33 applications are retained with their full
+directional information:
+
+    BE directed-parallel AD,
+    BE directed-parallel CF.
+
+At the same time the XI.9 step gives ordinary spatial parallelism
+
+    AD || CF,
+
+and spatial III.2 gives
+
+    AD ~= CF.
+
+This theorem is deliberately stronger than
+`hilbert_XI10_first_two_I33_and_XI9`: it preserves exactly the orientation
+data needed by the final I.33 stage.
+-/
+theorem hilbert_XI10_first_two_I33_directed_package
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D E F : Geo.Point)
+    (hDirBA_ED :
+      HilbertSpaceDirectedParallelSegments Geo B A E D)
+    (hDirBC_EF :
+      HilbertSpaceDirectedParallelSegments Geo B C E F)
+    (hBA_ED :
+      Geo.Congruent B A E D)
+    (hBC_EF :
+      Geo.Congruent B C E F)
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    exists ad cf be : Geo.Line,
+      H.OnLine A ad /\
+      H.OnLine D ad /\
+      H.OnLine C cf /\
+      H.OnLine F cf /\
+      H.OnLine B be /\
+      H.OnLine E be /\
+      HilbertSpaceLinesParallel Geo ad cf /\
+      Geo.Congruent A D C F /\
+      HilbertSpaceDirectedParallelSegments Geo B E A D /\
+      Geo.Congruent B E A D /\
+      HilbertSpaceDirectedParallelSegments Geo B E C F /\
+      Geo.Congruent B E C F := by
+
+  have hLeft :=
+    hilbert_XI10_I33_directed_output
+      (Geo := Geo)
+      B A E D
+      hDirBA_ED
+      hBA_ED
+
+  have hDirBE_AD :
+      HilbertSpaceDirectedParallelSegments Geo B E A D :=
+    hLeft.1
+
+  have hBE_AD :
+      Geo.Congruent B E A D :=
+    hLeft.2
+
+  have hRight :=
+    hilbert_XI10_I33_directed_output
+      (Geo := Geo)
+      B C E F
+      hDirBC_EF
+      hBC_EF
+
+  have hDirBE_CF :
+      HilbertSpaceDirectedParallelSegments Geo B E C F :=
+    hRight.1
+
+  have hBE_CF :
+      Geo.Congruent B E C F :=
+    hRight.2
+
+  have hMiddle :=
+    hilbert_XI10_first_two_I33_and_XI9
+      (Geo := Geo)
+      A B C D E F
+      hDirBA_ED
+      hDirBC_EF
+      hBA_ED
+      hBC_EF
+      hNoCommonPlane
+
+  cases hMiddle with
+  | intro ad h1 =>
+      cases h1 with
+      | intro cf h2 =>
+          cases h2 with
+          | intro be hData =>
+
+              have hAad := hData.1
+              have hDad := hData.2.1
+              have hCcf := hData.2.2.1
+              have hFcf := hData.2.2.2.1
+              have hBbe := hData.2.2.2.2.1
+              have hEbe := hData.2.2.2.2.2.1
+              have hParAD_CF := hData.2.2.2.2.2.2.1
+              have hAD_CF := hData.2.2.2.2.2.2.2
+
+              refine Exists.intro ad ?_
+              refine Exists.intro cf ?_
+              refine Exists.intro be ?_
+
+              refine And.intro hAad ?_
+              refine And.intro hDad ?_
+              refine And.intro hCcf ?_
+              refine And.intro hFcf ?_
+              refine And.intro hBbe ?_
+              refine And.intro hEbe ?_
+              refine And.intro hParAD_CF ?_
+              refine And.intro hAD_CF ?_
+              refine And.intro hDirBE_AD ?_
+              refine And.intro hBE_AD ?_
+              refine And.intro hDirBE_CF ?_
+              exact hBE_CF
+
+
+/--
+The open segment `PQ` meets the ambient plane `theta`.
+-/
+def HilbertSegmentMeetsPlane
+    [S : HilbertSpacePrimitive Geo]
+    (P Q : Geo.Point)
+    (theta : S.Plane) : Prop :=
+  exists X : Geo.Point,
+    Geo.Between P X Q /\
+    S.OnPlane X theta
+
+
+/--
+Two points lie on the same side of an ambient plane when neither point
+lies in the plane and the open segment joining them does not meet it.
+
+Unlike `HilbertSameSideInPlane`, no transitive closure is built into this
+definition.  For a plane, transitivity will be derived from planar Pasch
+by cutting with the plane through the three points involved.
+-/
+def HilbertSameSideOfPlane
+    [S : HilbertSpacePrimitive Geo]
+    (P Q : Geo.Point)
+    (theta : S.Plane) : Prop :=
+  Not (S.OnPlane P theta) /\
+  Not (S.OnPlane Q theta) /\
+  Not (HilbertSegmentMeetsPlane Geo P Q theta)
+
+
+/--
+A plane-local same-side relation can be lifted to a same-side-of-plane
+relation when the cutting plane meets the carrier plane exactly along
+the reference line.
+
+Only the inclusion
+
+    pi cap theta subset t
+
+is needed here.  The converse inclusion is normally supplied by the
+fact that `t` is the actual plane-intersection line.
+-/
+theorem hilbert_XI10_sameSideInPlane_lift_to_planeSide
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi theta : S.Plane)
+    (t : Geo.Line)
+    (htpi : HilbertLineInPlane Geo t pi)
+    (hSection :
+      forall X : Geo.Point,
+        S.OnPlane X pi ->
+        S.OnPlane X theta ->
+        H.OnLine X t)
+    (P Q : Geo.Point)
+    (hSame :
+      HilbertSameSideInPlane Geo P Q t pi) :
+    HilbertSameSideOfPlane Geo P Q theta := by
+
+  have hPpi : S.OnPlane P pi :=
+    hSame.1
+
+  have hQpi : S.OnPlane Q pi :=
+    hSame.2.1
+
+  have hPoffT : Not (H.OnLine P t) :=
+    hSame.2.2.1
+
+  have hQoffT : Not (H.OnLine Q t) :=
+    hSame.2.2.2.1
+
+  have hPoffTheta : Not (S.OnPlane P theta) := by
+    intro hPtheta
+    exact
+      hPoffT
+        (hSection P hPpi hPtheta)
+
+  have hQoffTheta : Not (S.OnPlane Q theta) := by
+    intro hQtheta
+    exact
+      hQoffT
+        (hSection Q hQpi hQtheta)
+
+  let Pp : PlanePoint Geo pi :=
+    { val := P, property := hPpi }
+
+  let Qp : PlanePoint Geo pi :=
+    { val := Q, property := hQpi }
+
+  let tp : PlaneLine Geo pi :=
+    { val := t, property := htpi }
+
+  have hSamePlane :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Pp Qp tp := by
+    apply
+      (planeGeo_sameSide_iff_space
+        (Geo := Geo)
+        pi Pp Qp tp).mpr
+    simpa [Pp, Qp, tp] using hSame
+
+  have hNoMeetPlane :
+      Not
+        (HilbertSegmentMeetsLine
+          (PlaneGeo Geo pi) Pp Qp tp) :=
+    hilbert_sameSide_segment_avoids_line
+      (PlaneGeo Geo pi)
+      Pp Qp tp
+      hSamePlane
+
+  have hNoMeetLine :
+      Not (HilbertSegmentMeetsLine Geo P Q t) := by
+    intro hMeet
+
+    apply hNoMeetPlane
+
+    apply
+      (planeGeo_segmentMeetsLine_iff_ambient
+        (Geo := Geo)
+        pi Pp Qp tp).mpr
+
+    simpa [Pp, Qp, tp] using hMeet
+
+  have hNoMeetTheta :
+      Not (HilbertSegmentMeetsPlane Geo P Q theta) := by
+
+    intro hMeetTheta
+
+    cases hMeetTheta with
+    | intro X hX =>
+        have hPXQ := hX.1
+        have hXtheta := hX.2
+
+        have hData :=
+          HilbertSpaceOrder.between_incidence
+            (Geo := Geo)
+            P X Q hPXQ
+
+        have hPQ : Ne P Q :=
+          hData.2.2.1
+
+        have hPXQcol :
+            PrimCollinear Geo P X Q :=
+          hData.2.2.2.1
+
+        have hPQXcol :
+            PrimCollinear Geo P Q X :=
+          PrimCollinearRotate
+            Geo P X Q hPXQcol
+
+        have hXpi : S.OnPlane X pi :=
+          hilbert_onPlane_of_primCollinear_with_two_on_plane
+            (Geo := Geo)
+            pi P Q X
+            hPQ
+            hPpi hQpi
+            hPQXcol
+
+        have hXt : H.OnLine X t :=
+          hSection X hXpi hXtheta
+
+        exact
+          hNoMeetLine
+            (Exists.intro X
+              (And.intro hPXQ hXt))
+
+  exact
+    And.intro hPoffTheta
+      (And.intro hQoffTheta
+        hNoMeetTheta)
+
+
+/--
+Borsuk--Szmielew, Chapter I, Section 19, Theorem 52, in the form needed
+for Euclid XI.10.
+
+Let the planes `pi` and `theta` meet along the line `t`. For points
+`P,Q` lying in `pi`, being on the same side of the ambient plane
+`theta` is equivalent to being on the same side of the section line
+`t` inside `pi`.
+
+The hypothesis `hSection` records the only nontrivial direction of the
+intersection characterization:
+
+    X in pi and X in theta  ->  X in t.
+
+The reverse direction follows from `httheta`.
+-/
+theorem hilbert_XI10_borsuk_szmielew_52
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi theta : S.Plane)
+    (t : Geo.Line)
+    (htpi : HilbertLineInPlane Geo t pi)
+    (httheta : HilbertLineInPlane Geo t theta)
+    (hSection :
+      forall X : Geo.Point,
+        S.OnPlane X pi ->
+        S.OnPlane X theta ->
+        H.OnLine X t)
+    (P Q : Geo.Point)
+    (hPpi : S.OnPlane P pi)
+    (hQpi : S.OnPlane Q pi) :
+    HilbertSameSideOfPlane Geo P Q theta <->
+    HilbertSameSideInPlane Geo P Q t pi := by
+
+  constructor
+
+  case mp =>
+    intro hPlaneSide
+
+    have hPoffTheta :
+        Not (S.OnPlane P theta) :=
+      hPlaneSide.1
+
+    have hQoffTheta :
+        Not (S.OnPlane Q theta) :=
+      hPlaneSide.2.1
+
+    have hNoMeetTheta :
+        Not (HilbertSegmentMeetsPlane Geo P Q theta) :=
+      hPlaneSide.2.2
+
+    have hPoffT :
+        Not (H.OnLine P t) := by
+      intro hPt
+      exact
+        hPoffTheta
+          (httheta P hPt)
+
+    have hQoffT :
+        Not (H.OnLine Q t) := by
+      intro hQt
+      exact
+        hQoffTheta
+          (httheta Q hQt)
+
+    have hNoMeetT :
+        Not (HilbertSegmentMeetsLine Geo P Q t) := by
+      intro hMeetT
+      cases hMeetT with
+      | intro X hX =>
+          have hPXQ := hX.1
+          have hXt := hX.2
+          exact
+            hNoMeetTheta
+              (Exists.intro X
+                (And.intro hPXQ
+                  (httheta X hXt)))
+
+    let Pp : PlanePoint Geo pi :=
+      { val := P, property := hPpi }
+
+    let Qp : PlanePoint Geo pi :=
+      { val := Q, property := hQpi }
+
+    let tp : PlaneLine Geo pi :=
+      { val := t, property := htpi }
+
+    have hPoffTp :
+        Not ((PlaneGeo Geo pi).OnLine Pp tp) := by
+      exact hPoffT
+
+    have hQoffTp :
+        Not ((PlaneGeo Geo pi).OnLine Qp tp) := by
+      exact hQoffT
+
+    have hNoMeetTp :
+        Not
+          (HilbertSegmentMeetsLine
+            (PlaneGeo Geo pi) Pp Qp tp) := by
+      intro hMeetPlane
+
+      apply hNoMeetT
+
+      apply
+        (planeGeo_segmentMeetsLine_iff_ambient
+          (Geo := Geo)
+          pi Pp Qp tp).mp
+
+      exact hMeetPlane
+
+    have hSamePlane :
+        HilbertSameSide
+          (PlaneGeo Geo pi) Pp Qp tp := by
+      exact
+        And.intro hPoffTp
+          (And.intro hQoffTp
+            (Relation.ReflTransGen.single
+              (And.intro hPoffTp
+                (And.intro hQoffTp
+                  hNoMeetTp))))
+
+    have hSameSpace :
+        HilbertSameSideInPlane Geo P Q t pi :=
+      (planeGeo_sameSide_iff_space
+        (Geo := Geo)
+        pi Pp Qp tp).mp
+        hSamePlane
+
+    simpa [Pp, Qp, tp] using hSameSpace
+
+  case mpr =>
+    intro hLineSide
+
+    exact
+      hilbert_XI10_sameSideInPlane_lift_to_planeSide
+        (Geo := Geo)
+        pi theta t
+        htpi hSection
+        P Q
+        hLineSide
+
+
+/--
+A convenient corollary using the actual intersection line supplied by the
+spatial plane-intersection theorem.
+
+If `pi` and `theta` are distinct and share a point `A`, then the line
+returned by `hilbert_plane_intersection_line` supports the full
+Borsuk--Szmielew Theorem 52 equivalence.
+-/
+theorem hilbert_XI10_borsuk_szmielew_52_of_plane_intersection
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi theta : S.Plane)
+    (hneq : Ne pi theta)
+    (A : Geo.Point)
+    (hApi : S.OnPlane A pi)
+    (hAtheta : S.OnPlane A theta)
+    (P Q : Geo.Point)
+    (hPpi : S.OnPlane P pi)
+    (hQpi : S.OnPlane Q pi) :
+    exists t : Geo.Line,
+      H.OnLine A t /\
+      HilbertLineInPlane Geo t pi /\
+      HilbertLineInPlane Geo t theta /\
+      (HilbertSameSideOfPlane Geo P Q theta <->
+       HilbertSameSideInPlane Geo P Q t pi) := by
+
+  have hInter :=
+    hilbert_plane_intersection_line
+      (Geo := Geo)
+      pi theta hneq
+      A hApi hAtheta
+
+  cases hInter with
+  | intro t hData =>
+
+      have hAt := hData.1
+      have htpi := hData.2.1
+      have httheta := hData.2.2.1
+      have hChar := hData.2.2.2
+
+      have hSection :
+          forall X : Geo.Point,
+            S.OnPlane X pi ->
+            S.OnPlane X theta ->
+            H.OnLine X t := by
+        intro X hXpi hXtheta
+        exact
+          (hChar X).mp
+            (And.intro hXpi hXtheta)
+
+      have hBS52 :
+          HilbertSameSideOfPlane Geo P Q theta <->
+          HilbertSameSideInPlane Geo P Q t pi :=
+        hilbert_XI10_borsuk_szmielew_52
+          (Geo := Geo)
+          pi theta t
+          htpi httheta
+          hSection
+          P Q
+          hPpi hQpi
+
+      refine Exists.intro t ?_
+      refine And.intro hAt ?_
+      refine And.intro htpi ?_
+      refine And.intro httheta ?_
+      exact hBS52
+
+
+/--
+Transitivity of the Borsuk half-space relation in the noncollinear case
+needed by Euclid XI.10.
+
+The proof deliberately handles both possible positions of the plane
+`alpha` through `A,B,C` relative to `theta`.
+
+* If the planes meet, Borsuk--Szmielew Theorem 52 reduces the statement
+  to ordinary same-side transitivity for the intersection line in `alpha`.
+* If the planes do not meet, every open segment contained in `alpha`
+  automatically avoids `theta`.
+
+No new spatial separation axiom is used.
+-/
+theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (A B C : Geo.Point)
+    (theta : S.Plane)
+    (hABC : Not (PrimCollinear Geo A B C))
+    (hAB :
+      HilbertSameSideOfPlane Geo A B theta)
+    (hBC :
+      HilbertSameSideOfPlane Geo B C theta) :
+    HilbertSameSideOfPlane Geo A C theta := by
+
+  cases
+      HilbertSpaceIncidence.plane_through
+        (Geo := Geo)
+        A B C hABC with
+  | intro alpha hAlpha =>
+
+      have hAalpha := hAlpha.1
+      have hBalpha := hAlpha.2.1
+      have hCalpha := hAlpha.2.2
+
+      by_cases hMeetPlanes :
+          exists X : Geo.Point,
+            S.OnPlane X alpha /\
+            S.OnPlane X theta
+
+      case pos =>
+        cases hMeetPlanes with
+        | intro X hX =>
+
+            have hXalpha := hX.1
+            have hXtheta := hX.2
+
+            have hAlphaNeTheta :
+                Ne alpha theta := by
+              intro hEq
+              have hAtheta :
+                  S.OnPlane A theta := by
+                simpa [hEq] using hAalpha
+              exact hAB.1 hAtheta
+
+            have hInter :=
+              hilbert_plane_intersection_line
+                (Geo := Geo)
+                alpha theta
+                hAlphaNeTheta
+                X hXalpha hXtheta
+
+            cases hInter with
+            | intro t hData =>
+
+                have htalpha := hData.2.1
+                have httheta := hData.2.2.1
+                have hChar := hData.2.2.2
+
+                have hSection :
+                    forall Y : Geo.Point,
+                      S.OnPlane Y alpha ->
+                      S.OnPlane Y theta ->
+                      H.OnLine Y t := by
+                  intro Y hYalpha hYtheta
+                  exact
+                    (hChar Y).mp
+                      (And.intro hYalpha hYtheta)
+
+                have hBSAB :
+                    HilbertSameSideOfPlane Geo A B theta <->
+                    HilbertSameSideInPlane Geo A B t alpha :=
+                  hilbert_XI10_borsuk_szmielew_52
+                    (Geo := Geo)
+                    alpha theta t
+                    htalpha httheta
+                    hSection
+                    A B
+                    hAalpha hBalpha
+
+                have hBSBC :
+                    HilbertSameSideOfPlane Geo B C theta <->
+                    HilbertSameSideInPlane Geo B C t alpha :=
+                  hilbert_XI10_borsuk_szmielew_52
+                    (Geo := Geo)
+                    alpha theta t
+                    htalpha httheta
+                    hSection
+                    B C
+                    hBalpha hCalpha
+
+                have hBSAC :
+                    HilbertSameSideOfPlane Geo A C theta <->
+                    HilbertSameSideInPlane Geo A C t alpha :=
+                  hilbert_XI10_borsuk_szmielew_52
+                    (Geo := Geo)
+                    alpha theta t
+                    htalpha httheta
+                    hSection
+                    A C
+                    hAalpha hCalpha
+
+                have hABline :
+                    HilbertSameSideInPlane Geo A B t alpha :=
+                  hBSAB.mp hAB
+
+                have hBCline :
+                    HilbertSameSideInPlane Geo B C t alpha :=
+                  hBSBC.mp hBC
+
+                have hACline :
+                    HilbertSameSideInPlane Geo A C t alpha := by
+
+                  refine And.intro hAalpha ?_
+                  refine And.intro hCalpha ?_
+                  refine And.intro hABline.2.2.1 ?_
+                  refine And.intro hBCline.2.2.2.1 ?_
+
+                  exact
+                    hABline.2.2.2.2.trans
+                      hBCline.2.2.2.2
+
+                exact
+                  hBSAC.mpr hACline
+
+      case neg =>
+
+        have hAoffTheta :
+            Not (S.OnPlane A theta) :=
+          hAB.1
+
+        have hCoffTheta :
+            Not (S.OnPlane C theta) :=
+          hBC.2.1
+
+        have hNoMeetTheta :
+            Not (HilbertSegmentMeetsPlane Geo A C theta) := by
+
+          intro hMeet
+          cases hMeet with
+          | intro X hX =>
+
+              have hAXC := hX.1
+              have hXtheta := hX.2
+
+              have hInc :=
+                HilbertSpaceOrder.between_incidence
+                  (Geo := Geo)
+                  A X C hAXC
+
+              have hAC : Ne A C :=
+                hInc.2.2.1
+
+              have hAXCcol :
+                  PrimCollinear Geo A X C :=
+                hInc.2.2.2.1
+
+              have hACXcol :
+                  PrimCollinear Geo A C X :=
+                PrimCollinearRotate
+                  Geo A X C hAXCcol
+
+              have hXalpha :
+                  S.OnPlane X alpha :=
+                hilbert_onPlane_of_primCollinear_with_two_on_plane
+                  (Geo := Geo)
+                  alpha
+                  A C X
+                  hAC
+                  hAalpha hCalpha
+                  hACXcol
+
+              exact
+                hMeetPlanes
+                  (Exists.intro X
+                    (And.intro hXalpha hXtheta))
+
+        exact
+          And.intro hAoffTheta
+            (And.intro hCoffTheta
+              hNoMeetTheta)
+
+
+/--
+The directional step hidden between XI.9 and the third application of I.33
+in Euclid XI.10.
+
+From
+
+    BE directed-parallel AD
+    BE directed-parallel CF
+
+together with ordinary spatial parallelism `AD || CF`, nondegeneracy of
+the two angles, and the hypothesis that the six points are not coplanar,
+we recover
+
+    AD directed-parallel CF.
+
+The proof uses Borsuk--Szmielew Theorem 52 twice:
+
+1. the two first-I.33 orientation witnesses are lifted to the common
+   half-space relation determined by the plane `DEF`;
+2. after transitivity, the resulting `A,C` half-space relation is cut
+   back down to the section line `DF` in the plane containing `AD,CF`.
+-/
+theorem hilbert_XI10_directed_AD_CF_from_common_BE
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (A B C D E F : Geo.Point)
+    (ad cf : Geo.Line)
+    (hAad : H.OnLine A ad)
+    (hDad : H.OnLine D ad)
+    (hCcf : H.OnLine C cf)
+    (hFcf : H.OnLine F cf)
+    (hParAD_CF :
+      HilbertSpaceLinesParallel Geo ad cf)
+    (hDirBE_AD :
+      HilbertSpaceDirectedParallelSegments Geo B E A D)
+    (hDirBE_CF :
+      HilbertSpaceDirectedParallelSegments Geo B E C F)
+    (hABC : Not (PrimCollinear Geo A B C))
+    (hDEF : Not (PrimCollinear Geo D E F))
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    HilbertSpaceDirectedParallelSegments Geo A D C F := by
+
+  cases
+      HilbertSpaceIncidence.plane_through
+        (Geo := Geo)
+        D E F hDEF with
+  | intro theta hTheta =>
+
+      have hDtheta := hTheta.1
+      have hEtheta := hTheta.2.1
+      have hFtheta := hTheta.2.2
+
+      cases hDirBE_AD with
+      | intro piAD hPiAD =>
+          cases hPiAD with
+          | intro be1 hBe1 =>
+              cases hBe1 with
+              | intro ad1 hAd1 =>
+                  cases hAd1 with
+                  | intro ed hLeft =>
+
+                      have hBbe1 := hLeft.1
+                      have hEbe1 := hLeft.2.1
+                      have hAad1 := hLeft.2.2.1
+                      have hDad1 := hLeft.2.2.2.1
+                      have hbe1pi := hLeft.2.2.2.2.1
+                      have had1pi := hLeft.2.2.2.2.2.1
+                      have hDisjointLeft :=
+                        hLeft.2.2.2.2.2.2.1
+                      have hEed :=
+                        hLeft.2.2.2.2.2.2.2.1
+                      have hDed :=
+                        hLeft.2.2.2.2.2.2.2.2.1
+                      have hedpi :=
+                        hLeft.2.2.2.2.2.2.2.2.2.1
+                      have hSameBA :=
+                        hLeft.2.2.2.2.2.2.2.2.2.2
+
+                      have hBpiAD : S.OnPlane B piAD :=
+                        hSameBA.1
+
+                      have hApiAD : S.OnPlane A piAD :=
+                        hSameBA.2.1
+
+                      have hEpiAD : S.OnPlane E piAD :=
+                        hbe1pi E hEbe1
+
+                      have hDpiAD : S.OnPlane D piAD :=
+                        had1pi D hDad1
+
+                      have hBoffED :
+                          Not (H.OnLine B ed) :=
+                        hSameBA.2.2.1
+
+                      have hED : Ne E D := by
+                        intro hEq
+                        subst D
+                        exact
+                          hDisjointLeft
+                            (Exists.intro E
+                              (And.intro hEbe1 hDad1))
+
+                      have hedtheta :
+                          HilbertLineInPlane Geo ed theta :=
+                        HilbertSpaceIncidence.line_in_plane
+                          (Geo := Geo)
+                          E D hED
+                          ed hEed hDed
+                          theta hEtheta hDtheta
+
+                      cases hDirBE_CF with
+                      | intro piCF hPiCF =>
+                          cases hPiCF with
+                          | intro be2 hBe2 =>
+                              cases hBe2 with
+                              | intro cf1 hCf1 =>
+                                  cases hCf1 with
+                                  | intro ef hRight =>
+
+                                      have hBbe2 := hRight.1
+                                      have hEbe2 := hRight.2.1
+                                      have hCcf1 := hRight.2.2.1
+                                      have hFcf1 := hRight.2.2.2.1
+                                      have hbe2pi :=
+                                        hRight.2.2.2.2.1
+                                      have hcf1pi :=
+                                        hRight.2.2.2.2.2.1
+                                      have hDisjointRight :=
+                                        hRight.2.2.2.2.2.2.1
+                                      have hEef :=
+                                        hRight.2.2.2.2.2.2.2.1
+                                      have hFef :=
+                                        hRight.2.2.2.2.2.2.2.2.1
+                                      have hefpi :=
+                                        hRight.2.2.2.2.2.2.2.2.2.1
+                                      have hSameBC :=
+                                        hRight.2.2.2.2.2.2.2.2.2.2
+
+                                      have hBpiCF :
+                                          S.OnPlane B piCF :=
+                                        hSameBC.1
+
+                                      have hCpiCF :
+                                          S.OnPlane C piCF :=
+                                        hSameBC.2.1
+
+                                      have hEpiCF :
+                                          S.OnPlane E piCF :=
+                                        hbe2pi E hEbe2
+
+                                      have hFpiCF :
+                                          S.OnPlane F piCF :=
+                                        hcf1pi F hFcf1
+
+                                      have hBoffEF :
+                                          Not (H.OnLine B ef) :=
+                                        hSameBC.2.2.1
+
+                                      have hEF : Ne E F := by
+                                        intro hEq
+                                        subst F
+                                        exact
+                                          hDisjointRight
+                                            (Exists.intro E
+                                              (And.intro hEbe2 hFcf1))
+
+                                      have heftheta :
+                                          HilbertLineInPlane Geo ef theta :=
+                                        HilbertSpaceIncidence.line_in_plane
+                                          (Geo := Geo)
+                                          E F hEF
+                                          ef hEef hFef
+                                          theta hEtheta hFtheta
+
+                                      have hBoffTheta :
+                                          Not (S.OnPlane B theta) := by
+                                        intro hBtheta
+
+                                        have hPiADTheta :
+                                            piAD = theta :=
+                                          hilbert_XI9_planes_eq_of_common_line_and_external_point
+                                            (Geo := Geo)
+                                            ed B hBoffED
+                                            piAD theta
+                                            hedpi hedtheta
+                                            hBpiAD hBtheta
+
+                                        have hPiCFTheta :
+                                            piCF = theta :=
+                                          hilbert_XI9_planes_eq_of_common_line_and_external_point
+                                            (Geo := Geo)
+                                            ef B hBoffEF
+                                            piCF theta
+                                            hefpi heftheta
+                                            hBpiCF hBtheta
+
+                                        have hAtheta :
+                                            S.OnPlane A theta := by
+                                          simpa [hPiADTheta] using hApiAD
+
+                                        have hCtheta :
+                                            S.OnPlane C theta := by
+                                          simpa [hPiCFTheta] using hCpiCF
+
+                                        exact
+                                          hNoCommonPlane
+                                            (Exists.intro theta
+                                              (And.intro hAtheta
+                                                (And.intro hBtheta
+                                                  (And.intro hCtheta
+                                                    (And.intro hDtheta
+                                                      (And.intro hEtheta
+                                                        hFtheta))))))
+
+                                      have hSectionED :
+                                          forall X : Geo.Point,
+                                            S.OnPlane X piAD ->
+                                            S.OnPlane X theta ->
+                                            H.OnLine X ed := by
+                                        intro X hXpi hXtheta
+                                        by_contra hXoff
+
+                                        have hEqPlanes :
+                                            piAD = theta :=
+                                          hilbert_XI9_planes_eq_of_common_line_and_external_point
+                                            (Geo := Geo)
+                                            ed X hXoff
+                                            piAD theta
+                                            hedpi hedtheta
+                                            hXpi hXtheta
+
+                                        have hBtheta :
+                                            S.OnPlane B theta := by
+                                          simpa [hEqPlanes] using hBpiAD
+
+                                        exact hBoffTheta hBtheta
+
+                                      have hSectionEF :
+                                          forall X : Geo.Point,
+                                            S.OnPlane X piCF ->
+                                            S.OnPlane X theta ->
+                                            H.OnLine X ef := by
+                                        intro X hXpi hXtheta
+                                        by_contra hXoff
+
+                                        have hEqPlanes :
+                                            piCF = theta :=
+                                          hilbert_XI9_planes_eq_of_common_line_and_external_point
+                                            (Geo := Geo)
+                                            ef X hXoff
+                                            piCF theta
+                                            hefpi heftheta
+                                            hXpi hXtheta
+
+                                        have hBtheta :
+                                            S.OnPlane B theta := by
+                                          simpa [hEqPlanes] using hBpiCF
+
+                                        exact hBoffTheta hBtheta
+
+                                      have hBAplane :
+                                          HilbertSameSideOfPlane
+                                            Geo B A theta :=
+                                        hilbert_XI10_sameSideInPlane_lift_to_planeSide
+                                          (Geo := Geo)
+                                          piAD theta ed
+                                          hedpi hSectionED
+                                          B A
+                                          hSameBA
+
+                                      have hBCplane :
+                                          HilbertSameSideOfPlane
+                                            Geo B C theta :=
+                                        hilbert_XI10_sameSideInPlane_lift_to_planeSide
+                                          (Geo := Geo)
+                                          piCF theta ef
+                                          hefpi hSectionEF
+                                          B C
+                                          hSameBC
+
+                                      have hABplane :
+                                          HilbertSameSideOfPlane
+                                            Geo A B theta := by
+                                        exact
+                                          And.intro hBAplane.2.1
+                                            (And.intro hBAplane.1
+                                              (by
+                                                intro hMeet
+                                                cases hMeet with
+                                                | intro X hX =>
+                                                    have hAXB := hX.1
+                                                    have hXtheta := hX.2
+                                                    have hBXA :
+                                                        Geo.Between B X A :=
+                                                      (HilbertSpaceOrder.between_incidence
+                                                        (Geo := Geo)
+                                                        A X B hAXB).2.2.2.2
+                                                    exact
+                                                      hBAplane.2.2
+                                                        (Exists.intro X
+                                                          (And.intro hBXA hXtheta))))
+
+                                      have hACplane :
+                                          HilbertSameSideOfPlane
+                                            Geo A C theta :=
+                                        hilbert_XI10_sameSideOfPlane_trans_noncollinear
+                                          (Geo := Geo)
+                                          A B C theta
+                                          hABC
+                                          hABplane hBCplane
+
+                                      cases hParAD_CF with
+                                      | intro alpha hAlpha =>
+
+                                          have hadalpha := hAlpha.1
+                                          have hcfalpha := hAlpha.2.1
+                                          have hDisjointADCF := hAlpha.2.2
+
+                                          have hAalpha :
+                                              S.OnPlane A alpha :=
+                                            hadalpha A hAad
+
+                                          have hDalpha :
+                                              S.OnPlane D alpha :=
+                                            hadalpha D hDad
+
+                                          have hCalpha :
+                                              S.OnPlane C alpha :=
+                                            hcfalpha C hCcf
+
+                                          have hFalpha :
+                                              S.OnPlane F alpha :=
+                                            hcfalpha F hFcf
+
+                                          have hDF : Ne D F := by
+                                            intro hEq
+                                            subst F
+                                            exact
+                                              hDisjointADCF
+                                                (Exists.intro D
+                                                  (And.intro hDad hFcf))
+
+                                          cases
+                                              HilbertPlaneIncidence.line_through
+                                                D F hDF with
+                                          | intro df hDFline =>
+
+                                              have hDdf := hDFline.1
+                                              have hFdf := hDFline.2
+
+                                              have hdfalpha :
+                                                  HilbertLineInPlane
+                                                    Geo df alpha :=
+                                                HilbertSpaceIncidence.line_in_plane
+                                                  (Geo := Geo)
+                                                  D F hDF
+                                                  df hDdf hFdf
+                                                  alpha hDalpha hFalpha
+
+                                              have hdftheta :
+                                                  HilbertLineInPlane
+                                                    Geo df theta :=
+                                                HilbertSpaceIncidence.line_in_plane
+                                                  (Geo := Geo)
+                                                  D F hDF
+                                                  df hDdf hFdf
+                                                  theta hDtheta hFtheta
+
+                                              have hSectionDF :
+                                                  forall X : Geo.Point,
+                                                    S.OnPlane X alpha ->
+                                                    S.OnPlane X theta ->
+                                                    H.OnLine X df := by
+                                                intro X hXalpha hXtheta
+                                                by_contra hXoff
+
+                                                have hEqPlanes :
+                                                    alpha = theta :=
+                                                  hilbert_XI9_planes_eq_of_common_line_and_external_point
+                                                    (Geo := Geo)
+                                                    df X hXoff
+                                                    alpha theta
+                                                    hdfalpha hdftheta
+                                                    hXalpha hXtheta
+
+                                                have hAtheta :
+                                                    S.OnPlane A theta := by
+                                                  simpa [hEqPlanes] using hAalpha
+
+                                                exact hACplane.1 hAtheta
+
+                                              have hSameAC :
+                                                  HilbertSameSideInPlane
+                                                    Geo A C df alpha :=
+                                                (hilbert_XI10_borsuk_szmielew_52
+                                                  (Geo := Geo)
+                                                  alpha theta df
+                                                  hdfalpha hdftheta
+                                                  hSectionDF
+                                                  A C
+                                                  hAalpha hCalpha).mp
+                                                  hACplane
+
+                                              refine Exists.intro alpha ?_
+                                              refine Exists.intro ad ?_
+                                              refine Exists.intro cf ?_
+                                              refine Exists.intro df ?_
+                                              refine And.intro hAad ?_
+                                              refine And.intro hDad ?_
+                                              refine And.intro hCcf ?_
+                                              refine And.intro hFcf ?_
+                                              refine And.intro hadalpha ?_
+                                              refine And.intro hcfalpha ?_
+                                              refine And.intro hDisjointADCF ?_
+                                              refine And.intro hDdf ?_
+                                              refine And.intro hFdf ?_
+                                              refine And.intro hdfalpha ?_
+                                              exact hSameAC
+
+
+/--
+The third I.33 step in Euclid XI.10.
+
+After the first two I.33 applications and XI.9 we know
+
+    AD ~= CF,
+    AD || CF.
+
+The directional reconstruction proved above strengthens this to
+
+    AD directed-parallel CF.
+
+A final application of the spatial I.33 package therefore yields
+
+    AC ~= DF.
+
+This is the last side congruence needed for the final spatial SSS step.
+-/
+theorem hilbert_XI10_third_I33_AC_DF
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D E F : Geo.Point)
+    (hDirBA_ED :
+      HilbertSpaceDirectedParallelSegments Geo B A E D)
+    (hDirBC_EF :
+      HilbertSpaceDirectedParallelSegments Geo B C E F)
+    (hBA_ED :
+      Geo.Congruent B A E D)
+    (hBC_EF :
+      Geo.Congruent B C E F)
+    (hABC : Not (PrimCollinear Geo A B C))
+    (hDEF : Not (PrimCollinear Geo D E F))
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    Geo.Congruent A C D F := by
+
+  have hPackage :=
+    hilbert_XI10_first_two_I33_directed_package
+      (Geo := Geo)
+      A B C D E F
+      hDirBA_ED
+      hDirBC_EF
+      hBA_ED
+      hBC_EF
+      hNoCommonPlane
+
+  cases hPackage with
+  | intro ad h1 =>
+      cases h1 with
+      | intro cf h2 =>
+          cases h2 with
+          | intro be hData =>
+
+              have hAad := hData.1
+              have hDad := hData.2.1
+              have hCcf := hData.2.2.1
+              have hFcf := hData.2.2.2.1
+              have hParAD_CF := hData.2.2.2.2.2.2.1
+              have hAD_CF := hData.2.2.2.2.2.2.2.1
+              have hDirBE_AD := hData.2.2.2.2.2.2.2.2.1
+              have hDirBE_CF :=
+                hData.2.2.2.2.2.2.2.2.2.2.1
+
+              have hDirAD_CF :
+                  HilbertSpaceDirectedParallelSegments
+                    Geo A D C F :=
+                hilbert_XI10_directed_AD_CF_from_common_BE
+                  (Geo := Geo)
+                  A B C D E F
+                  ad cf
+                  hAad hDad hCcf hFcf
+                  hParAD_CF
+                  hDirBE_AD
+                  hDirBE_CF
+                  hABC hDEF
+                  hNoCommonPlane
+
+              have hThird :=
+                hilbert_XI10_I33_directed_output
+                  (Geo := Geo)
+                  A D C F
+                  hDirAD_CF
+                  hAD_CF
+
+              exact hThird.2
+
+
+/--
+Normalized form of Euclid XI.10.
+
+The four rays have already been cut so that the two corresponding pairs
+of segments are congruent:
+
+    BA ~= ED,
+    BC ~= EF.
+
+The directed-parallel hypotheses encode Euclid's "parallel in the same
+direction" information.  The six selected points are assumed not to lie
+in one common plane.
+
+The preceding XI.10 construction proves the third side congruence
+
+    AC ~= DF.
+
+Spatial SSS, applied to the triangles `BAC` and `EDF`, then gives exactly
+
+    angle ABC ~= angle DEF.
+
+This theorem is the complete XI.10 argument after Euclid's initial I.3
+segment-layoff normalization.
+-/
+theorem euclid_proposition_11_10_normalized
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D E F : Geo.Point)
+    (hDirBA_ED :
+      HilbertSpaceDirectedParallelSegments Geo B A E D)
+    (hDirBC_EF :
+      HilbertSpaceDirectedParallelSegments Geo B C E F)
+    (hBA_ED :
+      Geo.Congruent B A E D)
+    (hBC_EF :
+      Geo.Congruent B C E F)
+    (hABC : Not (PrimCollinear Geo A B C))
+    (hDEF : Not (PrimCollinear Geo D E F))
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    Geo.AngleCongruent A B C D E F := by
+
+  have hAC_DF :
+      Geo.Congruent A C D F :=
+    hilbert_XI10_third_I33_AC_DF
+      (Geo := Geo)
+      A B C D E F
+      hDirBA_ED
+      hDirBC_EF
+      hBA_ED
+      hBC_EF
+      hABC hDEF
+      hNoCommonPlane
+
+  have hBAC :
+      Not (PrimCollinear Geo B A C) := by
+    intro h
+    exact
+      hABC
+        (PrimCollinearSwap Geo B A C h)
+
+  cases
+      HilbertSpaceIncidence.plane_through
+        (Geo := Geo)
+        D E F hDEF with
+  | intro sigma hSigma =>
+
+      have hDsigma := hSigma.1
+      have hEsigma := hSigma.2.1
+      have hFsigma := hSigma.2.2
+
+      let Ep : PlanePoint Geo sigma :=
+        { val := E, property := hEsigma }
+
+      let Dp : PlanePoint Geo sigma :=
+        { val := D, property := hDsigma }
+
+      let Fp : PlanePoint Geo sigma :=
+        { val := F, property := hFsigma }
+
+      have hEDFPlane :
+          Not
+            (PrimCollinear
+              (PlaneGeo Geo sigma)
+              Ep Dp Fp) := by
+
+        intro hPlane
+
+        have hAmbient :
+            PrimCollinear Geo E D F :=
+          planeGeo_primCollinear_to_ambient
+            (Geo := Geo)
+            sigma
+            Ep Dp Fp
+            hPlane
+
+        exact
+          hDEF
+            (PrimCollinearSwap Geo E D F hAmbient)
+
+      have hAngle :=
+        hilbert_space_sss_angleA_in_plane
+          (Geo := Geo)
+          sigma
+          B A C
+          Ep Dp Fp
+          hBAC
+          hEDFPlane
+          hBA_ED
+          hAC_DF
+          hBC_EF
+
+      simpa [Ep, Dp, Fp] using hAngle
+
+
+/--
+Swapping the two ordered parallel segments preserves directed spatial
+parallelism.
+-/
+theorem hilbert_XI10_directedParallelSegments_swap_pairs
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (A B C D : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+    HilbertSpaceDirectedParallelSegments Geo C D A B := by
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+
+                  have hAl := h.1
+                  have hBl := h.2.1
+                  have hCm := h.2.2.1
+                  have hDm := h.2.2.2.1
+                  have hlpi := h.2.2.2.2.1
+                  have hmpi := h.2.2.2.2.2.1
+                  have hDis := h.2.2.2.2.2.2.1
+                  have hBt := h.2.2.2.2.2.2.2.1
+                  have hDt := h.2.2.2.2.2.2.2.2.1
+                  have htpi := h.2.2.2.2.2.2.2.2.2.1
+                  have hSame := h.2.2.2.2.2.2.2.2.2.2
+
+                  let Ap : PlanePoint Geo pi :=
+                    { val := A, property := hlpi A hAl }
+
+                  let Cp : PlanePoint Geo pi :=
+                    { val := C, property := hmpi C hCm }
+
+                  let tp : PlaneLine Geo pi :=
+                    { val := t, property := htpi }
+
+                  have hSamePlane :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) Ap Cp tp := by
+                    apply
+                      (planeGeo_sameSide_iff_space
+                        (Geo := Geo)
+                        pi Ap Cp tp).mpr
+                    simpa [Ap, Cp, tp] using hSame
+
+                  have hSamePlaneSymm :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) Cp Ap tp :=
+                    hilbert_sameSide_symm
+                      (PlaneGeo Geo pi)
+                      Ap Cp tp
+                      hSamePlane
+
+                  have hSameSymm :
+                      HilbertSameSideInPlane Geo C A t pi := by
+                    have hSymm :=
+                      (planeGeo_sameSide_iff_space
+                        (Geo := Geo)
+                        pi Cp Ap tp).mp
+                        hSamePlaneSymm
+                    simpa [Ap, Cp, tp] using hSymm
+
+                  have hDisSymm :
+                      HilbertLinesDisjoint Geo m l := by
+                    intro hMeet
+                    cases hMeet with
+                    | intro X hX =>
+                        exact
+                          hDis
+                            (Exists.intro X
+                              (And.intro hX.2 hX.1))
+
+                  refine Exists.intro pi ?_
+                  refine Exists.intro m ?_
+                  refine Exists.intro l ?_
+                  refine Exists.intro t ?_
+                  refine And.intro hCm ?_
+                  refine And.intro hDm ?_
+                  refine And.intro hAl ?_
+                  refine And.intro hBl ?_
+                  refine And.intro hmpi ?_
+                  refine And.intro hlpi ?_
+                  refine And.intro hDisSymm ?_
+                  refine And.intro hDt ?_
+                  refine And.intro hBt ?_
+                  refine And.intro htpi ?_
+                  exact hSameSymm
+
+
+/--
+Transport the first endpoint of each ordered directed-parallel segment
+along the corresponding ray, while keeping the second endpoints fixed.
+
+For
+
+    AB directed-parallel CD
+
+the connector in the definition is the fixed line `BD`. If `A'` lies
+on ray `BA` and `C'` lies on ray `DC`, then
+
+    A'B directed-parallel C'D.
+-/
+theorem hilbert_XI10_directedParallelSegments_transport_first_endpoints
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (A B C D A' C' : Geo.Point)
+    (hDir :
+      HilbertSpaceDirectedParallelSegments Geo A B C D)
+    (hRayBA' :
+      HilbertSameRay Geo B A A')
+    (hRayDC' :
+      HilbertSameRay Geo D C C') :
+    HilbertSpaceDirectedParallelSegments Geo A' B C' D := by
+
+  have hNondeg :=
+    hilbert_XI10_directedParallelSegments_nondegenerate
+      (Geo := Geo)
+      A B C D
+      hDir
+
+  have hAB : Ne A B :=
+    hNondeg.1
+
+  have hCD : Ne C D :=
+    hNondeg.2
+
+  cases hDir with
+  | intro pi hPi =>
+      cases hPi with
+      | intro l hL =>
+          cases hL with
+          | intro m hM =>
+              cases hM with
+              | intro t h =>
+
+                  have hAl := h.1
+                  have hBl := h.2.1
+                  have hCm := h.2.2.1
+                  have hDm := h.2.2.2.1
+                  have hlpi := h.2.2.2.2.1
+                  have hmpi := h.2.2.2.2.2.1
+                  have hDis := h.2.2.2.2.2.2.1
+                  have hBt := h.2.2.2.2.2.2.2.1
+                  have hDt := h.2.2.2.2.2.2.2.2.1
+                  have htpi := h.2.2.2.2.2.2.2.2.2.1
+                  have hSame := h.2.2.2.2.2.2.2.2.2.2
+
+                  have hA'l : H.OnLine A' l :=
+                    hilbert_collinear_on_line
+                      Geo
+                      B A A'
+                      l
+                      hAB.symm
+                      hBl hAl
+                      hRayBA'.2.2.1
+
+                  have hC'm : H.OnLine C' m :=
+                    hilbert_collinear_on_line
+                      Geo
+                      D C C'
+                      m
+                      hCD.symm
+                      hDm hCm
+                      hRayDC'.2.2.1
+
+                  have hA'pi : S.OnPlane A' pi :=
+                    hlpi A' hA'l
+
+                  have hC'pi : S.OnPlane C' pi :=
+                    hmpi C' hC'm
+
+                  have hDoffl :
+                      Not (H.OnLine D l) := by
+                    intro hDl
+                    exact
+                      hDis
+                        (Exists.intro D
+                          (And.intro hDl hDm))
+
+                  have hBoffm :
+                      Not (H.OnLine B m) := by
+                    intro hBm
+                    exact
+                      hDis
+                        (Exists.intro B
+                          (And.intro hBl hBm))
+
+                  let Bp : PlanePoint Geo pi :=
+                    { val := B, property := hlpi B hBl }
+
+                  let Ap : PlanePoint Geo pi :=
+                    { val := A, property := hlpi A hAl }
+
+                  let A'p : PlanePoint Geo pi :=
+                    { val := A', property := hA'pi }
+
+                  let Dp : PlanePoint Geo pi :=
+                    { val := D, property := hmpi D hDm }
+
+                  let Cp : PlanePoint Geo pi :=
+                    { val := C, property := hmpi C hCm }
+
+                  let C'p : PlanePoint Geo pi :=
+                    { val := C', property := hC'pi }
+
+                  let lp : PlaneLine Geo pi :=
+                    { val := l, property := hlpi }
+
+                  let mp : PlaneLine Geo pi :=
+                    { val := m, property := hmpi }
+
+                  let tp : PlaneLine Geo pi :=
+                    { val := t, property := htpi }
+
+                  have hRayBA'Plane :
+                      HilbertSameRay
+                        (PlaneGeo Geo pi) Bp Ap A'p := by
+                    apply
+                      (planeGeo_sameRay_iff_ambient
+                        (Geo := Geo)
+                        pi Bp Ap A'p).mpr
+                    simpa [Bp, Ap, A'p] using hRayBA'
+
+                  have hRayDC'Plane :
+                      HilbertSameRay
+                        (PlaneGeo Geo pi) Dp Cp C'p := by
+                    apply
+                      (planeGeo_sameRay_iff_ambient
+                        (Geo := Geo)
+                        pi Dp Cp C'p).mpr
+                    simpa [Dp, Cp, C'p] using hRayDC'
+
+                  have hABPlane : Ne Ap Bp := by
+                    intro hEq
+                    apply hAB
+                    exact congrArg Subtype.val hEq
+
+                  have hCDPlane : Ne Cp Dp := by
+                    intro hEq
+                    apply hCD
+                    exact congrArg Subtype.val hEq
+
+                  have hRayBAAPlane :
+                      HilbertSameRay
+                        (PlaneGeo Geo pi) Bp Ap Ap :=
+                    hilbert_sameRay_refl
+                      (PlaneGeo Geo pi)
+                      Bp Ap
+                      hABPlane
+
+                  have hRayDCCPlane :
+                      HilbertSameRay
+                        (PlaneGeo Geo pi) Dp Cp Cp :=
+                    hilbert_sameRay_refl
+                      (PlaneGeo Geo pi)
+                      Dp Cp
+                      hCDPlane
+
+                  have hDofflPlane :
+                      Not ((PlaneGeo Geo pi).OnLine Dp lp) := by
+                    exact hDoffl
+
+                  have hBoffmPlane :
+                      Not ((PlaneGeo Geo pi).OnLine Bp mp) := by
+                    exact hBoffm
+
+                  have hAA'Same :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) Ap A'p tp :=
+                    hilbert_sameRay_points_sameSide
+                      (PlaneGeo Geo pi)
+                      Bp Ap Ap A'p Dp
+                      lp tp
+                      (by exact hBl)
+                      (by exact hAl)
+                      (by exact hBt)
+                      (by exact hDt)
+                      hDofflPlane
+                      hRayBAAPlane
+                      hRayBA'Plane
+
+                  have hCC'Same :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) Cp C'p tp :=
+                    hilbert_sameRay_points_sameSide
+                      (PlaneGeo Geo pi)
+                      Dp Cp Cp C'p Bp
+                      mp tp
+                      (by exact hDm)
+                      (by exact hCm)
+                      (by exact hDt)
+                      (by exact hBt)
+                      hBoffmPlane
+                      hRayDCCPlane
+                      hRayDC'Plane
+
+                  have hSamePlane :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) Ap Cp tp := by
+                    apply
+                      (planeGeo_sameSide_iff_space
+                        (Geo := Geo)
+                        pi Ap Cp tp).mpr
+                    simpa [Ap, Cp, tp] using hSame
+
+                  have hA'ASame :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) A'p Ap tp :=
+                    hilbert_sameSide_symm
+                      (PlaneGeo Geo pi)
+                      Ap A'p tp
+                      hAA'Same
+
+                  have hA'CSame :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) A'p Cp tp :=
+                    hilbert_sameSide_trans
+                      (PlaneGeo Geo pi)
+                      A'p Ap Cp tp
+                      hA'ASame hSamePlane
+
+                  have hA'C'Same :
+                      HilbertSameSide
+                        (PlaneGeo Geo pi) A'p C'p tp :=
+                    hilbert_sameSide_trans
+                      (PlaneGeo Geo pi)
+                      A'p Cp C'p tp
+                      hA'CSame hCC'Same
+
+                  have hSameNew :
+                      HilbertSameSideInPlane Geo A' C' t pi := by
+                    have hNew :=
+                      (planeGeo_sameSide_iff_space
+                        (Geo := Geo)
+                        pi A'p C'p tp).mp
+                        hA'C'Same
+                    simpa [A'p, C'p, tp] using hNew
+
+                  refine Exists.intro pi ?_
+                  refine Exists.intro l ?_
+                  refine Exists.intro m ?_
+                  refine Exists.intro t ?_
+                  refine And.intro hA'l ?_
+                  refine And.intro hBl ?_
+                  refine And.intro hC'm ?_
+                  refine And.intro hDm ?_
+                  refine And.intro hlpi ?_
+                  refine And.intro hmpi ?_
+                  refine And.intro hDis ?_
+                  refine And.intro hBt ?_
+                  refine And.intro hDt ?_
+                  refine And.intro htpi ?_
+                  exact hSameNew
+
+
+/--
+Normalized Euclid XI.10 with the fixed-connector orientation.
+
+Instead of encoding the corresponding directions as
+
+    BA -> ED,
+    BC -> EF,
+
+we use the equivalent endpoint orientation
+
+    AB -> DE,
+    CB -> FE.
+
+The advantage is formal: both directed-parallel predicates use the fixed
+connector `BE`.  This is the orientation naturally preserved when Euclid I.3
+moves the outer endpoints along the four rays.
+
+The two first I.33 applications produce
+
+    AD -> BE,  AD ~= BE,
+    CF -> BE,  CF ~= BE.
+
+After swapping the two directed pairs we recover the common form
+
+    BE -> AD,
+    BE -> CF,
+
+so the already established Borsuk--Szmielew/XI.9 core applies unchanged.
+-/
+theorem euclid_proposition_11_10_normalized_fixed_connector
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D E F : Geo.Point)
+    (hDirAB_DE :
+      HilbertSpaceDirectedParallelSegments Geo A B D E)
+    (hDirCB_FE :
+      HilbertSpaceDirectedParallelSegments Geo C B F E)
+    (hAB_DE :
+      Geo.Congruent A B D E)
+    (hCB_FE :
+      Geo.Congruent C B F E)
+    (hABC : Not (PrimCollinear Geo A B C))
+    (hDEF : Not (PrimCollinear Geo D E F))
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    Geo.AngleCongruent A B C D E F := by
+
+  have hLeft :=
+    hilbert_XI10_I33_directed_output
+      (Geo := Geo)
+      A B D E
+      hDirAB_DE
+      hAB_DE
+
+  have hDirAD_BE :
+      HilbertSpaceDirectedParallelSegments Geo A D B E :=
+    hLeft.1
+
+  have hAD_BE :
+      Geo.Congruent A D B E :=
+    hLeft.2
+
+  have hDirBE_AD :
+      HilbertSpaceDirectedParallelSegments Geo B E A D :=
+    hilbert_XI10_directedParallelSegments_swap_pairs
+      (Geo := Geo)
+      A D B E
+      hDirAD_BE
+
+  have hRight :=
+    hilbert_XI10_I33_directed_output
+      (Geo := Geo)
+      C B F E
+      hDirCB_FE
+      hCB_FE
+
+  have hDirCF_BE :
+      HilbertSpaceDirectedParallelSegments Geo C F B E :=
+    hRight.1
+
+  have hCF_BE :
+      Geo.Congruent C F B E :=
+    hRight.2
+
+  have hDirBE_CF :
+      HilbertSpaceDirectedParallelSegments Geo B E C F :=
+    hilbert_XI10_directedParallelSegments_swap_pairs
+      (Geo := Geo)
+      C F B E
+      hDirCF_BE
+
+  have hLeftCarriers :=
+    hilbert_XI10_directedParallelSegments_carriers
+      (Geo := Geo)
+      A D B E
+      hDirAD_BE
+
+  cases hLeftCarriers with
+  | intro piL hPiL =>
+      cases hPiL with
+      | intro ad hAd =>
+          cases hAd with
+          | intro be1 hBe1 =>
+              cases hBe1 with
+              | intro tL hL =>
+
+                  have hAad := hL.1
+                  have hDad := hL.2.1
+                  have hBbe1 := hL.2.2.1
+                  have hEbe1 := hL.2.2.2.1
+                  have hParAD_BE := hL.2.2.2.2.2.2.2.2
+
+                  have hRightCarriers :=
+                    hilbert_XI10_directedParallelSegments_carriers
+                      (Geo := Geo)
+                      C F B E
+                      hDirCF_BE
+
+                  cases hRightCarriers with
+                  | intro piR hPiR =>
+                      cases hPiR with
+                      | intro cf hCf =>
+                          cases hCf with
+                          | intro be2 hBe2 =>
+                              cases hBe2 with
+                              | intro tR hR =>
+
+                                  have hCcf := hR.1
+                                  have hFcf := hR.2.1
+                                  have hBbe2 := hR.2.2.1
+                                  have hEbe2 := hR.2.2.2.1
+                                  have hParCF_BE := hR.2.2.2.2.2.2.2.2
+
+                                  have hNondegLeft :=
+                                    hilbert_XI10_directedParallelSegments_nondegenerate
+                                      (Geo := Geo)
+                                      A D B E
+                                      hDirAD_BE
+
+                                  have hBE : Ne B E :=
+                                    hNondegLeft.2
+
+                                  have hBEline :
+                                      be1 = be2 :=
+                                    HilbertPlaneIncidence.line_unique
+                                      B E hBE
+                                      be1 be2
+                                      hBbe1 hEbe1
+                                      hBbe2 hEbe2
+
+                                  subst be2
+
+                                  have hNoPlaneAD_CF_BE :
+                                      Not (exists omega : S.Plane,
+                                        HilbertLineInPlane Geo ad omega /\
+                                        HilbertLineInPlane Geo cf omega /\
+                                        HilbertLineInPlane Geo be1 omega) := by
+
+                                    intro hPlane
+                                    cases hPlane with
+                                    | intro omega hData =>
+
+                                        have hadomega := hData.1
+                                        have hcfomega := hData.2.1
+                                        have hbeomega := hData.2.2
+
+                                        have hAomega :
+                                            S.OnPlane A omega :=
+                                          hadomega A hAad
+
+                                        have hDomega :
+                                            S.OnPlane D omega :=
+                                          hadomega D hDad
+
+                                        have hComega :
+                                            S.OnPlane C omega :=
+                                          hcfomega C hCcf
+
+                                        have hFomega :
+                                            S.OnPlane F omega :=
+                                          hcfomega F hFcf
+
+                                        have hBomega :
+                                            S.OnPlane B omega :=
+                                          hbeomega B hBbe1
+
+                                        have hEomega :
+                                            S.OnPlane E omega :=
+                                          hbeomega E hEbe1
+
+                                        exact
+                                          hNoCommonPlane
+                                            (Exists.intro omega
+                                              (And.intro hAomega
+                                                (And.intro hBomega
+                                                  (And.intro hComega
+                                                    (And.intro hDomega
+                                                      (And.intro hEomega
+                                                        hFomega))))))
+
+                                  have hParAD_CF :
+                                      HilbertSpaceLinesParallel Geo ad cf :=
+                                    euclid_proposition_11_9
+                                      (Geo := Geo)
+                                      ad cf be1
+                                      hParAD_BE
+                                      hParCF_BE
+                                      hNoPlaneAD_CF_BE
+
+                                  have hNondegAD_BE :=
+                                    hilbert_XI10_directedParallelSegments_nondegenerate
+                                      (Geo := Geo)
+                                      A D B E
+                                      hDirAD_BE
+
+                                  have hAD : Ne A D :=
+                                    hNondegAD_BE.1
+
+                                  have hBE_AD :
+                                      Geo.Congruent B E A D :=
+                                    hilbert_space_congruent_symmetry
+                                      (Geo := Geo)
+                                      A D B E
+                                      hAD
+                                      hAD_BE
+
+                                  have hNondegCF_BE :=
+                                    hilbert_XI10_directedParallelSegments_nondegenerate
+                                      (Geo := Geo)
+                                      C F B E
+                                      hDirCF_BE
+
+                                  have hCF : Ne C F :=
+                                    hNondegCF_BE.1
+
+                                  have hBE_CF :
+                                      Geo.Congruent B E C F :=
+                                    hilbert_space_congruent_symmetry
+                                      (Geo := Geo)
+                                      C F B E
+                                      hCF
+                                      hCF_BE
+
+                                  have hAD_CF :
+                                      Geo.Congruent A D C F :=
+                                    HilbertSpaceCongruence.segment_congruence_common
+                                      (Geo := Geo)
+                                      B E
+                                      A D
+                                      C F
+                                      hBE_AD
+                                      hBE_CF
+
+                                  have hDirAD_CF :
+                                      HilbertSpaceDirectedParallelSegments
+                                        Geo A D C F :=
+                                    hilbert_XI10_directed_AD_CF_from_common_BE
+                                      (Geo := Geo)
+                                      A B C D E F
+                                      ad cf
+                                      hAad hDad hCcf hFcf
+                                      hParAD_CF
+                                      hDirBE_AD
+                                      hDirBE_CF
+                                      hABC hDEF
+                                      hNoCommonPlane
+
+                                  have hThird :=
+                                    hilbert_XI10_I33_directed_output
+                                      (Geo := Geo)
+                                      A D C F
+                                      hDirAD_CF
+                                      hAD_CF
+
+                                  have hAC_DF :
+                                      Geo.Congruent A C D F :=
+                                    hThird.2
+
+                                  have hBA_ED :
+                                      Geo.Congruent B A E D := by
+                                    have h1 :
+                                        Geo.Congruent B A D E :=
+                                      CongruentReverseFirst
+                                        Geo A B D E hAB_DE
+                                    exact
+                                      CongruentSwapSecond
+                                        Geo B A D E h1
+
+                                  have hBC_EF :
+                                      Geo.Congruent B C E F := by
+                                    have h1 :
+                                        Geo.Congruent B C F E :=
+                                      CongruentReverseFirst
+                                        Geo C B F E hCB_FE
+                                    exact
+                                      CongruentSwapSecond
+                                        Geo B C F E h1
+
+                                  have hBAC :
+                                      Not (PrimCollinear Geo B A C) := by
+                                    intro h
+                                    exact
+                                      hABC
+                                        (PrimCollinearSwap Geo B A C h)
+
+                                  cases
+                                      HilbertSpaceIncidence.plane_through
+                                        (Geo := Geo)
+                                        D E F hDEF with
+                                  | intro sigma hSigma =>
+
+                                      have hDsigma := hSigma.1
+                                      have hEsigma := hSigma.2.1
+                                      have hFsigma := hSigma.2.2
+
+                                      let Ep : PlanePoint Geo sigma :=
+                                        { val := E, property := hEsigma }
+
+                                      let Dp : PlanePoint Geo sigma :=
+                                        { val := D, property := hDsigma }
+
+                                      let Fp : PlanePoint Geo sigma :=
+                                        { val := F, property := hFsigma }
+
+                                      have hEDFPlane :
+                                          Not
+                                            (PrimCollinear
+                                              (PlaneGeo Geo sigma)
+                                              Ep Dp Fp) := by
+
+                                        intro hPlane
+
+                                        have hAmbient :
+                                            PrimCollinear Geo E D F :=
+                                          planeGeo_primCollinear_to_ambient
+                                            (Geo := Geo)
+                                            sigma
+                                            Ep Dp Fp
+                                            hPlane
+
+                                        exact
+                                          hDEF
+                                            (PrimCollinearSwap
+                                              Geo E D F hAmbient)
+
+                                      have hAngle :=
+                                        hilbert_space_sss_angleA_in_plane
+                                          (Geo := Geo)
+                                          sigma
+                                          B A C
+                                          Ep Dp Fp
+                                          hBAC
+                                          hEDFPlane
+                                          hBA_ED
+                                          hAC_DF
+                                          hBC_EF
+
+                                      simpa [Ep, Dp, Fp] using hAngle
+
+
+/--
+Euclid XI.10.
+
+If two straight lines meeting at `B` are respectively parallel, with the
+same directions, to two straight lines meeting at `E`, and the two angle
+configurations are not contained in one common plane, then the angles are
+congruent.
+
+The directed hypotheses are written in the fixed-connector orientation
+
+    AB -> DE,
+    CB -> FE.
+
+This is equivalent to Euclid's intended correspondence of the four rays.
+The proof performs only the two segment layoffs actually needed:
+
+    ED1 ~= AB,
+    EF1 ~= CB.
+
+The points `D1` and `F1` lie on the original rays `ED` and `EF`. The
+fixed-connector directed-parallel transport then supplies the normalized
+configuration, `euclid_proposition_11_10_normalized_fixed_connector`
+proves the copied angle, and SameRay transport identifies that copied
+angle with the original angle `DEF`.
+-/
+theorem euclid_proposition_11_10
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (A B C D E F : Geo.Point)
+    (hDirAB_DE :
+      HilbertSpaceDirectedParallelSegments Geo A B D E)
+    (hDirCB_FE :
+      HilbertSpaceDirectedParallelSegments Geo C B F E)
+    (hABC : Not (PrimCollinear Geo A B C))
+    (hDEF : Not (PrimCollinear Geo D E F))
+    (hNoCommonPlane :
+      Not (exists omega : S.Plane,
+        S.OnPlane A omega /\
+        S.OnPlane B omega /\
+        S.OnPlane C omega /\
+        S.OnPlane D omega /\
+        S.OnPlane E omega /\
+        S.OnPlane F omega)) :
+    Geo.AngleCongruent A B C D E F := by
+
+  have hNondegLeft :=
+    hilbert_XI10_directedParallelSegments_nondegenerate
+      (Geo := Geo)
+      A B D E
+      hDirAB_DE
+
+  have hAB : Ne A B :=
+    hNondegLeft.1
+
+  have hDE : Ne D E :=
+    hNondegLeft.2
+
+  have hNondegRight :=
+    hilbert_XI10_directedParallelSegments_nondegenerate
+      (Geo := Geo)
+      C B F E
+      hDirCB_FE
+
+  have hCB : Ne C B :=
+    hNondegRight.1
+
+  have hFE : Ne F E :=
+    hNondegRight.2
+
+  cases
+      HilbertSpaceCongruence.segment_construction
+        (Geo := Geo)
+        A B
+        E D
+        hDE.symm
+    with
+    | intro D1 hD1Data =>
+
+        have hRayED1 :
+            HilbertSameRay Geo E D D1 :=
+          hD1Data.1
+
+        have hED1_AB :
+            Geo.Congruent E D1 A B :=
+          hD1Data.2
+
+        cases
+            HilbertSpaceCongruence.segment_construction
+              (Geo := Geo)
+              C B
+              E F
+              hFE.symm
+          with
+          | intro F1 hF1Data =>
+
+              have hRayEF1 :
+                  HilbertSameRay Geo E F F1 :=
+                hF1Data.1
+
+              have hEF1_CB :
+                  Geo.Congruent E F1 C B :=
+                hF1Data.2
+
+              have hRayBAA :
+                  HilbertSameRay Geo B A A := by
+
+                cases
+                    HilbertPlaneIncidence.line_through
+                      B A hAB.symm
+                  with
+                  | intro l hLine =>
+
+                      have hNotBetween :
+                          Not (Geo.Between A B A) := by
+                        intro hABA
+                        have hInc :=
+                          HilbertSpaceOrder.between_incidence
+                            (Geo := Geo)
+                            A B A hABA
+                        exact hInc.2.2.1 rfl
+
+                      exact
+                        And.intro hAB
+                          (And.intro hAB
+                            (And.intro
+                              (Exists.intro l
+                                (And.intro hLine.1
+                                  (And.intro hLine.2 hLine.2)))
+                              hNotBetween))
+
+              have hRayBCC :
+                  HilbertSameRay Geo B C C := by
+
+                cases
+                    HilbertPlaneIncidence.line_through
+                      B C hCB.symm
+                  with
+                  | intro l hLine =>
+
+                      have hNotBetween :
+                          Not (Geo.Between C B C) := by
+                        intro hCBC
+                        have hInc :=
+                          HilbertSpaceOrder.between_incidence
+                            (Geo := Geo)
+                            C B C hCBC
+                        exact hInc.2.2.1 rfl
+
+                      exact
+                        And.intro hCB
+                          (And.intro hCB
+                            (And.intro
+                              (Exists.intro l
+                                (And.intro hLine.1
+                                  (And.intro hLine.2 hLine.2)))
+                              hNotBetween))
+
+              have hDirAB_D1E :
+                  HilbertSpaceDirectedParallelSegments
+                    Geo A B D1 E :=
+                hilbert_XI10_directedParallelSegments_transport_first_endpoints
+                  (Geo := Geo)
+                  A B D E
+                  A D1
+                  hDirAB_DE
+                  hRayBAA
+                  hRayED1
+
+              have hDirCB_F1E :
+                  HilbertSpaceDirectedParallelSegments
+                    Geo C B F1 E :=
+                hilbert_XI10_directedParallelSegments_transport_first_endpoints
+                  (Geo := Geo)
+                  C B F E
+                  C F1
+                  hDirCB_FE
+                  hRayBCC
+                  hRayEF1
+
+              have hED1 : Ne E D1 :=
+                hRayED1.2.1.symm
+
+              have hEF1 : Ne E F1 :=
+                hRayEF1.2.1.symm
+
+              have hAB_ED1 :
+                  Geo.Congruent A B E D1 :=
+                hilbert_space_congruent_symmetry
+                  (Geo := Geo)
+                  E D1 A B
+                  hED1
+                  hED1_AB
+
+              have hAB_D1E :
+                  Geo.Congruent A B D1 E :=
+                CongruentSwapSecond
+                  Geo A B E D1 hAB_ED1
+
+              have hCB_EF1 :
+                  Geo.Congruent C B E F1 :=
+                hilbert_space_congruent_symmetry
+                  (Geo := Geo)
+                  E F1 C B
+                  hEF1
+                  hEF1_CB
+
+              have hCB_F1E :
+                  Geo.Congruent C B F1 E :=
+                CongruentSwapSecond
+                  Geo C B E F1 hCB_EF1
+
+              have hD1EF1 :
+                  Not (PrimCollinear Geo D1 E F1) := by
+
+                intro hCol
+
+                cases hCol with
+                | intro k hk =>
+
+                    have hD1k := hk.1
+                    have hEk := hk.2.1
+                    have hF1k := hk.2.2
+
+                    cases hRayED1.2.2.1 with
+                    | intro l hl =>
+
+                        have hEl := hl.1
+                        have hDl := hl.2.1
+                        have hD1l := hl.2.2
+
+                        have hlk : l = k :=
+                          HilbertPlaneIncidence.line_unique
+                            E D1 hED1
+                            l k
+                            hEl hD1l
+                            hEk hD1k
+
+                        have hDk : H.OnLine D k := by
+                          simpa [hlk] using hDl
+
+                        cases hRayEF1.2.2.1 with
+                        | intro m hm =>
+
+                            have hEm := hm.1
+                            have hFm := hm.2.1
+                            have hF1m := hm.2.2
+
+                            have hmk : m = k :=
+                              HilbertPlaneIncidence.line_unique
+                                E F1 hEF1
+                                m k
+                                hEm hF1m
+                                hEk hF1k
+
+                            have hFk : H.OnLine F k := by
+                              simpa [hmk] using hFm
+
+                            exact
+                              hDEF
+                                (Exists.intro k
+                                  (And.intro hDk
+                                    (And.intro hEk hFk)))
+
+              have hNoCommonPlane1 :
+                  Not (exists omega : S.Plane,
+                    S.OnPlane A omega /\
+                    S.OnPlane B omega /\
+                    S.OnPlane C omega /\
+                    S.OnPlane D1 omega /\
+                    S.OnPlane E omega /\
+                    S.OnPlane F1 omega) := by
+
+                intro hPlane
+
+                cases hPlane with
+                | intro omega hData =>
+
+                    have hAomega := hData.1
+                    have hBomega := hData.2.1
+                    have hComega := hData.2.2.1
+                    have hD1omega := hData.2.2.2.1
+                    have hEomega := hData.2.2.2.2.1
+                    have hF1omega := hData.2.2.2.2.2
+
+                    have hED1Dcol :
+                        PrimCollinear Geo E D1 D := by
+                      cases hRayED1.2.2.1 with
+                      | intro l hl =>
+                          exact
+                            Exists.intro l
+                              (And.intro hl.1
+                                (And.intro hl.2.2 hl.2.1))
+
+                    have hEF1Fcol :
+                        PrimCollinear Geo E F1 F := by
+                      cases hRayEF1.2.2.1 with
+                      | intro l hl =>
+                          exact
+                            Exists.intro l
+                              (And.intro hl.1
+                                (And.intro hl.2.2 hl.2.1))
+
+                    have hDomega :
+                        S.OnPlane D omega :=
+                      hilbert_onPlane_of_primCollinear_with_two_on_plane
+                        (Geo := Geo)
+                        omega
+                        E D1 D
+                        hED1
+                        hEomega hD1omega
+                        hED1Dcol
+
+                    have hFomega :
+                        S.OnPlane F omega :=
+                      hilbert_onPlane_of_primCollinear_with_two_on_plane
+                        (Geo := Geo)
+                        omega
+                        E F1 F
+                        hEF1
+                        hEomega hF1omega
+                        hEF1Fcol
+
+                    exact
+                      hNoCommonPlane
+                        (Exists.intro omega
+                          (And.intro hAomega
+                            (And.intro hBomega
+                              (And.intro hComega
+                                (And.intro hDomega
+                                  (And.intro hEomega
+                                    hFomega))))))
+
+              have hNormalized :
+                  Geo.AngleCongruent A B C D1 E F1 :=
+                euclid_proposition_11_10_normalized_fixed_connector
+                  (Geo := Geo)
+                  A B C D1 E F1
+                  hDirAB_D1E
+                  hDirCB_F1E
+                  hAB_D1E
+                  hCB_F1E
+                  hABC
+                  hD1EF1
+                  hNoCommonPlane1
+
+              cases
+                  HilbertSpaceIncidence.plane_through
+                    (Geo := Geo)
+                    D E F hDEF
+                with
+                | intro sigma hSigma =>
+
+                    have hDsigma := hSigma.1
+                    have hEsigma := hSigma.2.1
+                    have hFsigma := hSigma.2.2
+
+                    have hD1sigma :
+                        S.OnPlane D1 sigma :=
+                      hilbert_onPlane_of_primCollinear_with_two_on_plane
+                        (Geo := Geo)
+                        sigma
+                        E D D1
+                        hDE.symm
+                        hEsigma hDsigma
+                        hRayED1.2.2.1
+
+                    have hF1sigma :
+                        S.OnPlane F1 sigma :=
+                      hilbert_onPlane_of_primCollinear_with_two_on_plane
+                        (Geo := Geo)
+                        sigma
+                        E F F1
+                        hFE.symm
+                        hEsigma hFsigma
+                        hRayEF1.2.2.1
+
+                    let Dp : PlanePoint Geo sigma :=
+                      { val := D, property := hDsigma }
+
+                    let Ep : PlanePoint Geo sigma :=
+                      { val := E, property := hEsigma }
+
+                    let Fp : PlanePoint Geo sigma :=
+                      { val := F, property := hFsigma }
+
+                    let D1p : PlanePoint Geo sigma :=
+                      { val := D1, property := hD1sigma }
+
+                    let F1p : PlanePoint Geo sigma :=
+                      { val := F1, property := hF1sigma }
+
+                    have hRayED1Plane :
+                        HilbertSameRay
+                          (PlaneGeo Geo sigma)
+                          Ep Dp D1p := by
+                      apply
+                        (planeGeo_sameRay_iff_ambient
+                          (Geo := Geo)
+                          sigma Ep Dp D1p).mpr
+                      simpa [Ep, Dp, D1p] using hRayED1
+
+                    have hRayEF1Plane :
+                        HilbertSameRay
+                          (PlaneGeo Geo sigma)
+                          Ep Fp F1p := by
+                      apply
+                        (planeGeo_sameRay_iff_ambient
+                          (Geo := Geo)
+                          sigma Ep Fp F1p).mpr
+                      simpa [Ep, Fp, F1p] using hRayEF1
+
+                    have hFirstPlane :
+                        (PlaneGeo Geo sigma).Angle Dp Ep F1p =
+                        (PlaneGeo Geo sigma).Angle D1p Ep F1p :=
+                      hilbert_angle_eq_of_sameRay_first
+                        (PlaneGeo Geo sigma)
+                        Ep Dp D1p F1p
+                        hRayED1Plane
+
+                    have hSecondPlane :
+                        (PlaneGeo Geo sigma).Angle Dp Ep Fp =
+                        (PlaneGeo Geo sigma).Angle Dp Ep F1p :=
+                      hilbert_angle_eq_of_sameRay_second
+                        (PlaneGeo Geo sigma)
+                        Ep Dp Fp F1p
+                        hRayEF1Plane
+
+                    have hFirstMapped :=
+                      congrArg
+                        (planeGeoAngleToAmbient
+                          (Geo := Geo))
+                        hFirstPlane
+
+                    have hSecondMapped :=
+                      congrArg
+                        (planeGeoAngleToAmbient
+                          (Geo := Geo))
+                        hSecondPlane
+
+                    have hFirstRay :
+                        Geo.Angle D E F1 =
+                        Geo.Angle D1 E F1 := by
+
+                      rw [
+                        planeGeoAngleToAmbient_angle
+                          (Geo := Geo)
+                          sigma Dp Ep F1p,
+                        planeGeoAngleToAmbient_angle
+                          (Geo := Geo)
+                          sigma D1p Ep F1p
+                      ] at hFirstMapped
+
+                      simpa [Dp, Ep, D1p, F1p]
+                        using hFirstMapped
+
+                    have hSecondRay :
+                        Geo.Angle D E F =
+                        Geo.Angle D E F1 := by
+
+                      rw [
+                        planeGeoAngleToAmbient_angle
+                          (Geo := Geo)
+                          sigma Dp Ep Fp,
+                        planeGeoAngleToAmbient_angle
+                          (Geo := Geo)
+                          sigma Dp Ep F1p
+                      ] at hSecondMapped
+
+                      simpa [Dp, Ep, Fp, F1p]
+                        using hSecondMapped
+
+                    have hTargetAngle :
+                        Geo.Angle D1 E F1 =
+                        Geo.Angle D E F := by
+                      calc
+                        Geo.Angle D1 E F1 =
+                            Geo.Angle D E F1 :=
+                          hFirstRay.symm
+                        _ = Geo.Angle D E F :=
+                          hSecondRay.symm
+
+                    unfold Geometry.Geo.AngleCongruent
+                      at hNormalized
+
+                    unfold Geometry.Geo.AngleCongruent
+
+                    rw [hTargetAngle] at hNormalized
+
+                    exact hNormalized
+
+end Geometry
