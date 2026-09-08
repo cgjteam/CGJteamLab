@@ -109,6 +109,7 @@ import CGJteamLab.Proposition11_11
 import CGJteamLab.Proposition11_12
 import CGJteamLab.Proposition11_13
 import CGJteamLab.Proposition11_14
+import CGJteamLab.Proposition11_15
 
 -- Coxeter route
 import CGJteamLab.Coxeter.PlaneReflection
