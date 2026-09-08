@@ -94,6 +94,24 @@ import CGJteamLab.Wyler.HilbertWylerEuclidean
 import CGJteamLab.Wyler.HilbertWylerPlanes
 import CGJteamLab.Wyler.HilbertWylerInterface
 
+-- Wyler Book XI propositions
+import CGJteamLab.Wyler.Proposition11_1
+import CGJteamLab.Wyler.Proposition11_2
+import CGJteamLab.Wyler.Proposition11_3
+import CGJteamLab.Wyler.Proposition11_4
+import CGJteamLab.Wyler.Proposition11_5
+import CGJteamLab.Wyler.Proposition11_6
+import CGJteamLab.Wyler.Proposition11_7
+import CGJteamLab.Wyler.Proposition11_8
+import CGJteamLab.Wyler.Proposition11_9
+import CGJteamLab.Wyler.Proposition11_10
+import CGJteamLab.Wyler.Proposition11_11
+import CGJteamLab.Wyler.Proposition11_12
+import CGJteamLab.Wyler.Proposition11_13
+import CGJteamLab.Wyler.Proposition11_14
+import CGJteamLab.Wyler.Proposition11_15
+import CGJteamLab.Wyler.Proposition11_16
+
 -- Euclid Book XI propositions
 import CGJteamLab.Proposition11_1
 import CGJteamLab.Proposition11_2
