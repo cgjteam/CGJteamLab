@@ -10,6 +10,11 @@ adds an explicit rank-3 certificate for the six-point configuration, while
 the directed/order/congruence chain remains visible in the proposition
 body.  The rank certificate records the ambient geometry; it is not used as
 a substitute for the angle-congruence proof.
+
+All XI.10-local declarations in this module use the `_wyler` suffix.
+This is intentional: the Wyler proposition module can therefore coexist in
+one Lean environment with the legacy `CGJteamLab.Proposition11_10` module
+during the Book XI migration.
 -/
 
 universe u
@@ -72,7 +77,7 @@ by the API form of Euclid I.33:
 
 Thus reversing exactly one ordered pair changes the directed relation.
 -/
-def HilbertSpaceDirectedParallelSegments
+def HilbertSpaceDirectedParallelSegments_wyler
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (A B C D : Geo.Point) : Prop :=
@@ -95,12 +100,12 @@ def HilbertSpaceDirectedParallelSegments
 A directed spatial parallelism witness contains ordinary spatial
 parallelism of the two carrier lines.
 -/
-theorem hilbert_XI10_directedParallelSegments_carriers
+theorem hilbert_XI10_directedParallelSegments_carriers_wyler
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D) :
     exists pi : S.Plane,
       exists l m t : Geo.Line,
         H.OnLine A l /\
@@ -158,12 +163,12 @@ automatically nondegenerate.
 This is not an additional hypothesis: the same-side orientation condition
 already places `A` and `C` off the connector through `B` and `D`.
 -/
-theorem hilbert_XI10_directedParallelSegments_nondegenerate
+theorem hilbert_XI10_directedParallelSegments_nondegenerate_wyler
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D) :
     Ne A B /\ Ne C D := by
 
   cases hDir with
@@ -204,12 +209,12 @@ in its common carrier plane.
 This small extraction lemma is convenient when the next XI.10 step moves
 the configuration into `PlaneGeo pi`.
 -/
-theorem hilbert_XI10_directedParallelSegments_plane_points
+theorem hilbert_XI10_directedParallelSegments_plane_points_wyler
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D) :
     exists pi : S.Plane,
       S.OnPlane A pi /\
       S.OnPlane B pi /\
@@ -247,10 +252,10 @@ are congruent, then the joining segments `AC` and `BD` are congruent and
 their carrier lines are spatially parallel.
 
 The proof is carried out entirely in the common carrier plane supplied by
-`HilbertSpaceDirectedParallelSegments`, using Euclid I.33 in `PlaneGeo pi`,
+`HilbertSpaceDirectedParallelSegments_wyler`, using Euclid I.33 in `PlaneGeo pi`,
 and then transported back to the ambient space.
 -/
-theorem hilbert_XI10_directedParallelSegments_I33
+theorem hilbert_XI10_directedParallelSegments_I33_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -262,7 +267,7 @@ theorem hilbert_XI10_directedParallelSegments_I33
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D)
     (hCong :
       Geo.Congruent A B C D) :
     exists ac bd : Geo.Line,
@@ -555,12 +560,12 @@ The starting points of two directed-parallel segments are distinct.
 
 Indeed, they lie on the two disjoint carrier lines.
 -/
-theorem hilbert_XI10_directedParallelSegments_start_ne
+theorem hilbert_XI10_directedParallelSegments_start_ne_wyler
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D) :
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D) :
     Ne A C := by
 
   cases hDir with
@@ -587,7 +592,7 @@ theorem hilbert_XI10_directedParallelSegments_start_ne
 /--
 Spatial line parallelism is symmetric.
 -/
-theorem hilbert_XI10_spaceLinesParallel_symm
+theorem hilbert_XI10_spaceLinesParallel_symm_wyler
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (l m : Geo.Line)
@@ -643,7 +648,7 @@ Spatial III.2 simultaneously gives
 
 This is exactly the central node of Euclid's XI.10 proof.
 -/
-theorem hilbert_XI10_first_two_I33_and_XI9
+theorem hilbert_XI10_first_two_I33_and_XI9_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -655,9 +660,9 @@ theorem hilbert_XI10_first_two_I33_and_XI9
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D E F : Geo.Point)
     (hDirBA_ED :
-      HilbertSpaceDirectedParallelSegments Geo B A E D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B A E D)
     (hDirBC_EF :
-      HilbertSpaceDirectedParallelSegments Geo B C E F)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B C E F)
     (hBA_ED :
       Geo.Congruent B A E D)
     (hBC_EF :
@@ -681,7 +686,7 @@ theorem hilbert_XI10_first_two_I33_and_XI9
       Geo.Congruent A D C F := by
 
   have hLeft :=
-    hilbert_XI10_directedParallelSegments_I33
+    hilbert_XI10_directedParallelSegments_I33_wyler
       (Geo := Geo)
       B A E D
       hDirBA_ED
@@ -700,7 +705,7 @@ theorem hilbert_XI10_first_two_I33_and_XI9
           have hBE_AD := hL.2.2.2.2.2
 
           have hRight :=
-            hilbert_XI10_directedParallelSegments_I33
+            hilbert_XI10_directedParallelSegments_I33_wyler
               (Geo := Geo)
               B C E F
               hDirBC_EF
@@ -719,7 +724,7 @@ theorem hilbert_XI10_first_two_I33_and_XI9
                   have hBE_CF := hR.2.2.2.2.2
 
                   have hBE : Ne B E :=
-                    hilbert_XI10_directedParallelSegments_start_ne
+                    hilbert_XI10_directedParallelSegments_start_ne_wyler
                       (Geo := Geo)
                       B A E D
                       hDirBA_ED
@@ -735,14 +740,14 @@ theorem hilbert_XI10_first_two_I33_and_XI9
 
                   have hParAD_BE :
                       HilbertSpaceLinesParallel Geo ad be1 :=
-                    hilbert_XI10_spaceLinesParallel_symm
+                    hilbert_XI10_spaceLinesParallel_symm_wyler
                       (Geo := Geo)
                       be1 ad
                       hParBE_AD
 
                   have hParCF_BE :
                       HilbertSpaceLinesParallel Geo cf be1 :=
-                    hilbert_XI10_spaceLinesParallel_symm
+                    hilbert_XI10_spaceLinesParallel_symm_wyler
                       (Geo := Geo)
                       be1 cf
                       hParBE_CF
@@ -826,14 +831,14 @@ Euclid I.33 preserves the direction information needed by XI.10.
 
 Starting from directed-parallel equal segments `AB` and `CD`, the joining
 segments `AC` and `BD` are not only parallel and congruent: they are again
-directed-parallel in the sense of `HilbertSpaceDirectedParallelSegments`.
+directed-parallel in the sense of `HilbertSpaceDirectedParallelSegments_wyler`.
 
 The orientation witness comes from the original pair of parallel carriers:
 inside their common plane, the endpoints `A,B` lie on the same side of the
 second carrier `CD`.  This is exactly the connector-side condition required
 for the ordered joining segments `AC` and `BD`.
 -/
-theorem hilbert_XI10_I33_directed_output
+theorem hilbert_XI10_I33_directed_output_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -845,14 +850,14 @@ theorem hilbert_XI10_I33_directed_output
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D)
     (hCong :
       Geo.Congruent A B C D) :
-    HilbertSpaceDirectedParallelSegments Geo A C B D /\
+    HilbertSpaceDirectedParallelSegments_wyler Geo A C B D /\
     Geo.Congruent A C B D := by
 
   have hJoin :=
-    hilbert_XI10_directedParallelSegments_I33
+    hilbert_XI10_directedParallelSegments_I33_wyler
       (Geo := Geo)
       A B C D
       hDir
@@ -1061,7 +1066,7 @@ theorem hilbert_XI10_I33_directed_output
                                     hPJ.2.2
 
                                   have hDirectedJoin :
-                                      HilbertSpaceDirectedParallelSegments
+                                      HilbertSpaceDirectedParallelSegments_wyler
                                         Geo A C B D := by
 
                                     refine Exists.intro pi ?_
@@ -1105,10 +1110,10 @@ and spatial III.2 gives
     AD ~= CF.
 
 This theorem is deliberately stronger than
-`hilbert_XI10_first_two_I33_and_XI9`: it preserves exactly the orientation
+`hilbert_XI10_first_two_I33_and_XI9_wyler`: it preserves exactly the orientation
 data needed by the final I.33 stage.
 -/
-theorem hilbert_XI10_first_two_I33_directed_package
+theorem hilbert_XI10_first_two_I33_directed_package_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1120,9 +1125,9 @@ theorem hilbert_XI10_first_two_I33_directed_package
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D E F : Geo.Point)
     (hDirBA_ED :
-      HilbertSpaceDirectedParallelSegments Geo B A E D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B A E D)
     (hDirBC_EF :
-      HilbertSpaceDirectedParallelSegments Geo B C E F)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B C E F)
     (hBA_ED :
       Geo.Congruent B A E D)
     (hBC_EF :
@@ -1144,20 +1149,20 @@ theorem hilbert_XI10_first_two_I33_directed_package
       H.OnLine E be /\
       HilbertSpaceLinesParallel Geo ad cf /\
       Geo.Congruent A D C F /\
-      HilbertSpaceDirectedParallelSegments Geo B E A D /\
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E A D /\
       Geo.Congruent B E A D /\
-      HilbertSpaceDirectedParallelSegments Geo B E C F /\
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E C F /\
       Geo.Congruent B E C F := by
 
   have hLeft :=
-    hilbert_XI10_I33_directed_output
+    hilbert_XI10_I33_directed_output_wyler
       (Geo := Geo)
       B A E D
       hDirBA_ED
       hBA_ED
 
   have hDirBE_AD :
-      HilbertSpaceDirectedParallelSegments Geo B E A D :=
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E A D :=
     hLeft.1
 
   have hBE_AD :
@@ -1165,14 +1170,14 @@ theorem hilbert_XI10_first_two_I33_directed_package
     hLeft.2
 
   have hRight :=
-    hilbert_XI10_I33_directed_output
+    hilbert_XI10_I33_directed_output_wyler
       (Geo := Geo)
       B C E F
       hDirBC_EF
       hBC_EF
 
   have hDirBE_CF :
-      HilbertSpaceDirectedParallelSegments Geo B E C F :=
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E C F :=
     hRight.1
 
   have hBE_CF :
@@ -1180,7 +1185,7 @@ theorem hilbert_XI10_first_two_I33_directed_package
     hRight.2
 
   have hMiddle :=
-    hilbert_XI10_first_two_I33_and_XI9
+    hilbert_XI10_first_two_I33_and_XI9_wyler
       (Geo := Geo)
       A B C D E F
       hDirBA_ED
@@ -1226,7 +1231,7 @@ theorem hilbert_XI10_first_two_I33_directed_package
 /--
 The open segment `PQ` meets the ambient plane `theta`.
 -/
-def HilbertSegmentMeetsPlane
+def HilbertSegmentMeetsPlane_wyler
     [S : HilbertSpacePrimitive Geo]
     (P Q : Geo.Point)
     (theta : S.Plane) : Prop :=
@@ -1243,13 +1248,13 @@ Unlike `HilbertSameSideInPlane`, no transitive closure is built into this
 definition.  For a plane, transitivity will be derived from planar Pasch
 by cutting with the plane through the three points involved.
 -/
-def HilbertSameSideOfPlane
+def HilbertSameSideOfPlane_wyler
     [S : HilbertSpacePrimitive Geo]
     (P Q : Geo.Point)
     (theta : S.Plane) : Prop :=
   Not (S.OnPlane P theta) /\
   Not (S.OnPlane Q theta) /\
-  Not (HilbertSegmentMeetsPlane Geo P Q theta)
+  Not (HilbertSegmentMeetsPlane_wyler Geo P Q theta)
 
 
 /--
@@ -1264,7 +1269,7 @@ Only the inclusion
 is needed here.  The converse inclusion is normally supplied by the
 fact that `t` is the actual plane-intersection line.
 -/
-theorem hilbert_XI10_sameSideInPlane_lift_to_planeSide
+theorem hilbert_XI10_sameSideInPlane_lift_to_planeSide_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1282,7 +1287,7 @@ theorem hilbert_XI10_sameSideInPlane_lift_to_planeSide
     (P Q : Geo.Point)
     (hSame :
       HilbertSameSideInPlane Geo P Q t pi) :
-    HilbertSameSideOfPlane Geo P Q theta := by
+    HilbertSameSideOfPlane_wyler Geo P Q theta := by
 
   have hPpi : S.OnPlane P pi :=
     hSame.1
@@ -1349,7 +1354,7 @@ theorem hilbert_XI10_sameSideInPlane_lift_to_planeSide
     simpa [Pp, Qp, tp] using hMeet
 
   have hNoMeetTheta :
-      Not (HilbertSegmentMeetsPlane Geo P Q theta) := by
+      Not (HilbertSegmentMeetsPlane_wyler Geo P Q theta) := by
 
     intro hMeetTheta
 
@@ -1413,7 +1418,7 @@ intersection characterization:
 
 The reverse direction follows from `httheta`.
 -/
-theorem hilbert_XI10_borsuk_szmielew_52
+theorem hilbert_XI10_borsuk_szmielew_52_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1432,7 +1437,7 @@ theorem hilbert_XI10_borsuk_szmielew_52
     (P Q : Geo.Point)
     (hPpi : S.OnPlane P pi)
     (hQpi : S.OnPlane Q pi) :
-    HilbertSameSideOfPlane Geo P Q theta <->
+    HilbertSameSideOfPlane_wyler Geo P Q theta <->
     HilbertSameSideInPlane Geo P Q t pi := by
 
   constructor
@@ -1449,7 +1454,7 @@ theorem hilbert_XI10_borsuk_szmielew_52
       hPlaneSide.2.1
 
     have hNoMeetTheta :
-        Not (HilbertSegmentMeetsPlane Geo P Q theta) :=
+        Not (HilbertSegmentMeetsPlane_wyler Geo P Q theta) :=
       hPlaneSide.2.2
 
     have hPoffT :
@@ -1535,7 +1540,7 @@ theorem hilbert_XI10_borsuk_szmielew_52
     intro hLineSide
 
     exact
-      hilbert_XI10_sameSideInPlane_lift_to_planeSide
+      hilbert_XI10_sameSideInPlane_lift_to_planeSide_wyler
         (Geo := Geo)
         pi theta t
         htpi hSection
@@ -1551,7 +1556,7 @@ If `pi` and `theta` are distinct and share a point `A`, then the line
 returned by `hilbert_plane_intersection_line` supports the full
 Borsuk--Szmielew Theorem 52 equivalence.
 -/
-theorem hilbert_XI10_borsuk_szmielew_52_of_plane_intersection
+theorem hilbert_XI10_borsuk_szmielew_52_of_plane_intersection_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1570,7 +1575,7 @@ theorem hilbert_XI10_borsuk_szmielew_52_of_plane_intersection
       H.OnLine A t /\
       HilbertLineInPlane Geo t pi /\
       HilbertLineInPlane Geo t theta /\
-      (HilbertSameSideOfPlane Geo P Q theta <->
+      (HilbertSameSideOfPlane_wyler Geo P Q theta <->
        HilbertSameSideInPlane Geo P Q t pi) := by
 
   have hInter :=
@@ -1598,9 +1603,9 @@ theorem hilbert_XI10_borsuk_szmielew_52_of_plane_intersection
             (And.intro hXpi hXtheta)
 
       have hBS52 :
-          HilbertSameSideOfPlane Geo P Q theta <->
+          HilbertSameSideOfPlane_wyler Geo P Q theta <->
           HilbertSameSideInPlane Geo P Q t pi :=
-        hilbert_XI10_borsuk_szmielew_52
+        hilbert_XI10_borsuk_szmielew_52_wyler
           (Geo := Geo)
           pi theta t
           htpi httheta
@@ -1629,7 +1634,7 @@ The proof deliberately handles both possible positions of the plane
 
 No new spatial separation axiom is used.
 -/
-theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
+theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1640,10 +1645,10 @@ theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
     (theta : S.Plane)
     (hABC : Not (PrimCollinear Geo A B C))
     (hAB :
-      HilbertSameSideOfPlane Geo A B theta)
+      HilbertSameSideOfPlane_wyler Geo A B theta)
     (hBC :
-      HilbertSameSideOfPlane Geo B C theta) :
-    HilbertSameSideOfPlane Geo A C theta := by
+      HilbertSameSideOfPlane_wyler Geo B C theta) :
+    HilbertSameSideOfPlane_wyler Geo A C theta := by
 
   cases
       HilbertSpaceIncidence.plane_through
@@ -1700,9 +1705,9 @@ theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
                       (And.intro hYalpha hYtheta)
 
                 have hBSAB :
-                    HilbertSameSideOfPlane Geo A B theta <->
+                    HilbertSameSideOfPlane_wyler Geo A B theta <->
                     HilbertSameSideInPlane Geo A B t alpha :=
-                  hilbert_XI10_borsuk_szmielew_52
+                  hilbert_XI10_borsuk_szmielew_52_wyler
                     (Geo := Geo)
                     alpha theta t
                     htalpha httheta
@@ -1711,9 +1716,9 @@ theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
                     hAalpha hBalpha
 
                 have hBSBC :
-                    HilbertSameSideOfPlane Geo B C theta <->
+                    HilbertSameSideOfPlane_wyler Geo B C theta <->
                     HilbertSameSideInPlane Geo B C t alpha :=
-                  hilbert_XI10_borsuk_szmielew_52
+                  hilbert_XI10_borsuk_szmielew_52_wyler
                     (Geo := Geo)
                     alpha theta t
                     htalpha httheta
@@ -1722,9 +1727,9 @@ theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
                     hBalpha hCalpha
 
                 have hBSAC :
-                    HilbertSameSideOfPlane Geo A C theta <->
+                    HilbertSameSideOfPlane_wyler Geo A C theta <->
                     HilbertSameSideInPlane Geo A C t alpha :=
-                  hilbert_XI10_borsuk_szmielew_52
+                  hilbert_XI10_borsuk_szmielew_52_wyler
                     (Geo := Geo)
                     alpha theta t
                     htalpha httheta
@@ -1766,7 +1771,7 @@ theorem hilbert_XI10_sameSideOfPlane_trans_noncollinear
           hBC.2.1
 
         have hNoMeetTheta :
-            Not (HilbertSegmentMeetsPlane Geo A C theta) := by
+            Not (HilbertSegmentMeetsPlane_wyler Geo A C theta) := by
 
           intro hMeet
           cases hMeet with
@@ -1835,7 +1840,7 @@ The proof uses Borsuk--Szmielew Theorem 52 twice:
 2. after transitivity, the resulting `A,C` half-space relation is cut
    back down to the section line `DF` in the plane containing `AD,CF`.
 -/
-theorem hilbert_XI10_directed_AD_CF_from_common_BE
+theorem hilbert_XI10_directed_AD_CF_from_common_BE_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1851,9 +1856,9 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
     (hParAD_CF :
       HilbertSpaceLinesParallel Geo ad cf)
     (hDirBE_AD :
-      HilbertSpaceDirectedParallelSegments Geo B E A D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E A D)
     (hDirBE_CF :
-      HilbertSpaceDirectedParallelSegments Geo B E C F)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E C F)
     (hABC : Not (PrimCollinear Geo A B C))
     (hDEF : Not (PrimCollinear Geo D E F))
     (hNoCommonPlane :
@@ -1864,7 +1869,7 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
         S.OnPlane D omega /\
         S.OnPlane E omega /\
         S.OnPlane F omega)) :
-    HilbertSpaceDirectedParallelSegments Geo A D C F := by
+    HilbertSpaceDirectedParallelSegments_wyler Geo A D C F := by
 
   cases
       HilbertSpaceIncidence.plane_through
@@ -2085,9 +2090,9 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
                                         exact hBoffTheta hBtheta
 
                                       have hBAplane :
-                                          HilbertSameSideOfPlane
+                                          HilbertSameSideOfPlane_wyler
                                             Geo B A theta :=
-                                        hilbert_XI10_sameSideInPlane_lift_to_planeSide
+                                        hilbert_XI10_sameSideInPlane_lift_to_planeSide_wyler
                                           (Geo := Geo)
                                           piAD theta ed
                                           hedpi hSectionED
@@ -2095,9 +2100,9 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
                                           hSameBA
 
                                       have hBCplane :
-                                          HilbertSameSideOfPlane
+                                          HilbertSameSideOfPlane_wyler
                                             Geo B C theta :=
-                                        hilbert_XI10_sameSideInPlane_lift_to_planeSide
+                                        hilbert_XI10_sameSideInPlane_lift_to_planeSide_wyler
                                           (Geo := Geo)
                                           piCF theta ef
                                           hefpi hSectionEF
@@ -2105,7 +2110,7 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
                                           hSameBC
 
                                       have hABplane :
-                                          HilbertSameSideOfPlane
+                                          HilbertSameSideOfPlane_wyler
                                             Geo A B theta := by
                                         exact
                                           And.intro hBAplane.2.1
@@ -2127,9 +2132,9 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
                                                           (And.intro hBXA hXtheta))))
 
                                       have hACplane :
-                                          HilbertSameSideOfPlane
+                                          HilbertSameSideOfPlane_wyler
                                             Geo A C theta :=
-                                        hilbert_XI10_sameSideOfPlane_trans_noncollinear
+                                        hilbert_XI10_sameSideOfPlane_trans_noncollinear_wyler
                                           (Geo := Geo)
                                           A B C theta
                                           hABC
@@ -2218,7 +2223,7 @@ theorem hilbert_XI10_directed_AD_CF_from_common_BE
                                               have hSameAC :
                                                   HilbertSameSideInPlane
                                                     Geo A C df alpha :=
-                                                (hilbert_XI10_borsuk_szmielew_52
+                                                (hilbert_XI10_borsuk_szmielew_52_wyler
                                                   (Geo := Geo)
                                                   alpha theta df
                                                   hdfalpha hdftheta
@@ -2262,7 +2267,7 @@ A final application of the spatial I.33 package therefore yields
 
 This is the last side congruence needed for the final spatial SSS step.
 -/
-theorem hilbert_XI10_third_I33_AC_DF
+theorem hilbert_XI10_third_I33_AC_DF_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -2274,9 +2279,9 @@ theorem hilbert_XI10_third_I33_AC_DF
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D E F : Geo.Point)
     (hDirBA_ED :
-      HilbertSpaceDirectedParallelSegments Geo B A E D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B A E D)
     (hDirBC_EF :
-      HilbertSpaceDirectedParallelSegments Geo B C E F)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B C E F)
     (hBA_ED :
       Geo.Congruent B A E D)
     (hBC_EF :
@@ -2294,7 +2299,7 @@ theorem hilbert_XI10_third_I33_AC_DF
     Geo.Congruent A C D F := by
 
   have hPackage :=
-    hilbert_XI10_first_two_I33_directed_package
+    hilbert_XI10_first_two_I33_directed_package_wyler
       (Geo := Geo)
       A B C D E F
       hDirBA_ED
@@ -2321,9 +2326,9 @@ theorem hilbert_XI10_third_I33_AC_DF
                 hData.2.2.2.2.2.2.2.2.2.2.1
 
               have hDirAD_CF :
-                  HilbertSpaceDirectedParallelSegments
+                  HilbertSpaceDirectedParallelSegments_wyler
                     Geo A D C F :=
-                hilbert_XI10_directed_AD_CF_from_common_BE
+                hilbert_XI10_directed_AD_CF_from_common_BE_wyler
                   (Geo := Geo)
                   A B C D E F
                   ad cf
@@ -2335,7 +2340,7 @@ theorem hilbert_XI10_third_I33_AC_DF
                   hNoCommonPlane
 
               have hThird :=
-                hilbert_XI10_I33_directed_output
+                hilbert_XI10_I33_directed_output_wyler
                   (Geo := Geo)
                   A D C F
                   hDirAD_CF
@@ -2368,7 +2373,7 @@ Spatial SSS, applied to the triangles `BAC` and `EDF`, then gives exactly
 This theorem is the complete XI.10 argument after Euclid's initial I.3
 segment-layoff normalization.
 -/
-theorem euclid_proposition_11_10_normalized
+theorem euclid_proposition_11_10_normalized_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -2380,9 +2385,9 @@ theorem euclid_proposition_11_10_normalized
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D E F : Geo.Point)
     (hDirBA_ED :
-      HilbertSpaceDirectedParallelSegments Geo B A E D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B A E D)
     (hDirBC_EF :
-      HilbertSpaceDirectedParallelSegments Geo B C E F)
+      HilbertSpaceDirectedParallelSegments_wyler Geo B C E F)
     (hBA_ED :
       Geo.Congruent B A E D)
     (hBC_EF :
@@ -2401,7 +2406,7 @@ theorem euclid_proposition_11_10_normalized
 
   have hAC_DF :
       Geo.Congruent A C D F :=
-    hilbert_XI10_third_I33_AC_DF
+    hilbert_XI10_third_I33_AC_DF_wyler
       (Geo := Geo)
       A B C D E F
       hDirBA_ED
@@ -2476,7 +2481,7 @@ theorem euclid_proposition_11_10_normalized
 Swapping the two ordered parallel segments preserves directed spatial
 parallelism.
 -/
-theorem hilbert_XI10_directedParallelSegments_swap_pairs
+theorem hilbert_XI10_directedParallelSegments_swap_pairs_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -2485,8 +2490,8 @@ theorem hilbert_XI10_directedParallelSegments_swap_pairs
       (Geo := Geo) (H := H) (S := S)]
     (A B C D : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D) :
-    HilbertSpaceDirectedParallelSegments Geo C D A B := by
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D) :
+    HilbertSpaceDirectedParallelSegments_wyler Geo C D A B := by
 
   cases hDir with
   | intro pi hPi =>
@@ -2584,7 +2589,7 @@ on ray `BA` and `C'` lies on ray `DC`, then
 
     A'B directed-parallel C'D.
 -/
-theorem hilbert_XI10_directedParallelSegments_transport_first_endpoints
+theorem hilbert_XI10_directedParallelSegments_transport_first_endpoints_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -2593,15 +2598,15 @@ theorem hilbert_XI10_directedParallelSegments_transport_first_endpoints
       (Geo := Geo) (H := H) (S := S)]
     (A B C D A' C' : Geo.Point)
     (hDir :
-      HilbertSpaceDirectedParallelSegments Geo A B C D)
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B C D)
     (hRayBA' :
       HilbertSameRay Geo B A A')
     (hRayDC' :
       HilbertSameRay Geo D C C') :
-    HilbertSpaceDirectedParallelSegments Geo A' B C' D := by
+    HilbertSpaceDirectedParallelSegments_wyler Geo A' B C' D := by
 
   have hNondeg :=
-    hilbert_XI10_directedParallelSegments_nondegenerate
+    hilbert_XI10_directedParallelSegments_nondegenerate_wyler
       (Geo := Geo)
       A B C D
       hDir
@@ -2870,7 +2875,7 @@ After swapping the two directed pairs we recover the common form
 
 so the already established Borsuk--Szmielew/XI.9 core applies unchanged.
 -/
-theorem euclid_proposition_11_10_normalized_fixed_connector
+theorem euclid_proposition_11_10_normalized_fixed_connector_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -2882,9 +2887,9 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D E F : Geo.Point)
     (hDirAB_DE :
-      HilbertSpaceDirectedParallelSegments Geo A B D E)
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B D E)
     (hDirCB_FE :
-      HilbertSpaceDirectedParallelSegments Geo C B F E)
+      HilbertSpaceDirectedParallelSegments_wyler Geo C B F E)
     (hAB_DE :
       Geo.Congruent A B D E)
     (hCB_FE :
@@ -2902,14 +2907,14 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
     Geo.AngleCongruent A B C D E F := by
 
   have hLeft :=
-    hilbert_XI10_I33_directed_output
+    hilbert_XI10_I33_directed_output_wyler
       (Geo := Geo)
       A B D E
       hDirAB_DE
       hAB_DE
 
   have hDirAD_BE :
-      HilbertSpaceDirectedParallelSegments Geo A D B E :=
+      HilbertSpaceDirectedParallelSegments_wyler Geo A D B E :=
     hLeft.1
 
   have hAD_BE :
@@ -2917,21 +2922,21 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
     hLeft.2
 
   have hDirBE_AD :
-      HilbertSpaceDirectedParallelSegments Geo B E A D :=
-    hilbert_XI10_directedParallelSegments_swap_pairs
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E A D :=
+    hilbert_XI10_directedParallelSegments_swap_pairs_wyler
       (Geo := Geo)
       A D B E
       hDirAD_BE
 
   have hRight :=
-    hilbert_XI10_I33_directed_output
+    hilbert_XI10_I33_directed_output_wyler
       (Geo := Geo)
       C B F E
       hDirCB_FE
       hCB_FE
 
   have hDirCF_BE :
-      HilbertSpaceDirectedParallelSegments Geo C F B E :=
+      HilbertSpaceDirectedParallelSegments_wyler Geo C F B E :=
     hRight.1
 
   have hCF_BE :
@@ -2939,14 +2944,14 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
     hRight.2
 
   have hDirBE_CF :
-      HilbertSpaceDirectedParallelSegments Geo B E C F :=
-    hilbert_XI10_directedParallelSegments_swap_pairs
+      HilbertSpaceDirectedParallelSegments_wyler Geo B E C F :=
+    hilbert_XI10_directedParallelSegments_swap_pairs_wyler
       (Geo := Geo)
       C F B E
       hDirCF_BE
 
   have hLeftCarriers :=
-    hilbert_XI10_directedParallelSegments_carriers
+    hilbert_XI10_directedParallelSegments_carriers_wyler
       (Geo := Geo)
       A D B E
       hDirAD_BE
@@ -2967,7 +2972,7 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
                   have hParAD_BE := hL.2.2.2.2.2.2.2.2
 
                   have hRightCarriers :=
-                    hilbert_XI10_directedParallelSegments_carriers
+                    hilbert_XI10_directedParallelSegments_carriers_wyler
                       (Geo := Geo)
                       C F B E
                       hDirCF_BE
@@ -2988,7 +2993,7 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
                                   have hParCF_BE := hR.2.2.2.2.2.2.2.2
 
                                   have hNondegLeft :=
-                                    hilbert_XI10_directedParallelSegments_nondegenerate
+                                    hilbert_XI10_directedParallelSegments_nondegenerate_wyler
                                       (Geo := Geo)
                                       A D B E
                                       hDirAD_BE
@@ -3064,7 +3069,7 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
                                       hNoPlaneAD_CF_BE
 
                                   have hNondegAD_BE :=
-                                    hilbert_XI10_directedParallelSegments_nondegenerate
+                                    hilbert_XI10_directedParallelSegments_nondegenerate_wyler
                                       (Geo := Geo)
                                       A D B E
                                       hDirAD_BE
@@ -3081,7 +3086,7 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
                                       hAD_BE
 
                                   have hNondegCF_BE :=
-                                    hilbert_XI10_directedParallelSegments_nondegenerate
+                                    hilbert_XI10_directedParallelSegments_nondegenerate_wyler
                                       (Geo := Geo)
                                       C F B E
                                       hDirCF_BE
@@ -3108,9 +3113,9 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
                                       hBE_CF
 
                                   have hDirAD_CF :
-                                      HilbertSpaceDirectedParallelSegments
+                                      HilbertSpaceDirectedParallelSegments_wyler
                                         Geo A D C F :=
-                                    hilbert_XI10_directed_AD_CF_from_common_BE
+                                    hilbert_XI10_directed_AD_CF_from_common_BE_wyler
                                       (Geo := Geo)
                                       A B C D E F
                                       ad cf
@@ -3122,7 +3127,7 @@ theorem euclid_proposition_11_10_normalized_fixed_connector
                                       hNoCommonPlane
 
                                   have hThird :=
-                                    hilbert_XI10_I33_directed_output
+                                    hilbert_XI10_I33_directed_output_wyler
                                       (Geo := Geo)
                                       A D C F
                                       hDirAD_CF
@@ -3235,11 +3240,11 @@ The proof performs only the two segment layoffs actually needed:
 
 The points `D1` and `F1` lie on the original rays `ED` and `EF`. The
 fixed-connector directed-parallel transport then supplies the normalized
-configuration, `euclid_proposition_11_10_normalized_fixed_connector`
+configuration, `euclid_proposition_11_10_normalized_fixed_connector_wyler`
 proves the copied angle, and SameRay transport identifies that copied
 angle with the original angle `DEF`.
 -/
-theorem euclid_proposition_11_10
+theorem euclid_proposition_11_10_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -3251,9 +3256,9 @@ theorem euclid_proposition_11_10
     [HSE : HilbertSpaceEuclidean Geo]
     (A B C D E F : Geo.Point)
     (hDirAB_DE :
-      HilbertSpaceDirectedParallelSegments Geo A B D E)
+      HilbertSpaceDirectedParallelSegments_wyler Geo A B D E)
     (hDirCB_FE :
-      HilbertSpaceDirectedParallelSegments Geo C B F E)
+      HilbertSpaceDirectedParallelSegments_wyler Geo C B F E)
     (hABC : Not (PrimCollinear Geo A B C))
     (hDEF : Not (PrimCollinear Geo D E F))
     (hNoCommonPlane :
@@ -3318,7 +3323,7 @@ theorem euclid_proposition_11_10
 
 
   have hNondegLeft :=
-    hilbert_XI10_directedParallelSegments_nondegenerate
+    hilbert_XI10_directedParallelSegments_nondegenerate_wyler
       (Geo := Geo)
       A B D E
       hDirAB_DE
@@ -3330,7 +3335,7 @@ theorem euclid_proposition_11_10
     hNondegLeft.2
 
   have hNondegRight :=
-    hilbert_XI10_directedParallelSegments_nondegenerate
+    hilbert_XI10_directedParallelSegments_nondegenerate_wyler
       (Geo := Geo)
       C B F E
       hDirCB_FE
@@ -3430,9 +3435,9 @@ theorem euclid_proposition_11_10
                               hNotBetween))
 
               have hDirAB_D1E :
-                  HilbertSpaceDirectedParallelSegments
+                  HilbertSpaceDirectedParallelSegments_wyler
                     Geo A B D1 E :=
-                hilbert_XI10_directedParallelSegments_transport_first_endpoints
+                hilbert_XI10_directedParallelSegments_transport_first_endpoints_wyler
                   (Geo := Geo)
                   A B D E
                   A D1
@@ -3441,9 +3446,9 @@ theorem euclid_proposition_11_10
                   hRayED1
 
               have hDirCB_F1E :
-                  HilbertSpaceDirectedParallelSegments
+                  HilbertSpaceDirectedParallelSegments_wyler
                     Geo C B F1 E :=
-                hilbert_XI10_directedParallelSegments_transport_first_endpoints
+                hilbert_XI10_directedParallelSegments_transport_first_endpoints_wyler
                   (Geo := Geo)
                   C B F E
                   C F1
@@ -3606,7 +3611,7 @@ theorem euclid_proposition_11_10
 
               have hNormalized :
                   Geo.AngleCongruent A B C D1 E F1 :=
-                euclid_proposition_11_10_normalized_fixed_connector
+                euclid_proposition_11_10_normalized_fixed_connector_wyler
                   (Geo := Geo)
                   A B C D1 E F1
                   hDirAB_D1E
