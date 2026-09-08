@@ -1,8 +1,23 @@
-import CGJteamLab.Proposition11_13
-import CGJteamLab.Proposition11_5
+import CGJteamLab.Wyler.HilbertWylerEuclidean
 import CGJteamLab.Proposition17
 import CGJteamLab.HilbertRightAngle
-import CGJteamLab.Wyler.HilbertWylerPlanes
+
+/-!
+# Hilbert-Wyler plane-normal core
+
+Reusable metric plane-normal machinery extracted from Euclid XI.14.
+
+This module imports no numbered Book XI proposition.  The original XI.14
+proof engine is retained, but its single direct dependency on XI.5 is
+redirected to the lower Wyler parallel core.
+
+Main endpoints:
+
+* `euclid_proposition_11_14_normalized_wyler`
+* `hilbert_XI14_plane_perpendicular_to_line_at_unique_wyler`
+
+The final public Euclid XI.14 wrapper remains outside this lower layer.
+-/
 
 namespace Geometry
 
@@ -27,13 +42,22 @@ variable (Geo : Geometry.Geo)
 
 
 /--
-XI.14 normalized helper, step 1.
+Two ambient planes are parallel when they have no common point.
 
-If the same line `l` is perpendicular to `pi` at `A`
-and to `rho` at `B`, with `A != B`, then a common point
-`K` of `pi` and `rho` cannot lie on `l`.
+This is the direct formal counterpart of Euclid XI.Def.8 and belongs to
+the general 3D plane API rather than to Proposition XI.14 itself.
 -/
-theorem hilbert_XI14_common_point_off_normal
+def HilbertSpacePlanesParallel
+    [S : HilbertSpacePrimitive Geo]
+    (pi rho : S.Plane) : Prop :=
+  Not
+    (exists X : Geo.Point,
+      S.OnPlane X pi /\
+      S.OnPlane X rho)
+
+
+
+theorem hilbert_XI14_common_point_off_normal_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -57,7 +81,7 @@ theorem hilbert_XI14_common_point_off_normal
   intro hKl
 
   have hKA : K = A :=
-    hilbert_XI12_perpendicular_foot_unique
+    hilbertLinePerpendicularPlaneAt_foot_unique_wyler
       (Geo := Geo)
       pi l A K
       hPerpPi
@@ -65,7 +89,7 @@ theorem hilbert_XI14_common_point_off_normal
       hKpi
 
   have hKB : K = B :=
-    hilbert_XI12_perpendicular_foot_unique
+    hilbertLinePerpendicularPlaneAt_foot_unique_wyler
       (Geo := Geo)
       rho l B K
       hPerpRho
@@ -83,7 +107,7 @@ A common point `K` of the two planes, together with the common
 normal line `l`, determines a plane `sigma`. Since `A` and `B`
 lie on `l`, the points `A`, `B`, and `K` all lie in `sigma`.
 -/
-theorem hilbert_XI14_common_point_normal_plane
+theorem hilbert_XI14_common_point_normal_plane_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -109,7 +133,7 @@ theorem hilbert_XI14_common_point_normal_plane
       S.OnPlane K sigma := by
 
   have hKl : Not (H.OnLine K l) :=
-    hilbert_XI14_common_point_off_normal
+    hilbert_XI14_common_point_off_normal_wyler
       (Geo := Geo)
       pi rho l A B K
       hAB
@@ -174,7 +198,7 @@ Because `l` is perpendicular to `pi` at `A`, it is perpendicular to
 `aK` at `A`. Likewise, because `l` is perpendicular to `rho` at `B`,
 it is perpendicular to `bK` at `B`.
 -/
-theorem hilbert_XI14_connector_configuration
+theorem hilbert_XI14_connector_configuration_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -208,7 +232,7 @@ theorem hilbert_XI14_connector_configuration
       HilbertLinesPerpendicularAt Geo l bK B := by
 
   rcases
-      hilbert_XI14_common_point_normal_plane
+      hilbert_XI14_common_point_normal_plane_wyler
         (Geo := Geo)
         pi rho l A B K
         hAB
@@ -220,7 +244,7 @@ theorem hilbert_XI14_connector_configuration
     ⟨sigma, hlsigma, hAsigma, hBsigma, hKsigma⟩
 
   have hKl : Not (H.OnLine K l) :=
-    hilbert_XI14_common_point_off_normal
+    hilbert_XI14_common_point_off_normal_wyler
       (Geo := Geo)
       pi rho l A B K
       hAB
@@ -349,7 +373,7 @@ The two ambient perpendicularities are then transported to PlaneGeo:
   l perp aK at A
   l perp bK at B.
 -/
-theorem hilbert_XI14_planeGeo_triangle_configuration
+theorem hilbert_XI14_planeGeo_triangle_configuration_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -385,7 +409,7 @@ theorem hilbert_XI14_planeGeo_triangle_configuration
       H.OnLine Kp.1 bKp.1 := by
 
   rcases
-      hilbert_XI14_connector_configuration
+      hilbert_XI14_connector_configuration_wyler
         (Geo := Geo)
         pi rho l A B K
         hAB
@@ -449,7 +473,7 @@ theorem hilbert_XI14_planeGeo_triangle_configuration
     ⟨K, hKsigma⟩
 
   have hKl : Not (H.OnLine K l) :=
-    hilbert_XI14_common_point_off_normal
+    hilbert_XI14_common_point_off_normal_wyler
       (Geo := Geo)
       pi rho l A B K
       hAB
@@ -541,7 +565,7 @@ At B we obtain witnesses U',V' such that:
 
 The collinearities with the triangle sides are recorded explicitly.
 -/
-theorem hilbert_XI14_unpack_right_angle_witnesses
+theorem hilbert_XI14_unpack_right_angle_witnesses_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -591,7 +615,7 @@ theorem hilbert_XI14_unpack_right_angle_witnesses
         U' Bp V' := by
 
   rcases
-      hilbert_XI14_planeGeo_triangle_configuration
+      hilbert_XI14_planeGeo_triangle_configuration_wyler
         (Geo := Geo)
         pi rho l A B K
         hAB
@@ -679,7 +703,7 @@ between X and Y.
 
 The case X = Y belongs to the same-ray alternative.
 -/
-theorem hilbert_XI14_collinear_arm_orientation
+theorem hilbert_XI14_collinear_arm_orientation_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertOrder G]
@@ -743,7 +767,7 @@ definition of the original right angle is retained.  Betweenness with
 that supplement is transported along the first ray, while both angle
 arms are transported by equality of rays.
 -/
-theorem hilbert_XI14_rightAngle_transport_sameRays
+theorem hilbert_XI14_rightAngle_transport_sameRays_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertCongruence G]
@@ -809,7 +833,7 @@ on the opposite ray.
 
 If U-O-X and angle UOV is right, then angle XOV is right.
 -/
-theorem hilbert_XI14_rightAngle_transport_opposite_first
+theorem hilbert_XI14_rightAngle_transport_opposite_first_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertCongruence G]
@@ -868,7 +892,7 @@ If V-O-Y and angle UOV is right, then angle UOY is right.
 The proof uses the two pairs of vertical angles determined by the
 opposite rays U/O/C and V/O/Y.
 -/
-theorem hilbert_XI14_rightAngle_transport_opposite_second
+theorem hilbert_XI14_rightAngle_transport_opposite_second_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertCongruence G]
@@ -986,7 +1010,7 @@ or on the opposite ray through the vertex.
 The one intermediate noncollinearity hypothesis is needed only when
 both arms are reversed.
 -/
-theorem hilbert_XI14_rightAngle_transport_by_orientations
+theorem hilbert_XI14_rightAngle_transport_by_orientations_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertCongruence G]
@@ -1007,7 +1031,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
   · rcases hVY with hVYsame | hVYopp
 
     · exact
-        hilbert_XI14_rightAngle_transport_sameRays
+        hilbert_XI14_rightAngle_transport_sameRays_wyler
           G
           U O V X Y
           hRight
@@ -1016,7 +1040,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
 
     · have hRightUY :
           HilbertRightAngle G U O Y :=
-        hilbert_XI14_rightAngle_transport_opposite_second
+        hilbert_XI14_rightAngle_transport_opposite_second_wyler
           G
           U O V Y
           hVYopp
@@ -1031,7 +1055,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
             V O Y hVYopp).2.1.symm
 
       exact
-        hilbert_XI14_rightAngle_transport_sameRays
+        hilbert_XI14_rightAngle_transport_sameRays_wyler
           G
           U O Y X Y
           hRightUY
@@ -1042,7 +1066,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
 
     · have hRightXV :
           HilbertRightAngle G X O V :=
-        hilbert_XI14_rightAngle_transport_opposite_first
+        hilbert_XI14_rightAngle_transport_opposite_first_wyler
           G
           U O V X
           hUXopp
@@ -1057,7 +1081,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
             U O X hUXopp).2.1.symm
 
       exact
-        hilbert_XI14_rightAngle_transport_sameRays
+        hilbert_XI14_rightAngle_transport_sameRays_wyler
           G
           X O V X Y
           hRightXV
@@ -1066,7 +1090,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
 
     · have hRightXV :
           HilbertRightAngle G X O V :=
-        hilbert_XI14_rightAngle_transport_opposite_first
+        hilbert_XI14_rightAngle_transport_opposite_first_wyler
           G
           U O V X
           hUXopp
@@ -1074,7 +1098,7 @@ theorem hilbert_XI14_rightAngle_transport_by_orientations
           hRight
 
       exact
-        hilbert_XI14_rightAngle_transport_opposite_second
+        hilbert_XI14_rightAngle_transport_opposite_second_wyler
           G
           X O V Y
           hVYopp
@@ -1096,7 +1120,7 @@ the auxiliary plane sigma has two right angles:
 This is the exact planar configuration used by Euclid before invoking
 Proposition I.17.
 -/
-theorem hilbert_XI14_triangle_has_two_right_angles
+theorem hilbert_XI14_triangle_has_two_right_angles_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1129,7 +1153,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
         Ap Bp Kp := by
 
   rcases
-      hilbert_XI14_unpack_right_angle_witnesses
+      hilbert_XI14_unpack_right_angle_witnesses_wyler
         (Geo := Geo)
         pi rho l A B K
         hAB
@@ -1300,7 +1324,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
     exact hNon hABK
 
   have hOrientUB :=
-    hilbert_XI14_collinear_arm_orientation
+    hilbert_XI14_collinear_arm_orientation_wyler
       G
       Ap U Bp
       hUA
@@ -1308,7 +1332,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
       hUAB
 
   have hOrientVK :=
-    hilbert_XI14_collinear_arm_orientation
+    hilbert_XI14_collinear_arm_orientation_wyler
       G
       Ap V Kp
       hVA
@@ -1316,7 +1340,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
       hVAK
 
   have hOrientU'A :=
-    hilbert_XI14_collinear_arm_orientation
+    hilbert_XI14_collinear_arm_orientation_wyler
       G
       Bp U' Ap
       hU'B
@@ -1324,7 +1348,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
       hU'BA
 
   have hOrientV'K :=
-    hilbert_XI14_collinear_arm_orientation
+    hilbert_XI14_collinear_arm_orientation_wyler
       G
       Bp V' Kp
       hV'B
@@ -1333,7 +1357,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
 
   have hRightBAK :
       HilbertRightAngle G Bp Ap Kp :=
-    hilbert_XI14_rightAngle_transport_by_orientations
+    hilbert_XI14_rightAngle_transport_by_orientations_wyler
       G
       U Ap V Bp Kp
       hRightA
@@ -1344,7 +1368,7 @@ theorem hilbert_XI14_triangle_has_two_right_angles
 
   have hRightABK :
       HilbertRightAngle G Ap Bp Kp :=
-    hilbert_XI14_rightAngle_transport_by_orientations
+    hilbert_XI14_rightAngle_transport_by_orientations_wyler
       G
       U' Bp V' Ap Kp
       hRightB
@@ -1368,7 +1392,7 @@ the two compared angles.
 This is an immediate consequence of right-transport for
 `HilbertAngleLess` and irreflexivity.
 -/
-theorem hilbert_XI14_angleLess_not_congruent
+theorem hilbert_XI14_angleLess_not_congruent_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertCongruence G]
@@ -1406,7 +1430,7 @@ theorem hilbert_XI14_angleLess_not_congruent
       G A O B hSelf
 
 
-theorem hilbert_XI14_two_right_angles_impossible
+theorem hilbert_XI14_two_right_angles_impossible_wyler
     (G : Geometry.Geo)
     [HilbertIncidence G]
     [HilbertCongruence G]
@@ -1429,7 +1453,7 @@ theorem hilbert_XI14_two_right_angles_impossible
 
   have hRightABE :
       HilbertRightAngle G A B E :=
-    hilbert_XI14_rightAngle_transport_opposite_second
+    hilbert_XI14_rightAngle_transport_opposite_second_wyler
       G
       A B K E
       hKBE
@@ -1458,7 +1482,7 @@ theorem hilbert_XI14_two_right_angles_impossible
       hRightABE
 
   exact
-    hilbert_XI14_angleLess_not_congruent
+    hilbert_XI14_angleLess_not_congruent_wyler
       G
       B A K
       A B E
@@ -1481,7 +1505,7 @@ a hypothetical common point K produces, in the auxiliary plane through
 l and K, a nondegenerate triangle ABK with two right angles; I.17 makes
 that impossible.
 -/
-theorem euclid_proposition_11_14_normalized
+theorem euclid_proposition_11_14_normalized_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1506,7 +1530,7 @@ theorem euclid_proposition_11_14_normalized
     ⟨K, hKpi, hKrho⟩
 
   rcases
-      hilbert_XI14_triangle_has_two_right_angles
+      hilbert_XI14_triangle_has_two_right_angles_wyler
         (Geo := Geo)
         pi rho l A B K
         hAB
@@ -1522,7 +1546,7 @@ theorem euclid_proposition_11_14_normalized
      hRightABK⟩
 
   exact
-    hilbert_XI14_two_right_angles_impossible
+    hilbert_XI14_two_right_angles_impossible_wyler
       (PlaneGeo Geo sigma)
       Ap Bp Kp
       hNon
@@ -1536,7 +1560,7 @@ variable (Geo : Geometry.Geo)
 Inside a fixed ambient plane pi, every point A lies on two distinct
 ambient lines wholly contained in pi.
 -/
-theorem hilbert_XI14_two_distinct_lines_through_point_in_plane
+theorem hilbert_XI14_two_distinct_lines_through_point_in_plane_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1614,7 +1638,7 @@ The proof uses Euclid XI.5:
 - two distinct lines through A in rho therefore lie in both rho and pi,
   so the two planes coincide.
 -/
-theorem hilbert_XI14_plane_perpendicular_to_line_at_unique
+theorem hilbert_XI14_plane_perpendicular_to_line_at_unique_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
@@ -1647,7 +1671,7 @@ theorem hilbert_XI14_plane_perpendicular_to_line_at_unique
     hIncRho.2
 
   rcases
-      hilbert_XI14_two_distinct_lines_through_point_in_plane
+      hilbert_XI14_two_distinct_lines_through_point_in_plane_wyler
         (Geo := Geo)
         pi A hApi
     with
@@ -1704,7 +1728,7 @@ theorem hilbert_XI14_plane_perpendicular_to_line_at_unique
         hAp
 
     rcases
-        euclid_proposition_11_5
+        hilbert_three_common_perpendiculars_coplanar_wyler
           (Geo := Geo)
           l m n p
           A
@@ -1730,7 +1754,7 @@ theorem hilbert_XI14_plane_perpendicular_to_line_at_unique
     exact hptau
 
   rcases
-      hilbert_XI14_two_distinct_lines_through_point_in_plane
+      hilbert_XI14_two_distinct_lines_through_point_in_plane_wyler
         (Geo := Geo)
         rho A hArho
     with
@@ -1770,62 +1794,5 @@ theorem hilbert_XI14_plane_perpendicular_to_line_at_unique
 
 
 variable (Geo : Geometry.Geo)
-
-/--
-Euclid, Book XI, Proposition 14.
-
-Planes to which the same straight line is at right angles are parallel.
-
-The explicit hypothesis pi != rho matches the nontrivial reading of
-Euclid XI.Def.8: two distinct planes are parallel when they have no
-common point.
-
-The proof separates the equal-foot issue noted in source-critical
-discussions:
-
-- if A = B, uniqueness of the plane perpendicular to l at A gives
-  pi = rho, contradicting pi != rho;
-- therefore A != B;
-- the normalized XI.14 theorem then excludes any common point.
--/
-theorem euclid_proposition_11_14
-    [H : HilbertIncidence Geo]
-    [HilbertPlaneIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [HSI : HilbertSpaceIncidence Geo]
-    [_HSO : HilbertSpaceOrder
-      (Geo := Geo) (H := H) (S := S)]
-    [_HSC : HilbertSpaceCongruence
-      (Geo := Geo) (H := H) (S := S)]
-    (pi rho : S.Plane)
-    (l : Geo.Line)
-    (A B : Geo.Point)
-    (hPlanesNe : Ne pi rho)
-    (hPerpPi :
-      HilbertLinePerpendicularPlaneAt Geo l pi A)
-    (hPerpRho :
-      HilbertLinePerpendicularPlaneAt Geo l rho B) :
-    HilbertSpacePlanesParallel Geo pi rho := by
-
-  have hAB : Ne A B := by
-    intro hABeq
-    subst B
-
-    have hPlanesEq : pi = rho :=
-      hilbert_XI14_plane_perpendicular_to_line_at_unique
-        (Geo := Geo)
-        pi rho l A
-        hPerpPi
-        hPerpRho
-
-    exact hPlanesNe hPlanesEq
-
-  exact
-    euclid_proposition_11_14_normalized
-      (Geo := Geo)
-      pi rho l A B
-      hAB
-      hPerpPi
-      hPerpRho
 
 end Geometry

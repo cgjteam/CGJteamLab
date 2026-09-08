@@ -84,6 +84,17 @@ import CGJteamLab.Proposition2_14
 -- Euclid Book XI
 import CGJteamLab.Hilbert3DAxioms
 import CGJteamLab.Hilbert3DInterface
+
+-- Wyler 3D route
+import CGJteamLab.Wyler.Hilbert3DFlats
+import CGJteamLab.Wyler.Hilbert3DWyler
+import CGJteamLab.Wyler.HilbertWylerMetric
+import CGJteamLab.Wyler.HilbertWylerParallel
+import CGJteamLab.Wyler.HilbertWylerEuclidean
+import CGJteamLab.Wyler.HilbertWylerPlanes
+import CGJteamLab.Wyler.HilbertWylerInterface
+
+-- Euclid Book XI propositions
 import CGJteamLab.Proposition11_1
 import CGJteamLab.Proposition11_2
 import CGJteamLab.Proposition11_3
