@@ -22,7 +22,7 @@ and then proves that the two section lines are parallel. The argument
 is purely incidence-theoretic: no order, congruence, perpendicularity,
 or Euclidean parallel uniqueness is used.
 -/
-theorem euclid_proposition_11_16
+theorem euclid_proposition_11_16_wyler
     [H : HilbertIncidence Geo]
     [HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
