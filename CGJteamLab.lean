@@ -150,6 +150,7 @@ import CGJteamLab.Coxeter.CoxeterRelationsGeneral
 import CGJteamLab.Coxeter.CoxeterRelationsGeneralExistence
 import CGJteamLab.Coxeter.CoxeterRelations3DS4
 import CGJteamLab.Coxeter.CoxeterA4Smith
+import CGJteamLab.Coxeter.CoxeterA3Wyler
 import CGJteamLab.Coxeter.CoxeterA4S5
 
 -- Suppes route
