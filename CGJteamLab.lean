@@ -84,6 +84,28 @@ import CGJteamLab.Proposition2_14
 -- Euclid Book XI
 import CGJteamLab.Hilbert3DAxioms
 import CGJteamLab.Hilbert3DInterface
+import CGJteamLab.Hilbert3DParallel
+import CGJteamLab.Hilbert3DRightAngle
+import CGJteamLab.Hilbert3DProportion
+
+-- Euclid Book XI propositions
+import CGJteamLab.Proposition11_1
+import CGJteamLab.Proposition11_2
+import CGJteamLab.Proposition11_3
+import CGJteamLab.Proposition11_4
+import CGJteamLab.Proposition11_5
+import CGJteamLab.Proposition11_6
+import CGJteamLab.Proposition11_7
+import CGJteamLab.Proposition11_8
+import CGJteamLab.Proposition11_9
+import CGJteamLab.Proposition11_10
+import CGJteamLab.Proposition11_11
+import CGJteamLab.Proposition11_12
+import CGJteamLab.Proposition11_13
+import CGJteamLab.Proposition11_14
+import CGJteamLab.Proposition11_15
+import CGJteamLab.Proposition11_16
+import CGJteamLab.Proposition11_17
 
 -- Wyler 3D route
 import CGJteamLab.Wyler.Hilbert3DFlats
@@ -110,24 +132,7 @@ import CGJteamLab.Wyler.Proposition11_12
 import CGJteamLab.Wyler.Proposition11_13
 import CGJteamLab.Wyler.Proposition11_14
 import CGJteamLab.Wyler.Proposition11_15
-import CGJteamLab.Wyler.Proposition11_16
-
--- Euclid Book XI propositions
-import CGJteamLab.Proposition11_1
-import CGJteamLab.Proposition11_2
-import CGJteamLab.Proposition11_3
-import CGJteamLab.Proposition11_4
-import CGJteamLab.Proposition11_5
-import CGJteamLab.Proposition11_6
-import CGJteamLab.Proposition11_7
-import CGJteamLab.Proposition11_8
-import CGJteamLab.Proposition11_9
-import CGJteamLab.Proposition11_10
-import CGJteamLab.Proposition11_11
-import CGJteamLab.Proposition11_12
-import CGJteamLab.Proposition11_13
-import CGJteamLab.Proposition11_14
-import CGJteamLab.Proposition11_15
+--import CGJteamLab.Wyler.Proposition11_16
 
 -- Dimension-free / corrected E4 route
 import CGJteamLab.Coxeter.E4Geometry
