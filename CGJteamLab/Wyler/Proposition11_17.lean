@@ -1,4 +1,5 @@
 import CGJteamLab.Wyler.Proposition11_16
+import CGJteamLab.Wyler.HilbertWylerProportion
 import CGJteamLab.Hilbert3DProportion
 
 namespace Geometry
@@ -22,10 +23,14 @@ Architecture:
 5. compose the two proportions by spatial V.11.
 
 The spatial geometry is carried by the Wyler flat/carrier calculus.
-The current proportion bridge still delegates the planar ratio step to
-HilbertVI2Raw; this is intentionally isolated so that a future affine
-parameter implementation can replace it without changing the XI.17
-flat construction.
+The primary Wyler conclusion is the affine relation
+`HilbertWylerSameDivision`: it is obtained from two parallel-section
+steps, reversal, and transitivity, with no metric ratio or VI.2.
+
+For compatibility with the canonical Book XI API, this module also keeps
+the previously established synthetic `HilbertSpaceSegmentProportionRaw`
+result.  That compatibility theorem remains logically separate from the
+affine Wyler theorem.
 
 This module uses names ending in `_wyler` where needed to coexist with
 the canonical synthetic Book XI development.
@@ -1441,5 +1446,187 @@ theorem euclid_proposition_11_17_wyler
       hBpi2 hDpi2
       hAEB hCFD hAOD
       hEO hBD hOF hAC
+
+
+/--
+Euclid XI.17 in the genuinely affine Wyler formulation.
+
+The conclusion says that E and F occupy the same affine division
+position on the transversals AB and CD.  The proof uses only the Wyler
+carrier/section geometry, the Pasch construction of O, two elementary
+parallel-section division steps, simultaneous reversal, and transitivity.
+
+No `HilbertVI2Raw`, `HilbertSpaceCongruence`, metric segment ratio,
+coordinates, or real-number parameter is used.
+-/
+theorem euclid_proposition_11_17_wyler_affine
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi0 pi1 pi2 : S.Plane)
+    (A E B C F D : Geo.Point)
+    (hParallel01 :
+      HilbertSpacePlanesParallel Geo pi0 pi1)
+    (hParallel12 :
+      HilbertSpacePlanesParallel Geo pi1 pi2)
+    (hParallel02 :
+      HilbertSpacePlanesParallel Geo pi0 pi2)
+    (hApi0 : S.OnPlane A pi0)
+    (hCpi0 : S.OnPlane C pi0)
+    (hEpi1 : S.OnPlane E pi1)
+    (hFpi1 : S.OnPlane F pi1)
+    (hBpi2 : S.OnPlane B pi2)
+    (hDpi2 : S.OnPlane D pi2)
+    (hAEB : Geo.Between A E B)
+    (hCFD : Geo.Between C F D)
+    (hBD : Ne B D)
+    (hAC : Ne A C) :
+    HilbertWylerSameDivision
+      (Geo := Geo)
+      A E B
+      C F D := by
+
+  rcases
+      euclid_proposition_11_17_construct_O_wyler
+        (Geo := Geo)
+        pi0 pi1 pi2
+        A E B D
+        hParallel01
+        hParallel12
+        hParallel02
+        hApi0
+        hEpi1
+        hBpi2
+        hDpi2
+        hAEB
+        hBD
+    with
+    ⟨O, hAOD, hOpi1⟩
+
+  rcases
+      euclid_XI17_wyler_sections
+        (Geo := Geo)
+        pi0 pi1 pi2
+        A E B C F D O
+        hParallel01
+        hParallel12
+        hParallel02
+        hApi0 hCpi0
+        hEpi1 hFpi1 hOpi1
+        hBpi2 hDpi2
+        hAEB hCFD hAOD
+        hBD hAC
+    with
+    ⟨sigma1, sigma2,
+     lEO, lBD, lAC, lOF,
+     hAsigma1,
+     hBsigma1,
+     hDsigma1,
+     hEsigma1,
+     hOsigma1,
+     hAsigma2,
+     hCsigma2,
+     hDsigma2,
+     hFsigma2,
+     hOsigma2,
+     hElEO,
+     hOlEO,
+     hBlBD,
+     hDlBD,
+     hAlAC,
+     hClAC,
+     hOlOF,
+     hFlOF,
+     hMeetEO,
+     hMeetBD,
+     hMeetAC,
+     hMeetOF,
+     hParallelEOBD,
+     hParallelACOF⟩
+
+  have hFirst :
+      HilbertWylerSameDivision
+        (Geo := Geo)
+        A E B
+        A O D :=
+    hilbertWylerSameDivision_of_parallel_sections
+      (Geo := Geo)
+      A E B O D
+      hAEB hAOD
+      lEO lBD
+      hElEO hOlEO
+      hBlBD hDlBD
+      hParallelEOBD
+
+  have hAODData :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      A O D hAOD
+
+  have hCFDData :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      C F D hCFD
+
+  have hDOA :
+      Geo.Between D O A :=
+    hAODData.2.2.2.2
+
+  have hDFC :
+      Geo.Between D F C :=
+    hCFDData.2.2.2.2
+
+  have hParallelOFAC :
+      HilbertSpaceLinesParallel Geo lOF lAC := by
+    rcases hParallelACOF with
+      ⟨tau, hlACTau, hlOFTau, hDisjointACOF⟩
+
+    refine
+      ⟨tau, hlOFTau, hlACTau, ?_⟩
+
+    intro hMeet
+
+    rcases hMeet with
+      ⟨X, hXOF, hXAC⟩
+
+    exact
+      hDisjointACOF
+        ⟨X, hXAC, hXOF⟩
+
+  have hSecondReversed :
+      HilbertWylerSameDivision
+        (Geo := Geo)
+        D O A
+        D F C :=
+    hilbertWylerSameDivision_of_parallel_sections
+      (Geo := Geo)
+      D O A F C
+      hDOA hDFC
+      lOF lAC
+      hOlOF hFlOF
+      hAlAC hClAC
+      hParallelOFAC
+
+  have hSecond :
+      HilbertWylerSameDivision
+        (Geo := Geo)
+        A O D
+        C F D :=
+    hilbertWylerSameDivision_reverse
+      (Geo := Geo)
+      D O A
+      D F C
+      hSecondReversed
+
+  exact
+    hilbertWylerSameDivision_trans
+      (Geo := Geo)
+      A E B
+      A O D
+      C F D
+      hFirst hSecond
 
 end Geometry
