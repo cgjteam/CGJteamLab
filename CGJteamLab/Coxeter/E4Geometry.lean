@@ -1,0 +1,30 @@
+import CGJteamLab.HilbertDimensionFreeIncidence
+import CGJteamLab.HilbertDimensionFreeFlats
+import CGJteamLab.HilbertDimensionFreeExchange
+import CGJteamLab.HilbertDimensionFreeSmithCore
+import CGJteamLab.HilbertDimensionFreeWyler
+import CGJteamLab.HilbertDimensionFreeProjective
+import CGJteamLab.HilbertDimensionFreeCone
+import CGJteamLab.HilbertDimensionFreeSmithExchange
+import CGJteamLab.HilbertRightAngle
+import CGJteamLab.HilbertDimensionFreeAffineCarriers
+import CGJteamLab.Coxeter.E4HyperplaneReflectionIsometry
+import CGJteamLab.HilbertIsometry
+import CGJteamLab.Hilbert4DHyperplaneCarriers
+import CGJteamLab.Coxeter.E4HyperplaneReflectionCarrierCandidate
+import CGJteamLab.Coxeter.E4HyperplaneReflectionIncidence
+import CGJteamLab.Coxeter.E4HyperplaneReflectionLineTransport
+import CGJteamLab.Coxeter.E4HyperplaneReflectionCarrierIndependence
+import CGJteamLab.Coxeter.E4HyperplaneReflectionHyperplaneTransport
+import CGJteamLab.Coxeter.E4HyperplaneReflectionOrderTransport
+import CGJteamLab.Coxeter.E4AmbientTriangleSAS
+import CGJteamLab.Coxeter.E4AmbientTriangleSSS
+
+/-!
+# E4Geometry
+
+Production aggregator for the corrected E4 route.
+
+This file is intentionally equivalent to the former E4 import block
+from the root `CGJteamLab.lean`: no additional modules are introduced here.
+-/

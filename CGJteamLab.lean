@@ -129,6 +129,9 @@ import CGJteamLab.Proposition11_13
 import CGJteamLab.Proposition11_14
 import CGJteamLab.Proposition11_15
 
+-- Dimension-free / corrected E4 route
+import CGJteamLab.Coxeter.E4Geometry
+
 -- Coxeter route
 import CGJteamLab.Coxeter.PlaneReflection
 import CGJteamLab.Coxeter.Reflection
@@ -140,6 +143,7 @@ import CGJteamLab.Coxeter.CoxeterRelations
 import CGJteamLab.Coxeter.CoxeterRelationsGeneral
 import CGJteamLab.Coxeter.CoxeterRelationsGeneralExistence
 import CGJteamLab.Coxeter.CoxeterRelations3DS4
+import CGJteamLab.Coxeter.CoxeterA4Smith
 
 -- Suppes route
 import CGJteamLab.SuppesCore
