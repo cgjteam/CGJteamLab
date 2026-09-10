@@ -87,6 +87,8 @@ import CGJteamLab.Hilbert3DInterface
 import CGJteamLab.Hilbert3DParallel
 import CGJteamLab.Hilbert3DRightAngle
 import CGJteamLab.Hilbert3DProportion
+import CGJteamLab.Hilbert3DSmithBridge
+import CGJteamLab.Hilbert3DSmithExchange
 
 -- Euclid Book XI propositions
 import CGJteamLab.Proposition11_1
