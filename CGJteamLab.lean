@@ -138,7 +138,7 @@ import CGJteamLab.Wyler.Proposition11_16
 import CGJteamLab.Wyler.Proposition11_17
 
 -- Dimension-free / corrected E4 route
-import CGJteamLab.Coxeter.E4Geometry
+import CGJteamLab.Coxeter.SalasE4Geometry
 
 -- Coxeter route
 import CGJteamLab.Coxeter.PlaneReflection
