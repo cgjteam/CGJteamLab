@@ -82,7 +82,7 @@ import CGJteamLab.Proposition2_13
 import CGJteamLab.Proposition2_14
 
 -- Euclid Book XI
-import CGJteamLab.Hilbert3DAxioms
+import CGJteamLab.HilbertSpaceIncidence
 import CGJteamLab.Hilbert3DInterface
 import CGJteamLab.Hilbert3DParallel
 import CGJteamLab.Hilbert3DRightAngle

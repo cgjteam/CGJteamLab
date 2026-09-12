@@ -1,4 +1,4 @@
-import CGJteamLab.Hilbert3DAxioms
+import CGJteamLab.HilbertSpaceIncidence
 
 namespace Geometry
 
