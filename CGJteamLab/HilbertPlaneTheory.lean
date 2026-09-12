@@ -1,4 +1,5 @@
-import CGJteamLab.HilbertAxiomsWork
+import CGJteamLab.HilbertPlaneAPI
+--import CGJteamLab.HilbertAxiomsWork
 
 namespace Geometry
 
@@ -4856,4 +4857,3 @@ theorem hilbert_alternate_angles_of_parallel_oppositeSide_lines
   unfold Geometry.Geo.AngleCongruent at hConstructed ⊢
   rw [← hAngleObject]
   exact hConstructed
-
