@@ -3,7 +3,7 @@ import CGJteamLab.Basic
 -- Hilbert route
 import CGJteamLab.Common
 import CGJteamLab.HilbertCore
-import CGJteamLab.HilbertAxioms
+import CGJteamLab.HilbertPlaneTheory
 import CGJteamLab.HilbertGrundlagen
 import CGJteamLab.HilbertInterface
 import CGJteamLab.MidsegmentParallel

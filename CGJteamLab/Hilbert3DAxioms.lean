@@ -1,4 +1,4 @@
-import CGJteamLab.HilbertAxioms
+import CGJteamLab.HilbertPlaneTheory
 
 namespace Geometry
 
