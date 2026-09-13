@@ -1,4 +1,4 @@
-import CGJteamLab.SalasE4Compatibility
+import CGJteamLab.HilbertWylerE4Compatibility
 import CGJteamLab.HilbertDimensionFreeSmithExchange
 
 namespace Geometry
@@ -17,8 +17,8 @@ the two nontrivial local 3D facts needed by the historical E4 API:
   a point have a second common point;
 * every derived E4 hyperplane contains four ambiently noncoplanar points.
 
-The first proof uses Wyler's one-point generation formula, already derived
-from Smith I5 and hence from Sancho de Salas LP1-LP4.
+The first proof uses Wyler's one-point generation formula, derived from
+Wyler I.7 through Smith I5.
 
 No new axiom is introduced here.
 -/
@@ -26,11 +26,11 @@ No new axiom is introduced here.
 /--
 A plane contains another point distinct from any prescribed point of it.
 -/
-theorem salas_plane_other_point
+theorem hilbertWyler_plane_other_point
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (pi : S.Plane)
     (P : Geo.Point)
     (_hPpi : S.OnPlane P pi) :
@@ -38,7 +38,7 @@ theorem salas_plane_other_point
       Ne R P /\
       S.OnPlane R pi := by
 
-  rcases A.three_noncollinear_on_each_plane pi with
+  rcases A.three_noncollinear_on_plane pi with
     ⟨U, V, W, hUpi, hVpi, hWpi, hUVW⟩
 
   have hUV : Ne U V := by
@@ -66,17 +66,18 @@ theorem salas_plane_other_point
 /--
 Every ambient plane contains a point off any prescribed ambient line.
 -/
-theorem salas_plane_point_off_line
+theorem hilbertWyler_plane_point_off_line
     [H : HilbertIncidence Geo]
+    [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (pi : S.Plane)
     (l : Geo.Line) :
     exists Y : Geo.Point,
       S.OnPlane Y pi /\
       Not (H.OnLine Y l) := by
 
-  rcases A.three_noncollinear_on_each_plane pi with
+  rcases A.three_noncollinear_on_plane pi with
     ⟨U, V, W, hUpi, hVpi, hWpi, hUVW⟩
 
   by_cases hUl : H.OnLine U l
@@ -101,17 +102,18 @@ theorem salas_plane_point_off_line
 For two distinct ambient planes, the second plane contains a point outside
 the first one.
 -/
-theorem salas_distinct_planes_point_outside_first
+theorem hilbertWyler_distinct_planes_point_outside_first
     [H : HilbertIncidence Geo]
+    [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (pi tau : S.Plane)
     (hPiTau : Ne pi tau) :
     exists X : Geo.Point,
       S.OnPlane X tau /\
       Not (S.OnPlane X pi) := by
 
-  rcases A.three_noncollinear_on_each_plane tau with
+  rcases A.three_noncollinear_on_plane tau with
     ⟨U, V, W, hUtau, hVtau, hWtau, hUVW⟩
 
   by_cases hUpi : S.OnPlane U pi
@@ -120,21 +122,14 @@ theorem salas_distinct_planes_point_outside_first
 
     · by_cases hWpi : S.OnPlane W pi
 
-      · rcases
-          A.plane_through_unique
-            U V W hUVW with
-        ⟨rho, _hUrho, _hVrho, _hWrho, hUnique⟩
+      · have hPiEqTau : pi = tau :=
+          A.plane_unique
+            U V W hUVW
+            pi tau
+            hUpi hVpi hWpi
+            hUtau hVtau hWtau
 
-        have hTauRho : tau = rho :=
-          hUnique tau hUtau hVtau hWtau
-
-        have hPiRho : pi = rho :=
-          hUnique pi hUpi hVpi hWpi
-
-        exact
-          False.elim
-            (hPiTau
-              (hPiRho.trans hTauRho.symm))
+        exact False.elim (hPiTau hPiEqTau)
 
       · exact ⟨W, hWtau, hWpi⟩
 
@@ -147,10 +142,11 @@ theorem salas_distinct_planes_point_outside_first
 Three noncollinear points of a plane together with a point outside the
 plane are noncoplanar.
 -/
-theorem salas_plane_external_point_noncoplanar4
+theorem hilbertWyler_plane_external_point_noncoplanar4
     [H : HilbertIncidence Geo]
+    [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (pi : S.Plane)
     (U V W X : Geo.Point)
     (hUpi : S.OnPlane U pi)
@@ -165,19 +161,12 @@ theorem salas_plane_external_point_noncoplanar4
   rcases hCop with
     ⟨rho, hUrho, hVrho, hWrho, hXrho⟩
 
-  rcases
-      A.plane_through_unique
-        U V W hUVW with
-    ⟨gamma, _hUgamma, _hVgamma, _hWgamma, hUnique⟩
-
-  have hRhoGamma : rho = gamma :=
-    hUnique rho hUrho hVrho hWrho
-
-  have hPiGamma : pi = gamma :=
-    hUnique pi hUpi hVpi hWpi
-
   have hRhoPi : rho = pi :=
-    hRhoGamma.trans hPiGamma.symm
+    A.plane_unique
+      U V W hUVW
+      rho pi
+      hUrho hVrho hWrho
+      hUpi hVpi hWpi
 
   rw [hRhoPi] at hXrho
   exact hXout hXrho
@@ -187,11 +176,11 @@ theorem salas_plane_external_point_noncoplanar4
 If pi is contained in Sigma and X is another point of Sigma outside pi,
 then pi together with X generates the whole derived E4 hyperplane Sigma.
 -/
-theorem salas_e4_plane_adjoin_external_eq_hyperplane
+theorem hilbertWyler_e4_plane_adjoin_external_eq_hyperplane
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     [D4 : E4Dimension Geo]
     (Sigma : E4Hyperplane Geo)
     (pi : S.Plane)
@@ -207,7 +196,7 @@ theorem salas_e4_plane_adjoin_external_eq_hyperplane
           (SmithPlaneCarrier Geo pi) X) =
       Sigma.carrier := by
 
-  rcases A.three_noncollinear_on_each_plane pi with
+  rcases A.three_noncollinear_on_plane pi with
     ⟨U, V, W, hUpi, hVpi, hWpi, hUVW⟩
 
   have hTripleSpan :
@@ -218,7 +207,7 @@ theorem salas_e4_plane_adjoin_external_eq_hyperplane
       H
       HP
       S
-      (salas_implies_dimensionFreeIncidence
+      (hilbertDimensionFreeIncidence_of_hilbertWyler
         (Geo := Geo))
       U V W
       hUVW
@@ -243,7 +232,7 @@ theorem salas_e4_plane_adjoin_external_eq_hyperplane
 
   have hNoncoplanar :
       Not (HilbertCoplanar4 Geo U V W X) :=
-    salas_plane_external_point_noncoplanar4
+    hilbertWyler_plane_external_point_noncoplanar4
       (Geo := Geo)
       pi
       U V W X
@@ -265,7 +254,7 @@ theorem salas_e4_plane_adjoin_external_eq_hyperplane
         SmithSpan Geo
           (SmithAdjoinPoint Geo
             (SmithPointTriple Geo U V W) X) :=
-    salas_e4_hyperplane_carrier_eq_quad_span
+    hilbertWyler_e4_hyperplane_carrier_eq_quad_span
       (Geo := Geo)
       U V W X
       hNoncoplanar
@@ -280,15 +269,12 @@ Direct local Hilbert-I.7 conclusion inside a derived E4 hyperplane.
 
 Two distinct ambient planes contained in Sigma, if they share P, share a
 second point R != P.
-
-The proof uses the Wyler one-point generation formula with the first plane
-as base and a point X of the second plane outside the first as apex.
 -/
-theorem salas_e4_plane_second_common_point_in_hyperplane
+theorem hilbertWyler_e4_plane_second_common_point_in_hyperplane
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     [D4 : E4Dimension Geo]
     (Sigma : E4Hyperplane Geo)
     (pi tau : S.Plane)
@@ -310,7 +296,7 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
       S.OnPlane R tau := by
 
   rcases
-      salas_distinct_planes_point_outside_first
+      hilbertWyler_distinct_planes_point_outside_first
         (Geo := Geo)
         pi tau hPiTau with
     ⟨X, hXtau, hXout⟩
@@ -326,7 +312,7 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
     ⟨k, hPk, hXk⟩
 
   rcases
-      salas_plane_point_off_line
+      hilbertWyler_plane_point_off_line
         (Geo := Geo)
         tau k with
     ⟨Y, hYtau, hYk⟩
@@ -360,7 +346,7 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
           (SmithAdjoinPoint Geo
             (SmithPlaneCarrier Geo pi) X) =
         Sigma.carrier :=
-    salas_e4_plane_adjoin_external_eq_hyperplane
+    hilbertWyler_e4_plane_adjoin_external_eq_hyperplane
       (Geo := Geo)
       Sigma
       pi
@@ -379,7 +365,7 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
     exact hYSigma
 
   rcases
-      salas_plane_other_point
+      hilbertWyler_plane_other_point
         (Geo := Geo)
         pi P hPpi with
     ⟨R0, hR0P, hR0pi⟩
@@ -391,9 +377,9 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
       H
       HP
       S
-      (salas_to_smithIncidenceCore
+      (hilbertWyler_smithIncidenceCore
         (Geo := Geo))
-      (salas_implies_smithI5
+      (hilbertWyler_implies_smithI5
         (Geo := Geo))
 
   have hPlaneFlat :
@@ -403,7 +389,7 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
       H
       HP
       S
-      (salas_implies_dimensionFreeIncidence
+      (hilbertDimensionFreeIncidence_of_hilbertWyler
         (Geo := Geo))
       pi
 
@@ -436,19 +422,12 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
   have hPalpha : S.OnPlane P alpha :=
     hlAlpha P hPl
 
-  rcases
-      A.plane_through_unique
-        P X Y hPXY with
-    ⟨rho, _hPrho, _hXrho, _hYrho, hUnique⟩
-
-  have hAlphaRho : alpha = rho :=
-    hUnique alpha hPalpha hXalpha hYalpha
-
-  have hTauRho : tau = rho :=
-    hUnique tau hPtau hXtau hYtau
-
   have hAlphaTau : alpha = tau :=
-    hAlphaRho.trans hTauRho.symm
+    A.plane_unique
+      P X Y hPXY
+      alpha tau
+      hPalpha hXalpha hYalpha
+      hPtau hXtau hYtau
 
   rcases A.two_points_on_each_line l with
     ⟨U, V, hUV, hUl, hVl⟩
@@ -493,11 +472,11 @@ theorem salas_e4_plane_second_common_point_in_hyperplane
 /--
 Every derived E4 hyperplane contains four ambiently noncoplanar points.
 -/
-theorem salas_e4_four_noncoplanar_on_hyperplane
+theorem hilbertWyler_e4_four_noncoplanar_on_hyperplane
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (Sigma : E4Hyperplane Geo) :
     exists A0 B C D : Geo.Point,
       E4OnHyperplane Geo A0 Sigma /\
@@ -528,7 +507,7 @@ theorem salas_e4_four_noncoplanar_on_hyperplane
         H
         HP
         S
-        (salas_implies_dimensionFreeIncidence
+        (hilbertDimensionFreeIncidence_of_hilbertWyler
           (Geo := Geo))
         A0 B C
         hABC

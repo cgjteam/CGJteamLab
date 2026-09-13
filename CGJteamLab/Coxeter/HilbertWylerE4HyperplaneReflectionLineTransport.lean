@@ -1,5 +1,4 @@
--- SalasE4HyperplaneReflectionLineTransport FIX2 - 2026-09-11
-import CGJteamLab.Coxeter.SalasE4HyperplaneReflectionIncidence
+import CGJteamLab.Coxeter.HilbertWylerE4HyperplaneReflectionIncidence
 import CGJteamLab.Coxeter.E4HyperplaneReflectionLineTransport
 
 namespace Geometry
@@ -9,112 +8,18 @@ universe u
 variable (Geo : Geometry.Geo)
 
 /-!
-# E4 hyperplane line transport on the Salas foundation
-
-Public incidence foundation:
-
-    SalasIncidence + E4Dimension
-
-Additional metric/order assumptions:
-
-    Hilbert4DAmbientOrder
-    Hilbert4DAmbientCongruence
-    Hilbert4DAmbientEuclidean
-
-The historical E4 classes are installed only as local compatibility
-instances.  The public definitions below are stated directly for
-`E4Hyperplane`.
+# E4 hyperplane line transport on the Hilbert-Wyler foundation
 -/
-
-@[instance_reducible]
-local instance salasE4Primitive_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo] :
-    Hilbert4DPrimitive Geo :=
-  salasE4Primitive (Geo := Geo)
-
-
-local instance salasE4PlaneIncidence_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    HilbertPlaneIncidence Geo :=
-  salas_e4_implies_hilbertPlaneIncidence
-    (Geo := Geo)
-
-
-local instance salasE4DimensionFree_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    HilbertDimensionFreeIncidence Geo :=
-  salas_implies_dimensionFreeIncidence
-    (Geo := Geo)
-
-
-local instance salasE4HyperplaneCore_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DHyperplaneIncidenceCore Geo :=
-  salas_e4_implies_oldHyperplaneIncidenceCore
-    (Geo := Geo)
-
-
-local instance salasE4AmbientIncidence_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DAmbientIncidence Geo :=
-  hilbert4DAmbientIncidence_of_dimensionFree
-    (Geo := Geo)
-
-
-local instance salasE4Local3D_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DHyperplaneLocal3DIncidence Geo :=
-  salas_e4_implies_oldHyperplaneLocal3DIncidence
-    (Geo := Geo)
-
-
-local instance salasE4PlaneHyperplane_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DPlaneHyperplaneIncidence Geo :=
-  salas_e4_implies_oldPlaneHyperplaneIncidence
-    (Geo := Geo)
-
-
-local instance salasE4NormalExistence_lineTransport
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo]
-    [Hilbert4DAmbientOrder Geo]
-    [Hilbert4DAmbientCongruence Geo]
-    [Hilbert4DAmbientEuclidean Geo] :
-    Hilbert4DNormalFromExternalPointExistence_corrected Geo :=
-  hilbert4D_XI11_implies_normalFromExternalPointExistence_corrected
-    (Geo := Geo)
-
 
 /--
-Exact setwise transport of a line by the Salas-based E4 hyperplane
+Exact setwise transport of a line by the Hilbert-Wyler E4 hyperplane
 reflection.
 -/
-def SalasE4HyperplaneReflectionMapsLine
+def HilbertWylerE4HyperplaneReflectionMapsLine
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -129,10 +34,11 @@ def SalasE4HyperplaneReflectionMapsLine
 Two reflected images of distinct source points determine the exact image
 line.
 -/
-theorem salasE4HyperplaneReflectionMapsLine_of_two_points
+theorem hilbertWylerE4HyperplaneReflectionMapsLine_of_two_points
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -145,17 +51,17 @@ theorem salasE4HyperplaneReflectionMapsLine_of_two_points
     (hBs : H.OnLine B source)
     (hA't :
       H.OnLine
-        (salasE4HyperplaneReflect (Geo := Geo) Sigma A)
+        (hilbertWylerE4HyperplaneReflect (Geo := Geo) Sigma A)
         target)
     (hB't :
       H.OnLine
-        (salasE4HyperplaneReflect (Geo := Geo) Sigma B)
+        (hilbertWylerE4HyperplaneReflect (Geo := Geo) Sigma B)
         target) :
-    SalasE4HyperplaneReflectionMapsLine
+    HilbertWylerE4HyperplaneReflectionMapsLine
       Geo Sigma source target := by
 
-  unfold SalasE4HyperplaneReflectionMapsLine
-  unfold salasE4HyperplaneReflect at hA't hB't
+  unfold HilbertWylerE4HyperplaneReflectionMapsLine
+  unfold hilbertWylerE4HyperplaneReflect at hA't hB't
 
   exact
     hyperplaneReflectionMapsLine4_corrected_of_two_points
@@ -169,10 +75,11 @@ theorem salasE4HyperplaneReflectionMapsLine_of_two_points
 /--
 Every line has an exact reflected image line.
 -/
-theorem salasE4HyperplaneReflectionMapsLine_exists
+theorem hilbertWylerE4HyperplaneReflectionMapsLine_exists
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -180,10 +87,10 @@ theorem salasE4HyperplaneReflectionMapsLine_exists
     (Sigma : E4Hyperplane Geo)
     (source : Geo.Line) :
     exists target : Geo.Line,
-      SalasE4HyperplaneReflectionMapsLine
+      HilbertWylerE4HyperplaneReflectionMapsLine
         Geo Sigma source target := by
 
-  unfold SalasE4HyperplaneReflectionMapsLine
+  unfold HilbertWylerE4HyperplaneReflectionMapsLine
 
   exact
     hyperplaneReflectionMapsLine4_corrected_exists
@@ -194,10 +101,11 @@ theorem salasE4HyperplaneReflectionMapsLine_exists
 /--
 The exact reflected image line is unique.
 -/
-theorem salasE4HyperplaneReflectionMapsLine_unique
+theorem hilbertWylerE4HyperplaneReflectionMapsLine_unique
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -205,14 +113,14 @@ theorem salasE4HyperplaneReflectionMapsLine_unique
     (Sigma : E4Hyperplane Geo)
     (source target1 target2 : Geo.Line)
     (hMap1 :
-      SalasE4HyperplaneReflectionMapsLine
+      HilbertWylerE4HyperplaneReflectionMapsLine
         Geo Sigma source target1)
     (hMap2 :
-      SalasE4HyperplaneReflectionMapsLine
+      HilbertWylerE4HyperplaneReflectionMapsLine
         Geo Sigma source target2) :
     target1 = target2 := by
 
-  unfold SalasE4HyperplaneReflectionMapsLine at hMap1 hMap2
+  unfold HilbertWylerE4HyperplaneReflectionMapsLine at hMap1 hMap2
 
   exact
     hyperplaneReflectionMapsLine4_corrected_unique
@@ -224,10 +132,11 @@ theorem salasE4HyperplaneReflectionMapsLine_unique
 /--
 Canonical reflected image of a line.
 -/
-noncomputable def salasE4HyperplaneReflectionLineCarrier
+noncomputable def hilbertWylerE4HyperplaneReflectionLineCarrier
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -243,23 +152,24 @@ noncomputable def salasE4HyperplaneReflectionLineCarrier
 /--
 Specification of the canonical reflected line.
 -/
-theorem salasE4HyperplaneReflectionLineCarrier_spec
+theorem hilbertWylerE4HyperplaneReflectionLineCarrier_spec
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
     [Hilbert4DAmbientEuclidean Geo]
     (Sigma : E4Hyperplane Geo)
     (source : Geo.Line) :
-    SalasE4HyperplaneReflectionMapsLine
+    HilbertWylerE4HyperplaneReflectionMapsLine
       Geo Sigma source
-      (salasE4HyperplaneReflectionLineCarrier
+      (hilbertWylerE4HyperplaneReflectionLineCarrier
         (Geo := Geo) Sigma source) := by
 
-  unfold SalasE4HyperplaneReflectionMapsLine
-  unfold salasE4HyperplaneReflectionLineCarrier
+  unfold HilbertWylerE4HyperplaneReflectionMapsLine
+  unfold hilbertWylerE4HyperplaneReflectionLineCarrier
 
   exact
     hyperplaneReflectionLineCarrier4_corrected_spec
@@ -270,10 +180,11 @@ theorem salasE4HyperplaneReflectionLineCarrier_spec
 /--
 Pointwise membership characterization of the canonical reflected line.
 -/
-theorem salasE4HyperplaneReflectionLineCarrier_iff
+theorem hilbertWylerE4HyperplaneReflectionLineCarrier_iff
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -283,10 +194,10 @@ theorem salasE4HyperplaneReflectionLineCarrier_iff
     (P : Geo.Point) :
     H.OnLine P source <->
       H.OnLine
-        (salasE4HyperplaneReflect (Geo := Geo) Sigma P)
-        (salasE4HyperplaneReflectionLineCarrier
+        (hilbertWylerE4HyperplaneReflect (Geo := Geo) Sigma P)
+        (hilbertWylerE4HyperplaneReflectionLineCarrier
           (Geo := Geo) Sigma source) :=
-  salasE4HyperplaneReflectionLineCarrier_spec
+  hilbertWylerE4HyperplaneReflectionLineCarrier_spec
     (Geo := Geo)
     Sigma source P
 
@@ -294,10 +205,11 @@ theorem salasE4HyperplaneReflectionLineCarrier_iff
 /--
 Any exact target is the canonical reflected line.
 -/
-theorem salasE4HyperplaneReflectionLineCarrier_eq
+theorem hilbertWylerE4HyperplaneReflectionLineCarrier_eq
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -305,35 +217,33 @@ theorem salasE4HyperplaneReflectionLineCarrier_eq
     (Sigma : E4Hyperplane Geo)
     (source target : Geo.Line)
     (hMap :
-      SalasE4HyperplaneReflectionMapsLine
+      HilbertWylerE4HyperplaneReflectionMapsLine
         Geo Sigma source target) :
-    salasE4HyperplaneReflectionLineCarrier
+    hilbertWylerE4HyperplaneReflectionLineCarrier
         (Geo := Geo) Sigma source =
       target := by
 
-  apply
-    salasE4HyperplaneReflectionMapsLine_unique
+  exact
+    hilbertWylerE4HyperplaneReflectionMapsLine_unique
       (Geo := Geo)
       Sigma source
-      (salasE4HyperplaneReflectionLineCarrier
+      (hilbertWylerE4HyperplaneReflectionLineCarrier
         (Geo := Geo) Sigma source)
       target
-
-  · exact
-      salasE4HyperplaneReflectionLineCarrier_spec
+      (hilbertWylerE4HyperplaneReflectionLineCarrier_spec
         (Geo := Geo)
-        Sigma source
-
-  · exact hMap
+        Sigma source)
+      hMap
 
 
 /--
 Exact line transport reverses under the same reflection.
 -/
-theorem salasE4HyperplaneReflectionMapsLine_symm
+theorem hilbertWylerE4HyperplaneReflectionMapsLine_symm
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -341,12 +251,12 @@ theorem salasE4HyperplaneReflectionMapsLine_symm
     (Sigma : E4Hyperplane Geo)
     (source target : Geo.Line)
     (hMap :
-      SalasE4HyperplaneReflectionMapsLine
+      HilbertWylerE4HyperplaneReflectionMapsLine
         Geo Sigma source target) :
-    SalasE4HyperplaneReflectionMapsLine
+    HilbertWylerE4HyperplaneReflectionMapsLine
       Geo Sigma target source := by
 
-  unfold SalasE4HyperplaneReflectionMapsLine at hMap |- 
+  unfold HilbertWylerE4HyperplaneReflectionMapsLine at hMap |-
 
   exact
     hyperplaneReflectionMapsLine4_corrected_symm
@@ -357,24 +267,25 @@ theorem salasE4HyperplaneReflectionMapsLine_symm
 /--
 Canonical line transport is involutive.
 -/
-theorem salasE4HyperplaneReflectionLineCarrier_involutive
+theorem hilbertWylerE4HyperplaneReflectionLineCarrier_involutive
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
     [Hilbert4DAmbientEuclidean Geo]
     (Sigma : E4Hyperplane Geo)
     (source : Geo.Line) :
-    salasE4HyperplaneReflectionLineCarrier
+    hilbertWylerE4HyperplaneReflectionLineCarrier
         (Geo := Geo)
         Sigma
-        (salasE4HyperplaneReflectionLineCarrier
+        (hilbertWylerE4HyperplaneReflectionLineCarrier
           (Geo := Geo) Sigma source) =
       source := by
 
-  unfold salasE4HyperplaneReflectionLineCarrier
+  unfold hilbertWylerE4HyperplaneReflectionLineCarrier
 
   exact
     hyperplaneReflectionLineCarrier4_corrected_involutive

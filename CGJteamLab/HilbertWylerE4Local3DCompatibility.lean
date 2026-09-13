@@ -1,5 +1,4 @@
--- SalasE4Local3DCompatibility FIX1 - 2026-09-11
-import CGJteamLab.SalasE4Local3D
+import CGJteamLab.HilbertWylerE4Local3D
 import CGJteamLab.Coxeter.E4Incidence
 
 namespace Geometry
@@ -15,48 +14,58 @@ The historical Coxeter E4 development expects the class
 
     Hilbert4DHyperplaneLocal3DIncidence.
 
-Under the new foundation this class is no longer an independent axiom.
-It is reconstructed from
+Under the Hilbert-Wyler foundation this class is no longer an independent
+axiom. It is reconstructed from
 
-    SalasIncidence + E4Dimension.
+    HilbertWylerAxioms + E4Dimension.
 
-The intermediate historical interfaces are installed only locally in
-this module.  No new axiom is introduced.
+No new axiom is introduced.
 -/
 
 @[instance_reducible]
-local instance salasE4Primitive_local3DCompatibility
+local instance hilbertWylerE4Primitive_local3DCompatibility
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo] :
     Hilbert4DPrimitive Geo :=
-  salasE4Primitive (Geo := Geo)
+  hilbertWylerE4Primitive (Geo := Geo)
 
 
-local instance salasDimensionFreeIncidence_local3DCompatibility
+local instance hilbertWylerDimensionFreeIncidence_local3DCompatibility
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo] :
+    [HilbertWylerAxioms Geo] :
     HilbertDimensionFreeIncidence Geo :=
-  salas_implies_dimensionFreeIncidence
+  hilbertDimensionFreeIncidence_of_hilbertWyler
     (Geo := Geo)
 
 
-local instance salasOldHyperplaneIncidenceCore_local
+local instance hilbertWylerOldHyperplaneIncidenceCore_local
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo] :
     Hilbert4DHyperplaneIncidenceCore Geo :=
-  salas_e4_implies_oldHyperplaneIncidenceCore
+  hilbertWyler_e4_implies_oldHyperplaneIncidenceCore
+    (Geo := Geo)
+
+
+local instance hilbertWylerAmbientIncidence_local3DCompatibility
+    [H : HilbertIncidence Geo]
+    [HP : HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertWylerAxioms Geo]
+    [E4Dimension Geo] :
+    Hilbert4DAmbientIncidence Geo :=
+  hilbert4DAmbientIncidence_of_dimensionFree
     (Geo := Geo)
 
 
 /--
 The historical local-3D hyperplane incidence class is a theorem of
 
-    SalasIncidence + E4Dimension.
+    HilbertWylerAxioms + E4Dimension.
 
 Thus its three fields are derived:
 
@@ -64,11 +73,11 @@ Thus its three fields are derived:
 * local Hilbert I.7;
 * existence of four noncoplanar points in every hyperplane.
 -/
-theorem salas_e4_implies_oldHyperplaneLocal3DIncidence
+theorem hilbertWyler_e4_implies_oldHyperplaneLocal3DIncidence
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo] :
     Hilbert4DHyperplaneLocal3DIncidence Geo where
 
@@ -97,7 +106,7 @@ theorem salas_e4_implies_oldHyperplaneLocal3DIncidence
       P hPpi hPtau
 
     exact
-      salas_e4_plane_second_common_point_in_hyperplane
+      hilbertWyler_e4_plane_second_common_point_in_hyperplane
         (Geo := Geo)
         Sigma
         pi tau
@@ -110,7 +119,7 @@ theorem salas_e4_implies_oldHyperplaneLocal3DIncidence
     intro Sigma
 
     exact
-      salas_e4_four_noncoplanar_on_hyperplane
+      hilbertWyler_e4_four_noncoplanar_on_hyperplane
         (Geo := Geo)
         Sigma
 

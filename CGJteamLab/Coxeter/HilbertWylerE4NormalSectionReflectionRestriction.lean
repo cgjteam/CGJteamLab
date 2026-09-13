@@ -1,6 +1,6 @@
-import CGJteamLab.Coxeter.SalasE4NormalSectionData
-import CGJteamLab.Coxeter.SalasE4NormalParallel
-import CGJteamLab.Coxeter.SalasE4HyperplaneReflectionCore
+import CGJteamLab.Coxeter.HilbertWylerE4NormalSectionData
+import CGJteamLab.Coxeter.HilbertWylerE4NormalParallel
+import CGJteamLab.Coxeter.HilbertWylerE4HyperplaneReflectionCore
 import CGJteamLab.Coxeter.E4NormalSectionReflectionRestriction
 
 namespace Geometry
@@ -12,112 +12,25 @@ variable (Geo : Geometry.Geo)
 /-!
 # Restricting E4 hyperplane reflections to a normal section
 
-This is the Salas-facing bridge from ambient E4 reflection geometry to
-the ordinary planar line-reflection theory used in the Coxeter argument.
+This is the Hilbert-Wyler-facing bridge from ambient E4 reflection
+geometry to the ordinary planar line-reflection theory used in the
+Coxeter argument.
 
-Public foundation:
-
-    SalasIncidence
-    E4Dimension
-    Hilbert4DAmbientOrder
-    Hilbert4DAmbientCongruence
-    Hilbert4DAmbientEuclidean
-
-The generic restriction theorem itself needs only Groups II and III once
-the relevant reflection data are supplied.  Group IV enters the packaged
-canonical reflection functions through the derived XI.11 normal-existence
-interface.
+The generic restriction theorem itself needs only ambient Groups II and
+III once the relevant reflection data are supplied. Group IV enters the
+packaged canonical reflection functions through the derived XI.11
+normal-existence interface.
 -/
-
-@[instance_reducible]
-local instance salasE4Primitive_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo] :
-    Hilbert4DPrimitive Geo :=
-  salasE4Primitive (Geo := Geo)
-
-
-local instance salasE4PlaneIncidence_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    HilbertPlaneIncidence Geo :=
-  salas_e4_implies_hilbertPlaneIncidence
-    (Geo := Geo)
-
-
-local instance salasE4DimensionFree_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    HilbertDimensionFreeIncidence Geo :=
-  salas_implies_dimensionFreeIncidence
-    (Geo := Geo)
-
-
-local instance salasE4HyperplaneCore_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DHyperplaneIncidenceCore Geo :=
-  salas_e4_implies_oldHyperplaneIncidenceCore
-    (Geo := Geo)
-
-
-local instance salasE4AmbientIncidence_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DAmbientIncidence Geo :=
-  hilbert4DAmbientIncidence_of_dimensionFree
-    (Geo := Geo)
-
-
-local instance salasE4Local3D_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DHyperplaneLocal3DIncidence Geo :=
-  salas_e4_implies_oldHyperplaneLocal3DIncidence
-    (Geo := Geo)
-
-
-local instance salasE4PlaneHyperplane_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DPlaneHyperplaneIncidence Geo :=
-  salas_e4_implies_oldPlaneHyperplaneIncidence
-    (Geo := Geo)
-
-
-local instance salasE4NormalExistence_reflectionRestriction
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo]
-    [Hilbert4DAmbientOrder Geo]
-    [Hilbert4DAmbientCongruence Geo]
-    [Hilbert4DAmbientEuclidean Geo] :
-    Hilbert4DNormalFromExternalPointExistence_corrected Geo :=
-  hilbert4D_XI11_implies_normalFromExternalPointExistence_corrected
-    (Geo := Geo)
-
 
 /--
-Salas-facing name for the corrected ambient E4 hyperplane-reflection
-relation.
+Hilbert-Wyler-facing name for the corrected ambient E4
+hyperplane-reflection relation.
 -/
-def SalasE4IsHyperplaneReflection
+def HilbertWylerE4IsHyperplaneReflection
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -131,10 +44,11 @@ def SalasE4IsHyperplaneReflection
 A normal carrier through a point of an ambient plane `N` is absorbed by
 `N` once `N` already contains one normal to the same hyperplane.
 -/
-theorem salas_e4_normal_carrier_absorbed_by_plane
+theorem hilbertWyler_e4_normal_carrier_absorbed_by_plane
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -171,10 +85,11 @@ Generic restriction theorem: an ambient E4 hyperplane reflection becomes
 an ordinary line reflection in a plane containing a hyperplane normal,
 provided `s` is the exact trace of the hyperplane on that plane.
 -/
-theorem salas_e4_hyperplaneReflection_restricts_to_lineReflection
+theorem hilbertWyler_e4_hyperplaneReflection_restricts_to_lineReflection
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [H4O : Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -199,13 +114,13 @@ theorem salas_e4_hyperplaneReflection_restricts_to_lineReflection
         (Subtype.mk s hsN : PlaneLine Geo N))
     (Pp Pp' : PlanePoint Geo N)
     (hRefl :
-      SalasE4IsHyperplaneReflection
+      HilbertWylerE4IsHyperplaneReflection
         Geo Sigma Pp.1 Pp'.1) :
     IsLineReflection
       (PlaneGeo Geo N)
       axis Pp Pp' := by
 
-  unfold SalasE4IsHyperplaneReflection at hRefl
+  unfold HilbertWylerE4IsHyperplaneReflection at hRefl
 
   exact
     hilbert4D_hyperplaneReflection_restricts_to_lineReflection_smith
@@ -226,10 +141,11 @@ theorem salas_e4_hyperplaneReflection_restricts_to_lineReflection
 /--
 The canonical planar Sigma reflection on the packaged normal section.
 -/
-noncomputable def salasE4NormalSectionSigmaLineReflect
+noncomputable def hilbertWylerE4NormalSectionSigmaLineReflect
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -237,15 +153,15 @@ noncomputable def salasE4NormalSectionSigmaLineReflect
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane)
     (hMeet :
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta)
     (O : Geo.Point)
     (hODelta : S.OnPlane O Delta)
     (sec :
-      SalasE4NormalSectionData
+      HilbertWylerE4NormalSectionData
         Geo Sigma Tau Delta hMeet O hODelta)
     (planar :
-      SalasE4NormalSectionPlanarData
+      HilbertWylerE4NormalSectionPlanarData
         Geo Sigma Tau Delta hMeet O hODelta sec)
     (P : PlanePoint Geo sec.N) :
     PlanePoint Geo sec.N :=
@@ -258,10 +174,11 @@ noncomputable def salasE4NormalSectionSigmaLineReflect
 /--
 The canonical planar Tau reflection on the packaged normal section.
 -/
-noncomputable def salasE4NormalSectionTauLineReflect
+noncomputable def hilbertWylerE4NormalSectionTauLineReflect
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -269,15 +186,15 @@ noncomputable def salasE4NormalSectionTauLineReflect
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane)
     (hMeet :
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta)
     (O : Geo.Point)
     (hODelta : S.OnPlane O Delta)
     (sec :
-      SalasE4NormalSectionData
+      HilbertWylerE4NormalSectionData
         Geo Sigma Tau Delta hMeet O hODelta)
     (planar :
-      SalasE4NormalSectionPlanarData
+      HilbertWylerE4NormalSectionPlanarData
         Geo Sigma Tau Delta hMeet O hODelta sec)
     (P : PlanePoint Geo sec.N) :
     PlanePoint Geo sec.N :=
@@ -289,12 +206,13 @@ noncomputable def salasE4NormalSectionTauLineReflect
 
 /--
 On the packaged normal section, the planar Sigma line reflection is
-exactly the restriction of the Salas-based ambient Sigma reflection.
+exactly the restriction of the Hilbert-Wyler ambient Sigma reflection.
 -/
-theorem salasE4NormalSectionSigmaLineReflect_eq_hyperplaneReflect
+theorem hilbertWylerE4NormalSectionSigmaLineReflect_eq_hyperplaneReflect
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -302,31 +220,31 @@ theorem salasE4NormalSectionSigmaLineReflect_eq_hyperplaneReflect
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane)
     (hMeet :
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta)
     (O : Geo.Point)
     (hODelta : S.OnPlane O Delta)
     (sec :
-      SalasE4NormalSectionData
+      HilbertWylerE4NormalSectionData
         Geo Sigma Tau Delta hMeet O hODelta)
     (planar :
-      SalasE4NormalSectionPlanarData
+      HilbertWylerE4NormalSectionPlanarData
         Geo Sigma Tau Delta hMeet O hODelta sec)
     (P : PlanePoint Geo sec.N) :
-    salasE4NormalSectionSigmaLineReflect
+    hilbertWylerE4NormalSectionSigmaLineReflect
         (Geo := Geo)
         Sigma Tau Delta hMeet O hODelta
         sec planar P =
       (Subtype.mk
-        (salasE4HyperplaneReflect
+        (hilbertWylerE4HyperplaneReflect
           (Geo := Geo) Sigma P.1)
         (by
-          unfold salasE4HyperplaneReflect
+          unfold hilbertWylerE4HyperplaneReflect
           exact sec.sigma_reflection_invariant P.1 P.2) :
         PlanePoint Geo sec.N) := by
 
-  unfold salasE4NormalSectionSigmaLineReflect
-  unfold salasE4HyperplaneReflect
+  unfold hilbertWylerE4NormalSectionSigmaLineReflect
+  unfold hilbertWylerE4HyperplaneReflect
 
   exact
     hilbert4D_normalSectionSigmaLineReflect_eq_hyperplaneReflect
@@ -336,13 +254,14 @@ theorem salasE4NormalSectionSigmaLineReflect_eq_hyperplaneReflect
 
 
 /--
-On the packaged normal section, the planar Tau line reflection is
-exactly the restriction of the Salas-based ambient Tau reflection.
+On the packaged normal section, the planar Tau line reflection is exactly
+the restriction of the Hilbert-Wyler ambient Tau reflection.
 -/
-theorem salasE4NormalSectionTauLineReflect_eq_hyperplaneReflect
+theorem hilbertWylerE4NormalSectionTauLineReflect_eq_hyperplaneReflect
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -350,31 +269,31 @@ theorem salasE4NormalSectionTauLineReflect_eq_hyperplaneReflect
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane)
     (hMeet :
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta)
     (O : Geo.Point)
     (hODelta : S.OnPlane O Delta)
     (sec :
-      SalasE4NormalSectionData
+      HilbertWylerE4NormalSectionData
         Geo Sigma Tau Delta hMeet O hODelta)
     (planar :
-      SalasE4NormalSectionPlanarData
+      HilbertWylerE4NormalSectionPlanarData
         Geo Sigma Tau Delta hMeet O hODelta sec)
     (P : PlanePoint Geo sec.N) :
-    salasE4NormalSectionTauLineReflect
+    hilbertWylerE4NormalSectionTauLineReflect
         (Geo := Geo)
         Sigma Tau Delta hMeet O hODelta
         sec planar P =
       (Subtype.mk
-        (salasE4HyperplaneReflect
+        (hilbertWylerE4HyperplaneReflect
           (Geo := Geo) Tau P.1)
         (by
-          unfold salasE4HyperplaneReflect
+          unfold hilbertWylerE4HyperplaneReflect
           exact sec.tau_reflection_invariant P.1 P.2) :
         PlanePoint Geo sec.N) := by
 
-  unfold salasE4NormalSectionTauLineReflect
-  unfold salasE4HyperplaneReflect
+  unfold hilbertWylerE4NormalSectionTauLineReflect
+  unfold hilbertWylerE4HyperplaneReflect
 
   exact
     hilbert4D_normalSectionTauLineReflect_eq_hyperplaneReflect

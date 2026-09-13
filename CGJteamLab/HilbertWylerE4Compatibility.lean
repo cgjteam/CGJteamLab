@@ -1,6 +1,5 @@
--- SalasE4Compatibility FIX5 - 2026-09-11
 import CGJteamLab.E4HyperplaneCore
-import CGJteamLab.SalasCompatibility
+import CGJteamLab.HilbertWylerCompatibility
 import CGJteamLab.Coxeter.E4Incidence
 
 namespace Geometry
@@ -10,7 +9,8 @@ universe u
 variable (Geo : Geometry.Geo)
 
 /-!
-# Compatibility bridge from derived Salas E4 hyperplanes to the old E4 API
+# Compatibility bridge from derived Hilbert-Wyler E4 hyperplanes
+# to the old E4 API
 
 The current Coxeter E4 development was written against the historical
 interfaces
@@ -18,14 +18,14 @@ interfaces
     Hilbert4DPrimitive
     Hilbert4DHyperplaneIncidenceCore.
 
-The new foundation does not assume primitive hyperplanes.  Instead,
+The new foundation does not assume primitive hyperplanes. Instead,
 hyperplanes are derived as proper generated 3-flats from
 
-    SalasIncidence + E4Dimension.
+    HilbertWylerAxioms + E4Dimension.
 
 This module provides a one-way compatibility bridge:
 
-    SalasIncidence + E4Dimension
+    HilbertWylerAxioms + E4Dimension
         -> derived E4Hyperplane
         -> old Hilbert4DPrimitive interface
         -> old Hilbert4DHyperplaneIncidenceCore interface.
@@ -37,11 +37,11 @@ No new axiom is introduced here.
 The old E4 primitive signature realized by derived E4 hyperplanes.
 
 The inherited plane structure is exactly the already available ambient
-`HilbertSpacePrimitive`.  The old primitive hyperplane type is interpreted
+`HilbertSpacePrimitive`. The old primitive hyperplane type is interpreted
 as `E4Hyperplane Geo`.
 -/
 @[instance_reducible]
-def salasE4Primitive
+def hilbertWylerE4Primitive
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo] :
     Hilbert4DPrimitive Geo where
@@ -60,12 +60,12 @@ def salasE4Primitive
 Under the derived realization, old hyperplane membership is exactly
 `E4OnHyperplane`.
 -/
-theorem salasE4Primitive_onHyperplane_iff
+theorem hilbertWylerE4Primitive_onHyperplane_iff
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     (P : Geo.Point)
     (Sigma : E4Hyperplane Geo) :
-    (salasE4Primitive (Geo := Geo)).OnHyperplane P Sigma <->
+    (hilbertWylerE4Primitive (Geo := Geo)).OnHyperplane P Sigma <->
       E4OnHyperplane Geo P Sigma := by
 
   rfl
@@ -74,87 +74,70 @@ theorem salasE4Primitive_onHyperplane_iff
 /--
 Local typeclass view of the derived E4 primitive.
 
-This is deliberately local to this module: it is needed only because the
-historical E4 API states several auxiliary notions through typeclass
-inference on `Hilbert4DPrimitive`.
+This is deliberately local to this module because the historical E4 API
+states auxiliary notions through typeclass inference on
+`Hilbert4DPrimitive`.
 -/
-local instance salasE4Primitive_local
+local instance hilbertWylerE4Primitive_local
     [H : HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo] :
     Hilbert4DPrimitive Geo :=
-  salasE4Primitive (Geo := Geo)
+  hilbertWylerE4Primitive (Geo := Geo)
 
 
 /--
 Local typeclass view of the old dimension-free compatibility package.
 
-Again this is not a new assumption: the instance is constructed from
-`SalasIncidence` by `salas_implies_dimensionFreeIncidence`.
+This is not a new assumption. It is constructed from
+`HilbertWylerAxioms` by the compatibility theorem.
 -/
-local instance salasDimensionFreeIncidence_local
+local instance hilbertWylerDimensionFreeIncidence_local
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo] :
+    [HilbertWylerAxioms Geo] :
     HilbertDimensionFreeIncidence Geo :=
-  salas_implies_dimensionFreeIncidence
+  hilbertDimensionFreeIncidence_of_hilbertWyler
     (Geo := Geo)
 
 
 /--
 The complete historical E4 hyperplane-incidence core is a theorem of
 
-    SalasIncidence + E4Dimension
+    HilbertWylerAxioms + E4Dimension
 
-when the old primitive signature is interpreted by `salasE4Primitive`
-and the old dimension-free package is interpreted by
-`salas_implies_dimensionFreeIncidence`.
+when the old primitive signature is interpreted by
+`hilbertWylerE4Primitive` and the old dimension-free package is
+interpreted by `hilbertDimensionFreeIncidence_of_hilbertWyler`.
 -/
-theorem salas_e4_implies_oldHyperplaneIncidenceCore
+theorem hilbertWyler_e4_implies_oldHyperplaneIncidenceCore
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo] :
     @Hilbert4DHyperplaneIncidenceCore
       Geo
       H
       HP
-      (salasE4Primitive (Geo := Geo))
-      (salas_implies_dimensionFreeIncidence (Geo := Geo)) where
+      (hilbertWylerE4Primitive (Geo := Geo))
+      (hilbertDimensionFreeIncidence_of_hilbertWyler
+        (Geo := Geo)) where
 
   hyperplane_through := by
     intro A B C D hNoncoplanar
-
-    rcases
-        salas_e4_hyperplane_through_noncoplanar4
-          (Geo := Geo)
-          A B C D
-          hNoncoplanar with
-      ⟨Sigma,
-       hASigma,
-       hBSigma,
-       hCSigma,
-       hDSigma⟩
-
     exact
-      ⟨Sigma,
-       hASigma,
-       hBSigma,
-       hCSigma,
-       hDSigma⟩
+      hilbertWyler_e4_hyperplane_through_noncoplanar4
+        (Geo := Geo)
+        A B C D
+        hNoncoplanar
 
   point_on_each_hyperplane := by
     intro Sigma
-
-    rcases
-        e4Hyperplane_point_exists
-          (Geo := Geo)
-          Sigma with
-      ⟨A, hASigma⟩
-
     exact
-      ⟨A, hASigma⟩
+      e4Hyperplane_point_exists
+        (Geo := Geo)
+        Sigma
 
   hyperplane_unique := by
     intro A B C D hNoncoplanar
@@ -163,7 +146,7 @@ theorem salas_e4_implies_oldHyperplaneIncidenceCore
       hATau hBTau hCTau hDTau
 
     exact
-      salas_e4_hyperplane_unique_noncoplanar4
+      hilbertWyler_e4_hyperplane_unique_noncoplanar4
         (Geo := Geo)
         A B C D
         hNoncoplanar

@@ -1,4 +1,4 @@
-import CGJteamLab.SalasExchange
+import CGJteamLab.HilbertWylerTheory
 
 namespace Geometry
 
@@ -10,20 +10,19 @@ variable (Geo : Geometry.Geo)
 # Synthetic dimension four
 
 This module adds exactly one new ingredient beyond the dimension-free
-Sancho de Salas incidence theory: the assertion that the ambient geometry
+Hilbert-Wyler incidence theory: the assertion that the ambient geometry
 has dimension exactly four.
 
-The formulation is closure-theoretic and uses the already existing
-`SmithSpan` calculus.  No numerical rank function is introduced.
+The formulation is closure-theoretic and uses the existing `SmithSpan`
+calculus. No numerical rank function is introduced.
 
 The two clauses have distinct roles:
 
 * `frame_exists` is the lower bound `dim >= 4`;
 * `generated3Flat_adjoin_external_eq_univ` is the upper bound `dim <= 4`.
 
-Thus the class below is not an incidence axiom of Hilbert, Smith, Wyler, or
-Sancho de Salas.  It is the explicit dimension-four assumption of the
-present development.
+Thus the class below is not an incidence axiom. It is the explicit
+dimension-four assumption of the present development.
 
 No hyperplane primitive, order, congruence, Euclidean axiom, metric,
 orthogonality, reflection, or continuity is introduced here.

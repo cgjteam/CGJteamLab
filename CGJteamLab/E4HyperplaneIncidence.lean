@@ -1,5 +1,5 @@
 import CGJteamLab.E4Hyperplane
-import CGJteamLab.SalasCompatibility
+import CGJteamLab.HilbertWylerCompatibility
 
 namespace Geometry
 
@@ -18,22 +18,23 @@ No new axiom is introduced here.
 The assumptions are:
 
 * the existing Hilbert point-line base;
-* Sancho de Salas LP1-LP4 incidence;
+* `HilbertWylerAxioms`;
 * the existing primitive plane signature.
 
-The Salas axioms are converted locally to the old Smith compatibility
-interfaces only when an existing production theorem requires them.
+The Hilbert-Wyler axioms are converted locally to the older Smith
+compatibility interfaces only where an existing production theorem
+still requires them.
 -/
 
 /--
-Under Salas incidence, a line together with a point outside it lies in
-an ambient plane.
+Under Hilbert-Wyler incidence, a line together with a point outside it
+lies in an ambient plane.
 -/
-theorem salas_plane_through_line_and_external_point
+theorem hilbertWyler_plane_through_line_and_external_point
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (l : Geo.Line)
     (P : Geo.Point)
     (hPl : Not (H.OnLine P l)) :
@@ -45,7 +46,7 @@ theorem salas_plane_through_line_and_external_point
     smithCore_plane_through_line_and_external_point
       (Geo := Geo)
       (C :=
-        salas_to_smithIncidenceCore
+        hilbertWyler_smithIncidenceCore
           (Geo := Geo))
       l P hPl
 
@@ -53,13 +54,14 @@ theorem salas_plane_through_line_and_external_point
 /--
 If four points are noncoplanar, then the first three are noncollinear.
 
-This is derived from Salas incidence; it is not a dimension-four axiom.
+This is derived from Hilbert-Wyler incidence; it is not a
+dimension-four axiom.
 -/
-theorem salas_noncoplanar4_first_three_noncollinear
+theorem hilbertWyler_noncoplanar4_first_three_noncollinear
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (A0 B C D : Geo.Point)
     (hNoncoplanar : Not (HilbertCoplanar4 Geo A0 B C D)) :
     Not (PrimCollinear Geo A0 B C) := by
@@ -76,7 +78,7 @@ theorem salas_noncoplanar4_first_three_noncollinear
       ⟨P, hPl⟩
 
     rcases
-        salas_plane_through_line_and_external_point
+        hilbertWyler_plane_through_line_and_external_point
           (Geo := Geo)
           l P hPl with
       ⟨pi, hlpi, _hPpi⟩
@@ -90,7 +92,7 @@ theorem salas_noncoplanar4_first_three_noncollinear
          hlpi D hDl⟩
 
   · rcases
-        salas_plane_through_line_and_external_point
+        hilbertWyler_plane_through_line_and_external_point
           (Geo := Geo)
           l D hDl with
       ⟨pi, hlpi, hDpi⟩
@@ -104,6 +106,8 @@ theorem salas_noncoplanar4_first_three_noncollinear
          hDpi⟩
 
 
+set_option linter.style.haveILetI false
+
 /--
 For four noncoplanar points, the fourth point lies outside the Smith span
 of the first three.
@@ -111,39 +115,39 @@ of the first three.
 This is the closure-theoretic form of noncoplanarity needed to construct
 a generated 3-flat.
 -/
-theorem salas_noncoplanar4_fourth_outside_triple_span
+theorem hilbertWyler_noncoplanar4_fourth_outside_triple_span
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [A : SalasIncidence Geo]
+    [A : HilbertWylerAxioms Geo]
     (A0 B C D : Geo.Point)
     (hNoncoplanar : Not (HilbertCoplanar4 Geo A0 B C D)) :
     Not (SmithSpan Geo (SmithPointTriple Geo A0 B C) D) := by
 
   have hABC :
       Not (PrimCollinear Geo A0 B C) :=
-    salas_noncoplanar4_first_three_noncollinear
+    hilbertWyler_noncoplanar4_first_three_noncollinear
       (Geo := Geo)
       A0 B C D
       hNoncoplanar
 
   rcases
-      A.plane_through_unique
+      A.plane_through
         A0 B C hABC with
-    ⟨pi, hApi, hBpi, hCpi, _hUnique⟩
+    ⟨pi, hApi, hBpi, hCpi⟩
 
   have hTripleSpan :
       SmithSpan Geo (SmithPointTriple Geo A0 B C) =
-        SmithPlaneCarrier Geo pi :=
-    @smithSpan_three_noncollinear_eq_plane
-      Geo
-      H
-      HP
-      S
-      (salas_implies_dimensionFreeIncidence
-        (Geo := Geo))
-      A0 B C hABC
-      pi hApi hBpi hCpi
+        SmithPlaneCarrier Geo pi := by
+    letI : HilbertDimensionFreeIncidence Geo :=
+      hilbertDimensionFreeIncidence_of_hilbertWyler
+        (Geo := Geo)
+
+    exact
+      smithSpan_three_noncollinear_eq_plane
+        (Geo := Geo)
+        A0 B C hABC
+        pi hApi hBpi hCpi
 
   intro hDspan
 
@@ -161,16 +165,18 @@ theorem salas_noncoplanar4_fourth_outside_triple_span
        hDpi⟩
 
 
+set_option linter.style.haveILetI true
+
 /--
 Any four noncoplanar points generate an `E4Generated3Flat`.
 
 No dimension-four upper bound is used here.
 -/
-theorem salas_noncoplanar4_generates_3flat
+theorem hilbertWyler_noncoplanar4_generates_3flat
     [H : HilbertIncidence Geo]
     [HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     (A B C D : Geo.Point)
     (hNoncoplanar : Not (HilbertCoplanar4 Geo A B C D)) :
     E4Generated3Flat Geo
@@ -179,14 +185,14 @@ theorem salas_noncoplanar4_generates_3flat
 
   have hABC :
       Not (PrimCollinear Geo A B C) :=
-    salas_noncoplanar4_first_three_noncollinear
+    hilbertWyler_noncoplanar4_first_three_noncollinear
       (Geo := Geo)
       A B C D
       hNoncoplanar
 
   have hDout :
       Not (SmithSpan Geo (SmithPointTriple Geo A B C) D) :=
-    salas_noncoplanar4_fourth_outside_triple_span
+    hilbertWyler_noncoplanar4_fourth_outside_triple_span
       (Geo := Geo)
       A B C D
       hNoncoplanar

@@ -1,5 +1,5 @@
-import CGJteamLab.SalasE4PlaneHyperplane
-import CGJteamLab.Coxeter.SalasE4HyperplaneReflectionEquiv
+import CGJteamLab.HilbertWylerE4PublicInstances
+import CGJteamLab.Coxeter.HilbertWylerE4HyperplaneReflectionEquiv
 import CGJteamLab.Coxeter.E4NormalParallel
 import CGJteamLab.Coxeter.E4HyperplaneIntersection
 
@@ -10,105 +10,34 @@ universe u
 variable (Geo : Geometry.Geo)
 
 /-!
-# E4 hyperplane intersections on the Salas foundation
+# E4 hyperplane intersections on the Hilbert-Wyler foundation
 
 The incidence results in this file require only
 
-    SalasIncidence + E4Dimension.
+    HilbertIncidence
+    + HilbertPlaneIncidence
+    + HilbertSpacePrimitive
+    + HilbertWylerAxioms
+    + E4Dimension.
 
 Order, congruence and Euclidean geometry enter only in the final
 reflection fixed-point corollary.
+
+Historical corrected-E4 incidence interfaces are supplied by
+`HilbertWylerE4PublicInstances`.
+
+No new axiom is introduced here.
 -/
-
-@[instance_reducible]
-local instance salasE4Primitive_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo] :
-    Hilbert4DPrimitive Geo :=
-  salasE4Primitive (Geo := Geo)
-
-
-local instance salasE4PlaneIncidence_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    HilbertPlaneIncidence Geo :=
-  salas_e4_implies_hilbertPlaneIncidence
-    (Geo := Geo)
-
-
-local instance salasE4DimensionFree_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    HilbertDimensionFreeIncidence Geo :=
-  salas_implies_dimensionFreeIncidence
-    (Geo := Geo)
-
-
-local instance salasE4HyperplaneCore_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DHyperplaneIncidenceCore Geo :=
-  salas_e4_implies_oldHyperplaneIncidenceCore
-    (Geo := Geo)
-
-
-local instance salasE4AmbientIncidence_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DAmbientIncidence Geo :=
-  hilbert4DAmbientIncidence_of_dimensionFree
-    (Geo := Geo)
-
-
-local instance salasE4Local3D_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DHyperplaneLocal3DIncidence Geo :=
-  salas_e4_implies_oldHyperplaneLocal3DIncidence
-    (Geo := Geo)
-
-
-local instance salasE4PlaneHyperplane_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo] :
-    Hilbert4DPlaneHyperplaneIncidence Geo :=
-  salas_e4_implies_oldPlaneHyperplaneIncidence
-    (Geo := Geo)
-
-
-local instance salasE4NormalExistence_hyperplaneIntersection
-    [H : HilbertIncidence Geo]
-    [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
-    [E4Dimension Geo]
-    [Hilbert4DAmbientOrder Geo]
-    [Hilbert4DAmbientCongruence Geo]
-    [Hilbert4DAmbientEuclidean Geo] :
-    Hilbert4DNormalFromExternalPointExistence_corrected Geo :=
-  hilbert4D_XI11_implies_normalFromExternalPointExistence_corrected
-    (Geo := Geo)
-
 
 /--
 Two derived E4 hyperplanes containing two distinct common points contain
 a common ambient 2-plane through those points.
 -/
-theorem salas_e4_two_hyperplanes_common_plane_through_two_points
+theorem hilbertWyler_e4_two_hyperplanes_common_plane_through_two_points
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     (Sigma Lambda : E4Hyperplane Geo)
     (F G : Geo.Point)
@@ -136,10 +65,11 @@ theorem salas_e4_two_hyperplanes_common_plane_through_two_points
 /--
 Two derived E4 hyperplanes meet exactly in the ambient plane `Delta`.
 -/
-def SalasE4HyperplanesMeetInPlane
+def HilbertWylerE4HyperplanesMeetInPlane
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane) : Prop :=
@@ -151,10 +81,11 @@ def SalasE4HyperplanesMeetInPlane
 Two distinct derived E4 hyperplanes containing the same three
 noncollinear points have an exact common intersection plane.
 -/
-theorem salas_e4_distinct_hyperplanes_exact_common_plane
+theorem hilbertWyler_e4_distinct_hyperplanes_exact_common_plane
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     (Sigma Tau : E4Hyperplane Geo)
     (hSigmaTau : Ne Sigma Tau)
@@ -170,7 +101,7 @@ theorem salas_e4_distinct_hyperplanes_exact_common_plane
       S.OnPlane A Delta /\
       S.OnPlane B Delta /\
       S.OnPlane C Delta /\
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta := by
 
   rcases
@@ -186,7 +117,7 @@ theorem salas_e4_distinct_hyperplanes_exact_common_plane
 
   exact
     ⟨Delta, hA, hB, hC, by
-      unfold SalasE4HyperplanesMeetInPlane
+      unfold HilbertWylerE4HyperplanesMeetInPlane
       exact hMeet⟩
 
 
@@ -194,22 +125,23 @@ theorem salas_e4_distinct_hyperplanes_exact_common_plane
 Membership in an exact common plane is equivalent to membership in both
 derived E4 hyperplanes.
 -/
-theorem salas_e4_hyperplanesMeetInPlane_iff
+theorem hilbertWyler_e4_hyperplanesMeetInPlane_iff
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane)
     (hMeet :
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta)
     (X : Geo.Point) :
     S.OnPlane X Delta <->
       E4OnHyperplane Geo X Sigma /\
       E4OnHyperplane Geo X Tau := by
 
-  unfold SalasE4HyperplanesMeetInPlane at hMeet
+  unfold HilbertWylerE4HyperplanesMeetInPlane at hMeet
 
   exact
     hyperplanesMeetInPlane4_corrected_iff
@@ -219,13 +151,14 @@ theorem salas_e4_hyperplanesMeetInPlane_iff
 
 
 /--
-Every point of the exact common plane is fixed by both Salas-based
+Every point of the exact common plane is fixed by both Hilbert-Wyler
 hyperplane reflections.
 -/
-theorem salas_e4_hyperplanesMeetInPlane_common_point_fixed
+theorem hilbertWyler_e4_hyperplanesMeetInPlane_common_point_fixed
     [H : HilbertIncidence Geo]
+    [_HP : HilbertPlaneIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
-    [SalasIncidence Geo]
+    [HilbertWylerAxioms Geo]
     [E4Dimension Geo]
     [Hilbert4DAmbientOrder Geo]
     [Hilbert4DAmbientCongruence Geo]
@@ -233,17 +166,17 @@ theorem salas_e4_hyperplanesMeetInPlane_common_point_fixed
     (Sigma Tau : E4Hyperplane Geo)
     (Delta : S.Plane)
     (hMeet :
-      SalasE4HyperplanesMeetInPlane
+      HilbertWylerE4HyperplanesMeetInPlane
         Geo Sigma Tau Delta)
     (X : Geo.Point)
     (hXDelta : S.OnPlane X Delta) :
-    salasE4HyperplaneReflect
+    hilbertWylerE4HyperplaneReflect
         (Geo := Geo) Sigma X = X /\
-    salasE4HyperplaneReflect
+    hilbertWylerE4HyperplaneReflect
         (Geo := Geo) Tau X = X := by
 
   have hBoth :=
-    (salas_e4_hyperplanesMeetInPlane_iff
+    (hilbertWyler_e4_hyperplanesMeetInPlane_iff
       (Geo := Geo)
       Sigma Tau Delta
       hMeet X).mp hXDelta
@@ -251,12 +184,12 @@ theorem salas_e4_hyperplanesMeetInPlane_common_point_fixed
   constructor
 
   · exact
-      (salasE4HyperplaneReflect_fixed_iff
+      (hilbertWylerE4HyperplaneReflect_fixed_iff
         (Geo := Geo)
         Sigma X).2 hBoth.1
 
   · exact
-      (salasE4HyperplaneReflect_fixed_iff
+      (hilbertWylerE4HyperplaneReflect_fixed_iff
         (Geo := Geo)
         Tau X).2 hBoth.2
 
