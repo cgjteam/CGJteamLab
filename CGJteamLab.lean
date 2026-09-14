@@ -108,6 +108,8 @@ import CGJteamLab.Proposition11_14
 import CGJteamLab.Proposition11_15
 import CGJteamLab.Proposition11_16
 import CGJteamLab.Proposition11_17
+import CGJteamLab.Proposition11_18
+import CGJteamLab.Proposition11_19
 
 -- Wyler 3D route
 import CGJteamLab.Wyler.Hilbert3DFlats
