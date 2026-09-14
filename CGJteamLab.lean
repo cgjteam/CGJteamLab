@@ -136,6 +136,8 @@ import CGJteamLab.Wyler.Proposition11_14
 import CGJteamLab.Wyler.Proposition11_15
 import CGJteamLab.Wyler.Proposition11_16
 import CGJteamLab.Wyler.Proposition11_17
+import CGJteamLab.Wyler.Proposition11_18
+import CGJteamLab.Wyler.Proposition11_19
 
 -- Dimension-free / corrected E4 route
 import CGJteamLab.Coxeter.HilbertWylerE4Geometry
