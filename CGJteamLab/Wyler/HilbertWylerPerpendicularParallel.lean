@@ -1,3 +1,5 @@
+import CGJteamLab.Wyler.HilbertWylerMetric
+import CGJteamLab.Wyler.HilbertWylerPlanes
 import CGJteamLab.Wyler.HilbertWylerPlanePerpendicular
 
 namespace Geometry
