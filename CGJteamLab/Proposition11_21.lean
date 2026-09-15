@@ -386,7 +386,7 @@ theorem hilbert_XI21_direct_comparison
     [HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     [HilbertSpaceIncidence Geo]
-    [HilbertEuclideanPlane Geo]
+    [HilbertCongruence Geo]
     (A B C D X Y : Geo.Point)
     (hTri :
       HilbertTrihedralConfiguration
@@ -527,7 +527,7 @@ theorem euclid_proposition_11_21
     [HilbertIncidence Geo]
     [S : HilbertSpacePrimitive Geo]
     [HilbertSpaceIncidence Geo]
-    [HilbertEuclideanPlane Geo]
+    [HilbertCongruence Geo]
     (A B C D : Geo.Point)
     (hTri :
       HilbertTrihedralConfiguration
