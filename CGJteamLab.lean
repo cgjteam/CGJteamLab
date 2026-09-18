@@ -81,6 +81,18 @@ import CGJteamLab.Proposition2_12
 import CGJteamLab.Proposition2_13
 import CGJteamLab.Proposition2_14
 
+
+-- Euclid Book V
+import CGJteamLab.HilbertInterfaceV
+import CGJteamLab.Proposition5_8
+import CGJteamLab.Proposition5_10
+import CGJteamLab.Proposition5_11
+import CGJteamLab.Proposition5_13
+import CGJteamLab.Proposition5_14
+import CGJteamLab.Proposition5_15
+import CGJteamLab.Proposition5_16
+
+
 -- Euclid Book XI
 import CGJteamLab.HilbertSpaceIncidence
 import CGJteamLab.Hilbert3DInterface
@@ -110,6 +122,9 @@ import CGJteamLab.Proposition11_16
 import CGJteamLab.Proposition11_17
 import CGJteamLab.Proposition11_18
 import CGJteamLab.Proposition11_19
+import CGJteamLab.Proposition11_20
+import CGJteamLab.Proposition11_21
+import CGJteamLab.Proposition11_22
 
 -- Wyler 3D route
 import CGJteamLab.Wyler.Hilbert3DFlats
@@ -140,6 +155,9 @@ import CGJteamLab.Wyler.Proposition11_16
 import CGJteamLab.Wyler.Proposition11_17
 import CGJteamLab.Wyler.Proposition11_18
 import CGJteamLab.Wyler.Proposition11_19
+import CGJteamLab.Wyler.Proposition11_20
+import CGJteamLab.Wyler.Proposition11_21
+import CGJteamLab.Wyler.Proposition11_22
 
 -- Dimension-free / corrected E4 route
 import CGJteamLab.Coxeter.HilbertWylerE4Geometry
