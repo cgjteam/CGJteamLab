@@ -101,8 +101,17 @@ import CGJteamLab.Hilbert3DRightAngle
 import CGJteamLab.Hilbert3DProportion
 import CGJteamLab.Hilbert3DSmithBridge
 import CGJteamLab.Hilbert3DSmithExchange
+import CGJteamLab.HilbertInterfaceXI
 
 -- Euclid Book XI propositions
+import CGJteamLab.HilbertSpaceIncidence
+import CGJteamLab.Hilbert3DInterface
+import CGJteamLab.Hilbert3DParallel
+import CGJteamLab.Hilbert3DRightAngle
+import CGJteamLab.Hilbert3DAngleComparisonTransport
+import CGJteamLab.Hilbert3DProportion
+import CGJteamLab.Hilbert3DSmithBridge
+import CGJteamLab.Hilbert3DSmithExchange
 import CGJteamLab.Proposition11_1
 import CGJteamLab.Proposition11_2
 import CGJteamLab.Proposition11_3
@@ -125,6 +134,7 @@ import CGJteamLab.Proposition11_19
 import CGJteamLab.Proposition11_20
 import CGJteamLab.Proposition11_21
 import CGJteamLab.Proposition11_22
+import CGJteamLab.Proposition11_23
 
 -- Wyler 3D route
 import CGJteamLab.Wyler.Hilbert3DFlats
