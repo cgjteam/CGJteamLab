@@ -1,5 +1,4 @@
 import CGJteamLab.HilbertPlaneAPI
---import CGJteamLab.HilbertAxiomsWork
 
 namespace Geometry
 

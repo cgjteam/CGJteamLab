@@ -20,9 +20,10 @@ The source order is preserved:
 * Group IV: Euclid's parallel axiom;
 * Group V: continuity, V.1-V.2.
 
-This module is intentionally separate from the existing production
-interfaces `HilbertAxioms.lean` and `Hilbert3DAxioms.lean`.  It is the
-source layer against which compatibility adapters can be proved.
+This module is the source-faithful Hilbert foundation.
+Compatibility with the existing planar working API is handled separately
+by `HilbertPlaneAPI.lean`, while derived plane geometry remains in
+`HilbertPlaneTheory.lean`.
 
 No Smith, Wyler, Salas, Coxeter, dimension-free, or project-specific
 geometric axiom is introduced here.

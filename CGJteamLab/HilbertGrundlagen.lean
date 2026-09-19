@@ -14,7 +14,8 @@ variable [HilbertIncidence Geo]
 Self-contained extraction of the material in `HilbertInterface` tied
 explicitly to Hilbert's *Grundlagen der Geometrie*, Chapter IV, sec. 18.
 
-This file imports only `CGJteamLab.HilbertAxioms`.
+This file imports `CGJteamLab.HilbertPlaneTheory` and packages material
+tied explicitly to Hilbert's `Grundlagen der Geometrie`.
 
 The four declarations collected first are the minimal local prerequisites
 from `HilbertInterface` needed by the Grundlagen block itself.
