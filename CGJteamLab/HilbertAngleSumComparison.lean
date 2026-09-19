@@ -40,7 +40,6 @@ All three angles are explicitly required to be proper.
 -/
 def HilbertTwoAnglesGreaterThanAngle
     [HilbertIncidence Geo]
-    [HilbertCongruence Geo]
     (A O B C P D E Q F : Geo.Point) : Prop :=
   Not (PrimCollinear Geo A O B) /\
   Not (PrimCollinear Geo C P D) /\
