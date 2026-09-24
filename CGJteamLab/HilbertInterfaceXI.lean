@@ -1,4 +1,5 @@
 import CGJteamLab.HilbertTrihedralAngle
+import CGJteamLab.HilbertEudoxusMagnitude
 import CGJteamLab.HilbertBookZero
 import CGJteamLab.HilbertSegmentSum
 import CGJteamLab.HilbertAngleChordSum
@@ -6,9 +7,11 @@ import CGJteamLab.HilbertThreeAnglesFourRight
 import CGJteamLab.HilbertThreeAnglesFourRightCyclic
 import CGJteamLab.HilbertRightAngle
 import CGJteamLab.Hilbert3DAngleComparisonTransport
+import CGJteamLab.Hilbert3DRightAngle
 import CGJteamLab.Proposition08
 import CGJteamLab.Proposition17
 import CGJteamLab.Proposition29
+import CGJteamLab.Proposition34
 import CGJteamLab.Proposition06
 import CGJteamLab.Proposition25
 import CGJteamLab.Proposition20
@@ -9084,5 +9087,1430 @@ theorem hilbert_twoAnglesGreaterThanAngle_of_interior_split_gives_whole_greater_
           hXOC
           hInsideZwhole
           hWholeCong
+
+
+/-!
+# Carrier-plane parallelogram helpers for Book XI
+
+These results are proposition-independent Book XI infrastructure.
+
+They transport an ambient parallelogram contained in a spatial plane to
+the induced planar geometry, recover I.34 there, and provide the I.29
+exterior-angle/SAS package for two consecutive parallelograms.
+
+No statement below mentions any particular Book XI proposition.
+-/
+
+/--
+An ambient parallelogram whose four vertices lie in a fixed spatial
+plane is a parallelogram in the induced `PlaneGeo`.
+-/
+theorem hilbert_parallelogram_in_carrier_plane_XI
+    [H : HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi : S.Plane)
+    (A B C D : Geo.Point)
+    (hApi : S.OnPlane A pi)
+    (hBpi : S.OnPlane B pi)
+    (hCpi : S.OnPlane C pi)
+    (hDpi : S.OnPlane D pi)
+    (hPar : IsParallelogram Geo A B C D) :
+    IsParallelogram
+      (PlaneGeo Geo pi)
+      ({ val := A, property := hApi } : PlanePoint Geo pi)
+      ({ val := B, property := hBpi } : PlanePoint Geo pi)
+      ({ val := C, property := hCpi } : PlanePoint Geo pi)
+      ({ val := D, property := hDpi } : PlanePoint Geo pi) := by
+
+  let Ap : PlanePoint Geo pi :=
+    { val := A, property := hApi }
+
+  let Bp : PlanePoint Geo pi :=
+    { val := B, property := hBpi }
+
+  let Cp : PlanePoint Geo pi :=
+    { val := C, property := hCpi }
+
+  let Dp : PlanePoint Geo pi :=
+    { val := D, property := hDpi }
+
+  have hAB : Ne A B :=
+    hPar.1.1
+
+  have hCD : Ne C D :=
+    hPar.1.2.1
+
+  have hBC : Ne B C :=
+    hPar.2.1
+
+  have hDA : Ne D A :=
+    hPar.2.2.1
+
+  have hABp : Ne Ap Bp := by
+    intro hEq
+    apply hAB
+    exact congrArg Subtype.val hEq
+
+  have hCDp : Ne Cp Dp := by
+    intro hEq
+    apply hCD
+    exact congrArg Subtype.val hEq
+
+  have hBCp : Ne Bp Cp := by
+    intro hEq
+    apply hBC
+    exact congrArg Subtype.val hEq
+
+  have hDAp : Ne Dp Ap := by
+    intro hEq
+    apply hDA
+    exact congrArg Subtype.val hEq
+
+  have hABCDp :
+      (PlaneGeo Geo pi).Parallel Ap Bp Cp Dp := by
+
+    refine And.intro hABp ?_
+    refine And.intro hCDp ?_
+
+    apply Set.disjoint_left.mpr
+    intro Xp hXABp hXCDp
+
+    cases
+        HilbertPlaneIncidence.line_through
+          (Geo := PlaneGeo Geo pi)
+          Ap Bp hABp with
+    | intro lp hL =>
+        have hAlp := hL.1
+        have hBlp := hL.2
+
+        cases
+            HilbertPlaneIncidence.line_through
+              (Geo := PlaneGeo Geo pi)
+              Cp Dp hCDp with
+        | intro mp hM =>
+            have hCmp := hM.1
+            have hDmp := hM.2
+
+            have hXlp :
+                (PlaneGeo Geo pi).OnLine Xp lp :=
+              (hilbert_mem_pointLine_iff_onLine
+                (PlaneGeo Geo pi)
+                Ap Bp Xp lp
+                hABp hAlp hBlp).mp
+                hXABp
+
+            have hXmp :
+                (PlaneGeo Geo pi).OnLine Xp mp :=
+              (hilbert_mem_pointLine_iff_onLine
+                (PlaneGeo Geo pi)
+                Cp Dp Xp mp
+                hCDp hCmp hDmp).mp
+                hXCDp
+
+            have hXAB :
+                Geo.PointLine A B Xp.1 :=
+              (hilbert_mem_pointLine_iff_onLine
+                Geo A B Xp.1 lp.1
+                hAB hAlp hBlp).mpr
+                hXlp
+
+            have hXCD :
+                Geo.PointLine C D Xp.1 :=
+              (hilbert_mem_pointLine_iff_onLine
+                Geo C D Xp.1 mp.1
+                hCD hCmp hDmp).mpr
+                hXmp
+
+            exact
+              Set.disjoint_left.mp
+                hPar.1.2.2
+                hXAB hXCD
+
+  have hBCDAP :
+      (PlaneGeo Geo pi).Parallel Bp Cp Dp Ap := by
+
+    refine And.intro hBCp ?_
+    refine And.intro hDAp ?_
+
+    apply Set.disjoint_left.mpr
+    intro Xp hXBCp hXDAp
+
+    cases
+        HilbertPlaneIncidence.line_through
+          (Geo := PlaneGeo Geo pi)
+          Bp Cp hBCp with
+    | intro lp hL =>
+        have hBlp := hL.1
+        have hClp := hL.2
+
+        cases
+            HilbertPlaneIncidence.line_through
+              (Geo := PlaneGeo Geo pi)
+              Dp Ap hDAp with
+        | intro mp hM =>
+            have hDmp := hM.1
+            have hAmp := hM.2
+
+            have hXlp :
+                (PlaneGeo Geo pi).OnLine Xp lp :=
+              (hilbert_mem_pointLine_iff_onLine
+                (PlaneGeo Geo pi)
+                Bp Cp Xp lp
+                hBCp hBlp hClp).mp
+                hXBCp
+
+            have hXmp :
+                (PlaneGeo Geo pi).OnLine Xp mp :=
+              (hilbert_mem_pointLine_iff_onLine
+                (PlaneGeo Geo pi)
+                Dp Ap Xp mp
+                hDAp hDmp hAmp).mp
+                hXDAp
+
+            have hXBC :
+                Geo.PointLine B C Xp.1 :=
+              (hilbert_mem_pointLine_iff_onLine
+                Geo B C Xp.1 lp.1
+                hBC hBlp hClp).mpr
+                hXlp
+
+            have hXDA :
+                Geo.PointLine D A Xp.1 :=
+              (hilbert_mem_pointLine_iff_onLine
+                Geo D A Xp.1 mp.1
+                hDA hDmp hAmp).mpr
+                hXmp
+
+            exact
+              Set.disjoint_left.mp
+                hPar.2.2.2
+                hXBC hXDA
+
+  have hPlane :
+      IsParallelogram
+        (PlaneGeo Geo pi) Ap Bp Cp Dp :=
+    And.intro hABCDp hBCDAP
+
+  simpa [Ap, Bp, Cp, Dp] using hPlane
+
+/--
+Opposite sides of an ambient parallelogram lying in a fixed spatial
+plane are congruent.
+
+The proof transports the parallelogram to `PlaneGeo`, applies I.34,
+and transports the two segment congruences back to the ambient geometry.
+-/
+theorem hilbert_space_parallelogram_opposite_sides_congruent_XI
+    [H : HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (pi : S.Plane)
+    (A B C D : Geo.Point)
+    (hApi : S.OnPlane A pi)
+    (hBpi : S.OnPlane B pi)
+    (hCpi : S.OnPlane C pi)
+    (hDpi : S.OnPlane D pi)
+    (hPar : IsParallelogram Geo A B C D) :
+    OppositeSidesCongruent Geo A B C D := by
+
+  let Ap : PlanePoint Geo pi :=
+    { val := A, property := hApi }
+
+  let Bp : PlanePoint Geo pi :=
+    { val := B, property := hBpi }
+
+  let Cp : PlanePoint Geo pi :=
+    { val := C, property := hCpi }
+
+  let Dp : PlanePoint Geo pi :=
+    { val := D, property := hDpi }
+
+  have hParPlane :
+      IsParallelogram
+        (PlaneGeo Geo pi) Ap Bp Cp Dp := by
+    have h :=
+      hilbert_parallelogram_in_carrier_plane_XI
+        (Geo := Geo)
+        pi A B C D
+        hApi hBpi hCpi hDpi
+        hPar
+    simpa [Ap, Bp, Cp, Dp] using h
+
+  have hI34 :=
+    euclid_proposition_34
+      (Geo := PlaneGeo Geo pi)
+      Ap Bp Cp Dp
+      hParPlane
+
+  have hSidesPlane :
+      OppositeSidesCongruent
+        (PlaneGeo Geo pi) Ap Bp Cp Dp :=
+    hI34.1
+
+  have hAB_CD :
+      Geo.Congruent A B C D := by
+    have h :=
+      (planeGeo_congruent
+        (Geo := Geo)
+        pi Ap Bp Cp Dp).mp
+        hSidesPlane.1
+    simpa [Ap, Bp, Cp, Dp] using h
+
+  have hBC_DA :
+      Geo.Congruent B C D A := by
+    have h :=
+      (planeGeo_congruent
+        (Geo := Geo)
+        pi Bp Cp Dp Ap).mp
+        hSidesPlane.2
+    simpa [Ap, Bp, Cp, Dp] using h
+
+  exact And.intro hAB_CD hBC_DA
+
+/--
+If `A0 B0 B1 A1` is a parallelogram in a carrier plane and
+`B0 - B1 - B2`, then the angle at `B0` is congruent to the
+corresponding exterior angle at `B1`.
+
+This is the carrier-plane I.29 consequence used in Book XI.
+-/
+theorem hilbert_parallelogram_adjacent_extension_angle_XI
+    [H : HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (rho0 : S.Plane)
+    (A0 B0 B1 A1 B2 : Geo.Point)
+    (hA0rho : S.OnPlane A0 rho0)
+    (hB0rho : S.OnPlane B0 rho0)
+    (hB1rho : S.OnPlane B1 rho0)
+    (hA1rho : S.OnPlane A1 rho0)
+    (hB2rho : S.OnPlane B2 rho0)
+    (hLeft : IsParallelogram Geo A0 B0 B1 A1)
+    (hBetween : Geo.Between B0 B1 B2) :
+    Geo.AngleCongruent
+      A0 B0 B1
+      A1 B1 B2 := by
+
+  let A0p : PlanePoint Geo rho0 :=
+    { val := A0, property := hA0rho }
+
+  let B0p : PlanePoint Geo rho0 :=
+    { val := B0, property := hB0rho }
+
+  let B1p : PlanePoint Geo rho0 :=
+    { val := B1, property := hB1rho }
+
+  let A1p : PlanePoint Geo rho0 :=
+    { val := A1, property := hA1rho }
+
+  let B2p : PlanePoint Geo rho0 :=
+    { val := B2, property := hB2rho }
+
+  have hLeftPlane :
+      IsParallelogram
+        (PlaneGeo Geo rho0)
+        A0p B0p B1p A1p := by
+    have h :=
+      hilbert_parallelogram_in_carrier_plane_XI
+        (Geo := Geo)
+        rho0
+        A0 B0 B1 A1
+        hA0rho hB0rho hB1rho hA1rho
+        hLeft
+    simpa [A0p, B0p, B1p, A1p] using h
+
+  have hRotPlane :
+      IsParallelogram
+        (PlaneGeo Geo rho0)
+        B0p B1p A1p A0p := by
+    refine And.intro hLeftPlane.2 ?_
+    exact
+      ParallelSymmetry
+        (PlaneGeo Geo rho0)
+        A0p B0p B1p A1p
+        hLeftPlane.1
+
+  have hBetweenPlane :
+      (PlaneGeo Geo rho0).Between
+        B0p B1p B2p := by
+    apply
+      (planeGeo_between
+        (Geo := Geo)
+        rho0 B0p B1p B2p).mpr
+    simpa [B0p, B1p, B2p] using hBetween
+
+  have hExteriorData :=
+    parallelogram_adjacent_exterior_angle_congruent
+      (Geo := PlaneGeo Geo rho0)
+      B0p B1p A1p A0p
+      hRotPlane
+
+  cases hExteriorData with
+  | intro Fp hData =>
+
+      have hFB1A1 :
+          (PlaneGeo Geo rho0).Between
+            Fp B1p A1p :=
+        hData.1
+
+      have hNC :
+          Not
+            (Collinear
+              (PlaneGeo Geo rho0)
+              Fp B1p B0p) :=
+        hData.2.1
+
+      have hExterior :
+          (PlaneGeo Geo rho0).AngleCongruent
+            A0p B0p B1p
+            Fp B1p B0p :=
+        hData.2.2
+
+      have hVertical :
+          (PlaneGeo Geo rho0).AngleCongruent
+            Fp B1p B0p
+            A1p B1p B2p :=
+        VerticalAngles
+          (PlaneGeo Geo rho0)
+          Fp B1p B0p A1p B2p
+          hFB1A1
+          hBetweenPlane
+          hNC
+
+      have hPlaneAngle :
+          (PlaneGeo Geo rho0).AngleCongruent
+            A0p B0p B1p
+            A1p B1p B2p :=
+        Geometry.Geo.angle_congruent_transitivity
+          (PlaneGeo Geo rho0)
+          A0p B0p B1p
+          Fp B1p B0p
+          A1p B1p B2p
+          hExterior
+          hVertical
+
+      have hAmbient :=
+        (planeGeo_angleCongruent_iff_ambient
+          (Geo := Geo)
+          rho0
+          A0p B0p B1p
+          A1p B1p B2p).mp
+          hPlaneAngle
+
+      simpa [A0p, B0p, B1p, A1p, B2p] using hAmbient
+
+/--
+Spatial SAS package for the canonical triangles cut from two adjacent
+parallelograms.
+-/
+theorem hilbert_space_adjacent_parallelogram_triangle_congruent_of_sas_data_XI
+    [H : HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [_HSE : HilbertSpaceEuclidean Geo]
+    (A0 B0 B1 A1 B2 A2 : Geo.Point)
+    (hLeft : IsParallelogram Geo A0 B0 B1 A1)
+    (hRight : IsParallelogram Geo A1 B1 B2 A2)
+    (hCross : Geo.Congruent B0 A0 B1 A1)
+    (hWidth : Geo.Congruent B0 B1 B1 B2)
+    (hAngle :
+      Geo.AngleCongruent
+        A0 B0 B1
+        A1 B1 B2) :
+    TriangleCongruenceResult
+      Geo B0 A0 B1 B1 A1 B2 := by
+
+  have hNCLeft :=
+    parallelogram_vertices_noncollinear
+      Geo A0 B0 B1 A1 hLeft
+
+  have hB0A0B1 :
+      Not (PrimCollinear Geo B0 A0 B1) := by
+    intro h
+    exact
+      hNCLeft.2.1
+        (PrimCollinearSwap Geo B0 A0 B1 h)
+
+  have hNCRight :=
+    parallelogram_vertices_noncollinear
+      Geo A1 B1 B2 A2 hRight
+
+  have hB1A1B2 :
+      Not (PrimCollinear Geo B1 A1 B2) := by
+    intro h
+    exact
+      hNCRight.2.1
+        (PrimCollinearSwap Geo B1 A1 B2 h)
+
+  have hThirdSide :
+      Geo.Congruent A0 B1 A1 B2 :=
+    hilbert_space_sas_third_side
+      (Geo := Geo)
+      B0 A0 B1
+      B1 A1 B2
+      hB0A0B1
+      hB1A1B2
+      hCross
+      hWidth
+      hAngle
+
+  have hRemainingAngles :=
+    hilbert_space_sas_remaining_angles
+      (Geo := Geo)
+      B0 A0 B1
+      B1 A1 B2
+      hB0A0B1
+      hB1A1B2
+      hCross
+      hWidth
+      hAngle
+
+  exact
+    {
+      sideAB := hCross
+      sideBC := hThirdSide
+      sideAC := hWidth
+      angleA := hAngle
+      angleB := hRemainingAngles.1
+      angleC := hRemainingAngles.2
+    }
+
+/--
+For two adjacent parallelograms, equal consecutive widths together with
+the corresponding angle congruence imply congruence of the canonical
+diagonal triangles. I.34 supplies the fixed cross-sectional side.
+-/
+theorem hilbert_space_adjacent_parallelogram_triangle_congruent_of_angle_XI
+    [H : HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (rho0 : S.Plane)
+    (A0 B0 B1 A1 B2 A2 : Geo.Point)
+    (hA0rho : S.OnPlane A0 rho0)
+    (hB0rho : S.OnPlane B0 rho0)
+    (hB1rho : S.OnPlane B1 rho0)
+    (hA1rho : S.OnPlane A1 rho0)
+    (hLeft : IsParallelogram Geo A0 B0 B1 A1)
+    (hRight : IsParallelogram Geo A1 B1 B2 A2)
+    (hWidth : Geo.Congruent B0 B1 B1 B2)
+    (hAngle :
+      Geo.AngleCongruent
+        A0 B0 B1
+        A1 B1 B2) :
+    TriangleCongruenceResult
+      Geo B0 A0 B1 B1 A1 B2 := by
+
+  have hSidesLeft :=
+    hilbert_space_parallelogram_opposite_sides_congruent_XI
+      (Geo := Geo)
+      rho0
+      A0 B0 B1 A1
+      hA0rho hB0rho hB1rho hA1rho
+      hLeft
+
+  have hCross :
+      Geo.Congruent B0 A0 B1 A1 :=
+    CongruentReverseFirst
+      Geo A0 B0 B1 A1
+      hSidesLeft.1
+
+  exact
+    hilbert_space_adjacent_parallelogram_triangle_congruent_of_sas_data_XI
+      (Geo := Geo)
+      A0 B0 B1 A1 B2 A2
+      hLeft hRight
+      hCross hWidth hAngle
+
+/--
+Two adjacent parallelograms in one carrier direction have congruent
+canonical diagonal triangles when their consecutive longitudinal widths
+are congruent.
+-/
+theorem hilbert_space_adjacent_parallelogram_triangle_congruent_XI
+    [H : HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    [HSE : HilbertSpaceEuclidean Geo]
+    (rho0 : S.Plane)
+    (A0 B0 B1 A1 B2 A2 : Geo.Point)
+    (hA0rho : S.OnPlane A0 rho0)
+    (hB0rho : S.OnPlane B0 rho0)
+    (hB1rho : S.OnPlane B1 rho0)
+    (hA1rho : S.OnPlane A1 rho0)
+    (hB2rho : S.OnPlane B2 rho0)
+    (hLeft : IsParallelogram Geo A0 B0 B1 A1)
+    (hRight : IsParallelogram Geo A1 B1 B2 A2)
+    (hBetween : Geo.Between B0 B1 B2)
+    (hWidth : Geo.Congruent B0 B1 B1 B2) :
+    TriangleCongruenceResult
+      Geo B0 A0 B1 B1 A1 B2 := by
+
+  have hAngle :
+      Geo.AngleCongruent
+        A0 B0 B1
+        A1 B1 B2 :=
+    hilbert_parallelogram_adjacent_extension_angle_XI
+      (Geo := Geo)
+      rho0
+      A0 B0 B1 A1 B2
+      hA0rho
+      hB0rho
+      hB1rho
+      hA1rho
+      hB2rho
+      hLeft
+      hBetween
+
+  exact
+    hilbert_space_adjacent_parallelogram_triangle_congruent_of_angle_XI
+      (Geo := Geo)
+      rho0
+      A0 B0 B1 A1 B2 A2
+      hA0rho
+      hB0rho
+      hB1rho
+      hA1rho
+      hLeft
+      hRight
+      hWidth
+      hAngle
+
+
+/-!
+# Euclid XI.Def.10 and parallelogram-face equality
+
+This section contains proposition-independent infrastructure for solid
+equality in Book XI.
+
+The XI.Def.10 layer is abstract in the equality relation on faces.  For
+parallelepipeds we use a canonical six-face indexing.  A concrete
+parallelogram-face equality is represented by congruence of the
+canonical diagonal triangles `B A C`.
+
+Both planar and genuinely spatial algebra of this face-equality relation
+are provided.  The spatial lemmas use `HilbertSpaceCongruence` directly
+and do not install a global planar `HilbertCongruence Geo` instance.
+-/
+
+universe v
+
+structure HilbertFacetedSolid
+    (Face : Type u)
+    (I : Type v) where
+  face : I -> Face
+
+/--
+Source-faithful core of Euclid XI.Def.10 for a fixed face arrangement.
+
+`FaceEq` represents "similar and equal in magnitude" for plane faces.
+The common index type represents "equal in number and similarly
+arranged".
+-/
+def HilbertXI10EqualSimilarSolid
+    {Face : Type u}
+    {I : Type v}
+    (FaceEq : Face -> Face -> Prop)
+    (S T : HilbertFacetedSolid Face I) : Prop :=
+  forall i : I,
+    FaceEq (S.face i) (T.face i)
+
+/--
+Reflexivity of XI.Def.10 equality when face equality is reflexive.
+-/
+theorem hilbertXI10EqualSimilarSolid_refl
+    {Face : Type u}
+    {I : Type v}
+    (FaceEq : Face -> Face -> Prop)
+    (hRefl : forall x, FaceEq x x)
+    (S : HilbertFacetedSolid Face I) :
+    HilbertXI10EqualSimilarSolid FaceEq S S := by
+  intro i
+  exact hRefl (S.face i)
+
+/--
+Symmetry of XI.Def.10 equality when face equality is symmetric.
+-/
+theorem hilbertXI10EqualSimilarSolid_symm
+    {Face : Type u}
+    {I : Type v}
+    (FaceEq : Face -> Face -> Prop)
+    (hSymm :
+      forall {x y},
+        FaceEq x y -> FaceEq y x)
+    (S T : HilbertFacetedSolid Face I)
+    (h : HilbertXI10EqualSimilarSolid FaceEq S T) :
+    HilbertXI10EqualSimilarSolid FaceEq T S := by
+  intro i
+  exact hSymm (h i)
+
+/--
+Transitivity of XI.Def.10 equality when face equality is transitive.
+-/
+theorem hilbertXI10EqualSimilarSolid_trans
+    {Face : Type u}
+    {I : Type v}
+    (FaceEq : Face -> Face -> Prop)
+    (hTrans :
+      forall {x y z},
+        FaceEq x y ->
+        FaceEq y z ->
+        FaceEq x z)
+    (R S T : HilbertFacetedSolid Face I)
+    (hRS : HilbertXI10EqualSimilarSolid FaceEq R S)
+    (hST : HilbertXI10EqualSimilarSolid FaceEq S T) :
+    HilbertXI10EqualSimilarSolid FaceEq R T := by
+  intro i
+  exact hTrans (hRS i) (hST i)
+
+------------------------------------------------------------------------
+-- Six-face parallelepiped specialization
+------------------------------------------------------------------------
+
+/--
+Canonical face positions of a parallelepiped.
+
+The three opposite pairs are:
+
+    pi0    <-> pi1
+    rho0   <-> rho1
+    sigma0 <-> sigma1
+-/
+inductive HilbertParallelepipedFaceIndex
+  | pi0
+  | pi1
+  | rho0
+  | rho1
+  | sigma0
+  | sigma1
+
+/--
+Six faces of one parallelepiped, in the same canonical order used by
+`HilbertParallelepipedConfiguration` in Proposition XI.24.
+-/
+structure HilbertParallelepipedFaces
+    (Face : Type u) where
+  pi0 : Face
+  pi1 : Face
+  rho0 : Face
+  rho1 : Face
+  sigma0 : Face
+  sigma1 : Face
+
+/--
+Read one face from the canonical six-face package.
+-/
+def HilbertParallelepipedFaces.faceAt
+    {Face : Type u}
+    (S : HilbertParallelepipedFaces Face) :
+    HilbertParallelepipedFaceIndex -> Face
+  | .pi0 => S.pi0
+  | .pi1 => S.pi1
+  | .rho0 => S.rho0
+  | .rho1 => S.rho1
+  | .sigma0 => S.sigma0
+  | .sigma1 => S.sigma1
+
+/--
+View a six-face parallelepiped package as a fixed-arrangement faceted
+solid.
+-/
+def HilbertParallelepipedFaces.toFacetedSolid
+    {Face : Type u}
+    (S : HilbertParallelepipedFaces Face) :
+    HilbertFacetedSolid
+      Face
+      HilbertParallelepipedFaceIndex where
+  face := S.faceAt
+
+/--
+Euclid XI.Def.10 equality for canonically indexed parallelepipeds.
+-/
+def HilbertXI10EqualSimilarParallelepiped
+    {Face : Type u}
+    (FaceEq : Face -> Face -> Prop)
+    (S T : HilbertParallelepipedFaces Face) : Prop :=
+  HilbertXI10EqualSimilarSolid
+    FaceEq
+    S.toFacetedSolid
+    T.toFacetedSolid
+
+/--
+Expanded constructor for XI.Def.10 equality of two parallelepipeds.
+
+This form is useful when all six corresponding face equalities are
+already available.
+-/
+theorem hilbertXI10EqualSimilarParallelepiped_intro
+    {Face : Type u}
+    (FaceEq : Face -> Face -> Prop)
+    (S T : HilbertParallelepipedFaces Face)
+    (hPi0 : FaceEq S.pi0 T.pi0)
+    (hPi1 : FaceEq S.pi1 T.pi1)
+    (hRho0 : FaceEq S.rho0 T.rho0)
+    (hRho1 : FaceEq S.rho1 T.rho1)
+    (hSigma0 : FaceEq S.sigma0 T.sigma0)
+    (hSigma1 : FaceEq S.sigma1 T.sigma1) :
+    HilbertXI10EqualSimilarParallelepiped
+      FaceEq S T := by
+
+  intro i
+  cases i with
+  | pi0 => exact hPi0
+  | pi1 => exact hPi1
+  | rho0 => exact hRho0
+  | rho1 => exact hRho1
+  | sigma0 => exact hSigma0
+  | sigma1 => exact hSigma1
+
+/--
+Reduction from three adjacent corresponding faces to all six
+corresponding faces.
+
+If every face is related to its opposite face inside each
+parallelepiped, then it is enough to compare one face from each
+opposite pair across the two solids.
+
+The theorem is abstract in `FaceEq`.
+-/
+theorem hilbertXI10EqualSimilarParallelepiped_of_three_adjacent
+    {Face : Type u}
+    (FaceEq : Face -> Face -> Prop)
+    (hSymm :
+      forall {x y},
+        FaceEq x y -> FaceEq y x)
+    (hTrans :
+      forall {x y z},
+        FaceEq x y ->
+        FaceEq y z ->
+        FaceEq x z)
+    (S T : HilbertParallelepipedFaces Face)
+    (hSOppPi : FaceEq S.pi0 S.pi1)
+    (hSOppRho : FaceEq S.rho0 S.rho1)
+    (hSOppSigma : FaceEq S.sigma0 S.sigma1)
+    (hTOppPi : FaceEq T.pi0 T.pi1)
+    (hTOppRho : FaceEq T.rho0 T.rho1)
+    (hTOppSigma : FaceEq T.sigma0 T.sigma1)
+    (hPi0 : FaceEq S.pi0 T.pi0)
+    (hRho0 : FaceEq S.rho0 T.rho0)
+    (hSigma0 : FaceEq S.sigma0 T.sigma0) :
+    HilbertXI10EqualSimilarParallelepiped
+      FaceEq S T := by
+
+  have hPi1 : FaceEq S.pi1 T.pi1 := by
+    have h1 : FaceEq S.pi1 S.pi0 :=
+      hSymm hSOppPi
+    have h2 : FaceEq S.pi1 T.pi0 :=
+      hTrans h1 hPi0
+    exact hTrans h2 hTOppPi
+
+  have hRho1 : FaceEq S.rho1 T.rho1 := by
+    have h1 : FaceEq S.rho1 S.rho0 :=
+      hSymm hSOppRho
+    have h2 : FaceEq S.rho1 T.rho0 :=
+      hTrans h1 hRho0
+    exact hTrans h2 hTOppRho
+
+  have hSigma1 : FaceEq S.sigma1 T.sigma1 := by
+    have h1 : FaceEq S.sigma1 S.sigma0 :=
+      hSymm hSOppSigma
+    have h2 : FaceEq S.sigma1 T.sigma0 :=
+      hTrans h1 hSigma0
+    exact hTrans h2 hTOppSigma
+
+  exact
+    hilbertXI10EqualSimilarParallelepiped_intro
+      FaceEq
+      S T
+      hPi0 hPi1
+      hRho0 hRho1
+      hSigma0 hSigma1
+
+structure HilbertParallelogramFace where
+  a : Geo.Point
+  b : Geo.Point
+  c : Geo.Point
+  d : Geo.Point
+  isParallelogram : IsParallelogram Geo a b c d
+
+/--
+Synthetic equality of two parallelogram faces.
+
+The witness is congruence of their canonical diagonal triangles
+
+    B A C.
+
+For parallelograms this gives a concrete synthetic witness for
+face equality via a canonical diagonal triangulation.
+-/
+def HilbertParallelogramFaceEqual
+    (P Q : HilbertParallelogramFace Geo) : Prop :=
+  TriangleCongruenceResult
+    Geo
+    P.b P.a P.c
+    Q.b Q.a Q.c
+
+/--
+Reflexivity of parallelogram-face equality.
+-/
+theorem hilbertParallelogramFaceEqual_refl
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    (P : HilbertParallelogramFace Geo) :
+    HilbertParallelogramFaceEqual Geo P P := by
+
+  exact
+    {
+      sideAB :=
+        hilbert_congruent_reflexive
+          Geo P.b P.a
+      sideBC :=
+        hilbert_congruent_reflexive
+          Geo P.a P.c
+      sideAC :=
+        hilbert_congruent_reflexive
+          Geo P.b P.c
+      angleA :=
+        Geometry.Geo.angle_congruent_reflexive
+          Geo P.a P.b P.c
+      angleB :=
+        Geometry.Geo.angle_congruent_reflexive
+          Geo P.b P.a P.c
+      angleC :=
+        Geometry.Geo.angle_congruent_reflexive
+          Geo P.b P.c P.a
+    }
+
+/--
+Symmetry of parallelogram-face equality.
+-/
+theorem hilbertParallelogramFaceEqual_symm
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    {P Q : HilbertParallelogramFace Geo}
+    (h : HilbertParallelogramFaceEqual Geo P Q) :
+    HilbertParallelogramFaceEqual Geo Q P := by
+
+  exact
+    {
+      sideAB :=
+        hilbert_congruent_symmetry
+          Geo
+          P.b P.a
+          Q.b Q.a
+          h.sideAB
+      sideBC :=
+        hilbert_congruent_symmetry
+          Geo
+          P.a P.c
+          Q.a Q.c
+          h.sideBC
+      sideAC :=
+        hilbert_congruent_symmetry
+          Geo
+          P.b P.c
+          Q.b Q.c
+          h.sideAC
+      angleA :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          P.a P.b P.c
+          Q.a Q.b Q.c
+          h.angleA
+      angleB :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          P.b P.a P.c
+          Q.b Q.a Q.c
+          h.angleB
+      angleC :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          P.b P.c P.a
+          Q.b Q.c Q.a
+          h.angleC
+    }
+
+/--
+Transitivity of parallelogram-face equality.
+-/
+theorem hilbertParallelogramFaceEqual_trans
+    [HilbertIncidence Geo]
+    [HilbertCongruence Geo]
+    {P Q R : HilbertParallelogramFace Geo}
+    (hPQ : HilbertParallelogramFaceEqual Geo P Q)
+    (hQR : HilbertParallelogramFaceEqual Geo Q R) :
+    HilbertParallelogramFaceEqual Geo P R := by
+
+  exact
+    {
+      sideAB :=
+        hilbert_congruent_transitivity
+          Geo
+          P.b P.a
+          Q.b Q.a
+          R.b R.a
+          hPQ.sideAB
+          hQR.sideAB
+      sideBC :=
+        hilbert_congruent_transitivity
+          Geo
+          P.a P.c
+          Q.a Q.c
+          R.a R.c
+          hPQ.sideBC
+          hQR.sideBC
+      sideAC :=
+        hilbert_congruent_transitivity
+          Geo
+          P.b P.c
+          Q.b Q.c
+          R.b R.c
+          hPQ.sideAC
+          hQR.sideAC
+      angleA :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo
+          P.a P.b P.c
+          Q.a Q.b Q.c
+          R.a R.b R.c
+          hPQ.angleA
+          hQR.angleA
+      angleB :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo
+          P.b P.a P.c
+          Q.b Q.a Q.c
+          R.b R.a R.c
+          hPQ.angleB
+          hQR.angleB
+      angleC :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo
+          P.b P.c P.a
+          Q.b Q.c Q.a
+          R.b R.c R.a
+          hPQ.angleC
+          hQR.angleC
+    }
+
+private theorem hilbert_parallelogram_face_diagonal_ne_XI
+    (P : HilbertParallelogramFace Geo) :
+    Ne P.a P.c := by
+
+  intro hEq
+
+  have hAab :
+      Geo.PointLine P.a P.b P.a := by
+    unfold Geometry.Geo.PointLine
+    unfold Geometry.Geo.LineCollinear
+    exact Or.inr (Or.inl rfl)
+
+  have hAcd :
+      Geo.PointLine P.c P.d P.a := by
+    unfold Geometry.Geo.PointLine
+    unfold Geometry.Geo.LineCollinear
+    exact Or.inr (Or.inl hEq.symm)
+
+  exact
+    Set.disjoint_left.mp
+      P.isParallelogram.1.2.2
+      hAab
+      hAcd
+
+
+/--
+Spatial reflexivity of parallelogram-face equality.
+-/
+theorem hilbertParallelogramFaceEqual_refl_space
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (P : HilbertParallelogramFace Geo) :
+    HilbertParallelogramFaceEqual Geo P P := by
+
+  unfold HilbertParallelogramFaceEqual
+
+  have hBA : Ne P.b P.a :=
+    P.isParallelogram.1.1.symm
+
+  have hAC : Ne P.a P.c :=
+    hilbert_parallelogram_face_diagonal_ne_XI
+      (Geo := Geo) P
+
+  have hBC : Ne P.b P.c :=
+    P.isParallelogram.2.1
+
+  exact
+    {
+      sideAB :=
+        hilbert_space_congruent_reflexive
+          (Geo := Geo)
+          P.b P.a hBA
+
+      sideBC :=
+        hilbert_space_congruent_reflexive
+          (Geo := Geo)
+          P.a P.c hAC
+
+      sideAC :=
+        hilbert_space_congruent_reflexive
+          (Geo := Geo)
+          P.b P.c hBC
+
+      angleA :=
+        Geometry.Geo.angle_congruent_reflexive
+          Geo P.a P.b P.c
+
+      angleB :=
+        Geometry.Geo.angle_congruent_reflexive
+          Geo P.b P.a P.c
+
+      angleC :=
+        Geometry.Geo.angle_congruent_reflexive
+          Geo P.b P.c P.a
+    }
+
+
+/--
+Spatial symmetry of parallelogram-face equality.
+-/
+theorem hilbertParallelogramFaceEqual_symm_space
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    {P Q : HilbertParallelogramFace Geo}
+    (h : HilbertParallelogramFaceEqual Geo P Q) :
+    HilbertParallelogramFaceEqual Geo Q P := by
+
+  unfold HilbertParallelogramFaceEqual at h |- 
+
+  have hBA : Ne P.b P.a :=
+    P.isParallelogram.1.1.symm
+
+  have hAC : Ne P.a P.c :=
+    hilbert_parallelogram_face_diagonal_ne_XI
+      (Geo := Geo) P
+
+  have hBC : Ne P.b P.c :=
+    P.isParallelogram.2.1
+
+  exact
+    {
+      sideAB :=
+        hilbert_space_congruent_symmetry
+          (Geo := Geo)
+          P.b P.a
+          Q.b Q.a
+          hBA
+          h.sideAB
+
+      sideBC :=
+        hilbert_space_congruent_symmetry
+          (Geo := Geo)
+          P.a P.c
+          Q.a Q.c
+          hAC
+          h.sideBC
+
+      sideAC :=
+        hilbert_space_congruent_symmetry
+          (Geo := Geo)
+          P.b P.c
+          Q.b Q.c
+          hBC
+          h.sideAC
+
+      angleA :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          P.a P.b P.c
+          Q.a Q.b Q.c
+          h.angleA
+
+      angleB :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          P.b P.a P.c
+          Q.b Q.a Q.c
+          h.angleB
+
+      angleC :=
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          P.b P.c P.a
+          Q.b Q.c Q.a
+          h.angleC
+    }
+
+
+/--
+Spatial transitivity of parallelogram-face equality.
+-/
+theorem hilbertParallelogramFaceEqual_trans_space
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    {P Q R : HilbertParallelogramFace Geo}
+    (hPQ : HilbertParallelogramFaceEqual Geo P Q)
+    (hQR : HilbertParallelogramFaceEqual Geo Q R) :
+    HilbertParallelogramFaceEqual Geo P R := by
+
+  unfold HilbertParallelogramFaceEqual at hPQ hQR |- 
+
+  have hBA : Ne P.b P.a :=
+    P.isParallelogram.1.1.symm
+
+  have hAC : Ne P.a P.c :=
+    hilbert_parallelogram_face_diagonal_ne_XI
+      (Geo := Geo) P
+
+  have hBC : Ne P.b P.c :=
+    P.isParallelogram.2.1
+
+  have hQP_AB :
+      Geo.Congruent
+        Q.b Q.a
+        P.b P.a :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      P.b P.a
+      Q.b Q.a
+      hBA
+      hPQ.sideAB
+
+  have hQP_BC :
+      Geo.Congruent
+        Q.a Q.c
+        P.a P.c :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      P.a P.c
+      Q.a Q.c
+      hAC
+      hPQ.sideBC
+
+  have hQP_AC :
+      Geo.Congruent
+        Q.b Q.c
+        P.b P.c :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      P.b P.c
+      Q.b Q.c
+      hBC
+      hPQ.sideAC
+
+  exact
+    {
+      sideAB :=
+        HilbertSpaceCongruence.segment_congruence_common
+          (Geo := Geo)
+          Q.b Q.a
+          P.b P.a
+          R.b R.a
+          hQP_AB
+          hQR.sideAB
+
+      sideBC :=
+        HilbertSpaceCongruence.segment_congruence_common
+          (Geo := Geo)
+          Q.a Q.c
+          P.a P.c
+          R.a R.c
+          hQP_BC
+          hQR.sideBC
+
+      sideAC :=
+        HilbertSpaceCongruence.segment_congruence_common
+          (Geo := Geo)
+          Q.b Q.c
+          P.b P.c
+          R.b R.c
+          hQP_AC
+          hQR.sideAC
+
+      angleA :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo
+          P.a P.b P.c
+          Q.a Q.b Q.c
+          R.a R.b R.c
+          hPQ.angleA
+          hQR.angleA
+
+      angleB :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo
+          P.b P.a P.c
+          Q.b Q.a Q.c
+          R.b R.a R.c
+          hPQ.angleB
+          hQR.angleB
+
+      angleC :=
+        Geometry.Geo.angle_congruent_transitivity
+          Geo
+          P.b P.c P.a
+          Q.b Q.c Q.a
+          R.b R.c R.a
+          hPQ.angleC
+          hQR.angleC
+    }
+
+
+/-!
+# Common-source Eudoxus transport
+
+This section contains proposition-independent magnitude machinery used
+in Book XI.  A faithful embedding of one Eudoxus magnitude kind into
+another preserves positive multiples and strict comparison, hence
+transports V.Def.5.  Two target magnitude kinds embedded from one common
+source therefore carry corresponding equal ratios.
+-/
+
+structure EudoxusMagnitudeEmbedding
+    {M : Type u}
+    {N : Type v}
+    (A : EudoxusMagnitude M)
+    (B : EudoxusMagnitude N) where
+
+  toFun : M -> N
+
+  map_multiple :
+    forall n x,
+      toFun (A.multiple n x) =
+        B.multiple n (toFun x)
+
+  less_iff :
+    forall x y,
+      A.less x y <->
+        B.less (toFun x) (toFun y)
+
+  injective :
+    Function.Injective toFun
+
+/--
+An Eudoxus magnitude embedding identifies the source ratio with the
+ratio of its images.
+-/
+theorem EudoxusMagnitudeEmbedding.proportion
+    {M : Type u}
+    {N : Type v}
+    {A : EudoxusMagnitude M}
+    {B : EudoxusMagnitude N}
+    (F : EudoxusMagnitudeEmbedding A B)
+    (a b : M) :
+    EudoxusProportionBetween
+      A B
+      a b
+      (F.toFun a) (F.toFun b) := by
+
+  exact
+    eudoxusProportionBetween_of_transport
+      A B
+      F.toFun
+      F.map_multiple
+      F.less_iff
+      F.injective
+      a b
+
+/--
+If two magnitude kinds are faithful images of one common source
+magnitude kind, then corresponding ratios in the two target kinds are
+Eudoxus-equal.
+
+This is the abstract common-source ratio mechanism used in Book XI.
+-/
+theorem eudoxusProportionBetween_of_common_source
+    {M : Type u}
+    {N : Type v}
+    {P : Type w}
+    {A : EudoxusMagnitude M}
+    {B : EudoxusMagnitude N}
+    {C : EudoxusMagnitude P}
+    (F : EudoxusMagnitudeEmbedding A B)
+    (G : EudoxusMagnitudeEmbedding A C)
+    (a b : M) :
+    EudoxusProportionBetween
+      B C
+      (F.toFun a) (F.toFun b)
+      (G.toFun a) (G.toFun b) := by
+
+  have hAB :
+      EudoxusProportionBetween
+        A B
+        a b
+        (F.toFun a) (F.toFun b) :=
+    F.proportion a b
+
+  have hBA :
+      EudoxusProportionBetween
+        B A
+        (F.toFun a) (F.toFun b)
+        a b :=
+    eudoxusProportionBetween_symm
+      A B
+      a b
+      (F.toFun a) (F.toFun b)
+      hAB
+
+  have hAC :
+      EudoxusProportionBetween
+        A C
+        a b
+        (G.toFun a) (G.toFun b) :=
+    G.proportion a b
+
+  exact
+    eudoxusProportionBetween_trans
+      B A C
+      (F.toFun a) (F.toFun b)
+      a b
+      (G.toFun a) (G.toFun b)
+      hBA hAC
 
 end Geometry

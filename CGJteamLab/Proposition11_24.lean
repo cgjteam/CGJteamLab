@@ -2,6 +2,7 @@ import CGJteamLab.Proposition11_16
 import CGJteamLab.Proposition11_10
 import CGJteamLab.Proposition34
 import CGJteamLab.Hilbert3DRightAngle
+import CGJteamLab.HilbertInterfaceXI
 
 namespace Geometry
 
@@ -1495,5 +1496,170 @@ theorem euclid_proposition_11_24
       opposite_rho := hOpp.2.1
       opposite_sigma := hOpp.2.2
     }
+
+
+/-!
+# XI.24 bridge to the Book XI face-equality interface
+
+The neutral objects
+
+    HilbertParallelogramFace
+    HilbertParallelogramFaceEqual
+    HilbertParallelepipedFaces
+    HilbertXI10EqualSimilarParallelepiped
+
+belong to `HilbertInterfaceXI`.
+
+This section contains only the XI.24-specific packaging: it turns the
+six parallelogram faces and the three opposite-face triangle
+congruences of `HilbertXI24Conclusion` into those neutral objects.
+-/
+
+/--
+Package the six faces contained in an XI.24 conclusion.
+-/
+def hilbertXI24ParallelepipedFaces
+    (A B C D E F G Hpt : Geo.Point)
+    (h :
+      HilbertXI24Conclusion
+        Geo A B C D E F G Hpt) :
+    HilbertParallelepipedFaces
+      (HilbertParallelogramFace Geo) :=
+
+  {
+    pi0 :=
+      {
+        a := A
+        b := B
+        c := C
+        d := D
+        isParallelogram := h.face_pi0
+      }
+
+    pi1 :=
+      {
+        a := E
+        b := F
+        c := G
+        d := Hpt
+        isParallelogram := h.face_pi1
+      }
+
+    rho0 :=
+      {
+        a := A
+        b := B
+        c := F
+        d := E
+        isParallelogram := h.face_rho0
+      }
+
+    rho1 :=
+      {
+        a := D
+        b := C
+        c := G
+        d := Hpt
+        isParallelogram := h.face_rho1
+      }
+
+    sigma0 :=
+      {
+        a := C
+        b := B
+        c := F
+        d := G
+        isParallelogram := h.face_sigma0
+      }
+
+    sigma1 :=
+      {
+        a := D
+        b := A
+        c := E
+        d := Hpt
+        isParallelogram := h.face_sigma1
+      }
+  }
+
+/--
+XI.24 gives equality of the two `pi` faces in the neutral
+parallelogram-face equality language.
+-/
+theorem hilbertXI24_faceEqual_pi
+    (A B C D E F G Hpt : Geo.Point)
+    (h :
+      HilbertXI24Conclusion
+        Geo A B C D E F G Hpt) :
+    let S :=
+      hilbertXI24ParallelepipedFaces
+        (Geo := Geo)
+        A B C D E F G Hpt h
+    HilbertParallelogramFaceEqual
+      Geo S.pi0 S.pi1 := by
+
+  dsimp [hilbertXI24ParallelepipedFaces]
+  exact h.opposite_pi
+
+/--
+XI.24 gives equality of the two `rho` faces.
+-/
+theorem hilbertXI24_faceEqual_rho
+    (A B C D E F G Hpt : Geo.Point)
+    (h :
+      HilbertXI24Conclusion
+        Geo A B C D E F G Hpt) :
+    let S :=
+      hilbertXI24ParallelepipedFaces
+        (Geo := Geo)
+        A B C D E F G Hpt h
+    HilbertParallelogramFaceEqual
+      Geo S.rho0 S.rho1 := by
+
+  dsimp [hilbertXI24ParallelepipedFaces]
+  exact h.opposite_rho
+
+/--
+XI.24 gives equality of the two `sigma` faces.
+-/
+theorem hilbertXI24_faceEqual_sigma
+    (A B C D E F G Hpt : Geo.Point)
+    (h :
+      HilbertXI24Conclusion
+        Geo A B C D E F G Hpt) :
+    let S :=
+      hilbertXI24ParallelepipedFaces
+        (Geo := Geo)
+        A B C D E F G Hpt h
+    HilbertParallelogramFaceEqual
+      Geo S.sigma0 S.sigma1 := by
+
+  dsimp [hilbertXI24ParallelepipedFaces]
+  exact h.opposite_sigma
+
+/--
+Bundle the three opposite-face equalities supplied by XI.24 in the
+form required by the XI.Def.10 parallelepiped interface.
+-/
+theorem hilbertXI24_oppositeFaceEqualities_for_XI10
+    (A B C D E F G Hpt : Geo.Point)
+    (h :
+      HilbertXI24Conclusion
+        Geo A B C D E F G Hpt) :
+    let S :=
+      hilbertXI24ParallelepipedFaces
+        (Geo := Geo)
+        A B C D E F G Hpt h
+    HilbertParallelogramFaceEqual Geo S.pi0 S.pi1 /\
+    HilbertParallelogramFaceEqual Geo S.rho0 S.rho1 /\
+    HilbertParallelogramFaceEqual Geo S.sigma0 S.sigma1 := by
+
+  dsimp [hilbertXI24ParallelepipedFaces]
+
+  exact
+    And.intro h.opposite_pi
+      (And.intro
+        h.opposite_rho
+        h.opposite_sigma)
 
 end Geometry
