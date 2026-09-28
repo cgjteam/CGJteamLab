@@ -10513,4 +10513,3113 @@ theorem eudoxusProportionBetween_of_common_source
       (G.toFun a) (G.toFun b)
       hBA hAC
 
+/-!
+------------------------------------------------------------------------
+-- Reusable spatial incidence, congruence, and ray helpers
+------------------------------------------------------------------------
+-/
+
+theorem hilbert_space_point_off_line_in_plane
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertSpaceIncidence Geo]
+    (sigma : S.Plane)
+    (l : Geo.Line) :
+    exists T : Geo.Point,
+      S.OnPlane T sigma /\ Not (Hinc.OnLine T l) := by
+  classical
+  have hXI26Data1 :=
+      hilbert_three_noncollinear_on_plane
+        (Geo := Geo) sigma
+  cases hXI26Data1
+  rename_i P hXI26Data1Rest1
+  cases hXI26Data1Rest1
+  rename_i Q hXI26Data1Rest2
+  cases hXI26Data1Rest2
+  rename_i R hXI26Data1Rest3
+  cases hXI26Data1Rest3
+  rename_i hPsigma hXI26Data1Rest4
+  cases hXI26Data1Rest4
+  rename_i hQsigma hXI26Data1Rest5
+  cases hXI26Data1Rest5
+  rename_i hRsigma hPQR
+  by_cases hPl : Hinc.OnLine P l
+  case pos =>
+    by_cases hQl : Hinc.OnLine Q l
+    case pos =>
+      refine Exists.intro R (And.intro hRsigma ?_)
+      intro hRl
+      exact hPQR (Exists.intro l (And.intro hPl (And.intro hQl hRl)))
+    case neg =>
+      exact Exists.intro Q (And.intro hQsigma hQl)
+  case neg =>
+    exact Exists.intro P (And.intro hPsigma hPl)
+
+/--
+The noncoplanarity required by will follow from the lifted point
+lying outside the base plane. It is not an additional construction axiom.
+-/
+theorem hilbert_space_trihedral_of_point_off_base
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertSpaceIncidence Geo]
+    (sigma : S.Plane)
+    (A B L H : Geo.Point)
+    (hAsigma : S.OnPlane A sigma)
+    (hBsigma : S.OnPlane B sigma)
+    (hLsigma : S.OnPlane L sigma)
+    (hBAL : Not (PrimCollinear Geo B A L))
+    (hHsigma : Not (S.OnPlane H sigma)) :
+    HilbertTrihedralConfiguration Geo A B L H := by
+
+  have hBA : Ne B A :=
+    hilbert_noncollinear_ne_first Geo B A L hBAL
+  have hAB : Ne A B := hBA.symm
+
+  have hAL : Ne A L := by
+    intro hEq
+    have hXI26Data14 :=
+        HilbertPlaneIncidence.line_through
+          (Geo := Geo) A B hAB
+    cases hXI26Data14
+    rename_i base hXI26Data14Rest1
+    cases hXI26Data14Rest1
+    rename_i hAbase hBbase
+    apply hBAL
+    have hLbase : Hinc.OnLine L base := by
+      rw [hEq] at hAbase
+      exact hAbase
+    exact (Exists.intro base (And.intro hBbase (And.intro hAbase hLbase)))
+
+  have hLAH : Not (PrimCollinear Geo L A H) := by
+    intro hCol
+    apply hHsigma
+    exact
+      hilbert_onPlane_of_primCollinear_with_two_on_plane
+        (Geo := Geo)
+        sigma L A H hAL.symm hLsigma hAsigma hCol
+
+  have hHAB : Not (PrimCollinear Geo H A B) := by
+    intro hXI26Data15
+    cases hXI26Data15
+    rename_i l hXI26Data15Rest1
+    cases hXI26Data15Rest1
+    rename_i hHl hXI26Data15Rest2
+    cases hXI26Data15Rest2
+    rename_i hAl hBl
+    apply hHsigma
+    exact
+      hilbert_onPlane_of_primCollinear_with_two_on_plane
+        (Geo := Geo)
+        sigma A B H hAB hAsigma hBsigma (Exists.intro l (And.intro hAl (And.intro hBl hHl)))
+
+  refine And.intro hBAL (And.intro hLAH (And.intro hHAB ?_))
+  intro hXI26Data16
+  cases hXI26Data16
+  rename_i tau hXI26Data16Rest1
+  cases hXI26Data16Rest1
+  rename_i hAtau hXI26Data16Rest2
+  cases hXI26Data16Rest2
+  rename_i hBtau hXI26Data16Rest3
+  cases hXI26Data16Rest3
+  rename_i hLtau hHtau
+  have hPlanes : sigma = tau :=
+    HilbertSpaceIncidence.plane_unique
+      (Geo := Geo)
+      B A L hBAL sigma tau
+      hBsigma hAsigma hLsigma hBtau hAtau hLtau
+  apply hHsigma
+  rw [hPlanes]
+  exact hHtau
+
+
+/--
+Incidence and line order alone show that an interior ray gives two
+proper component angles. No ambient planar order instance is used.
+-/
+theorem hilbert_space_interior_ray_noncollinear
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (O A B R : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hInside : HilbertRayMeetsSegment Geo O R A B) :
+    Ne O R /\
+    Not (PrimCollinear Geo A O R) /\
+    Not (PrimCollinear Geo B O R) := by
+
+  cases hInside
+  rename_i T hTdata
+  have hBetween : Geo.Between A T B := hTdata.1
+  have hRay : HilbertSameRay Geo O R T := hTdata.2
+  have hBetweenData :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo) A T B hBetween
+  have hOR : Ne O R := hRay.1.symm
+
+  have hAOR : Not (PrimCollinear Geo A O R) := by
+    intro hCol
+    cases hCol
+    rename_i l hLineData
+    have hAl : Hinc.OnLine A l := hLineData.1
+    have hOl : Hinc.OnLine O l := hLineData.2.1
+    have hRl : Hinc.OnLine R l := hLineData.2.2
+    have hTl : Hinc.OnLine T l :=
+      hilbert_on_line_of_primCollinear_with_two_on_line
+        (Geo := Geo) hOR hOl hRl hRay.2.2.1
+    have hBl : Hinc.OnLine B l :=
+      hilbert_on_line_of_primCollinear_with_two_on_line
+        (Geo := Geo) hBetweenData.1 hAl hTl hBetweenData.2.2.2.1
+    exact hAOB (Exists.intro l (And.intro hAl (And.intro hOl hBl)))
+
+  have hBOR : Not (PrimCollinear Geo B O R) := by
+    intro hCol
+    cases hCol
+    rename_i l hLineData
+    have hBl : Hinc.OnLine B l := hLineData.1
+    have hOl : Hinc.OnLine O l := hLineData.2.1
+    have hRl : Hinc.OnLine R l := hLineData.2.2
+    have hTl : Hinc.OnLine T l :=
+      hilbert_on_line_of_primCollinear_with_two_on_line
+        (Geo := Geo) hOR hOl hRl hRay.2.2.1
+    have hBTA : PrimCollinear Geo B T A :=
+      PrimCollinearSymm Geo A T B hBetweenData.2.2.2.1
+    have hAl : Hinc.OnLine A l :=
+      hilbert_on_line_of_primCollinear_with_two_on_line
+        (Geo := Geo) hBetweenData.2.1.symm hBl hTl hBTA
+    exact hAOB (Exists.intro l (And.intro hAl (And.intro hOl hBl)))
+
+  exact And.intro hOR (And.intro hAOR hBOR)
+
+theorem hilbert_noncollinear_endpoints_ne_XI
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    (X O Y : Geo.Point)
+    (hXOY : Not (PrimCollinear Geo X O Y)) :
+    Ne X Y := by
+  have hXO : Ne X O :=
+    hilbert_noncollinear_ne_first Geo X O Y hXOY
+  have hLine :=
+    HilbertPlaneIncidence.line_through (Geo := Geo) X O hXO
+  cases hLine
+  rename_i l hLineData
+  intro hEq
+  have hYl : Hinc.OnLine Y l := by
+    rw [<- hEq]
+    exact hLineData.1
+  exact hXOY
+    (Exists.intro l
+      (And.intro hLineData.1 (And.intro hLineData.2 hYl)))
+
+/--
+Any nonvertex point on a plane normal makes a proper right angle
+with any nonvertex point of the plane, at the foot of the normal.
+-/
+theorem hilbert_space_right_angle_from_plane_normal
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (pi : S.Plane)
+    (normal : Geo.Line)
+    (O X Y : Geo.Point)
+    (hPerp : HilbertLinePerpendicularPlaneAt Geo normal pi O)
+    (hXnormal : Hinc.OnLine X normal)
+    (hXO : Ne X O)
+    (hYpi : S.OnPlane Y pi)
+    (hYO : Ne Y O) :
+    Not (PrimCollinear Geo X O Y) /\
+    HilbertRightAngle Geo X O Y := by
+
+  have hInc :=
+    HilbertLinePerpendicularPlaneAt.incidence (Geo := Geo) hPerp
+  have hLine :=
+    HilbertPlaneIncidence.line_through (Geo := Geo) O Y hYO.symm
+  cases hLine
+  rename_i base hLineData
+  have hBaseIn : HilbertLineInPlane Geo base pi :=
+    HilbertSpaceIncidence.line_in_plane
+      (Geo := Geo) O Y hYO.symm base
+      hLineData.1 hLineData.2 pi hInc.2 hYpi
+  have hPerpLines : HilbertLinesPerpendicularAt Geo normal base O :=
+    hPerp.2.2 base hBaseIn hLineData.1
+  have hLinesNe : Ne normal base :=
+    hilbert_linesPerpendicularAt_ne
+      (Geo := Geo) normal base O hPerpLines
+
+  have hPlane :=
+    hilbert_plane_through_two_intersecting_lines
+      (Geo := Geo) normal base hLinesNe O hInc.1 hLineData.1
+  cases hPlane
+  rename_i tau hPlaneData
+  have hNormalTau : HilbertLineInPlane Geo normal tau := hPlaneData.1
+  have hBaseTau : HilbertLineInPlane Geo base tau := hPlaneData.2.1
+
+  let np : PlaneLine Geo tau := Subtype.mk normal hNormalTau
+  let bp : PlaneLine Geo tau := Subtype.mk base hBaseTau
+  let Op : PlanePoint Geo tau := Subtype.mk O (hNormalTau O hInc.1)
+  let Xp : PlanePoint Geo tau := Subtype.mk X (hNormalTau X hXnormal)
+  let Yp : PlanePoint Geo tau := Subtype.mk Y (hBaseTau Y hLineData.2)
+
+  have hOXp : Ne Op Xp := by
+    intro hEq
+    apply hXO.symm
+    exact congrArg Subtype.val hEq
+  have hOYp : Ne Op Yp := by
+    intro hEq
+    apply hYO.symm
+    exact congrArg Subtype.val hEq
+
+  have hPerpPlane : HilbertLinesPerpendicularAt (PlaneGeo Geo tau) np bp Op := by
+    apply
+      (planeGeo_linesPerpendicularAt_iff_ambient
+        (Geo := Geo) tau np bp Op).mpr
+    exact hPerpLines
+
+  have hWitness := hPerpPlane.2.2
+  cases hWitness
+  rename_i Up hWitnessTail
+  cases hWitnessTail
+  rename_i Vp hUV
+
+  have hOUX : PrimCollinear (PlaneGeo Geo tau) Op Up Xp :=
+    Exists.intro np
+      (And.intro hPerpPlane.1 (And.intro hUV.2.2.1 hXnormal))
+  have hOVY : PrimCollinear (PlaneGeo Geo tau) Op Vp Yp :=
+    Exists.intro bp
+      (And.intro hPerpPlane.2.1 (And.intro hUV.2.2.2.1 hLineData.2))
+
+  have hNonPlane : Not (PrimCollinear (PlaneGeo Geo tau) Xp Op Yp) :=
+    hilbert_not_collinear_collinear_arms_XI
+      (PlaneGeo Geo tau) Up Op Vp Xp Yp
+      hUV.2.2.2.2.1 hOUX hOVY hOXp hOYp
+  have hRightPlane : HilbertRightAngle (PlaneGeo Geo tau) Xp Op Yp :=
+    hilbert_right_angle_collinear_both_XI
+      (PlaneGeo Geo tau) Up Op Vp Xp Yp
+      hUV.2.2.2.2.1 hUV.2.2.2.2.2 hOUX hOVY hOXp hOYp
+
+  have hNon : Not (PrimCollinear Geo X O Y) :=
+    planeGeo_not_primCollinear_to_ambient
+      (Geo := Geo) tau Xp Op Yp hNonPlane
+  have hRight : HilbertRightAngle Geo X O Y :=
+    (planeGeo_rightAngle_iff_ambient
+      (Geo := Geo) tau Xp Op Yp).mp hRightPlane
+  exact And.intro hNon hRight
+
+/--
+Equal base distances and equal normal heights give equal lifted
+distances, by the congruence of right angles and spatial SAS.
+-/
+theorem hilbert_space_lifted_distance_of_equal_base_height
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (pi sigma : S.Plane)
+    (sourceNormal targetNormal : Geo.Line)
+    (G F X K H Y : Geo.Point)
+    (hSourcePerp : HilbertLinePerpendicularPlaneAt Geo sourceNormal pi G)
+    (hTargetPerp : HilbertLinePerpendicularPlaneAt Geo targetNormal sigma K)
+    (hFnormal : Hinc.OnLine F sourceNormal)
+    (hHnormal : Hinc.OnLine H targetNormal)
+    (hFG : Ne F G)
+    (hHK : Ne H K)
+    (hXpi : S.OnPlane X pi)
+    (hYsigma : S.OnPlane Y sigma)
+    (hXG : Ne X G)
+    (hYK : Ne Y K)
+    (hBase : Geo.Congruent X G Y K)
+    (hHeight : Geo.Congruent G F K H) :
+    Geo.Congruent X F Y H := by
+
+  have hSourceRight :=
+    hilbert_space_right_angle_from_plane_normal
+      (Geo := Geo) pi sourceNormal G F X
+      hSourcePerp hFnormal hFG hXpi hXG
+  have hTargetRight :=
+    hilbert_space_right_angle_from_plane_normal
+      (Geo := Geo) sigma targetNormal K H Y
+      hTargetPerp hHnormal hHK hYsigma hYK
+  have hRightAngles : Geo.AngleCongruent F G X H K Y :=
+    hilbert_space_all_right_angles_congruent
+      (Geo := Geo) F G X H K Y
+      hSourceRight.1 hTargetRight.1 hSourceRight.2 hTargetRight.2
+
+  have hGFX : Not (PrimCollinear Geo G F X) := by
+    intro hCol
+    exact hSourceRight.1 (PrimCollinearSwap Geo G F X hCol)
+  have hKHY : Not (PrimCollinear Geo K H Y) := by
+    intro hCol
+    exact hTargetRight.1 (PrimCollinearSwap Geo K H Y hCol)
+  have hGX_KY : Geo.Congruent G X K Y :=
+    (Geo.congruent_reverse_second G X Y K).mp
+      ((Geo.congruent_reverse_first X G Y K).mp hBase)
+  have hFX_HY : Geo.Congruent F X H Y :=
+    hilbert_space_sas_third_side
+      (Geo := Geo) G F X K H Y
+      hGFX hKHY hHeight hGX_KY hRightAngles
+  exact
+    (Geo.congruent_reverse_second X F H Y).mp
+      ((Geo.congruent_reverse_first F X H Y).mp hFX_HY)
+
+
+/-- Spatial SSS with the target plane supplied by its proper triangle. -/
+
+theorem hilbert_space_sss_angleA
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (X Y Z X' Y' Z' : Geo.Point)
+    (hXYZ : Not (PrimCollinear Geo X Y Z))
+    (hX'Y'Z' : Not (PrimCollinear Geo X' Y' Z'))
+    (hXY : Geo.Congruent X Y X' Y')
+    (hYZ : Geo.Congruent Y Z Y' Z')
+    (hXZ : Geo.Congruent X Z X' Z') :
+    Geo.AngleCongruent Y X Z Y' X' Z' := by
+
+  have hPlane :=
+    HilbertSpaceIncidence.plane_through
+      (Geo := Geo) X' Y' Z' hX'Y'Z'
+  cases hPlane
+  rename_i tau hPlaneData
+  let Xp : PlanePoint Geo tau := Subtype.mk X' hPlaneData.1
+  let Yp : PlanePoint Geo tau := Subtype.mk Y' hPlaneData.2.1
+  let Zp : PlanePoint Geo tau := Subtype.mk Z' hPlaneData.2.2
+  have hTargetPlane : Not (PrimCollinear (PlaneGeo Geo tau) Xp Yp Zp) := by
+    intro hCol
+    exact hX'Y'Z'
+      (planeGeo_primCollinear_to_ambient
+        (Geo := Geo) tau Xp Yp Zp hCol)
+  exact
+    hilbert_space_sss_angleA_in_plane
+      (Geo := Geo) tau X Y Z Xp Yp Zp
+      hXYZ hTargetPlane hXY hYZ hXZ
+
+/--
+Changing only the second arm of a proper ambient angle to another point
+on the same ray preserves noncollinearity.  This is incidence-only once
+the same-ray datum is available.
+-/
+theorem hilbert_noncollinear_change_second_sameRay_XI
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    (A O B Y : Geo.Point)
+    (hAOB : Not (PrimCollinear Geo A O B))
+    (hBY : HilbertSameRay Geo O B Y) :
+    Not (PrimCollinear Geo A O Y) := by
+
+  intro hAOY
+
+  have hOYB : PrimCollinear Geo O Y B :=
+    PrimCollinearRotate Geo O B Y hBY.2.2.1
+
+  exact
+    hAOB
+      (hilbert_primCollinear_trans
+        Geo A O Y B
+        hBY.2.1.symm
+        hAOY hOYB)
+
+/--
+Plane-local opposite-extension reduction.
+
+If A,O,C lie in the plane `pi`, the carrier `l` lies in `pi`, A and C
+are on opposite sides of `l`, and AOC is proper, then one may extend AO
+beyond O inside `pi`.  The extension point D is on the same side of `l`
+as C.
+
+The conclusion is returned as ambient betweenness together with the
+plane-local ambient predicate `HilbertSameSideInPlane`.
+-/
+theorem hilbert_space_plane_local_opposite_extension_sameSide
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (pi : S.Plane)
+    (l : Geo.Line)
+    (A O C : Geo.Point)
+    (hApi : S.OnPlane A pi)
+    (hOpi : S.OnPlane O pi)
+    (hCpi : S.OnPlane C pi)
+    (hlpi : HilbertLineInPlane Geo l pi)
+    (hOl : Hinc.OnLine O l)
+    (hAOC : Not (PrimCollinear Geo A O C))
+    (hOppAC : HilbertOppositeSide Geo A C l) :
+    exists D : Geo.Point,
+      S.OnPlane D pi /\
+      Geo.Between A O D /\
+      HilbertSameSideInPlane Geo D C l pi := by
+
+  have hAO : Ne A O :=
+    hilbert_noncollinear_ne_first
+      Geo A O C hAOC
+
+  let Ap : PlanePoint Geo pi :=
+    Subtype.mk A hApi
+  let Op : PlanePoint Geo pi :=
+    Subtype.mk O hOpi
+  let Cp : PlanePoint Geo pi :=
+    Subtype.mk C hCpi
+  let lp : PlaneLine Geo pi :=
+    Subtype.mk l hlpi
+
+  have hAOp : Ne Ap Op := by
+    intro hEq
+    apply hAO
+    exact congrArg Subtype.val hEq
+
+  have hOlp : PlaneOnLine Geo Op lp := by
+    change Hinc.OnLine O l
+    exact hOl
+
+  have hAOCp :
+      Not (PrimCollinear (PlaneGeo Geo pi) Ap Op Cp) := by
+    intro hCol
+    apply hAOC
+    exact
+      planeGeo_primCollinear_to_ambient
+        (Geo := Geo) pi Ap Op Cp hCol
+
+  rcases hOppAC.2.2 with
+    ⟨X, hAXC, hXl⟩
+
+  have hAXCdata :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo) A X C hAXC
+
+  have hAC : Ne A C :=
+    hAXCdata.2.2.1
+
+  have hACXcol :
+      PrimCollinear Geo A C X :=
+    PrimCollinearRotate
+      Geo A X C hAXCdata.2.2.2.1
+
+  have hXpi : S.OnPlane X pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      A C X
+      hAC
+      hApi hCpi
+      hACXcol
+
+  let Xp : PlanePoint Geo pi :=
+    Subtype.mk X hXpi
+
+  have hAoffp :
+      Not (PlaneOnLine Geo Ap lp) := by
+    change Not (Hinc.OnLine A l)
+    exact hOppAC.1
+
+  have hCoffp :
+      Not (PlaneOnLine Geo Cp lp) := by
+    change Not (Hinc.OnLine C l)
+    exact hOppAC.2.1
+
+  have hXlp : PlaneOnLine Geo Xp lp := by
+    change Hinc.OnLine X l
+    exact hXl
+
+  have hAXCp :
+      (PlaneGeo Geo pi).Between Ap Xp Cp := by
+    apply
+      (planeGeo_between
+        (Geo := Geo) pi Ap Xp Cp).mpr
+    simpa [Ap, Xp, Cp] using hAXC
+
+  have hOppPlane :
+      HilbertOppositeSide
+        (PlaneGeo Geo pi) Ap Cp lp :=
+    ⟨hAoffp, hCoffp, ⟨Xp, hAXCp, hXlp⟩⟩
+
+  rcases
+      HilbertOrder.between_extension
+        (Geo := PlaneGeo Geo pi)
+        Ap Op hAOp with
+    ⟨Dp, hAODp⟩
+
+  have hSameCDp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Cp Dp lp :=
+    hilbert_sameSide_after_opposite_extension
+      (PlaneGeo Geo pi)
+      Ap Op Cp Dp
+      lp
+      hOlp
+      hAOCp
+      hAODp
+      hOppPlane
+
+  have hSameDCp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Dp Cp lp :=
+    hilbert_sameSide_symm
+      (PlaneGeo Geo pi)
+      Cp Dp lp hSameCDp
+
+  have hAOD : Geo.Between A O Dp.1 := by
+    have hAmbient :=
+      (planeGeo_between
+        (Geo := Geo) pi Ap Op Dp).mp hAODp
+    simpa [Ap, Op] using hAmbient
+
+  have hSameDC :
+      HilbertSameSideInPlane Geo Dp.1 C l pi := by
+    have hSpace :=
+      (planeGeo_sameSide_iff_space
+        (Geo := Geo) pi Dp Cp lp).mp hSameDCp
+    simpa [Cp, lp] using hSpace
+
+  exact
+    ⟨Dp.1, Dp.2, hAOD, hSameDC⟩
+
+/--
+If L and K are on opposite sides of `base`, A lies on `base`, and
+L,A,K are collinear, then A is the crossing point of the open segment LK.
+-/
+theorem hilbert_between_of_collinear_opposite_through_XI
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (L A K : Geo.Point)
+    (base : Geo.Line)
+    (hAbase : Hinc.OnLine A base)
+    (hOppLK : HilbertOppositeSide Geo L K base)
+    (hLAKcol : PrimCollinear Geo L A K) :
+    Geo.Between L A K := by
+
+  rcases hOppLK.2.2 with
+    ⟨X, hLXK, hXbase⟩
+
+  have hLXKdata :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo) L X K hLXK
+
+  have hLK : Ne L K :=
+    hLXKdata.2.2.1
+
+  rcases hLXKdata.2.2.2.1 with
+    ⟨lineLK, hLline, hXline, hKline⟩
+
+  have hAline : Hinc.OnLine A lineLK :=
+    hilbert_on_line_of_primCollinear_with_two_on_line
+      (Geo := Geo)
+      hLK hLline hKline
+      (PrimCollinearRotate Geo L A K hLAKcol)
+
+  by_cases hAX : A = X
+
+  · simpa [hAX] using hLXK
+
+  · have hBaseEq : base = lineLK :=
+      HilbertPlaneIncidence.line_unique
+        (Geo := Geo)
+        A X hAX
+        base lineLK
+        hAbase hXbase
+        hAline hXline
+
+    have hLbase : Hinc.OnLine L base := by
+      rw [hBaseEq]
+      exact hLline
+
+    exact False.elim (hOppLK.1 hLbase)
+
+/--
+Spatial Hilbert-III.4 uniqueness in one explicit target plane.
+
+If X and Y lie on the same side of the target carrier and both rays OX,
+OY realize the same proper source angle from the fixed base ray OR, then
+OX and OY are the same ray.
+-/
+theorem hilbert_space_angle_unique_sameSide
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (pi : S.Plane)
+    (l : Geo.Line)
+    (U V W R O X Y : Geo.Point)
+    (hUVW : Not (PrimCollinear Geo U V W))
+    (hRO : Ne R O)
+    (hlpi : HilbertLineInPlane Geo l pi)
+    (hRl : Hinc.OnLine R l)
+    (hOl : Hinc.OnLine O l)
+    (hSameXY : HilbertSameSideInPlane Geo X Y l pi)
+    (hAngleX : Geo.AngleCongruent U V W R O X)
+    (hAngleY : Geo.AngleCongruent U V W R O Y) :
+    HilbertSameRay Geo O X Y := by
+
+  have hYY : HilbertSameSideInPlane Geo Y Y l pi := by
+    refine And.intro hSameXY.2.1 ?_
+    refine And.intro hSameXY.2.1 ?_
+    refine And.intro hSameXY.2.2.2.1 ?_
+    refine And.intro hSameXY.2.2.2.1 ?_
+    exact Relation.ReflTransGen.refl
+
+  rcases
+      HilbertSpaceCongruence.angle_construction_in_plane
+        (Geo := Geo)
+        U V W R O Y
+        hUVW hRO
+        pi l hlpi hRl hOl
+        hSameXY.2.1 hSameXY.2.2.2.1 with
+    ⟨Z, hZside, _hAngleZ, hUnique⟩
+
+  have hRayZX : HilbertSameRay Geo O Z X :=
+    hUnique X hSameXY hAngleX
+
+  have hRayZY : HilbertSameRay Geo O Z Y :=
+    hUnique Y hYY hAngleY
+
+  have hOpi : S.OnPlane O pi :=
+    hlpi O hOl
+
+  let Op : PlanePoint Geo pi :=
+    Subtype.mk O hOpi
+  let Zp : PlanePoint Geo pi :=
+    Subtype.mk Z hZside.1
+  let Xp : PlanePoint Geo pi :=
+    Subtype.mk X hSameXY.1
+  let Yp : PlanePoint Geo pi :=
+    Subtype.mk Y hSameXY.2.1
+
+  have hRayZXP :
+      HilbertSameRay (PlaneGeo Geo pi) Op Zp Xp := by
+    apply
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo) pi Op Zp Xp).mpr
+    simpa [Op, Zp, Xp] using hRayZX
+
+  have hRayZYP :
+      HilbertSameRay (PlaneGeo Geo pi) Op Zp Yp := by
+    apply
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo) pi Op Zp Yp).mpr
+    simpa [Op, Zp, Yp] using hRayZY
+
+  have hRayXYP :
+      HilbertSameRay (PlaneGeo Geo pi) Op Xp Yp :=
+    bookZero_36_ray3
+      (PlaneGeo Geo pi) Op Zp Xp Yp hRayZXP hRayZYP
+
+  have hRayXYAmbient :
+      HilbertSameRay Geo O X Y :=
+    (planeGeo_sameRay_iff_ambient
+      (Geo := Geo) pi Op Xp Yp).mp hRayXYP
+
+  simpa [Op, Xp, Yp] using hRayXYAmbient
+
+/--
+Uniqueness of laying off a segment on an ambient ray under spatial
+congruence.
+
+The ray and its two candidate endpoints are placed in one explicit
+carrier plane.  The ordinary planar uniqueness theorem is then applied
+inside PlaneGeo.
+-/
+theorem hilbert_space_segment_construction_unique
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (A B O R X Y : Geo.Point)
+    (hOR : Ne O R)
+    (hRayX : HilbertSameRay Geo O R X)
+    (hRayY : HilbertSameRay Geo O R Y)
+    (hOX_AB : Geo.Congruent O X A B)
+    (hOY_AB : Geo.Congruent O Y A B) :
+    X = Y := by
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        (Geo := Geo) O R hOR with
+    ⟨l, hOl, hRl⟩
+
+  rcases
+      hilbert_point_off_line
+        (Geo := Geo) l with
+    ⟨Z, hZl⟩
+
+  rcases
+      hilbert_plane_through_line_and_external_point
+        (Geo := Geo) l Z hZl with
+    ⟨pi, hlpi, _hZpi, _hUnique⟩
+
+  have hOpi : S.OnPlane O pi :=
+    hlpi O hOl
+
+  have hRpi : S.OnPlane R pi :=
+    hlpi R hRl
+
+  have hXpi : S.OnPlane X pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      O R X
+      hOR
+      hOpi hRpi
+      hRayX.2.2.1
+
+  have hYpi : S.OnPlane Y pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      O R Y
+      hOR
+      hOpi hRpi
+      hRayY.2.2.1
+
+  let Op : PlanePoint Geo pi :=
+    ⟨O, hOpi⟩
+
+  let Rp : PlanePoint Geo pi :=
+    ⟨R, hRpi⟩
+
+  let Xp : PlanePoint Geo pi :=
+    ⟨X, hXpi⟩
+
+  let Yp : PlanePoint Geo pi :=
+    ⟨Y, hYpi⟩
+
+  have hRayXPlane :
+      HilbertSameRay
+        (PlaneGeo Geo pi) Op Rp Xp := by
+    apply
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo)
+        pi Op Rp Xp).mpr
+    simpa [Op, Rp, Xp] using hRayX
+
+  have hRayYPlane :
+      HilbertSameRay
+        (PlaneGeo Geo pi) Op Rp Yp := by
+    apply
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo)
+        pi Op Rp Yp).mpr
+    simpa [Op, Rp, Yp] using hRayY
+
+  have hOX : Ne O X :=
+    hRayX.2.1.symm
+
+  have hOY : Ne O Y :=
+    hRayY.2.1.symm
+
+  have hAB_OX :
+      Geo.Congruent A B O X :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      O X A B
+      hOX
+      hOX_AB
+
+  have hAB_OY :
+      Geo.Congruent A B O Y :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      O Y A B
+      hOY
+      hOY_AB
+
+  have hOX_OY :
+      Geo.Congruent O X O Y :=
+    HilbertSpaceCongruence.segment_congruence_common
+      (Geo := Geo)
+      A B
+      O X
+      O Y
+      hAB_OX
+      hAB_OY
+
+  have hOX_OY_plane :
+      (PlaneGeo Geo pi).Congruent
+        Op Xp Op Yp := by
+    apply
+      (planeGeo_congruent
+        (Geo := Geo)
+        pi Op Xp Op Yp).mpr
+    simpa [Op, Xp, Yp] using hOX_OY
+
+  have hOX_refl_plane :
+      (PlaneGeo Geo pi).Congruent
+        Op Xp Op Xp :=
+    hilbert_congruent_reflexive
+      (PlaneGeo Geo pi)
+      Op Xp
+
+  have hOY_OX_plane :
+      (PlaneGeo Geo pi).Congruent
+        Op Yp Op Xp :=
+    HilbertCongruence.segment_congruence_common
+      (Geo := PlaneGeo Geo pi)
+      Op Xp
+      Op Yp
+      Op Xp
+      hOX_OY_plane
+      hOX_refl_plane
+
+  have hXYplane : Xp = Yp :=
+    hilbert_segment_construction_unique
+      (PlaneGeo Geo pi)
+      Op Xp
+      Op Rp
+      Xp Yp
+      hRayXPlane
+      hRayYPlane
+      hOX_refl_plane
+      hOY_OX_plane
+
+  exact
+    congrArg Subtype.val hXYplane
+
+/--
+If D,E,G are collinear in a fixed ambient plane and D != E, then G is
+either D itself, on the ray DE, or on the opposite ray, expressed as
+E-D-G.
+
+The proof is Hilbert's three-point betweenness trichotomy inside
+`PlaneGeo pi`; no ambient `HilbertOrder Geo` instance is introduced.
+-/
+theorem hilbert_space_collinear_ray_position_in_plane
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi : S.Plane)
+    (D E G : Geo.Point)
+    (hDpi : S.OnPlane D pi)
+    (hEpi : S.OnPlane E pi)
+    (hGpi : S.OnPlane G pi)
+    (hDE : Ne D E)
+    (hCol : PrimCollinear Geo D E G) :
+    G = D \/
+    HilbertSameRay Geo D E G \/
+    Geo.Between E D G := by
+
+  by_cases hGD : G = D
+  · exact Or.inl hGD
+
+  have hDG : Ne D G := by
+    intro h
+    exact hGD h.symm
+
+  by_cases hGE : G = E
+  · subst G
+    have hED : Ne E D := hDE.symm
+    rcases
+        HilbertPlaneIncidence.line_through
+          (Geo := Geo) D E hDE with
+      ⟨lineDE, hDline, hEline⟩
+    have hRay : HilbertSameRay Geo D E E := by
+      refine
+        ⟨hED,
+         hED,
+         ?_,
+         ?_⟩
+      · exact
+          ⟨lineDE,
+           hDline,
+           hEline,
+           hEline⟩
+      · intro hEDE
+        exact
+          (HilbertSpaceOrder.between_incidence
+            (Geo := Geo)
+            E D E hEDE).2.2.1 rfl
+    exact Or.inr (Or.inl hRay)
+
+  have hEG : Ne E G := by
+    intro h
+    exact hGE h.symm
+
+  let Dp : PlanePoint Geo pi := ⟨D, hDpi⟩
+  let Ep : PlanePoint Geo pi := ⟨E, hEpi⟩
+  let Gp : PlanePoint Geo pi := ⟨G, hGpi⟩
+
+  have hDEp : Ne Dp Ep := by
+    intro h
+    apply hDE
+    exact congrArg Subtype.val h
+
+  have hEGp : Ne Ep Gp := by
+    intro h
+    apply hEG
+    exact congrArg Subtype.val h
+
+  have hDGp : Ne Dp Gp := by
+    intro h
+    apply hDG
+    exact congrArg Subtype.val h
+
+  have hColPlane :
+      PrimCollinear (PlaneGeo Geo pi) Dp Ep Gp :=
+    planeGeo_primCollinear_of_ambient_of_ne
+      (Geo := Geo)
+      pi Dp Ep Gp
+      hDE hCol
+
+  rcases
+      hilbert_between_trichotomy
+        (PlaneGeo Geo pi)
+        Dp Ep Gp
+        hDEp hEGp hDGp hColPlane with
+    hDEG | hEDG | hDGE
+
+  · have hRayPlane :
+        HilbertSameRay (PlaneGeo Geo pi) Dp Ep Gp :=
+      hilbert_sameRay_of_between
+        (PlaneGeo Geo pi)
+        Dp Ep Gp hDEG
+    have hRayAmbient :=
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo) pi Dp Ep Gp).mp hRayPlane
+    exact
+      Or.inr
+        (Or.inl
+          (by simpa [Dp, Ep, Gp] using hRayAmbient))
+
+  · have hBetweenAmbient :=
+      (planeGeo_between
+        (Geo := Geo) pi Ep Dp Gp).mp hEDG
+    exact
+      Or.inr
+        (Or.inr
+          (by simpa [Dp, Ep, Gp] using hBetweenAmbient))
+
+  · have hRayDGE :
+        HilbertSameRay (PlaneGeo Geo pi) Dp Gp Ep :=
+      hilbert_sameRay_of_between
+        (PlaneGeo Geo pi)
+        Dp Gp Ep hDGE
+    have hRayDEG :
+        HilbertSameRay (PlaneGeo Geo pi) Dp Ep Gp :=
+      hilbert_sameRay_symm
+        (PlaneGeo Geo pi)
+        Dp Gp Ep hRayDGE
+    have hRayAmbient :=
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo) pi Dp Ep Gp).mp hRayDEG
+    exact
+      Or.inr
+        (Or.inl
+          (by simpa [Dp, Ep, Gp] using hRayAmbient))
+
+/-!
+------------------------------------------------------------------------
+-- Spatial Hilbert Theorem 15
+------------------------------------------------------------------------
+-/
+
+/--
+Cross-plane Theorem-14 normalization used in the opposite-side reduction
+of spatial T15.
+
+Extending the first outer arms gives
+
+    C-D-P,   L-A-Q.
+
+Hence the component congruence
+
+    CDE ~= LAB0
+
+transports to
+
+    PDE ~= QAB0.
+-/
+theorem hilbert_space_opposite_extension_component
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (C D E P L A B0 Q : Geo.Point)
+    (hCDP : Geo.Between C D P)
+    (hLAQ : Geo.Between L A Q)
+    (hCDE : Not (PrimCollinear Geo C D E))
+    (hLAB0 : Not (PrimCollinear Geo L A B0))
+    (hCDE_LAB0 : Geo.AngleCongruent C D E L A B0) :
+    Geo.AngleCongruent P D E Q A B0 := by
+
+  have hEDP_B0AQ :
+      Geo.AngleCongruent E D P B0 A Q :=
+    hilbert_space_adjacent_angles_congruent
+      (Geo := Geo)
+      C D E P
+      L A B0 Q
+      hCDP
+      hLAQ
+      hCDE
+      hLAB0
+      hCDE_LAB0
+
+  exact
+    (Geo.angle_congruent_reverse_second
+      P D E
+      B0 A Q).mp
+      ((Geo.angle_congruent_reverse_first
+        E D P
+        B0 A Q).mp hEDP_B0AQ)
+
+
+/--
+Spatial version of the two SAS applications in the first same-side case
+of Hilbert Theorem 15.
+
+The triangles may lie in different planes.  Only ambient spatial SAS is
+used.
+-/
+theorem hilbert_space_T15_case1_SAS
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (O B C O' H K' L' H' : Geo.Point)
+    (hOBH : Not (PrimCollinear Geo O B H))
+    (hO'L'H' : Not (PrimCollinear Geo O' L' H'))
+    (hOBC : Not (PrimCollinear Geo O B C))
+    (hO'L'K' : Not (PrimCollinear Geo O' L' K'))
+    (hOB_O'L' : Geo.Congruent O B O' L')
+    (hOH_O'H' : Geo.Congruent O H O' H')
+    (hOC_O'K' : Geo.Congruent O C O' K')
+    (hAngleHOB :
+      Geo.AngleCongruent H O B H' O' L')
+    (hAngleBOC :
+      Geo.AngleCongruent B O C L' O' K') :
+    Geo.Congruent B H L' H' /\
+    Geo.Congruent B C L' K' /\
+    Geo.AngleCongruent O B H O' L' H' /\
+    Geo.AngleCongruent O B C O' L' K' /\
+    Geo.AngleCongruent O H B O' H' L' := by
+
+  have hAngleBOH_1 :
+      Geo.AngleCongruent B O H H' O' L' :=
+    (Geo.angle_congruent_reverse_first
+      H O B
+      H' O' L').mp hAngleHOB
+
+  have hAngleBOH :
+      Geo.AngleCongruent B O H L' O' H' :=
+    (Geo.angle_congruent_reverse_second
+      B O H
+      H' O' L').mp hAngleBOH_1
+
+  have hBH_L'H' :
+      Geo.Congruent B H L' H' :=
+    hilbert_space_sas_third_side
+      (Geo := Geo)
+      O B H
+      O' L' H'
+      hOBH
+      hO'L'H'
+      hOB_O'L'
+      hOH_O'H'
+      hAngleBOH
+
+  have hAnglesOBH :=
+    hilbert_space_sas_remaining_angles
+      (Geo := Geo)
+      O B H
+      O' L' H'
+      hOBH
+      hO'L'H'
+      hOB_O'L'
+      hOH_O'H'
+      hAngleBOH
+
+  have hBC_L'K' :
+      Geo.Congruent B C L' K' :=
+    hilbert_space_sas_third_side
+      (Geo := Geo)
+      O B C
+      O' L' K'
+      hOBC
+      hO'L'K'
+      hOB_O'L'
+      hOC_O'K'
+      hAngleBOC
+
+  have hAnglesOBC :=
+    hilbert_space_sas_remaining_angles
+      (Geo := Geo)
+      O B C
+      O' L' K'
+      hOBC
+      hO'L'K'
+      hOB_O'L'
+      hOC_O'K'
+      hAngleBOC
+
+  exact
+    ⟨hBH_L'H',
+     hBC_L'K',
+     hAnglesOBH.1,
+     hAnglesOBC.1,
+     hAnglesOBH.2⟩
+
+/--
+Spatial order step in the first same-side case of Hilbert Theorem 15.
+
+If H lies between C and B, and H',K' lie on one target ray from L' with
+matching distances, then H' lies between L' and K'.  The residual
+segments HC and H'K' are congruent.
+-/
+theorem hilbert_space_T15_case1_order
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (B C H0 L' H' K' : Geo.Point)
+    (hCHB : Geo.Between C H0 B)
+    (hRayH'K' : HilbertSameRay Geo L' H' K')
+    (hBH_L'H' : Geo.Congruent B H0 L' H')
+    (hBC_L'K' : Geo.Congruent B C L' K') :
+    Geo.Between L' H' K' /\
+    Geo.Congruent H0 C H' K' := by
+
+  have hL'H' : Ne L' H' :=
+    hRayH'K'.1.symm
+
+  rcases
+      HilbertSpaceOrder.between_extension
+        (Geo := Geo)
+        L' H' hL'H' with
+    ⟨T', hL'H'T'⟩
+
+  have hH'T' : Ne H' T' :=
+    (HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      L' H' T' hL'H'T').2.1
+
+  rcases
+      HilbertSpaceCongruence.segment_construction
+        (Geo := Geo)
+        H0 C
+        H' T'
+        hH'T' with
+    ⟨J', hRayT'J', hH'J'_HC⟩
+
+  have hRayL'L' :
+      HilbertSameRay Geo H' L' L' := by
+    have hH'L' : Ne H' L' := hL'H'.symm
+    rcases
+        HilbertPlaneIncidence.line_through
+          (Geo := Geo)
+          H' L' hH'L' with
+      ⟨carrier, hH'carrier, hL'carrier⟩
+    refine
+      ⟨hL'H',
+       hL'H',
+       ?_,
+       ?_⟩
+    · exact
+        ⟨carrier,
+         hH'carrier,
+         hL'carrier,
+         hL'carrier⟩
+    · intro hL'H'L'
+      exact
+        (HilbertSpaceOrder.between_incidence
+          (Geo := Geo)
+          L' H' L' hL'H'L').2.2.1 rfl
+
+  have hL'H'J' :
+      Geo.Between L' H' J' :=
+    hilbert_space_between_transport_sameRays
+      (Geo := Geo)
+      L' H' T'
+      L' J'
+      hL'H'T'
+      hRayL'L'
+      hRayT'J'
+
+  have hRayH'J' :
+      HilbertSameRay Geo L' H' J' :=
+    hilbert_space_sameRay_of_between
+      (Geo := Geo)
+      L' H' J' hL'H'J'
+
+  have hBHC :
+      Geo.Between B H0 C :=
+    (HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      C H0 B hCHB).2.2.2.2
+
+  have hH'J' : Ne H' J' :=
+    hRayT'J'.2.1.symm
+
+  have hHC_H'J' :
+      Geo.Congruent H0 C H' J' :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      H' J'
+      H0 C
+      hH'J'
+      hH'J'_HC
+
+  have hBC_L'J' :
+      Geo.Congruent B C L' J' :=
+    HilbertSpaceCongruence.segment_additivity
+      (Geo := Geo)
+      B H0 C
+      L' H' J'
+      hBHC
+      hL'H'J'
+      hBH_L'H'
+      hHC_H'J'
+
+  have hBC : Ne B C :=
+    (HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      B H0 C hBHC).2.2.1
+
+  have hL'J'_BC :
+      Geo.Congruent L' J' B C :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      B C
+      L' J'
+      hBC
+      hBC_L'J'
+
+  have hL'K'_BC :
+      Geo.Congruent L' K' B C :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      B C
+      L' K'
+      hBC
+      hBC_L'K'
+
+  have hJ'K' : J' = K' :=
+    hilbert_space_segment_construction_unique
+      (Geo := Geo)
+      B C
+      L' H'
+      J' K'
+      hL'H'
+      hRayH'J'
+      hRayH'K'
+      hL'J'_BC
+      hL'K'_BC
+
+  subst K'
+
+  exact
+    ⟨hL'H'J', hHC_H'J'⟩
+
+
+/--
+Spatial common-ray step in the first same-side case of Hilbert T15.
+
+The source relation C-H-B implies that BH and BC are the same ray.
+Consequently the two SAS angle conclusions give the same prescribed
+angle at L'.  Spatial Hilbert III.4 uniqueness, applied in the explicit
+target plane, then forces L'H' and L'K' to be the same ray.
+-/
+theorem hilbert_space_T15_case1_sameRay_in_plane
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (pi : S.Plane)
+    (l' : Geo.Line)
+    (O B C O' L' H' K' H0 : Geo.Point)
+    (hLine : HilbertLineInPlane Geo l' pi)
+    (hO'line : H.OnLine O' l')
+    (hL'line : H.OnLine L' l')
+    (hO'L' : Ne O' L')
+    (hSameH'K' : HilbertSameSideInPlane Geo H' K' l' pi)
+    (hCHB : Geo.Between C H0 B)
+    (hOBC : Not (PrimCollinear Geo O B C))
+    (hAngleOBH :
+      Geo.AngleCongruent O B H0 O' L' H')
+    (hAngleOBC :
+      Geo.AngleCongruent O B C O' L' K') :
+    HilbertSameRay Geo L' H' K' := by
+
+  have hBHC : Geo.Between B H0 C :=
+    (HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      C H0 B hCHB).2.2.2.2
+
+  have hRayBHC : HilbertSameRay Geo B H0 C :=
+    hilbert_space_sameRay_of_between
+      (Geo := Geo)
+      B H0 C hBHC
+
+  have hAngleOBH_eq_OBC :
+      Geo.Angle O B H0 = Geo.Angle O B C :=
+    hilbert_space_angle_eq_of_sameRay_second
+      (Geo := Geo)
+      B O H0 C hRayBHC
+
+  have hAngleOBC_L'H' :
+      Geo.AngleCongruent O B C O' L' H' := by
+    unfold Geometry.Geo.AngleCongruent at hAngleOBH |-
+    rw [<- hAngleOBH_eq_OBC]
+    exact hAngleOBH
+
+  exact
+    hilbert_space_angle_unique_sameSide
+      (Geo := Geo)
+      pi l'
+      O B C
+      O' L' H' K'
+      hOBC hO'L'
+      hLine hO'line hL'line
+      hSameH'K'
+      hAngleOBC_L'H'
+      hAngleOBC
+
+/--
+Final spatial SAS step in the first same-side case of Hilbert T15.
+
+From C-H-B and L'-H'-K', Theorem 14 converts the angle at H made with
+HB into the adjacent angle made with HC.  Spatial SAS on triangles HOC
+and H'O'K' then gives the required auxiliary whole-angle congruence.
+-/
+theorem hilbert_space_T15_case1_finalSAS
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (O B C H0 O' L' H' K' : Geo.Point)
+    (hCHB : Geo.Between C H0 B)
+    (hL'H'K' : Geo.Between L' H' K')
+    (hOBH : Not (PrimCollinear Geo O B H0))
+    (hO'L'H' : Not (PrimCollinear Geo O' L' H'))
+    (hAngleOHB :
+      Geo.AngleCongruent O H0 B O' H' L')
+    (hOH_O'H' : Geo.Congruent O H0 O' H')
+    (hHC_H'K' : Geo.Congruent H0 C H' K') :
+    Geo.AngleCongruent H0 O C H' O' K' := by
+
+  have hBHC : Geo.Between B H0 C :=
+    (HilbertSpaceOrder.between_incidence
+      (Geo := Geo)
+      C H0 B hCHB).2.2.2.2
+
+  have hBHO : Not (PrimCollinear Geo B H0 O) := by
+    intro hCol
+    exact hOBH
+      (PrimCollinearCycle
+        Geo H0 O B
+        (PrimCollinearCycle
+          Geo B H0 O hCol))
+
+  have hL'H'O' : Not (PrimCollinear Geo L' H' O') := by
+    intro hCol
+    exact hO'L'H'
+      (PrimCollinearCycle
+        Geo H' O' L'
+        (PrimCollinearCycle
+          Geo L' H' O' hCol))
+
+  have hAngleBHO_1 :
+      Geo.AngleCongruent B H0 O O' H' L' :=
+    (Geo.angle_congruent_reverse_first
+      O H0 B
+      O' H' L').mp hAngleOHB
+
+  have hAngleBHO :
+      Geo.AngleCongruent B H0 O L' H' O' :=
+    (Geo.angle_congruent_reverse_second
+      B H0 O
+      O' H' L').mp hAngleBHO_1
+
+  have hAngleOHC :
+      Geo.AngleCongruent O H0 C O' H' K' :=
+    hilbert_space_adjacent_angles_congruent
+      (Geo := Geo)
+      B H0 O C
+      L' H' O' K'
+      hBHC
+      hL'H'K'
+      hBHO
+      hL'H'O'
+      hAngleBHO
+
+  have hHOC : Not (PrimCollinear Geo H0 O C) := by
+    intro hCol
+    rcases
+        (HilbertSpaceOrder.between_incidence
+          (Geo := Geo)
+          B H0 C hBHC).2.2.2.1 with
+      ⟨n, hBn, hHn, hCn⟩
+    rcases hCol with
+      ⟨m, hHm, hOm, hCm⟩
+    have hHC : Ne H0 C :=
+      (HilbertSpaceOrder.between_incidence
+        (Geo := Geo)
+        B H0 C hBHC).2.1
+    have hmn : m = n :=
+      HilbertPlaneIncidence.line_unique
+        (Geo := Geo)
+        H0 C hHC
+        m n
+        hHm hCm
+        hHn hCn
+    have hBm : H.OnLine B m := by
+      rw [hmn]
+      exact hBn
+    exact hOBH
+      (Exists.intro m
+        (And.intro hOm
+          (And.intro hBm hHm)))
+
+  have hH'O'K' : Not (PrimCollinear Geo H' O' K') := by
+    intro hCol
+    rcases
+        (HilbertSpaceOrder.between_incidence
+          (Geo := Geo)
+          L' H' K' hL'H'K').2.2.2.1 with
+      ⟨n, hL'n, hHn, hKn⟩
+    rcases hCol with
+      ⟨m, hHm, hOm, hKm⟩
+    have hHK : Ne H' K' :=
+      (HilbertSpaceOrder.between_incidence
+        (Geo := Geo)
+        L' H' K' hL'H'K').2.1
+    have hmn : m = n :=
+      HilbertPlaneIncidence.line_unique
+        (Geo := Geo)
+        H' K' hHK
+        m n
+        hHm hKm
+        hHn hKn
+    have hL'm : H.OnLine L' m := by
+      rw [hmn]
+      exact hL'n
+    exact hO'L'H'
+      (Exists.intro m
+        (And.intro hOm
+          (And.intro hL'm hHm)))
+
+  have hHO_H'O' : Geo.Congruent H0 O H' O' :=
+    (Geo.congruent_reverse_second
+      H0 O O' H').mp
+      ((Geo.congruent_reverse_first
+        O H0 O' H').mp hOH_O'H')
+
+  have hAngles :=
+    hilbert_space_sas_remaining_angles
+      (Geo := Geo)
+      H0 O C
+      H' O' K'
+      hHOC
+      hH'O'K'
+      hHO_H'O'
+      hHC_H'K'
+      hAngleOHC
+
+  exact hAngles.1
+
+/--
+Transport the auxiliary spatial-T15 angle back to the original outer
+rays.  This step is incidence/order only once the same-ray data are
+available.
+-/
+theorem hilbert_space_T15_case1_finish
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (A O C A' O' C' H0 H' K' : Geo.Point)
+    (hRayAH : HilbertSameRay Geo O A H0)
+    (hRayA'H' : HilbertSameRay Geo O' A' H')
+    (hRayC'K' : HilbertSameRay Geo O' C' K')
+    (hAngle : Geo.AngleCongruent H0 O C H' O' K') :
+    Geo.AngleCongruent A O C A' O' C' := by
+
+  have hLeft : Geo.Angle A O C = Geo.Angle H0 O C :=
+    hilbert_space_angle_eq_of_sameRay_first
+      (Geo := Geo)
+      O A H0 C hRayAH
+
+  have hRightFirst :
+      Geo.Angle A' O' C' = Geo.Angle H' O' C' :=
+    hilbert_space_angle_eq_of_sameRay_first
+      (Geo := Geo)
+      O' A' H' C' hRayA'H'
+
+  have hRightSecond :
+      Geo.Angle H' O' C' = Geo.Angle H' O' K' :=
+    hilbert_space_angle_eq_of_sameRay_second
+      (Geo := Geo)
+      O' H' C' K' hRayC'K'
+
+  have hRight :
+      Geo.Angle A' O' C' = Geo.Angle H' O' K' :=
+    hRightFirst.trans hRightSecond
+
+  unfold Geometry.Geo.AngleCongruent at hAngle |-
+  rw [hLeft, hRight]
+  exact hAngle
+
+
+/--
+Moving both endpoints along rays from a point on the carrier preserves
+plane-local same-side.
+
+The proof is performed in `PlaneGeo pi`.  Each moved point stays on the
+same side of the carrier as its original ray representative, and the
+three same-side relations are then composed.
+-/
+theorem hilbert_space_sameSide_transport_two_rays_in_plane
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi : S.Plane)
+    (l : Geo.Line)
+    (O B A C X Y : Geo.Point)
+    (hlpi : HilbertLineInPlane Geo l pi)
+    (hOl : H.OnLine O l)
+    (hBl : H.OnLine B l)
+    (hOB : Ne O B)
+    (hSameAC : HilbertSameSideInPlane Geo A C l pi)
+    (hRayAX : HilbertSameRay Geo O A X)
+    (hRayCY : HilbertSameRay Geo O C Y) :
+    HilbertSameSideInPlane Geo X Y l pi := by
+
+  have hOpi : S.OnPlane O pi :=
+    hlpi O hOl
+
+  have hBpi : S.OnPlane B pi :=
+    hlpi B hBl
+
+  have hOA : Ne O A := by
+    intro hEq
+    subst A
+    exact hSameAC.2.2.1 hOl
+
+  have hOC : Ne O C := by
+    intro hEq
+    subst C
+    exact hSameAC.2.2.2.1 hOl
+
+  have hXpi : S.OnPlane X pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      O A X
+      hOA
+      hOpi hSameAC.1
+      hRayAX.2.2.1
+
+  have hYpi : S.OnPlane Y pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      O C Y
+      hOC
+      hOpi hSameAC.2.1
+      hRayCY.2.2.1
+
+  let Op : PlanePoint Geo pi :=
+    ⟨O, hOpi⟩
+  let Bp : PlanePoint Geo pi :=
+    ⟨B, hBpi⟩
+  let Ap : PlanePoint Geo pi :=
+    ⟨A, hSameAC.1⟩
+  let Cp : PlanePoint Geo pi :=
+    ⟨C, hSameAC.2.1⟩
+  let Xp : PlanePoint Geo pi :=
+    ⟨X, hXpi⟩
+  let Yp : PlanePoint Geo pi :=
+    ⟨Y, hYpi⟩
+  let lp : PlaneLine Geo pi :=
+    ⟨l, hlpi⟩
+
+  have hOlp : PlaneOnLine Geo Op lp := by
+    change H.OnLine O l
+    exact hOl
+
+  have hBlp : PlaneOnLine Geo Bp lp := by
+    change H.OnLine B l
+    exact hBl
+
+  have hOBp : Ne Op Bp := by
+    intro hEq
+    apply hOB
+    exact congrArg Subtype.val hEq
+
+  have hSameACp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Ap Cp lp := by
+    apply
+      (planeGeo_sameSide_iff_space
+        (Geo := Geo) pi Ap Cp lp).mpr
+    simpa [Ap, Cp, lp] using hSameAC
+
+  have hOAp : Ne Op Ap := by
+    intro hEq
+    apply hOA
+    exact congrArg Subtype.val hEq
+
+  have hOCp : Ne Op Cp := by
+    intro hEq
+    apply hOC
+    exact congrArg Subtype.val hEq
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        (Geo := PlaneGeo Geo pi)
+        Op Ap hOAp with
+    ⟨lineOA, hOlineOA, hAlineOA⟩
+
+  have hBoffOA :
+      Not (HilbertIncidence.OnLine Bp lineOA) := by
+    intro hBline
+    have hEq : lineOA = lp :=
+      HilbertPlaneIncidence.line_unique
+        (Geo := PlaneGeo Geo pi)
+        Op Bp hOBp
+        lineOA lp
+        hOlineOA hBline
+        hOlp hBlp
+    have hAlp : PlaneOnLine Geo Ap lp := by
+      rw [<- hEq]
+      exact hAlineOA
+    exact hSameAC.2.2.1
+      (by
+        exact hAlp)
+
+  have hRayAXp :
+      HilbertSameRay
+        (PlaneGeo Geo pi) Op Ap Xp := by
+    apply
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo) pi Op Ap Xp).mpr
+    simpa [Op, Ap, Xp] using hRayAX
+
+  have hRayAAp :
+      HilbertSameRay
+        (PlaneGeo Geo pi) Op Ap Ap :=
+    hilbert_sameRay_refl
+      (PlaneGeo Geo pi)
+      Op Ap hOAp.symm
+
+  have hSameXAp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Xp Ap lp :=
+    hilbert_sameRay_points_sameSide
+      (PlaneGeo Geo pi)
+      Op Ap Xp Ap Bp
+      lineOA lp
+      hOlineOA hAlineOA
+      hOlp hBlp
+      hBoffOA
+      hRayAXp hRayAAp
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        (Geo := PlaneGeo Geo pi)
+        Op Cp hOCp with
+    ⟨lineOC, hOlineOC, hClineOC⟩
+
+  have hBoffOC :
+      Not (HilbertIncidence.OnLine Bp lineOC) := by
+    intro hBline
+    have hEq : lineOC = lp :=
+      HilbertPlaneIncidence.line_unique
+        (Geo := PlaneGeo Geo pi)
+        Op Bp hOBp
+        lineOC lp
+        hOlineOC hBline
+        hOlp hBlp
+    have hClp : PlaneOnLine Geo Cp lp := by
+      rw [<- hEq]
+      exact hClineOC
+    exact hSameAC.2.2.2.1
+      (by
+        exact hClp)
+
+  have hRayCYp :
+      HilbertSameRay
+        (PlaneGeo Geo pi) Op Cp Yp := by
+    apply
+      (planeGeo_sameRay_iff_ambient
+        (Geo := Geo) pi Op Cp Yp).mpr
+    simpa [Op, Cp, Yp] using hRayCY
+
+  have hRayCCp :
+      HilbertSameRay
+        (PlaneGeo Geo pi) Op Cp Cp :=
+    hilbert_sameRay_refl
+      (PlaneGeo Geo pi)
+      Op Cp hOCp.symm
+
+  have hSameCYp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Cp Yp lp :=
+    hilbert_sameRay_points_sameSide
+      (PlaneGeo Geo pi)
+      Op Cp Cp Yp Bp
+      lineOC lp
+      hOlineOC hClineOC
+      hOlp hBlp
+      hBoffOC
+      hRayCCp hRayCYp
+
+  have hSameXCp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Xp Cp lp :=
+    hilbert_sameSide_trans
+      (PlaneGeo Geo pi)
+      Xp Ap Cp lp
+      hSameXAp hSameACp
+
+  have hSameXYp :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Xp Yp lp :=
+    hilbert_sameSide_trans
+      (PlaneGeo Geo pi)
+      Xp Cp Yp lp
+      hSameXCp hSameCYp
+
+  have hSpace :=
+    (planeGeo_sameSide_iff_space
+      (Geo := Geo) pi Xp Yp lp).mp hSameXYp
+
+  simpa [Xp, Yp, lp] using hSpace
+
+/--
+Spatial Hilbert Theorem 15, first same-side ordering case.
+
+This is the direct analogue of `hilbert_theorem_15_sameSide_case1`.
+The source ray OA is assumed to meet segment CB.  The target outer
+points A',C' lie on the same side of the carrier O'B' inside the explicit
+plane `pi'`.
+-/
+theorem hilbert_space_T15_sameSide_case1
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (pi' : S.Plane)
+    (A O B C A' O' B' C' : Geo.Point)
+    (l l' : Geo.Line)
+    (hLine' : HilbertLineInPlane Geo l' pi')
+    (hOB : Ne O B)
+    (hO'B' : Ne O' B')
+    (hOl : H.OnLine O l)
+    (hBl : H.OnLine B l)
+    (hO'l' : H.OnLine O' l')
+    (hB'l' : H.OnLine B' l')
+    (hAoff : Not (H.OnLine A l))
+    (hCoff : Not (H.OnLine C l))
+    (hSame' : HilbertSameSideInPlane Geo A' C' l' pi')
+    (hRay : HilbertRayMeetsSegment Geo O A C B)
+    (hAB : Geo.AngleCongruent A O B A' O' B')
+    (hBC : Geo.AngleCongruent B O C B' O' C') :
+    Geo.AngleCongruent A O C A' O' C' := by
+
+  rcases hRay with
+    ⟨H0, hCHB, hRayAH⟩
+
+  have hO'A' : Ne O' A' := by
+    intro hEq
+    subst A'
+    exact hSame'.2.2.1 hO'l'
+
+  have hO'C' : Ne O' C' := by
+    intro hEq
+    subst C'
+    exact hSame'.2.2.2.1 hO'l'
+
+  rcases
+      HilbertSpaceCongruence.segment_construction
+        (Geo := Geo)
+        O C
+        O' C'
+        hO'C' with
+    ⟨K', hRayC'K', hO'K'_OC⟩
+
+  rcases
+      HilbertSpaceCongruence.segment_construction
+        (Geo := Geo)
+        O B
+        O' B'
+        hO'B' with
+    ⟨L', hRayB'L', hO'L'_OB⟩
+
+  rcases
+      HilbertSpaceCongruence.segment_construction
+        (Geo := Geo)
+        O H0
+        O' A'
+        hO'A' with
+    ⟨H', hRayA'H', hO'H'_OH⟩
+
+  have hO'K' : Ne O' K' :=
+    hRayC'K'.2.1.symm
+
+  have hO'L' : Ne O' L' :=
+    hRayB'L'.2.1.symm
+
+  have hO'H' : Ne O' H' :=
+    hRayA'H'.2.1.symm
+
+  have hOC_O'K' : Geo.Congruent O C O' K' :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      O' K' O C
+      hO'K'
+      hO'K'_OC
+
+  have hOB_O'L' : Geo.Congruent O B O' L' :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      O' L' O B
+      hO'L'
+      hO'L'_OB
+
+  have hOH_O'H' : Geo.Congruent O H0 O' H' :=
+    hilbert_space_congruent_symmetry
+      (Geo := Geo)
+      O' H' O H0
+      hO'H'
+      hO'H'_OH
+
+  have hO'pi : S.OnPlane O' pi' :=
+    hLine' O' hO'l'
+
+  have hB'pi : S.OnPlane B' pi' :=
+    hLine' B' hB'l'
+
+  have hK'pi : S.OnPlane K' pi' :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi'
+      O' C' K'
+      hO'C'
+      hO'pi hSame'.2.1
+      hRayC'K'.2.2.1
+
+  have hL'pi : S.OnPlane L' pi' :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi'
+      O' B' L'
+      hO'B'
+      hO'pi hB'pi
+      hRayB'L'.2.2.1
+
+  have hH'pi : S.OnPlane H' pi' :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi'
+      O' A' H'
+      hO'A'
+      hO'pi hSame'.1
+      hRayA'H'.2.2.1
+
+  have hAngleHOB :
+      Geo.AngleCongruent H0 O B H' O' L' := by
+
+    have hLeft :
+        Geo.Angle A O B = Geo.Angle H0 O B :=
+      hilbert_space_angle_eq_of_sameRay_first
+        (Geo := Geo)
+        O A H0 B hRayAH
+
+    have hRightFirst :
+        Geo.Angle A' O' B' = Geo.Angle H' O' B' :=
+      hilbert_space_angle_eq_of_sameRay_first
+        (Geo := Geo)
+        O' A' H' B' hRayA'H'
+
+    have hRightSecond :
+        Geo.Angle H' O' B' = Geo.Angle H' O' L' :=
+      hilbert_space_angle_eq_of_sameRay_second
+        (Geo := Geo)
+        O' H' B' L' hRayB'L'
+
+    have hRight :
+        Geo.Angle A' O' B' = Geo.Angle H' O' L' :=
+      hRightFirst.trans hRightSecond
+
+    unfold Geometry.Geo.AngleCongruent at hAB |-
+    rw [<- hLeft, <- hRight]
+    exact hAB
+
+  have hAngleBOC :
+      Geo.AngleCongruent B O C L' O' K' := by
+
+    have hRightFirst :
+        Geo.Angle B' O' C' = Geo.Angle L' O' C' :=
+      hilbert_space_angle_eq_of_sameRay_first
+        (Geo := Geo)
+        O' B' L' C' hRayB'L'
+
+    have hRightSecond :
+        Geo.Angle L' O' C' = Geo.Angle L' O' K' :=
+      hilbert_space_angle_eq_of_sameRay_second
+        (Geo := Geo)
+        O' L' C' K' hRayC'K'
+
+    have hRight :
+        Geo.Angle B' O' C' = Geo.Angle L' O' K' :=
+      hRightFirst.trans hRightSecond
+
+    unfold Geometry.Geo.AngleCongruent at hBC |-
+    rw [<- hRight]
+    exact hBC
+
+  have hOH0 : Ne O H0 :=
+    hRayAH.2.1.symm
+
+  have hH0off : Not (H.OnLine H0 l) := by
+    intro hH0l
+    have hH0Acol : PrimCollinear Geo H0 O A :=
+      PrimCollinearSwap
+        Geo O H0 A
+        (PrimCollinearRotate
+          Geo O A H0 hRayAH.2.2.1)
+    have hAl : H.OnLine A l :=
+      hilbert_on_line_of_primCollinear_with_two_on_line
+        (Geo := Geo)
+        hOH0.symm
+        hH0l hOl
+        hH0Acol
+    exact hAoff hAl
+
+  have hOBH : Not (PrimCollinear Geo O B H0) :=
+    hilbert_not_collinear_of_off_line
+      Geo O B H0 l
+      hOB hOl hBl hH0off
+
+  have hOBC : Not (PrimCollinear Geo O B C) :=
+    hilbert_not_collinear_of_off_line
+      Geo O B C l
+      hOB hOl hBl hCoff
+
+  have hL'line : H.OnLine L' l' :=
+    hilbert_on_line_of_primCollinear_with_two_on_line
+      (Geo := Geo)
+      hO'B'
+      hO'l' hB'l'
+      hRayB'L'.2.2.1
+
+  have hSameH'K' :
+      HilbertSameSideInPlane Geo H' K' l' pi' :=
+    hilbert_space_sameSide_transport_two_rays_in_plane
+      (Geo := Geo)
+      pi' l'
+      O' B' A' C' H' K'
+      hLine' hO'l' hB'l' hO'B'
+      hSame'
+      hRayA'H' hRayC'K'
+
+  have hO'L'H' : Not (PrimCollinear Geo O' L' H') :=
+    hilbert_not_collinear_of_off_line
+      Geo O' L' H' l'
+      hO'L' hO'l' hL'line hSameH'K'.2.2.1
+
+  have hO'L'K' : Not (PrimCollinear Geo O' L' K') :=
+    hilbert_not_collinear_of_off_line
+      Geo O' L' K' l'
+      hO'L' hO'l' hL'line hSameH'K'.2.2.2.1
+
+  rcases
+      hilbert_space_T15_case1_SAS
+        (Geo := Geo)
+        O B C
+        O' H0 K' L' H'
+        hOBH hO'L'H'
+        hOBC hO'L'K'
+        hOB_O'L'
+        hOH_O'H'
+        hOC_O'K'
+        hAngleHOB
+        hAngleBOC with
+    ⟨hBH_L'H',
+      hBC_L'K',
+      hAngleOBH,
+      hAngleOBC,
+      hAngleOHB⟩
+
+  have hRayH'K' : HilbertSameRay Geo L' H' K' :=
+    hilbert_space_T15_case1_sameRay_in_plane
+      (Geo := Geo)
+      pi' l'
+      O B C O' L' H' K' H0
+      hLine'
+      hO'l' hL'line hO'L'
+      hSameH'K'
+      hCHB
+      hOBC
+      hAngleOBH
+      hAngleOBC
+
+  rcases
+      hilbert_space_T15_case1_order
+        (Geo := Geo)
+        B C H0
+        L' H' K'
+        hCHB
+        hRayH'K'
+        hBH_L'H'
+        hBC_L'K' with
+    ⟨hL'H'K', hHC_H'K'⟩
+
+  have hAngleHOC :
+      Geo.AngleCongruent H0 O C H' O' K' :=
+    hilbert_space_T15_case1_finalSAS
+      (Geo := Geo)
+      O B C H0
+      O' L' H' K'
+      hCHB
+      hL'H'K'
+      hOBH
+      hO'L'H'
+      hAngleOHB
+      hOH_O'H'
+      hHC_H'K'
+
+  exact
+    hilbert_space_T15_case1_finish
+      (Geo := Geo)
+      A O C
+      A' O' C'
+      H0 H' K'
+      hRayAH
+      hRayA'H'
+      hRayC'K'
+      hAngleHOC
+
+
+/--
+Convert a plane-local ray/segment incidence back to the ambient space.
+-/
+theorem hilbert_space_plane_rayMeetsSegment_to_ambient
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    (pi : S.Plane)
+    (O R A B : PlanePoint Geo pi)
+    (hMeet :
+      HilbertRayMeetsSegment
+        (PlaneGeo Geo pi) O R A B) :
+    HilbertRayMeetsSegment Geo O.1 R.1 A.1 B.1 := by
+
+  rcases hMeet with
+    ⟨X, hAXB, hRay⟩
+
+  have hAXBAmbient :
+      Geo.Between A.1 X.1 B.1 :=
+    (planeGeo_between
+      (Geo := Geo) pi A X B).mp hAXB
+
+  have hRayAmbient :
+      HilbertSameRay Geo O.1 R.1 X.1 :=
+    (planeGeo_sameRay_iff_ambient
+      (Geo := Geo) pi O R X).mp hRay
+
+  exact ⟨X.1, hAXBAmbient, hRayAmbient⟩
+
+/--
+Full spatial Hilbert Theorem 15 in the same-side configuration.
+
+Both configurations are carried by explicit ambient planes.  The source
+ray-order dichotomy is resolved inside `PlaneGeo pi`; each branch is
+then handled by the first-case theorem from the first same-side construction.
+-/
+theorem hilbert_space_T15_sameSide
+    [H : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := H) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := H) (S := S)]
+    (pi pi' : S.Plane)
+    (A O B C A' O' B' C' : Geo.Point)
+    (l l' : Geo.Line)
+    (hLine : HilbertLineInPlane Geo l pi)
+    (hLine' : HilbertLineInPlane Geo l' pi')
+    (hOB : Ne O B)
+    (hO'B' : Ne O' B')
+    (hOl : H.OnLine O l)
+    (hBl : H.OnLine B l)
+    (hO'l' : H.OnLine O' l')
+    (hB'l' : H.OnLine B' l')
+    (hSame : HilbertSameSideInPlane Geo A C l pi)
+    (hSame' : HilbertSameSideInPlane Geo A' C' l' pi')
+    (hAOC : Not (PrimCollinear Geo A O C))
+    (hAB : Geo.AngleCongruent A O B A' O' B')
+    (hBC : Geo.AngleCongruent B O C B' O' C') :
+    Geo.AngleCongruent A O C A' O' C' := by
+
+  have hOpi : S.OnPlane O pi := hLine O hOl
+  have hBpi : S.OnPlane B pi := hLine B hBl
+
+  let Ap : PlanePoint Geo pi := ⟨A, hSame.1⟩
+  let Op : PlanePoint Geo pi := ⟨O, hOpi⟩
+  let Bp : PlanePoint Geo pi := ⟨B, hBpi⟩
+  let Cp : PlanePoint Geo pi := ⟨C, hSame.2.1⟩
+  let lp : PlaneLine Geo pi := ⟨l, hLine⟩
+
+  have hOBp : Ne Op Bp := by
+    intro hEq
+    apply hOB
+    exact congrArg Subtype.val hEq
+
+  have hOlp : PlaneOnLine Geo Op lp := by
+    change H.OnLine O l
+    exact hOl
+
+  have hBlp : PlaneOnLine Geo Bp lp := by
+    change H.OnLine B l
+    exact hBl
+
+  have hSamePlane :
+      HilbertSameSide
+        (PlaneGeo Geo pi) Ap Cp lp := by
+    apply
+      (planeGeo_sameSide_iff_space
+        (Geo := Geo) pi Ap Cp lp).mpr
+    simpa [Ap, Cp, lp] using hSame
+
+  have hAOCPlane :
+      Not (PrimCollinear (PlaneGeo Geo pi) Ap Op Cp) := by
+    intro hCol
+    apply hAOC
+    exact
+      planeGeo_primCollinear_to_ambient
+        (Geo := Geo) pi Ap Op Cp hCol
+
+  have hOrder :
+      HilbertRayMeetsSegment
+          (PlaneGeo Geo pi) Op Ap Cp Bp \/
+      HilbertRayMeetsSegment
+          (PlaneGeo Geo pi) Op Cp Ap Bp :=
+    hilbert_sameSide_rays_order
+      (PlaneGeo Geo pi)
+      Op Ap Bp Cp
+      lp
+      hOBp
+      hOlp hBlp
+      hSamePlane.1 hSamePlane.2.1
+      hSamePlane
+      hAOCPlane
+
+  rcases hOrder with hRayA | hRayC
+
+  · have hRayAmbient :
+        HilbertRayMeetsSegment Geo O A C B := by
+      have h :=
+        hilbert_space_plane_rayMeetsSegment_to_ambient
+          (Geo := Geo) pi Op Ap Cp Bp hRayA
+      simpa [Op, Ap, Cp, Bp] using h
+
+    exact
+      hilbert_space_T15_sameSide_case1
+        (Geo := Geo)
+        pi'
+        A O B C A' O' B' C'
+        l l'
+        hLine'
+        hOB hO'B'
+        hOl hBl hO'l' hB'l'
+        hSame.2.2.1 hSame.2.2.2.1
+        hSame'
+        hRayAmbient
+        hAB hBC
+
+  · have hRayAmbient :
+        HilbertRayMeetsSegment Geo O C A B := by
+      have h :=
+        hilbert_space_plane_rayMeetsSegment_to_ambient
+          (Geo := Geo) pi Op Cp Ap Bp hRayC
+      simpa [Op, Cp, Ap, Bp] using h
+
+    have hSameRev' :
+        HilbertSameSideInPlane Geo C' A' l' pi' := by
+
+      let A'p : PlanePoint Geo pi' := ⟨A', hSame'.1⟩
+      let C'p : PlanePoint Geo pi' := ⟨C', hSame'.2.1⟩
+      let l'p : PlaneLine Geo pi' := ⟨l', hLine'⟩
+
+      have hSamePlane' :
+          HilbertSameSide
+            (PlaneGeo Geo pi') A'p C'p l'p := by
+        apply
+          (planeGeo_sameSide_iff_space
+            (Geo := Geo) pi' A'p C'p l'p).mpr
+        simpa [A'p, C'p, l'p] using hSame'
+
+      have hRevPlane :
+          HilbertSameSide
+            (PlaneGeo Geo pi') C'p A'p l'p :=
+        hilbert_sameSide_symm
+          (PlaneGeo Geo pi') A'p C'p l'p hSamePlane'
+
+      have hSpace :=
+        (planeGeo_sameSide_iff_space
+          (Geo := Geo) pi' C'p A'p l'p).mp hRevPlane
+
+      simpa [C'p, A'p, l'p] using hSpace
+
+    have hCB :
+        Geo.AngleCongruent C O B C' O' B' :=
+      (Geo.angle_congruent_reverse_second
+        C O B
+        B' O' C').mp
+        ((Geo.angle_congruent_reverse_first
+          B O C
+          B' O' C').mp hBC)
+
+    have hBA :
+        Geo.AngleCongruent B O A B' O' A' :=
+      (Geo.angle_congruent_reverse_second
+        B O A
+        A' O' B').mp
+        ((Geo.angle_congruent_reverse_first
+          A O B
+          A' O' B').mp hAB)
+
+    have hRevResult :
+        Geo.AngleCongruent C O A C' O' A' :=
+      hilbert_space_T15_sameSide_case1
+        (Geo := Geo)
+        pi'
+        C O B A C' O' B' A'
+        l l'
+        hLine'
+        hOB hO'B'
+        hOl hBl hO'l' hB'l'
+        hSame.2.2.2.1 hSame.2.2.1
+        hSameRev'
+        hRayAmbient
+        hCB hBA
+
+    exact
+      (Geo.angle_congruent_reverse_second
+        A O C
+        C' O' A').mp
+        ((Geo.angle_congruent_reverse_first
+          C O A
+          C' O' A').mp hRevResult)
+
+/-!
+------------------------------------------------------------------------
+-- Three-ray order classification
+------------------------------------------------------------------------
+-/
+
+/--
+Order classification for three proper rays with common vertex.
+
+For three pairwise noncollinear rays UC, UD, UK, one of the following
+holds:
+
+1. UC meets the open segment DK;
+2. UD meets the open segment CK;
+3. UK meets the open segment CD;
+4. there is H with D-U-H and C-H-K.
+
+The fourth case is the cyclic/full-turn case: the ray UH opposite to
+UD crosses the chord CK.
+
+This is a purely planar order theorem. It contains no metric input.
+-/
+theorem hilbert_three_rays_order_or_cyclic_XI
+    [HilbertIncidence Geo]
+    [HilbertOrder Geo]
+    (U C D K : Geo.Point)
+    (hCUD : Not (PrimCollinear Geo C U D))
+    (hDUK : Not (PrimCollinear Geo D U K))
+    (hCUK : Not (PrimCollinear Geo C U K)) :
+    HilbertRayMeetsSegment Geo U C D K \/
+    HilbertRayMeetsSegment Geo U D C K \/
+    HilbertRayMeetsSegment Geo U K C D \/
+    exists H : Geo.Point,
+      Geo.Between D U H /\
+      Geo.Between C H K := by
+
+  have hUDC :
+      Not (PrimCollinear Geo U D C) := by
+    intro h
+    exact
+      hCUD
+        (PrimCollinearCycle
+          Geo
+          D C U
+          (PrimCollinearCycle
+            Geo U D C h))
+
+  have hUD :
+      Ne U D :=
+    hilbert_noncollinear_ne_first
+      Geo U D C hUDC
+
+  cases
+      HilbertPlaneIncidence.line_through
+        U D hUD
+  with
+  | intro lineUD hLineUD =>
+
+      have hUline :
+          HilbertIncidence.OnLine U lineUD :=
+        hLineUD.1
+
+      have hDline :
+          HilbertIncidence.OnLine D lineUD :=
+        hLineUD.2
+
+      have hCoff :
+          Not (HilbertIncidence.OnLine C lineUD) := by
+        intro hCline
+        exact
+          hCUD
+            (Exists.intro lineUD
+              (And.intro hCline
+                (And.intro hUline hDline)))
+
+      have hKoff :
+          Not (HilbertIncidence.OnLine K lineUD) := by
+        intro hKline
+        exact
+          hDUK
+            (Exists.intro lineUD
+              (And.intro hDline
+                (And.intro hUline hKline)))
+
+      by_cases hSame :
+          HilbertSameSide Geo C K lineUD
+
+      case pos =>
+        have hOrder :=
+          hilbert_sameSide_rays_order
+            Geo
+            U C D K
+            lineUD
+            hUD
+            hUline
+            hDline
+            hCoff
+            hKoff
+            hSame
+            hCUK
+
+        cases hOrder with
+        | inl hInsideC =>
+            have hInsideC' :
+                HilbertRayMeetsSegment Geo U C D K :=
+              hilbert_angleDecomposition_ray_meets_segment_reverse
+                Geo
+                U C K D
+                hInsideC
+
+            exact Or.inl hInsideC'
+
+        | inr hInsideK =>
+            exact
+              Or.inr
+                (Or.inr
+                  (Or.inl hInsideK))
+
+      case neg =>
+        have hOpp :
+            HilbertOppositeSide Geo C K lineUD :=
+          hilbert_order_oppositeSide_of_not_sameSide
+            Geo
+            C K
+            lineUD
+            hCoff
+            hKoff
+            hSame
+
+        cases hOpp.2.2 with
+        | intro H hData =>
+
+            have hCHK :
+                Geo.Between C H K :=
+              hData.1
+
+            have hHline :
+                HilbertIncidence.OnLine H lineUD :=
+              hData.2
+
+            have hHU :
+                Ne H U := by
+              intro hHU
+              subst H
+              exact
+                hCUK
+                  (HilbertOrder.between_incidence
+                    C U K hCHK).2.2.2.1
+
+            by_cases hHD :
+                H = D
+
+            case pos =>
+              subst H
+
+              have hRayUDD :
+                  HilbertSameRay Geo U D D :=
+                hilbert_sameRay_refl
+                  Geo U D hUD.symm
+
+              exact
+                Or.inr
+                  (Or.inl
+                    (Exists.intro D
+                      (And.intro hCHK hRayUDD)))
+
+            case neg =>
+              have hDH :
+                  Ne D H := by
+                intro h
+                exact hHD h.symm
+
+              have hUH :
+                  Ne U H :=
+                hHU.symm
+
+              have hUDH :
+                  PrimCollinear Geo U D H :=
+                Exists.intro lineUD
+                  (And.intro hUline
+                    (And.intro hDline hHline))
+
+              have hBetween :=
+                hilbert_between_trichotomy
+                  Geo
+                  U D H
+                  hUD
+                  hDH
+                  hUH
+                  hUDH
+
+              cases hBetween with
+              | inl hUDHbet =>
+                  have hRayUDH :
+                      HilbertSameRay Geo U D H :=
+                    hilbert_sameRay_of_between
+                      Geo U D H hUDHbet
+
+                  exact
+                    Or.inr
+                      (Or.inl
+                        (Exists.intro H
+                          (And.intro hCHK hRayUDH)))
+
+              | inr hRest =>
+                  cases hRest with
+                  | inl hDUH =>
+                      exact
+                        Or.inr
+                          (Or.inr
+                            (Or.inr
+                              (Exists.intro H
+                                (And.intro hDUH hCHK))))
+
+                  | inr hUHD =>
+                      have hRayUHD :
+                          HilbertSameRay Geo U H D :=
+                        hilbert_sameRay_of_between
+                          Geo U H D hUHD
+
+                      have hRayUDH :
+                          HilbertSameRay Geo U D H :=
+                        hilbert_sameRay_symm
+                          Geo U H D hRayUHD
+
+                      exact
+                        Or.inr
+                          (Or.inl
+                            (Exists.intro H
+                              (And.intro hCHK hRayUDH)))
+
+/-!
+------------------------------------------------------------------------
+-- Additional reusable order and T15 helpers
+------------------------------------------------------------------------
+-/
+
+/--
+Ambient form of the three-ray order/cyclic classification in one explicit plane.
+-/
+theorem hilbert_space_three_rays_order_or_cyclic_in_plane
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (pi : S.Plane)
+    (D E C G : Geo.Point)
+    (hDpi : S.OnPlane D pi)
+    (hEpi : S.OnPlane E pi)
+    (hCpi : S.OnPlane C pi)
+    (hGpi : S.OnPlane G pi)
+    (hEDC : Not (PrimCollinear Geo E D C))
+    (hEDG : Not (PrimCollinear Geo E D G))
+    (hCDG : Not (PrimCollinear Geo C D G)) :
+    HilbertRayMeetsSegment Geo D E C G \/
+    HilbertRayMeetsSegment Geo D C E G \/
+    HilbertRayMeetsSegment Geo D G E C \/
+    exists H : Geo.Point,
+      Geo.Between C D H /\
+      Geo.Between E H G := by
+
+  let Dp : PlanePoint Geo pi := Subtype.mk D hDpi
+  let Ep : PlanePoint Geo pi := Subtype.mk E hEpi
+  let Cp : PlanePoint Geo pi := Subtype.mk C hCpi
+  let Gp : PlanePoint Geo pi := Subtype.mk G hGpi
+
+  have hEDCPlane :
+      Not (PrimCollinear (PlaneGeo Geo pi) Ep Dp Cp) := by
+    intro hCol
+    apply hEDC
+    have hAmbient :=
+      planeGeo_primCollinear_to_ambient
+        (Geo := Geo) pi Ep Dp Cp hCol
+    simpa [Ep, Dp, Cp] using hAmbient
+
+  have hEDGPlane :
+      Not (PrimCollinear (PlaneGeo Geo pi) Ep Dp Gp) := by
+    intro hCol
+    apply hEDG
+    have hAmbient :=
+      planeGeo_primCollinear_to_ambient
+        (Geo := Geo) pi Ep Dp Gp hCol
+    simpa [Ep, Dp, Gp] using hAmbient
+
+  have hCDGPlane :
+      Not (PrimCollinear (PlaneGeo Geo pi) Cp Dp Gp) := by
+    intro hCol
+    apply hCDG
+    have hAmbient :=
+      planeGeo_primCollinear_to_ambient
+        (Geo := Geo) pi Cp Dp Gp hCol
+    simpa [Cp, Dp, Gp] using hAmbient
+
+  have hPosition :=
+    hilbert_three_rays_order_or_cyclic_XI
+      (PlaneGeo Geo pi)
+      Dp Ep Cp Gp
+      hEDCPlane hCDGPlane hEDGPlane
+
+  cases hPosition with
+  | inl hFirst =>
+
+      --------------------------------------------------------------------
+      -- Case 1: ray DE meets segment CG.
+      --------------------------------------------------------------------
+      cases hFirst
+      rename_i Xp hFirstData
+      have hCXGPlane := hFirstData.1
+      have hRayDEXPlane := hFirstData.2
+
+      have hCXG : Geo.Between C Xp.1 G := by
+        have hAmbient :=
+          (planeGeo_between
+            (Geo := Geo) pi Cp Xp Gp).mp hCXGPlane
+        simpa [Cp, Gp] using hAmbient
+
+      have hRayDEX : HilbertSameRay Geo D E Xp.1 := by
+        have hAmbient :=
+          (planeGeo_sameRay_iff_ambient
+            (Geo := Geo) pi Dp Ep Xp).mp hRayDEXPlane
+        simpa [Dp, Ep] using hAmbient
+
+      exact Or.inl (Exists.intro Xp.1 (And.intro hCXG hRayDEX))
+
+  | inr hRest =>
+      cases hRest with
+      | inl hSecond =>
+
+          ----------------------------------------------------------------
+          -- Case 2: ray DC meets segment EG.
+          ----------------------------------------------------------------
+          cases hSecond
+          rename_i Xp hSecondData
+          have hEXGPlane := hSecondData.1
+          have hRayDCXPlane := hSecondData.2
+
+          have hEXG : Geo.Between E Xp.1 G := by
+            have hAmbient :=
+              (planeGeo_between
+                (Geo := Geo) pi Ep Xp Gp).mp hEXGPlane
+            simpa [Ep, Gp] using hAmbient
+
+          have hRayDCX : HilbertSameRay Geo D C Xp.1 := by
+            have hAmbient :=
+              (planeGeo_sameRay_iff_ambient
+                (Geo := Geo) pi Dp Cp Xp).mp hRayDCXPlane
+            simpa [Dp, Cp] using hAmbient
+
+          exact
+            Or.inr
+              (Or.inl
+                (Exists.intro Xp.1
+                  (And.intro hEXG hRayDCX)))
+
+      | inr hRest2 =>
+          cases hRest2 with
+          | inl hInterior =>
+
+              ------------------------------------------------------------
+              -- Case 3: ray DG meets segment EC.
+              ------------------------------------------------------------
+              cases hInterior
+              rename_i Xp hInteriorData
+              have hEXCPlane := hInteriorData.1
+              have hRayDGXPlane := hInteriorData.2
+
+              have hEXC : Geo.Between E Xp.1 C := by
+                have hAmbient :=
+                  (planeGeo_between
+                    (Geo := Geo) pi Ep Xp Cp).mp hEXCPlane
+                simpa [Ep, Cp] using hAmbient
+
+              have hRayDGX : HilbertSameRay Geo D G Xp.1 := by
+                have hAmbient :=
+                  (planeGeo_sameRay_iff_ambient
+                    (Geo := Geo) pi Dp Gp Xp).mp hRayDGXPlane
+                simpa [Dp, Gp] using hAmbient
+
+              exact
+                Or.inr
+                  (Or.inr
+                    (Or.inl
+                      (Exists.intro Xp.1
+                        (And.intro hEXC hRayDGX))))
+
+          | inr hCyclic =>
+
+              ------------------------------------------------------------
+              -- Case 4: cyclic/opposite sector.
+              ------------------------------------------------------------
+              cases hCyclic
+              rename_i Hp hCyclicData
+              have hCDHPlane := hCyclicData.1
+              have hEHGPlane := hCyclicData.2
+
+              have hCDH : Geo.Between C D Hp.1 := by
+                have hAmbient :=
+                  (planeGeo_between
+                    (Geo := Geo) pi Cp Dp Hp).mp hCDHPlane
+                simpa [Cp, Dp] using hAmbient
+
+              have hEHG : Geo.Between E Hp.1 G := by
+                have hAmbient :=
+                  (planeGeo_between
+                    (Geo := Geo) pi Ep Hp Gp).mp hEHGPlane
+                simpa [Ep, Gp] using hAmbient
+
+              exact
+                Or.inr
+                  (Or.inr
+                    (Or.inr
+                      (Exists.intro Hp.1
+                        (And.intro hCDH hEHG))))
+
+
+/--
+If ray DE meets the open segment CG, then C and G lie on opposite sides
+of the carrier line DE.
+-/
+theorem hilbert_ray_meets_segment_endpoints_oppositeSide_XI
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [_HSI : HilbertSpaceIncidence Geo]
+    [_HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (D E C G : Geo.Point)
+    (hEDC : Not (PrimCollinear Geo E D C))
+    (hEDG : Not (PrimCollinear Geo E D G))
+    (hInside : HilbertRayMeetsSegment Geo D E C G) :
+    exists lineDE : Geo.Line,
+      Hinc.OnLine D lineDE /\
+      Hinc.OnLine E lineDE /\
+      HilbertOppositeSide Geo C G lineDE := by
+
+  rcases hInside with
+    ⟨Y, hCYG, hRayDEY⟩
+
+  have hED : Ne E D :=
+    hilbert_noncollinear_ne_first
+      Geo E D C hEDC
+  have hDE : Ne D E := hED.symm
+
+  rcases
+      HilbertPlaneIncidence.line_through
+        (Geo := Geo) D E hDE with
+    ⟨lineDE, hDline, hEline⟩
+
+  have hCoff : Not (Hinc.OnLine C lineDE) := by
+    intro hCline
+    exact hEDC
+      (Exists.intro lineDE
+        (And.intro hEline
+          (And.intro hDline hCline)))
+
+  have hGoff : Not (Hinc.OnLine G lineDE) := by
+    intro hGline
+    exact hEDG
+      (Exists.intro lineDE
+        (And.intro hEline
+          (And.intro hDline hGline)))
+
+  have hYline : Hinc.OnLine Y lineDE :=
+    hilbert_on_line_of_primCollinear_with_two_on_line
+      (Geo := Geo)
+      hDE hDline hEline hRayDEY.2.2.1
+
+  have hOpp : HilbertOppositeSide Geo C G lineDE :=
+    ⟨hCoff, hGoff, ⟨Y, hCYG, hYline⟩⟩
+
+  exact
+    Exists.intro lineDE
+      (And.intro hDline
+        (And.intro hEline hOpp))
+
+/--
+If ray DE meets the open segment CG and the relevant source angle is proper,
+then the outer angle CDG is proper as well.
+-/
+theorem hilbert_ray_meets_segment_outer_angle_nondegenerate_XI
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (D E C G : Geo.Point)
+    (hEDC : Not (PrimCollinear Geo E D C))
+    (_hEDG : Not (PrimCollinear Geo E D G))
+    (hInside : HilbertRayMeetsSegment Geo D E C G) :
+    Not (PrimCollinear Geo C D G) := by
+
+  rcases hInside with
+    ⟨Y, hCYG, hRayDEY⟩
+
+  have hCYGdata :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo) C Y G hCYG
+
+  have hCG : Ne C G := hCYGdata.2.2.1
+  have hDY : Ne D Y := hRayDEY.2.1.symm
+
+  intro hCDG
+
+  rcases hCDG with
+    ⟨lineCG, hClineCG, hDlineCG, hGlineCG⟩
+
+  have hYlineCG : Hinc.OnLine Y lineCG :=
+    hilbert_on_line_of_primCollinear_with_two_on_line
+      (Geo := Geo)
+      hCG
+      hClineCG hGlineCG
+      (PrimCollinearRotate
+        Geo C Y G hCYGdata.2.2.2.1)
+
+  rcases hRayDEY.2.2.1 with
+    ⟨lineDE, hDlineDE, hElineDE, hYlineDE⟩
+
+  have hLines : lineCG = lineDE :=
+    HilbertPlaneIncidence.line_unique
+      D Y hDY
+      lineCG lineDE
+      hDlineCG hYlineCG
+      hDlineDE hYlineDE
+
+  have hElineCG : Hinc.OnLine E lineCG := by
+    rw [hLines]
+    exact hElineDE
+
+  exact
+    hEDC
+      (Exists.intro lineCG
+        (And.intro hElineCG
+          (And.intro hDlineCG hClineCG)))
+
+/--
+A ray/segment crossing configuration can be reduced to a same-side
+configuration after extending the opposite outer ray in an explicit plane.
+
+The new point P satisfies C-D-P and P,G are on the same side of DE.
+-/
+theorem hilbert_space_ray_meets_segment_opposite_extension_sameSide
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (D E C G : Geo.Point)
+    (hEDC : Not (PrimCollinear Geo E D C))
+    (hEDG : Not (PrimCollinear Geo E D G))
+    (hInside : HilbertRayMeetsSegment Geo D E C G) :
+    exists pi : S.Plane,
+      exists lineDE : Geo.Line,
+        exists P : Geo.Point,
+          S.OnPlane C pi /\
+          S.OnPlane D pi /\
+          S.OnPlane E pi /\
+          S.OnPlane G pi /\
+          S.OnPlane P pi /\
+          HilbertLineInPlane Geo lineDE pi /\
+          Hinc.OnLine D lineDE /\
+          Hinc.OnLine E lineDE /\
+          Geo.Between C D P /\
+          HilbertSameSideInPlane Geo P G lineDE pi := by
+
+  have hCDG : Not (PrimCollinear Geo C D G) :=
+    hilbert_ray_meets_segment_outer_angle_nondegenerate_XI
+      (Geo := Geo)
+      D E C G hEDC hEDG hInside
+
+  rcases
+      HilbertSpaceIncidence.plane_through
+        (Geo := Geo) C D G hCDG with
+    ⟨pi, hCpi, hDpi, hGpi⟩
+
+  rcases hInside with
+    ⟨Y, hCYG, hRayDEY⟩
+
+  have hCYGdata :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo) C Y G hCYG
+
+  have hCG : Ne C G :=
+    hCYGdata.2.2.1
+
+  have hCGYcol :
+      PrimCollinear Geo C G Y :=
+    PrimCollinearRotate
+      Geo C Y G hCYGdata.2.2.2.1
+
+  have hYpi : S.OnPlane Y pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      C G Y
+      hCG
+      hCpi hGpi
+      hCGYcol
+
+  have hDY : Ne D Y :=
+    hRayDEY.2.1.symm
+
+  have hDYEcol :
+      PrimCollinear Geo D Y E :=
+    PrimCollinearRotate
+      Geo D E Y hRayDEY.2.2.1
+
+  have hEpi : S.OnPlane E pi :=
+    hilbert_onPlane_of_primCollinear_with_two_on_plane
+      (Geo := Geo)
+      pi
+      D Y E
+      hDY
+      hDpi hYpi
+      hDYEcol
+
+  rcases
+      hilbert_ray_meets_segment_endpoints_oppositeSide_XI
+        (Geo := Geo)
+        D E C G hEDC hEDG
+        ⟨Y, hCYG, hRayDEY⟩ with
+    ⟨lineDE, hDline, hEline, hOppCG⟩
+
+  have hED : Ne E D :=
+    hilbert_noncollinear_ne_first
+      Geo E D C hEDC
+
+  have hDE : Ne D E := hED.symm
+
+  have hLineDEpi :
+      HilbertLineInPlane Geo lineDE pi :=
+    HilbertSpaceIncidence.line_in_plane
+      (Geo := Geo)
+      D E hDE
+      lineDE hDline hEline
+      pi hDpi hEpi
+
+  rcases
+      hilbert_space_plane_local_opposite_extension_sameSide
+        (Geo := Geo)
+        pi lineDE
+        C D G
+        hCpi hDpi hGpi
+        hLineDEpi
+        hDline
+        hCDG
+        hOppCG with
+    ⟨P, hPpi, hCDP, hSamePG⟩
+
+  exact
+    ⟨pi, lineDE, P,
+      hCpi, hDpi, hEpi, hGpi, hPpi,
+      hLineDEpi, hDline, hEline,
+      hCDP, hSamePG⟩
+
+/--
+In the opposite-extension data used by spatial Hilbert T15, the target
+outer angle LAK is necessarily proper.
+
+The proof uses only Theorem 14 and Hilbert III.4 uniqueness; no spatial
+angle-addition theorem is used here.
+-/
+theorem hilbert_space_T15_target_outer_nondegenerate_from_data
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    [HSO : HilbertSpaceOrder
+      (Geo := Geo) (H := Hinc) (S := S)]
+    [HSC : HilbertSpaceCongruence
+      (Geo := Geo) (H := Hinc) (S := S)]
+    (pi : S.Plane)
+    (lineDE base : Geo.Line)
+    (C D E G P L A B0 K : Geo.Point)
+    (hLineDEpi : HilbertLineInPlane Geo lineDE pi)
+    (hDlineDE : Hinc.OnLine D lineDE)
+    (hElineDE : Hinc.OnLine E lineDE)
+    (hCDP : Geo.Between C D P)
+    (hSamePG : HilbertSameSideInPlane Geo P G lineDE pi)
+    (hAbase : Hinc.OnLine A base)
+    (hOppLK : HilbertOppositeSide Geo L K base)
+    (hCDE : Not (PrimCollinear Geo C D E))
+    (hLAB0 : Not (PrimCollinear Geo L A B0))
+    (hB0AK : Not (PrimCollinear Geo B0 A K))
+    (hCDG : Not (PrimCollinear Geo C D G))
+    (hCDE_LAB0 : Geo.AngleCongruent C D E L A B0)
+    (hEDG_B0AK : Geo.AngleCongruent E D G B0 A K) :
+    Not (PrimCollinear Geo L A K) := by
+
+  intro hLAKcol
+
+  have hLAK : Geo.Between L A K :=
+    hilbert_between_of_collinear_opposite_through_XI
+      (Geo := Geo)
+      L A K base hAbase hOppLK hLAKcol
+
+  have hEDP_B0AK :
+      Geo.AngleCongruent E D P B0 A K :=
+    hilbert_space_adjacent_angles_congruent
+      (Geo := Geo)
+      C D E P
+      L A B0 K
+      hCDP hLAK
+      hCDE hLAB0
+      hCDE_LAB0
+
+  have hB0AK_EDP :
+      Geo.AngleCongruent B0 A K E D P :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo E D P B0 A K hEDP_B0AK
+
+  have hB0AK_EDG :
+      Geo.AngleCongruent B0 A K E D G :=
+    Geometry.Geo.angle_congruent_symmetry
+      Geo E D G B0 A K hEDG_B0AK
+
+  have hEDC : Not (PrimCollinear Geo E D C) := by
+    intro h
+    exact hCDE (PrimCollinearSymm Geo E D C h)
+
+  have hED : Ne E D :=
+    hilbert_noncollinear_ne_first
+      Geo E D C hEDC
+
+  have hRayPG : HilbertSameRay Geo D P G :=
+    hilbert_space_angle_unique_sameSide
+      (Geo := Geo)
+      pi lineDE
+      B0 A K
+      E D P G
+      hB0AK hED
+      hLineDEpi hElineDE hDlineDE
+      hSamePG
+      hB0AK_EDP hB0AK_EDG
+
+  have hCDPdata :=
+    HilbertSpaceOrder.between_incidence
+      (Geo := Geo) C D P hCDP
+
+  have hCDGcol : PrimCollinear Geo C D G :=
+    hilbert_primCollinear_trans
+      Geo
+      C D P G
+      hCDPdata.2.1
+      hCDPdata.2.2.2.1
+      hRayPG.2.2.1
+
+  exact hCDG hCDGcol
+
 end Geometry
