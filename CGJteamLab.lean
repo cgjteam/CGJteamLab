@@ -82,6 +82,10 @@ import CGJteamLab.Proposition2_13
 import CGJteamLab.Proposition2_14
 
 
+-- Hilbert/Forder Book IV circle geometry
+import CGJteamLab.HilbertInterfaceIV
+import CGJteamLab.PropositionHilbertIV
+
 -- Euclid Book V
 import CGJteamLab.HilbertInterfaceV
 import CGJteamLab.Proposition5_8
@@ -91,6 +95,7 @@ import CGJteamLab.Proposition5_13
 import CGJteamLab.Proposition5_14
 import CGJteamLab.Proposition5_15
 import CGJteamLab.Proposition5_16
+import CGJteamLab.Proposition5_22
 
 
 -- Euclid Book XI
@@ -138,6 +143,7 @@ import CGJteamLab.Proposition11_23
 import CGJteamLab.Proposition11_24
 import CGJteamLab.Proposition11_25
 import CGJteamLab.Proposition11_26
+import CGJteamLab.Proposition11_27
 
 -- Wyler 3D route
 import CGJteamLab.Wyler.Hilbert3DFlats

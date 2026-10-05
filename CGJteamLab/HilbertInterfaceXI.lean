@@ -15,6 +15,7 @@ import CGJteamLab.Proposition34
 import CGJteamLab.Proposition06
 import CGJteamLab.Proposition25
 import CGJteamLab.Proposition20
+import CGJteamLab.Hilbert3DProportion
 
 namespace Geometry
 
@@ -13621,5 +13622,197 @@ theorem hilbert_space_T15_target_outer_nondegenerate_from_data
       hRayPG.2.2.1
 
   exact hCDG hCDGcol
+
+
+/-!
+# Euclid XI.Def.9 and parallelogram-face similarity
+
+This section provides the proposition-independent similarity layer needed
+for Euclid XI.27.
+-/
+
+/--
+Source-faithful core of Euclid XI.Def.9 for a fixed face arrangement.
+-/
+def HilbertXI9SimilarSolid
+    {Face : Type u}
+    {I : Type v}
+    (FaceSimilar : Face -> Face -> Prop)
+    (S T : HilbertFacetedSolid Face I) : Prop :=
+  forall i : I,
+    FaceSimilar (S.face i) (T.face i)
+
+/--
+Euclid XI.Def.9 for canonically indexed parallelepipeds.
+-/
+def HilbertXI9SimilarParallelepiped
+    {Face : Type u}
+    (FaceSimilar : Face -> Face -> Prop)
+    (S T : HilbertParallelepipedFaces Face) : Prop :=
+  HilbertXI9SimilarSolid
+    FaceSimilar
+    S.toFacetedSolid
+    T.toFacetedSolid
+
+/--
+Expanded constructor for XI.Def.9 similarity of two parallelepipeds.
+-/
+theorem hilbertXI9SimilarParallelepiped_intro
+    {Face : Type u}
+    (FaceSimilar : Face -> Face -> Prop)
+    (S T : HilbertParallelepipedFaces Face)
+    (hPi0 : FaceSimilar S.pi0 T.pi0)
+    (hPi1 : FaceSimilar S.pi1 T.pi1)
+    (hRho0 : FaceSimilar S.rho0 T.rho0)
+    (hRho1 : FaceSimilar S.rho1 T.rho1)
+    (hSigma0 : FaceSimilar S.sigma0 T.sigma0)
+    (hSigma1 : FaceSimilar S.sigma1 T.sigma1) :
+    HilbertXI9SimilarParallelepiped
+      FaceSimilar S T := by
+  intro i
+  cases i with
+  | pi0 => exact hPi0
+  | pi1 => exact hPi1
+  | rho0 => exact hRho0
+  | rho1 => exact hRho1
+  | sigma0 => exact hSigma0
+  | sigma1 => exact hSigma1
+
+/--
+Reduction from three adjacent corresponding faces to all six faces.
+-/
+theorem hilbertXI9SimilarParallelepiped_of_three_adjacent
+    {Face : Type u}
+    (FaceSimilar : Face -> Face -> Prop)
+    (hTrans :
+      forall {x y z},
+        FaceSimilar x y ->
+        FaceSimilar y z ->
+        FaceSimilar x z)
+    (hSymm :
+      forall {x y},
+        FaceSimilar x y ->
+        FaceSimilar y x)
+    (S T : HilbertParallelepipedFaces Face)
+    (hSPi : FaceSimilar S.pi0 S.pi1)
+    (hTPi : FaceSimilar T.pi0 T.pi1)
+    (hSRho : FaceSimilar S.rho0 S.rho1)
+    (hTRho : FaceSimilar T.rho0 T.rho1)
+    (hSSigma : FaceSimilar S.sigma0 S.sigma1)
+    (hTSigma : FaceSimilar T.sigma0 T.sigma1)
+    (hPi0 : FaceSimilar S.pi0 T.pi0)
+    (hRho0 : FaceSimilar S.rho0 T.rho0)
+    (hSigma0 : FaceSimilar S.sigma0 T.sigma0) :
+    HilbertXI9SimilarParallelepiped
+      FaceSimilar S T := by
+
+  apply
+    hilbertXI9SimilarParallelepiped_intro
+      FaceSimilar S T
+      hPi0
+      ?_
+      hRho0
+      ?_
+      hSigma0
+      ?_
+
+  · exact
+      hTrans
+        (hSymm hSPi)
+        (hTrans hPi0 hTPi)
+
+  · exact
+      hTrans
+        (hSymm hSRho)
+        (hTrans hRho0 hTRho)
+
+  · exact
+      hTrans
+        (hSymm hSSigma)
+        (hTrans hSigma0 hTSigma)
+
+/--
+Synthetic similarity of two parallelogram faces.
+-/
+def HilbertParallelogramFaceSimilar
+    [H : HilbertIncidence Geo]
+    [HC : @HilbertCongruence Geo H]
+    (P Q : HilbertParallelogramFace Geo) : Prop :=
+  HilbertSegmentProportionRaw
+      Geo
+      P.b P.a
+      P.b P.c
+      Q.b Q.a
+      Q.b Q.c /\
+    Geo.AngleCongruent
+      P.a P.b P.c
+      Q.a Q.b Q.c
+
+/--
+Symmetry of parallelogram-face similarity.
+-/
+theorem hilbertParallelogramFaceSimilar_symm
+    [H : HilbertIncidence Geo]
+    [HC : @HilbertCongruence Geo H]
+    {P Q : HilbertParallelogramFace Geo}
+    (h : HilbertParallelogramFaceSimilar Geo P Q) :
+    HilbertParallelogramFaceSimilar Geo Q P := by
+
+  rcases h with ⟨hProp, hAngle⟩
+  rcases hProp with ⟨wP, wQ, hRatioAngle⟩
+
+  constructor
+
+  · exact
+      ⟨wQ, wP,
+        Geometry.Geo.angle_congruent_symmetry
+          Geo
+          wP.O wP.A wP.B
+          wQ.O wQ.A wQ.B
+          hRatioAngle⟩
+
+  · exact
+      Geometry.Geo.angle_congruent_symmetry
+        Geo
+        P.a P.b P.c
+        Q.a Q.b Q.c
+        hAngle
+
+/--
+Transitivity of parallelogram-face similarity.
+-/
+theorem hilbertParallelogramFaceSimilar_trans
+    [H : HilbertIncidence Geo]
+    [HC : @HilbertCongruence Geo H]
+    {P Q R : HilbertParallelogramFace Geo}
+    (hPQ : HilbertParallelogramFaceSimilar Geo P Q)
+    (hQR : HilbertParallelogramFaceSimilar Geo Q R) :
+    HilbertParallelogramFaceSimilar Geo P R := by
+
+  rcases hPQ with ⟨hPropPQ, hAnglePQ⟩
+  rcases hQR with ⟨hPropQR, hAngleQR⟩
+
+  constructor
+
+  · exact
+      hilbertSegmentProportionRaw_trans
+        (Geo := Geo)
+        P.b P.a
+        P.b P.c
+        Q.b Q.a
+        Q.b Q.c
+        R.b R.a
+        R.b R.c
+        hPropPQ
+        hPropQR
+
+  · exact
+      Geometry.Geo.angle_congruent_transitivity
+        Geo
+        P.a P.b P.c
+        Q.a Q.b Q.c
+        R.a R.b R.c
+        hAnglePQ
+        hAngleQR
 
 end Geometry

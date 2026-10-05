@@ -8,6 +8,37 @@ universe u
 
 variable (Geo : Geometry.Geo.{u})
 
+/--
+Local recovery helper for XI.26.
+
+A plane contains three noncollinear points, so at least one of them lies
+off any prescribed line.
+-/
+private theorem hilbert_XI26_point_off_line_in_plane
+    [Hinc : HilbertIncidence Geo]
+    [HilbertPlaneIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HilbertSpaceIncidence Geo]
+    (sigma : S.Plane)
+    (l : Geo.Line) :
+    exists T : Geo.Point,
+      S.OnPlane T sigma /\ Not (Hinc.OnLine T l) := by
+  classical
+  rcases
+      hilbert_three_noncollinear_on_plane
+        (Geo := Geo) sigma
+    with
+    ⟨P, Q, R, hPsigma, hQsigma, hRsigma, hPQR⟩
+
+  by_cases hPl : Hinc.OnLine P l
+  · by_cases hQl : Hinc.OnLine Q l
+    · refine ⟨R, hRsigma, ?_⟩
+      intro hRl
+      exact hPQR ⟨l, hPl, hQl, hRl⟩
+    · exact ⟨Q, hQsigma, hQl⟩
+  · exact ⟨P, hPsigma, hPl⟩
+
+
 /-!
 # Euclid XI.26
 
@@ -91,7 +122,7 @@ theorem hilbert_XI26_copy_base_triangle_in_plane
       A B hAB base hAbase hBbase sigma hAsigma hBsigma
 
   have hXI26Data3 :=
-      hilbert_space_point_off_line_in_plane
+      hilbert_XI26_point_off_line_in_plane
         (Geo := Geo) sigma base
   cases hXI26Data3
   rename_i T hXI26Data3Rest1
@@ -332,7 +363,7 @@ theorem hilbert_XI26_copy_base_triangle_on_ray
   rename_i hAbase hBbase
 
   have hXI26Data9 :=
-      hilbert_space_point_off_line_in_plane
+      hilbert_XI26_point_off_line_in_plane
         (Geo := Geo) rho base
   cases hXI26Data9
   rename_i T hXI26Data9Rest1

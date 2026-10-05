@@ -333,6 +333,182 @@ structure HilbertParallelepipedConfiguration
 
 
 /--
+The `B`-corner of a parallelepiped configuration is a proper trihedral
+configuration with arms `BA`, `BC`, `BF`.
+
+This is a proposition-independent accessor for the neutral
+`HilbertParallelepipedConfiguration` representation.  It uses only
+spatial incidence and the disjointness of opposite plane pairs.
+-/
+theorem hilbertParallelepipedConfiguration_trihedral_at_B
+    [H : HilbertIncidence Geo]
+    [S : HilbertSpacePrimitive Geo]
+    [HSI : HilbertSpaceIncidence Geo]
+    (pi0 pi1 rho0 rho1 sigma0 sigma1 : S.Plane)
+    (A B C D E F G Hpt : Geo.Point)
+    (hCfg :
+      HilbertParallelepipedConfiguration
+        (Geo := Geo)
+        pi0 pi1 rho0 rho1 sigma0 sigma1
+        A B C D E F G Hpt) :
+    HilbertTrihedralConfiguration Geo B A C F := by
+
+  have hAB : A ≠ B := by
+    intro h
+    have hA_sigma0 :
+        S.OnPlane A sigma0 := by
+      exact h.symm ▸ hCfg.B_on.2.2
+    exact
+      hCfg.sigma_parallel
+        ⟨A, hA_sigma0, hCfg.A_on.2.2⟩
+
+  have hBC : B ≠ C := by
+    intro h
+    have hB_rho1 :
+        S.OnPlane B rho1 := by
+      exact h.symm ▸ hCfg.C_on.2.1
+    exact
+      hCfg.rho_parallel
+        ⟨B, hCfg.B_on.2.1, hB_rho1⟩
+
+  have hBF : B ≠ F := by
+    intro h
+    have hB_pi1 :
+        S.OnPlane B pi1 := by
+      exact h.symm ▸ hCfg.F_on.1
+    exact
+      hCfg.pi_parallel
+        ⟨B, hCfg.B_on.1, hB_pi1⟩
+
+  have hABC :
+      Not (PrimCollinear Geo A B C) := by
+    intro hCol
+
+    rcases hCol with
+      ⟨l, hAl, hBl, hCl⟩
+
+    have hl_rho0 :
+        HilbertLineInPlane Geo l rho0 :=
+      HSI.line_in_plane
+        A B hAB
+        l
+        hAl hBl
+        rho0
+        hCfg.A_on.2.1
+        hCfg.B_on.2.1
+
+    have hC_rho0 :
+        S.OnPlane C rho0 :=
+      hl_rho0 C hCl
+
+    exact
+      hCfg.rho_parallel
+        ⟨C, hC_rho0, hCfg.C_on.2.1⟩
+
+  have hCBF :
+      Not (PrimCollinear Geo C B F) := by
+    intro hCol
+
+    rcases hCol with
+      ⟨l, hCl, hBl, hFl⟩
+
+    have hl_rho0 :
+        HilbertLineInPlane Geo l rho0 :=
+      HSI.line_in_plane
+        B F hBF
+        l
+        hBl hFl
+        rho0
+        hCfg.B_on.2.1
+        hCfg.F_on.2.1
+
+    have hC_rho0 :
+        S.OnPlane C rho0 :=
+      hl_rho0 C hCl
+
+    exact
+      hCfg.rho_parallel
+        ⟨C, hC_rho0, hCfg.C_on.2.1⟩
+
+  have hFBA :
+      Not (PrimCollinear Geo F B A) := by
+    intro hCol
+
+    rcases hCol with
+      ⟨l, hFl, hBl, hAl⟩
+
+    have hl_pi0 :
+        HilbertLineInPlane Geo l pi0 :=
+      HSI.line_in_plane
+        A B hAB
+        l
+        hAl hBl
+        pi0
+        hCfg.A_on.1
+        hCfg.B_on.1
+
+    have hF_pi0 :
+        S.OnPlane F pi0 :=
+      hl_pi0 F hFl
+
+    exact
+      hCfg.pi_parallel
+        ⟨F, hF_pi0, hCfg.F_on.1⟩
+
+  have hNotCoplanar :
+      Not
+        (exists omega : S.Plane,
+          S.OnPlane B omega /\
+          S.OnPlane A omega /\
+          S.OnPlane C omega /\
+          S.OnPlane F omega) := by
+
+    intro hCoplanar
+
+    rcases hCoplanar with
+      ⟨omega,
+        hBomega,
+        hAomega,
+        hComega,
+        hFomega⟩
+
+    have hBAC :
+        Not (PrimCollinear Geo B A C) := by
+      intro hCol
+      exact
+        hABC
+          (PrimCollinearSwap
+            Geo B A C hCol)
+
+    have hOmega :
+        omega = pi0 :=
+      HSI.plane_unique
+        B A C
+        hBAC
+        omega pi0
+        hBomega
+        hAomega
+        hComega
+        hCfg.B_on.1
+        hCfg.A_on.1
+        hCfg.C_on.1
+
+    have hF_pi0 :
+        S.OnPlane F pi0 := by
+      exact hOmega ▸ hFomega
+
+    exact
+      hCfg.pi_parallel
+        ⟨F, hF_pi0, hCfg.F_on.1⟩
+
+  exact
+    ⟨hABC,
+      hCBF,
+      hFBA,
+      hNotCoplanar⟩
+
+
+/--
 The six faces of a parallelepipedal configuration are parallelograms.
 
 Face order:

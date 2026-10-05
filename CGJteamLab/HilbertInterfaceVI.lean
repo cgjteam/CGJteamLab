@@ -2,6 +2,7 @@ import CGJteamLab.HilbertInterfaceV
 import CGJteamLab.Proposition5_14
 import CGJteamLab.Proposition10
 import CGJteamLab.MidsegmentParallel
+import CGJteamLab.Proposition29
 
 namespace Geometry
 
@@ -379,6 +380,718 @@ theorem hilbert_between_of_collinear_oppositeSide_VI
 
           simpa [hXO] using hPXQ
 
+
+
+------------------------------------------------------------------------
+-- Euclid VI.12 / Hilbert Supplement II: fourth proportional
+------------------------------------------------------------------------
+
+/--
+The fourth proportional exists in Hilbert's synthetic positive-segment
+ratio language.  Given positive segment classes `a`, `b`, `c`, construct
+`d` such that
+
+    a : b = c : d.
+
+This is the production form of Euclid VI.12 used by XI.27.  The proof
+uses only the existing segment-construction, order, parallel-existence,
+and I.29 infrastructure; it does not depend on the unfinished segment
+multiplication or area layer.
+-/
+theorem hilbertPositiveSegmentProportion_fourth_exists
+    [HilbertIncidence Geo]
+    [HilbertEuclideanPlane Geo]
+    (a b c : HilbertPositiveSegmentClass Geo) :
+    ∃ d : HilbertPositiveSegmentClass Geo,
+      HilbertPositiveSegmentProportion Geo a b c d := by
+
+  obtain ⟨w1⟩ := hilbertPositiveSegmentRatioWitness_exists Geo a b
+
+  refine Quotient.inductionOn c (fun sc => ?_)
+  rcases sc with ⟨⟨U, V⟩, hUV⟩
+  change Ne U V at hUV
+
+  ------------------------------------------------------------------
+  -- Lay a representative of `c` off on the ray `O1 → B1`.
+  ------------------------------------------------------------------
+
+  obtain ⟨B2, hRayB1B2, hO1B2_UV⟩ :=
+    HilbertCongruence.segment_construction U V w1.O w1.B w1.hOB
+
+  have hO1B2 : w1.O ≠ B2 := hRayB1B2.2.1.symm
+  have hCollO1B1B2 : PrimCollinear Geo w1.O w1.B B2 := hRayB1B2.2.2.1
+
+  by_cases hB1B2 : w1.B = B2
+
+  ------------------------------------------------------------------
+  -- Degenerate case: `B2 = B1`, hence `c = a`.  Reuse `w1` itself,
+  -- with `d := b` and the trivial (reflexive) angle match.
+  ------------------------------------------------------------------
+
+  · have hcClass :
+        hilbertPositiveSegmentClassOf Geo w1.O w1.B w1.hOB =
+          hilbertPositiveSegmentClassOf Geo U V hUV := by
+      apply Quotient.sound
+      show Geo.Congruent w1.O w1.B U V
+      rw [hB1B2]
+      exact hO1B2_UV
+
+    refine
+      ⟨b, w1,
+        { O := w1.O
+          A := w1.A
+          B := w1.B
+          hOA := w1.hOA
+          hOB := w1.hOB
+          hNoncol := w1.hNoncol
+          hRight := w1.hRight
+          hFirst := hcClass
+          hSecond := w1.hSecond },
+        ?_⟩
+
+    exact
+      HilbertCongruence.angle_congruence_reflexive
+        (Geo := Geo) w1.O w1.A w1.B w1.hNoncol
+
+  ------------------------------------------------------------------
+  -- Genuine case: `B1 ≠ B2`.
+  ------------------------------------------------------------------
+
+  · have hA1B1 : w1.A ≠ w1.B := by
+      intro h
+      apply w1.hNoncol
+      rcases HilbertPlaneIncidence.line_through w1.O w1.A w1.hOA with
+        ⟨l, hOl, hAl⟩
+      have hBl : HilbertIncidence.OnLine w1.B l := h ▸ hAl
+      exact ⟨l, hOl, hAl, hBl⟩
+
+    have hB1A1B2 : ¬ Collinear Geo w1.B w1.A B2 := by
+      intro hCol
+      rcases hCol with ⟨l, hB1l, hA1l, hB2l⟩
+      rcases hCollO1B1B2 with ⟨m, hO1m, hB1m, hB2m⟩
+      have hlm : l = m :=
+        HilbertPlaneIncidence.line_unique
+          w1.B B2 hB1B2 l m hB1l hB2l hB1m hB2m
+      exact w1.hNoncol ⟨m, hO1m, hlm ▸ hA1l, hB1m⟩
+
+    -- The line through `B2` parallel to `A1 B1` (Hilbert I.31).
+    obtain ⟨Qp, hB2Qp, hParallel⟩ :=
+      hilbert_parallel_through_point_exists
+        Geo w1.B w1.A B2 hA1B1.symm hB1A1B2
+
+    rcases
+        hilbert_between_trichotomy
+          Geo w1.O w1.B B2 w1.hOB hB1B2 hO1B2 hCollO1B1B2 with
+      hCase2 | hImpossible | hCase1
+
+    ----------------------------------------------------------------
+    -- Goal 1, `hCase2 : Between w1.O w1.B B2` (c > a, growing case).
+    -- Intersect OA with the line through B2 parallel to BA.  Parallel
+    -- uniqueness gives the intersection, and side separation gives
+    -- the required order O-A-A2.  Euclid I.29 then transfers the
+    -- defining angle directly, without angle subtraction.
+    ----------------------------------------------------------------
+
+    · have hABO : ¬ PrimCollinear Geo w1.A w1.B w1.O := fun h =>
+        w1.hNoncol
+          (PrimCollinearCycle Geo w1.B w1.O w1.A
+            (PrimCollinearCycle Geo w1.A w1.B w1.O h))
+      have hBAO : ¬ PrimCollinear Geo w1.B w1.A w1.O := fun h =>
+        hABO (PrimCollinearSwap Geo w1.B w1.A w1.O h)
+
+      obtain ⟨n, hOn, hAn⟩ :=
+        HilbertPlaneIncidence.line_through w1.O w1.A w1.hOA
+      obtain ⟨l, hB2l, hQpl⟩ :=
+        HilbertPlaneIncidence.line_through B2 Qp hB2Qp
+      obtain ⟨bl, hB1bl, hAbl⟩ :=
+        HilbertPlaneIncidence.line_through w1.B w1.A hA1B1.symm
+
+      have hDistinct :
+          Geo.PointLine w1.O w1.A ≠ Geo.PointLine w1.B w1.A := by
+        intro hEq
+        have hO_BA : w1.O ∈ Geo.PointLine w1.B w1.A := by
+          rw [← hEq]
+          exact intersection_test_left_mem Geo w1.O w1.A
+        have hObl : HilbertIncidence.OnLine w1.O bl :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo w1.B w1.A w1.O bl hA1B1.symm hB1bl hAbl).mp hO_BA
+        exact hBAO ⟨bl, hB1bl, hAbl, hObl⟩
+
+      have hMeet : HilbertLinesMeet Geo n l := by
+        by_contra hDisjoint
+        have hOA_B2Qp : Geo.Parallel w1.O w1.A B2 Qp :=
+          intersection_test_parallel_of_lines_disjoint
+            Geo w1.O w1.A B2 Qp n l
+            w1.hOA hB2Qp hOn hAn hB2l hQpl hDisjoint
+        have hOA_BA : Geo.Parallel w1.O w1.A w1.B w1.A :=
+          hilbert_parallel_transitive_distinct
+            Geo w1.O w1.A w1.B w1.A B2 Qp
+            hOA_B2Qp hParallel hDistinct
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.O w1.A w1.B w1.A w1.A
+            (intersection_test_right_mem Geo w1.O w1.A)
+            (intersection_test_right_mem Geo w1.B w1.A)
+            hOA_BA
+
+      rcases hMeet with ⟨A2, hA2n, hA2l⟩
+
+      have hA2O : A2 ≠ w1.O := by
+        intro hA2O
+        have hOl : HilbertIncidence.OnLine w1.O l := by
+          rw [← hA2O]
+          exact hA2l
+        rcases hCollO1B1B2 with ⟨ob, hOob, hB1ob, hB2ob⟩
+        have hobl : ob = l :=
+          HilbertPlaneIncidence.line_unique
+            w1.O B2 hO1B2 ob l hOob hB2ob hOl hB2l
+        have hB1l : HilbertIncidence.OnLine w1.B l := by
+          rw [← hobl]
+          exact hB1ob
+        have hB1_B2Qp : w1.B ∈ Geo.PointLine B2 Qp :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo B2 Qp w1.B l hB2Qp hB2l hQpl).mpr hB1l
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.B w1.A B2 Qp w1.B
+            (intersection_test_left_mem Geo w1.B w1.A)
+            hB1_B2Qp hParallel
+
+      have hA2B2 : A2 ≠ B2 := by
+        intro hA2B2
+        have hB2n : HilbertIncidence.OnLine B2 n := by
+          rw [← hA2B2]
+          exact hA2n
+        rcases hCollO1B1B2 with ⟨ob, hOob, hB1ob, hB2ob⟩
+        have hnob : n = ob :=
+          HilbertPlaneIncidence.line_unique
+            w1.O B2 hO1B2 n ob hOn hB2n hOob hB2ob
+        have hB1n : HilbertIncidence.OnLine w1.B n := by
+          rw [hnob]
+          exact hB1ob
+        exact w1.hNoncol ⟨n, hOn, hAn, hB1n⟩
+
+      have hCollB2A2Qp : Collinear Geo B2 A2 Qp :=
+        ⟨l, hB2l, hA2l, hQpl⟩
+      have hB2Qp_BA : Geo.Parallel B2 Qp w1.B w1.A :=
+        ParallelSymmetry Geo w1.B w1.A B2 Qp hParallel
+      have hB2A2_BA : Geo.Parallel B2 A2 w1.B w1.A :=
+        collinear_parallel_trans
+          Geo B2 A2 Qp w1.B w1.A hA2B2.symm hCollB2A2Qp hB2Qp_BA
+      have hBA_B2A2 : Geo.Parallel w1.B w1.A B2 A2 :=
+        ParallelSymmetry Geo B2 A2 w1.B w1.A hB2A2_BA
+
+      rcases
+          hilbert_parallel_second_endpoints_sameSide
+            Geo w1.B w1.A B2 A2 hBA_B2A2 with
+        ⟨base, hB1base, hAbase, hSameBase⟩
+      have hBaseEq : base = bl :=
+        HilbertPlaneIncidence.line_unique
+          w1.B w1.A hA1B1.symm
+          base bl hB1base hAbase hB1bl hAbl
+      have hSameB2A2 : HilbertSameSide Geo B2 A2 bl := by
+        simpa [hBaseEq] using hSameBase
+
+      have hObl : ¬ HilbertIncidence.OnLine w1.O bl := by
+        intro h
+        exact hBAO ⟨bl, hB1bl, hAbl, h⟩
+      have hOppOB2 : HilbertOppositeSide Geo w1.O B2 bl :=
+        ⟨hObl, hSameB2A2.1, ⟨w1.B, hCase2, hB1bl⟩⟩
+      have hOppOA2 : HilbertOppositeSide Geo w1.O A2 bl :=
+        hilbert_oppositeSide_transport_right
+          Geo w1.O B2 A2 bl hOppOB2 hSameB2A2
+      have hOA1A2 : Geo.Between w1.O w1.A A2 :=
+        hilbert_between_of_collinear_oppositeSide_VI
+          Geo w1.A w1.O A2 bl n hAbl hAn hOn hA2n hOppOA2
+
+      have hOA1A2Data :=
+        HilbertOrder.between_incidence w1.O w1.A A2 hOA1A2
+      have hA1A2 : w1.A ≠ A2 := hOA1A2Data.2.1
+      have hRayA1A2 : HilbertSameRay Geo w1.O w1.A A2 :=
+        hilbert_sameRay_of_between Geo w1.O w1.A A2 hOA1A2
+
+      obtain ⟨Aext, hB2A2Aext⟩ :=
+        HilbertOrder.between_extension B2 A2 hA2B2.symm
+      obtain ⟨Cext, hB1A1Cext⟩ :=
+        HilbertOrder.between_extension w1.B w1.A hA1B1.symm
+
+      have hAextData :=
+        HilbertOrder.between_incidence B2 A2 Aext hB2A2Aext
+      have hB2Aext : B2 ≠ Aext := hAextData.2.2.1
+      have hCextData :=
+        HilbertOrder.between_incidence w1.B w1.A Cext hB1A1Cext
+      have hB1Cext : w1.B ≠ Cext := hCextData.2.2.1
+
+      have hAextl : HilbertIncidence.OnLine Aext l := by
+        rcases hAextData.2.2.2.1 with ⟨q, hB2q, hA2q, hAextq⟩
+        have hql : q = l :=
+          HilbertPlaneIncidence.line_unique
+            B2 A2 hAextData.1 q l hB2q hA2q hB2l hA2l
+        exact hql ▸ hAextq
+
+      have hCextbl : HilbertIncidence.OnLine Cext bl := by
+        rcases hCextData.2.2.2.1 with ⟨q, hB1q, hA1q, hCextq⟩
+        have hqbl : q = bl :=
+          HilbertPlaneIncidence.line_unique
+            w1.B w1.A hA1B1.symm q bl hB1q hA1q hB1bl hAbl
+        exact hqbl ▸ hCextq
+
+      have hCollB2AextQp : Collinear Geo B2 Aext Qp :=
+        ⟨l, hB2l, hAextl, hQpl⟩
+      have hCollB1CextA1 : Collinear Geo w1.B Cext w1.A :=
+        ⟨bl, hB1bl, hCextbl, hAbl⟩
+      have hB2Aext_BA : Geo.Parallel B2 Aext w1.B w1.A :=
+        collinear_parallel_trans
+          Geo B2 Aext Qp w1.B w1.A hB2Aext hCollB2AextQp hB2Qp_BA
+      have hBA_B2Aext : Geo.Parallel w1.B w1.A B2 Aext :=
+        ParallelSymmetry Geo B2 Aext w1.B w1.A hB2Aext_BA
+      have hB1Cext_B2Aext : Geo.Parallel w1.B Cext B2 Aext :=
+        collinear_parallel_trans
+          Geo w1.B Cext w1.A B2 Aext
+          hB1Cext hCollB1CextA1 hBA_B2Aext
+      have hB2Aext_B1Cext : Geo.Parallel B2 Aext w1.B Cext :=
+        ParallelSymmetry Geo w1.B Cext B2 Aext hB1Cext_B2Aext
+      have hAextB2_B1Cext : Geo.Parallel Aext B2 w1.B Cext :=
+        ParallelSwapFirstLine Geo B2 Aext w1.B Cext hB2Aext_B1Cext
+      have hAextB2_CextB1 : Geo.Parallel Aext B2 Cext w1.B :=
+        ParallelSwapSecondLine Geo Aext B2 w1.B Cext hAextB2_B1Cext
+      have hCextB1_AextB2 : Geo.Parallel Cext w1.B Aext B2 :=
+        ParallelSymmetry Geo Aext B2 Cext w1.B hAextB2_CextB1
+
+      have hB1n : ¬ HilbertIncidence.OnLine w1.B n := by
+        intro h
+        exact w1.hNoncol ⟨n, hOn, hAn, h⟩
+      have hB2n : ¬ HilbertIncidence.OnLine B2 n := by
+        intro h
+        rcases hCollO1B1B2 with ⟨ob, hOob, hB1ob, hB2ob⟩
+        have hnob : n = ob :=
+          HilbertPlaneIncidence.line_unique
+            w1.O B2 hO1B2 n ob hOn h hOob hB2ob
+        exact hB1n (hnob ▸ hB1ob)
+
+      have hB2B1O : Geo.Between B2 w1.B w1.O :=
+        (HilbertOrder.between_incidence w1.O w1.B B2 hCase2).2.2.2.2
+      have hSameB2B1 : HilbertSameSide Geo B2 w1.B n :=
+        hilbert_between_sameSide_of_endpoint_on_line
+          Geo B2 w1.B w1.O n hB2B1O hOn hB2n
+      have hSameB1B2 : HilbertSameSide Geo w1.B B2 n :=
+        hilbert_sameSide_symm Geo B2 w1.B n hSameB2B1
+
+      have hCextn : ¬ HilbertIncidence.OnLine Cext n := by
+        intro h
+        have hnbl : n = bl :=
+          HilbertPlaneIncidence.line_unique
+            w1.A Cext hCextData.2.1 n bl hAn h hAbl hCextbl
+        exact hB1n (hnbl ▸ hB1bl)
+
+      have hCextA1B1 : Geo.Between Cext w1.A w1.B :=
+        hCextData.2.2.2.2
+      have hOppCextB1 : HilbertOppositeSide Geo Cext w1.B n :=
+        ⟨hCextn, hB1n, ⟨w1.A, hCextA1B1, hAn⟩⟩
+      have hOppCextB2 : HilbertOppositeSide Geo Cext B2 n :=
+        hilbert_oppositeSide_transport_right
+          Geo Cext w1.B B2 n hOppCextB1 hSameB1B2
+
+      have hAextA2B2 : Geo.Between Aext A2 B2 :=
+        hAextData.2.2.2.2
+      have hCorresponding :
+          Geo.AngleCongruent w1.O w1.A w1.B w1.A A2 B2 :=
+        euclid_proposition_29_corresponding
+          Cext w1.B Aext B2 w1.O w1.A A2
+          n
+          hCextA1B1 hAextA2B2 hOA1A2 hA1A2 hAn hA2n
+          hOppCextB2 hCextB1_AextB2
+
+      have hA2A1O : Geo.Between A2 w1.A w1.O :=
+        hOA1A2Data.2.2.2.2
+      have hRayA2A1O : HilbertSameRay Geo A2 w1.A w1.O :=
+        hilbert_sameRay_of_between Geo A2 w1.A w1.O hA2A1O
+      have hAngleAtA2 :
+          Geo.Angle w1.A A2 B2 = Geo.Angle w1.O A2 B2 :=
+        hilbert_angle_eq_of_sameRay_first
+          Geo A2 w1.A w1.O B2 hRayA2A1O
+      have hFinalAngle :
+          Geo.AngleCongruent w1.O w1.A w1.B w1.O A2 B2 := by
+        unfold Geometry.Geo.AngleCongruent at hCorresponding ⊢
+        rw [hAngleAtA2] at hCorresponding
+        exact hCorresponding
+
+      have hRightA2B2 : HilbertRightAngle Geo A2 w1.O B2 := by
+        rcases w1.hRight with ⟨C, hAOC, hRightCong⟩
+        have hCO1 : C ≠ w1.O :=
+          (HilbertOrder.between_incidence w1.A w1.O C hAOC).2.1.symm
+        have hA2OC : Geo.Between A2 w1.O C :=
+          hilbert_between_transport_sameRays
+            Geo w1.A w1.O C A2 C
+            hAOC hRayA1A2 (hilbert_sameRay_refl Geo w1.O C hCO1)
+        have hAngleLeft1 :
+            Geo.Angle w1.A w1.O w1.B = Geo.Angle A2 w1.O w1.B :=
+          hilbert_angle_eq_of_sameRay_first
+            Geo w1.O w1.A A2 w1.B hRayA1A2
+        have hAngleLeft2 :
+            Geo.Angle A2 w1.O w1.B = Geo.Angle A2 w1.O B2 :=
+          hilbert_angle_eq_of_sameRay_second
+            Geo w1.O A2 w1.B B2 hRayB1B2
+        have hAngleRight1 :
+            Geo.Angle w1.B w1.O C = Geo.Angle B2 w1.O C :=
+          hilbert_angle_eq_of_sameRay_first
+            Geo w1.O w1.B B2 C hRayB1B2
+        refine ⟨C, hA2OC, ?_⟩
+        unfold Geometry.Geo.AngleCongruent at hRightCong ⊢
+        rw [← hAngleLeft2, ← hAngleLeft1, ← hAngleRight1]
+        exact hRightCong
+
+      have hAOBswap : ¬ PrimCollinear Geo w1.A w1.O w1.B := fun h =>
+        w1.hNoncol (PrimCollinearSwap Geo w1.A w1.O w1.B h)
+      have hNoncolOA2B2 : ¬ PrimCollinear Geo w1.O A2 B2 := by
+        intro h
+        exact
+          (hilbert_noncollinear_of_sameRays
+            Geo w1.A w1.O w1.B A2 B2
+            hAOBswap hRayA1A2 hRayB1B2)
+            (PrimCollinearSwap Geo w1.O A2 B2 h)
+
+      have hFirstD :
+          hilbertPositiveSegmentClassOf Geo w1.O B2 hO1B2 =
+            hilbertPositiveSegmentClassOf Geo U V hUV :=
+        Quotient.sound hO1B2_UV
+
+      exact
+        ⟨hilbertPositiveSegmentClassOf Geo w1.O A2 hA2O.symm, w1,
+          { O := w1.O
+            A := A2
+            B := B2
+            hOA := hA2O.symm
+            hOB := hO1B2
+            hNoncol := hNoncolOA2B2
+            hRight := hRightA2B2
+            hFirst := hFirstD
+            hSecond := rfl },
+          hFinalAngle⟩
+
+    ----------------------------------------------------------------
+    -- Goal 2, `hImpossible : Between w1.B w1.O B2` cannot happen: it
+    -- contradicts `hRayB1B2` (`B1, B2` are on the *same* ray from
+    -- `O1`, so `O1` is never between them).
+    ----------------------------------------------------------------
+
+    · exact absurd hImpossible hRayB1B2.2.2.2
+
+    ----------------------------------------------------------------
+    -- Goal 3, `hCase1 : Between w1.O B2 w1.B`  (c ≤ a, "shrinking"
+    -- case).  Pasch on the triangle `(O1, B1, A1)`, entering through
+    -- the line `l` through `B2` parallel to `A1 B1`, forces `l` to
+    -- cross the open segment `O1 A1` at a point `A2`; corresponding
+    -- angles (`euclid_proposition_29_corresponding`) then transfer
+    -- the defining angle from `A1` to `A2`, and the right angle at
+    -- `O1` transports along the two `SameRay` facts exactly as in
+    -- `hilbertPositiveSegmentRatioWitness_exists`.
+    ----------------------------------------------------------------
+
+    · obtain ⟨n, hOn, hAn⟩ :=
+        HilbertPlaneIncidence.line_through w1.O w1.A w1.hOA
+      obtain ⟨l, hB2l, hQpl⟩ :=
+        HilbertPlaneIncidence.line_through B2 Qp hB2Qp
+      obtain ⟨bl, hB1bl, hAbl⟩ :=
+        HilbertPlaneIncidence.line_through w1.B w1.A hA1B1.symm
+
+      have hA1l : ¬ HilbertIncidence.OnLine w1.A l := by
+        intro h
+        have hA1_B2Qp : w1.A ∈ Geo.PointLine B2 Qp :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo B2 Qp w1.A l hB2Qp hB2l hQpl).mpr h
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.B w1.A B2 Qp w1.A
+            (intersection_test_right_mem Geo w1.B w1.A)
+            hA1_B2Qp hParallel
+
+      have hB1l : ¬ HilbertIncidence.OnLine w1.B l := by
+        intro h
+        have hB1_B2Qp : w1.B ∈ Geo.PointLine B2 Qp :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo B2 Qp w1.B l hB2Qp hB2l hQpl).mpr h
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.B w1.A B2 Qp w1.B
+            (intersection_test_left_mem Geo w1.B w1.A)
+            hB1_B2Qp hParallel
+
+      have hO1l : ¬ HilbertIncidence.OnLine w1.O l := by
+        intro h
+        rcases hCollO1B1B2 with ⟨m, hO1m, hB1m, hB2m⟩
+        have hlm : l = m :=
+          HilbertPlaneIncidence.line_unique
+            w1.O B2 hO1B2 l m h hB2l hO1m hB2m
+        exact hB1l (hlm ▸ hB1m)
+
+      have hNoncolOBA : ¬ PrimCollinear Geo w1.O w1.B w1.A := by
+        intro h
+        exact w1.hNoncol (PrimCollinearRotate Geo w1.O w1.B w1.A h)
+
+      have hMeetOB : HilbertSegmentMeetsLine Geo w1.O w1.B l :=
+        ⟨B2, hCase1, hB2l⟩
+
+      rcases
+          HilbertOrder.pasch
+            w1.O w1.B w1.A hNoncolOBA l hO1l hB1l hA1l hMeetOB with
+        hMeetOA | hMeetBA
+
+      · rcases hMeetOA with ⟨A2, hOA2A1, hA2l⟩
+
+        have hA2n : HilbertIncidence.OnLine A2 n := by
+          have hData := HilbertOrder.between_incidence w1.O A2 w1.A hOA2A1
+          rcases hData.2.2.2.1 with ⟨p, hOp, hA2p, hAp⟩
+          have hpn : p = n :=
+            HilbertPlaneIncidence.line_unique
+              w1.O w1.A w1.hOA p n hOp hAp hOn hAn
+          exact hpn ▸ hA2p
+
+        have hOA2Data := HilbertOrder.between_incidence w1.O A2 w1.A hOA2A1
+        have hA2A1 : A2 ≠ w1.A := hOA2Data.2.1
+        have hOA2 : w1.O ≠ A2 := hOA2Data.1
+
+        have hRaySameA1A2 : HilbertSameRay Geo w1.O w1.A A2 := by
+          refine ⟨w1.hOA.symm, hOA2.symm,
+            PrimCollinearRotate Geo w1.O A2 w1.A hOA2Data.2.2.2.1, ?_⟩
+          intro hContra
+          have hRev : Geo.Between A2 w1.O w1.A :=
+            (HilbertOrder.between_incidence w1.A w1.O A2 hContra).2.2.2.2
+          exact
+            (HilbertOrder.between_unique
+              w1.O A2 w1.A hOA2Data.2.2.2.1 hOA2A1).1 hRev
+
+        --------------------------------------------------------
+        -- `B2, B1` are on the same side of `n`.
+        --------------------------------------------------------
+        have hB1n : ¬ HilbertIncidence.OnLine w1.B n := by
+          intro h
+          exact w1.hNoncol ⟨n, hOn, hAn, h⟩
+
+        have hB2n : ¬ HilbertIncidence.OnLine B2 n := by
+          intro h
+          rcases hCollO1B1B2 with ⟨m, hO1m, hB1m, hB2m⟩
+          have hnm : n = m :=
+            HilbertPlaneIncidence.line_unique
+              w1.O B2 hO1B2 n m hOn h hO1m hB2m
+          exact hB1n (hnm ▸ hB1m)
+
+        have hNoMeetB1B2n : ¬ HilbertSegmentMeetsLine Geo w1.B B2 n := by
+          rintro ⟨X, hBXB2, hXn⟩
+          by_cases hXO : X = w1.O
+          · have hBOB2 : Geo.Between w1.B w1.O B2 := hXO ▸ hBXB2
+            have hB2OB1 : Geo.Between B2 w1.O w1.B :=
+              (HilbertOrder.between_incidence
+                w1.B w1.O B2 hBOB2).2.2.2.2
+            have hPrimO1B2B1 : PrimCollinear Geo w1.O B2 w1.B :=
+              (HilbertOrder.between_incidence
+                w1.O B2 w1.B hCase1).2.2.2.1
+            exact
+              (HilbertOrder.between_unique
+                w1.O B2 w1.B hPrimO1B2B1 hCase1).1 hB2OB1
+          · rcases hCollO1B1B2 with ⟨m, hO1m, hB1m, hB2m⟩
+            have hXm : HilbertIncidence.OnLine X m := by
+              have hData := HilbertOrder.between_incidence w1.B X B2 hBXB2
+              rcases hData.2.2.2.1 with ⟨q, hBq, hXq, hB2q⟩
+              have hqm : q = m :=
+                HilbertPlaneIncidence.line_unique
+                  w1.B B2 hB1B2 q m hBq hB2q hB1m hB2m
+              exact hqm ▸ hXq
+            have hnm : n = m :=
+              HilbertPlaneIncidence.line_unique
+                w1.O X (Ne.symm hXO) n m hOn hXn hO1m hXm
+            exact hB1n (hnm ▸ hB1m)
+
+        have hNoMeetB2B1n : ¬ HilbertSegmentMeetsLine Geo B2 w1.B n := by
+          rintro ⟨X, hB2XB1, hXn⟩
+          exact
+            hNoMeetB1B2n
+              ⟨X,
+                (HilbertOrder.between_incidence B2 X w1.B hB2XB1).2.2.2.2,
+                hXn⟩
+
+        have hSameSideB2B1 : HilbertSameSide Geo B2 w1.B n :=
+          ⟨hB2n, hB1n,
+            Relation.ReflTransGen.single ⟨hB2n, hB1n, hNoMeetB2B1n⟩⟩
+
+        --------------------------------------------------------
+        -- Extend `B2–A2` beyond `A2`, and `B1–A1` beyond `A1`.
+        --------------------------------------------------------
+        have hB2neA2 : B2 ≠ A2 := by
+          intro h
+          rw [h] at hB2n
+          exact hB2n hA2n
+
+        obtain ⟨Aext, hB2A2Aext⟩ :=
+          HilbertOrder.between_extension B2 A2 hB2neA2
+        obtain ⟨Cext, hB1A1Cext⟩ :=
+          HilbertOrder.between_extension w1.B w1.A hA1B1.symm
+
+        have hAextData := HilbertOrder.between_incidence B2 A2 Aext hB2A2Aext
+        have hB2Aext : B2 ≠ Aext := hAextData.2.2.1
+        have hCextData := HilbertOrder.between_incidence w1.B w1.A Cext hB1A1Cext
+        have hB1Cext : w1.B ≠ Cext := hCextData.2.2.1
+
+        have hAextl : HilbertIncidence.OnLine Aext l := by
+          rcases hAextData.2.2.2.1 with ⟨q, hB2q, hA2q, hAextq⟩
+          have hql : q = l :=
+            HilbertPlaneIncidence.line_unique
+              B2 A2 hAextData.1 q l hB2q hA2q hB2l hA2l
+          exact hql ▸ hAextq
+
+        have hCextbl : HilbertIncidence.OnLine Cext bl := by
+          rcases hCextData.2.2.2.1 with ⟨q, hB1q, hA1q, hCextq⟩
+          have hqbl : q = bl :=
+            HilbertPlaneIncidence.line_unique
+              w1.B w1.A hA1B1.symm q bl hB1q hA1q hB1bl hAbl
+          exact hqbl ▸ hCextq
+
+        have hOppAextB2 : HilbertOppositeSide Geo Aext B2 n := by
+          refine ⟨?_, hB2n,
+            ⟨A2,
+              (HilbertOrder.between_incidence
+                B2 A2 Aext hB2A2Aext).2.2.2.2,
+              hA2n⟩⟩
+          intro h
+          apply hB2n
+          have hnl : n = l :=
+            HilbertPlaneIncidence.line_unique
+              A2 Aext hAextData.2.1 n l hA2n h hA2l hAextl
+          rw [hnl]
+          exact hB2l
+
+        have hOppAextB1 : HilbertOppositeSide Geo Aext w1.B n :=
+          hilbert_oppositeSide_transport_right
+            Geo Aext B2 w1.B n hOppAextB2 hSameSideB2B1
+
+        --------------------------------------------------------
+        -- Re-describe the parallel through the extension points.
+        --------------------------------------------------------
+        have hCollB2AextQp : Collinear Geo B2 Aext Qp :=
+          ⟨l, hB2l, hAextl, hQpl⟩
+        have hCollB1CextA1 : Collinear Geo w1.B Cext w1.A :=
+          ⟨bl, hB1bl, hCextbl, hAbl⟩
+
+        have hStep1 : Geo.Parallel B2 Qp w1.B w1.A :=
+          ParallelSymmetry Geo w1.B w1.A B2 Qp hParallel
+        have hStep2 : Geo.Parallel B2 Aext w1.B w1.A :=
+          collinear_parallel_trans
+            Geo B2 Aext Qp w1.B w1.A hB2Aext hCollB2AextQp hStep1
+        have hStep2Sym : Geo.Parallel w1.B w1.A B2 Aext :=
+          ParallelSymmetry Geo B2 Aext w1.B w1.A hStep2
+        have hStep3 : Geo.Parallel w1.B Cext B2 Aext :=
+          collinear_parallel_trans
+            Geo w1.B Cext w1.A B2 Aext hB1Cext hCollB1CextA1 hStep2Sym
+        have hStep3Sym : Geo.Parallel B2 Aext w1.B Cext :=
+          ParallelSymmetry Geo w1.B Cext B2 Aext hStep3
+        have hStep4 : Geo.Parallel Aext B2 w1.B Cext :=
+          ParallelSwapFirstLine Geo B2 Aext w1.B Cext hStep3Sym
+        have hParallelExt : Geo.Parallel Aext B2 Cext w1.B :=
+          ParallelSwapSecondLine Geo Aext B2 w1.B Cext hStep4
+
+        --------------------------------------------------------
+        -- Corresponding angles (Euclid I.29).
+        --------------------------------------------------------
+        have hAGB : Geo.Between Aext A2 B2 :=
+          (HilbertOrder.between_incidence B2 A2 Aext hB2A2Aext).2.2.2.2
+        have hCHD : Geo.Between Cext w1.A w1.B :=
+          (HilbertOrder.between_incidence w1.B w1.A Cext hB1A1Cext).2.2.2.2
+
+        have hCorresponding :
+            Geo.AngleCongruent w1.O A2 B2 A2 w1.A w1.B :=
+          euclid_proposition_29_corresponding
+            Aext B2 Cext w1.B w1.O A2 w1.A
+            n
+            hAGB hCHD hOA2A1 hA2A1 hA2n hAn hOppAextB1 hParallelExt
+
+        have hRaySameO1A2 : HilbertSameRay Geo w1.A A2 w1.O :=
+          hilbert_sameRay_of_between
+            Geo w1.A A2 w1.O
+            ((HilbertOrder.between_incidence
+              w1.O A2 w1.A hOA2A1).2.2.2.2)
+
+        have hFinalAngle :
+            Geo.AngleCongruent w1.O A2 B2 w1.O w1.A w1.B := by
+          unfold Geometry.Geo.AngleCongruent at hCorresponding ⊢
+          rw [hilbert_angle_eq_of_sameRay_first
+            Geo w1.A A2 w1.O w1.B hRaySameO1A2] at hCorresponding
+          exact hCorresponding
+
+        --------------------------------------------------------
+        -- Right angle at `O1` transports to `(A2, B2)`.
+        --------------------------------------------------------
+        have hRightA2B2 : HilbertRightAngle Geo A2 w1.O B2 := by
+          rcases w1.hRight with ⟨C, hAOC, hRightCong⟩
+          have hCO1 : C ≠ w1.O :=
+            (HilbertOrder.between_incidence w1.A w1.O C hAOC).2.1.symm
+          have hA2OC : Geo.Between A2 w1.O C :=
+            hilbert_between_transport_sameRays
+              Geo w1.A w1.O C A2 C
+              hAOC hRaySameA1A2 (hilbert_sameRay_refl Geo w1.O C hCO1)
+          have hAngleLeft1 :
+              Geo.Angle w1.A w1.O w1.B = Geo.Angle A2 w1.O w1.B :=
+            hilbert_angle_eq_of_sameRay_first
+              Geo w1.O w1.A A2 w1.B hRaySameA1A2
+          have hAngleLeft2 :
+              Geo.Angle A2 w1.O w1.B = Geo.Angle A2 w1.O B2 :=
+            hilbert_angle_eq_of_sameRay_second
+              Geo w1.O A2 w1.B B2 hRayB1B2
+          have hAngleRight1 :
+              Geo.Angle w1.B w1.O C = Geo.Angle B2 w1.O C :=
+            hilbert_angle_eq_of_sameRay_first
+              Geo w1.O w1.B B2 C hRayB1B2
+          refine ⟨C, hA2OC, ?_⟩
+          unfold Geometry.Geo.AngleCongruent at hRightCong ⊢
+          rw [← hAngleLeft2, ← hAngleLeft1, ← hAngleRight1]
+          exact hRightCong
+
+        have hAOBswap : ¬ PrimCollinear Geo w1.A w1.O w1.B := fun h =>
+          w1.hNoncol (PrimCollinearSwap Geo w1.A w1.O w1.B h)
+
+        have hNoncolOA2B2 : ¬ PrimCollinear Geo w1.O A2 B2 := by
+          intro h
+          exact
+            (hilbert_noncollinear_of_sameRays
+              Geo w1.A w1.O w1.B A2 B2 hAOBswap hRaySameA1A2 hRayB1B2)
+              (PrimCollinearSwap Geo w1.O A2 B2 h)
+
+        have hFirstD :
+            hilbertPositiveSegmentClassOf Geo w1.O B2 hO1B2 =
+              hilbertPositiveSegmentClassOf Geo U V hUV :=
+          Quotient.sound hO1B2_UV
+
+        refine
+          ⟨hilbertPositiveSegmentClassOf Geo w1.O A2 hOA2, w1,
+            { O := w1.O
+              A := A2
+              B := B2
+              hOA := hOA2
+              hOB := hO1B2
+              hNoncol := hNoncolOA2B2
+              hRight := hRightA2B2
+              hFirst := hFirstD
+              hSecond := rfl },
+            Geometry.Geo.angle_congruent_symmetry
+              Geo w1.O A2 B2 w1.O w1.A w1.B hFinalAngle⟩
+
+      · exfalso
+        rcases hMeetBA with ⟨X, hBXA, hXl⟩
+        have hXbl : HilbertIncidence.OnLine X bl := by
+          have hData := HilbertOrder.between_incidence w1.B X w1.A hBXA
+          rcases hData.2.2.2.1 with ⟨q, hBq, hXq, hAq⟩
+          have hqbl : q = bl :=
+            HilbertPlaneIncidence.line_unique
+              w1.B w1.A hA1B1.symm q bl hBq hAq hB1bl hAbl
+          exact hqbl ▸ hXq
+        have hX_B1A1 : X ∈ Geo.PointLine w1.B w1.A :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo w1.B w1.A X bl hA1B1.symm hB1bl hAbl).mpr hXbl
+        have hX_B2Qp : X ∈ Geo.PointLine B2 Qp :=
+          (hilbert_mem_pointLine_iff_onLine
+            Geo B2 Qp X l hB2Qp hB2l hQpl).mpr hXl
+        exact
+          intersection_test_not_parallel_of_common_point
+            Geo w1.B w1.A B2 Qp X hX_B1A1 hX_B2Qp hParallel
 
 
 ------------------------------------------------------------------------
@@ -3652,9 +4365,12 @@ theorem hilbertVI2EudoxusConverse_of_forward
     intro hEq
     subst Z
 
+    rcases hXEYData.2.2.2.1 with
+      ⟨line, hXline, _hEline, hYline⟩
+
     exact
       hXYZ
-        hXEYData.2.2.2.1
+        ⟨line, hXline, hYline, hYline⟩
 
   have hXYE :
       Collinear Geo X Y E := by
