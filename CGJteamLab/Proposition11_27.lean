@@ -2,7 +2,6 @@ import CGJteamLab.Hilbert3DProportion
 import CGJteamLab.HilbertAngleDecomposition
 import CGJteamLab.Proposition32
 import CGJteamLab.HilbertInterfaceXI
-import CGJteamLab.PropositionHilbertIV
 import CGJteamLab.Proposition12
 import CGJteamLab.Proposition16
 import CGJteamLab.Proposition19

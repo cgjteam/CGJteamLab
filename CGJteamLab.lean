@@ -84,7 +84,15 @@ import CGJteamLab.Proposition2_14
 
 -- Hilbert/Forder Book IV circle geometry
 import CGJteamLab.HilbertInterfaceIV
-import CGJteamLab.PropositionHilbertIV
+import CGJteamLab.Proposition4_12
+import CGJteamLab.Proposition4_13
+import CGJteamLab.Proposition4_14
+import CGJteamLab.Proposition4_15
+import CGJteamLab.Proposition4_16
+import CGJteamLab.Proposition4_17
+import CGJteamLab.Proposition4_18
+import CGJteamLab.Proposition4_19
+import CGJteamLab.Proposition4_20
 
 -- Euclid Book V
 import CGJteamLab.HilbertInterfaceV
