@@ -189,6 +189,7 @@ import CGJteamLab.Wyler.Proposition11_23
 import CGJteamLab.Wyler.Proposition11_24
 import CGJteamLab.Wyler.Proposition11_25
 import CGJteamLab.Wyler.Proposition11_26
+import CGJteamLab.Wyler.Proposition11_27
 
 
 -- Dimension-free / corrected E4 route
