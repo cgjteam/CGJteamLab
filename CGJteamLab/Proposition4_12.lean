@@ -8,9 +8,8 @@ variable (Geo : Geometry.Geo.{u})
 
 /-!
 # Forder IV.12 and IV.12.1
-
-Production extraction from the former aggregate
-`PropositionHilbertIV.lean`.
+Production module for Forder IV.12 and IV.12.1.
+Reusable circle/order/angle helpers live in `HilbertInterfaceIV`.
 
 Reusable circle/order/angle helpers live in `HilbertInterfaceIV`.
 The construction and case analysis specific to IV.12 live here.
